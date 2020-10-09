@@ -3,6 +3,6 @@
 # Here is the right place to put the role's input variables.
 # This file also serves as a documentation for such a variables.
 
-# Examples of role input variables:
-ha_cluster_foo: "foo"
-ha_cluster_bar: "bar"
+HA_Cluster_cluster_present: "yes"
+
+HA_Cluster_pcs_provider: "pcs-0.10" # TODO autodetection

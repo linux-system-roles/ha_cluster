@@ -1,42 +1,5 @@
 # SPDX-License-Identifier: MIT
 ---
-# Put the tasks for your role here.
-
-# An example of how to set distribution and version specific internal variables
-# (defined in vars/ directory)
-# see https://github.com/oasis-roles/meta_standards#platform-specific-variables
-- name: Set platform/version specific variables
-  include_vars: "{{ __ha_cluster_vars_file }}"
-  loop:
-    - "{{ ansible_facts['os_family'] }}.yml"
-    - "{{ ansible_facts['distribution'] }}.yml"
-    - >-
-      {{ ansible_facts['distribution'] ~ '_' ~
-      ansible_facts['distribution_major_version'] }}.yml
-    - >-
-      {{ ansible_facts['distribution'] ~ '_' ~
-      ansible_facts['distribution_version'] }}.yml
-  vars:
-    __ha_cluster_vars_file: "{{ role_path }}/vars/{{ item }}"
-  when: __ha_cluster_vars_file is file
-
-# Examples of some tasks:
-- name: Ensure required packages are installed
-  package:
-    name: "{{ __ha_cluster_packages }}"
-    state: present
-
-- name: Ensure required services are enabled and started
-  service:
-    name: "{{ item }}"
-    state: started
-    enabled: yes
-  loop: "{{ __ha_cluster_services }}"
-
-- name: Generate /etc/{{ __ha_cluster_foo_config }}
-  template:
-    src: "{{ __ha_cluster_foo_config }}.j2"
-    dest: /etc/{{ __ha_cluster_foo_config }}
-    backup: yes
-    mode: 0400
-  notify: ha_cluster handler to restart services
+- name: Remove cluster configuration
+  include_tasks: "cluster-destroy-{{ HA_Cluster_pcs_provider }}.yml"
+  when: HA_Cluster_cluster_present == "no"

@@ -1,0 +1,19 @@
+# Two tasks are needed due to how 'removes' works:
+# * if ALL files in 'removes' exist, the command is run
+# * if only one exists, the command is skipped.
+# When a cluster has never started, there is no cib.xml, yet we still want to
+# run 'pcs cluster destroy'.
+
+- name: Remove cluster configuration (corosync.conf present)
+  become: yes
+  become_user: root
+  command:
+    cmd: pcs cluster destroy
+    removes: /etc/corosync/corosync.conf
+
+- name: Remove cluster configuration (cib.xml present)
+  become: yes
+  become_user: root
+  command:
+    cmd: pcs cluster destroy
+    removes: /var/lib/pacemaker/cib/cib.xml
