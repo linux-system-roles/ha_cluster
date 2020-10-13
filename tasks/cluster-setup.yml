@@ -1,0 +1,44 @@
+- name: Create a corosync.conf tempfile
+  tempfile:
+    state: file
+    suffix: _HA_Cluster_corosync_conf
+  register: HA_Cluster_internal_tempfile_corosync_conf
+  run_once: true
+  # We always need to create corosync.conf file to see whether it's the same as
+  # what is already present on the cluster nodes. However, we don't want to
+  # report it as a change since the only thing which matters is copying the
+  # resulting corosync.conf to cluster nodes.
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+- name: Create a corosync.conf file content
+  include_tasks: "cluster-setup-{{ HA_Cluster_pcs_provider }}.yml"
+
+- name: Fetch corosync.conf file
+  slurp:
+    src: "{{ HA_Cluster_internal_tempfile_corosync_conf.path }}"
+  register: HA_Cluster_internal_data_corosync_conf
+  run_once: true
+  when: HA_Cluster_internal_tempfile_corosync_conf.path is defined
+
+- name: Distribute corosync.conf file
+  copy:
+    content: "{{ HA_Cluster_internal_data_corosync_conf['content'] | b64decode }}"
+    dest: /etc/corosync/corosync.conf
+    owner: root
+    group: root
+    mode: '0644'
+  when: HA_Cluster_internal_data_corosync_conf is defined
+
+- name: Remove a corosync.conf tempfile
+  file:
+    path: "{{ HA_Cluster_internal_tempfile_corosync_conf.path }}"
+    state: absent
+  when: HA_Cluster_internal_tempfile_corosync_conf.path is defined
+  run_once: true
+  # We always need to create corosync.conf file to see whether it's the same as
+  # what is already present on the cluster nodes. However, we don't want to
+  # report it as a change since the only thing which matters is copying the
+  # resulting corosync.conf to cluster nodes.
+  check_mode: no
+  changed_when: not ansible_check_mode

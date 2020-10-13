@@ -3,3 +3,7 @@
 - name: Remove cluster configuration
   include_tasks: "cluster-destroy-{{ HA_Cluster_pcs_provider }}.yml"
   when: HA_Cluster_cluster_present == "no"
+
+- name: Configure cluster nodes
+  include_tasks: cluster-setup.yml
+  when: HA_Cluster_cluster_present == "yes"

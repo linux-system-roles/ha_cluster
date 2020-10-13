@@ -4,5 +4,6 @@
 # This file also serves as a documentation for such a variables.
 
 HA_Cluster_cluster_present: "yes"
+HA_Cluster_cluster_name: "my-cluster"
 
 HA_Cluster_pcs_provider: "pcs-0.10" # TODO autodetection
