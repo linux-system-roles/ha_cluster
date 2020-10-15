@@ -7,3 +7,9 @@
 - name: Configure cluster nodes
   include_tasks: cluster-setup.yml
   when: HA_Cluster_cluster_present == "yes"
+
+- name: Pcs auth
+  # Auth is run after corosync.conf has been distributed so that pcs
+  # distributes pcs tokens in the cluster automatically.
+  include_tasks: pcs-auth.yml
+  when: HA_Cluster_cluster_present == "yes"

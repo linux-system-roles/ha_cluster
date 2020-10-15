@@ -1,7 +1,7 @@
 - name: Create a corosync.conf file with pcs-0.10
   command:
     # TODO switch to inventory variables: node names and addresses
-    cmd: pcs cluster setup --corosync_conf {{ HA_Cluster_internal_tempfile_corosync_conf.path }} --overwrite {{ HA_Cluster_cluster_name }} {% for node in ansible_play_hosts %} '{{ node }}' {% endfor %}
+    cmd: pcs cluster setup --corosync_conf {{ HA_Cluster_internal_tempfile_corosync_conf.path|quote }} --overwrite {{ HA_Cluster_cluster_name|quote }} {% for node in ansible_play_hosts %} '{{ node|quote }}' {% endfor %}
   run_once: true
   # We always need to create corosync.conf file to see whether it's the same as
   # what is already present on the cluster nodes. However, we don't want to
