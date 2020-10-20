@@ -8,6 +8,12 @@
   include_tasks: cluster-setup.yml
   when: HA_Cluster_cluster_present == "yes"
 
+- name: Enable or disable cluster services on boot
+  include_tasks: cluster-enable-disable.yml
+  when:
+    - HA_Cluster_cluster_present == "yes"
+    - HA_Cluster_start_on_boot != "nochange"
+
 - name: Pcs auth
   # Auth is run after corosync.conf has been distributed so that pcs
   # distributes pcs tokens in the cluster automatically.
