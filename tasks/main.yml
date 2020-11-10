@@ -8,6 +8,15 @@
   include_tasks: cluster-setup.yml
   when: HA_Cluster_cluster_present == "yes"
 
+- name: Check if qdevice is configured
+  command:
+    cmd: pcs quorum config
+  register: HA_Cluster_internal_pcs_quorum_config
+  run_once: true
+  check_mode: no
+  changed_when: false
+  when: HA_Cluster_cluster_present == "yes"
+
 - name: Enable or disable cluster services on boot
   include_tasks: cluster-enable-disable.yml
   when:
@@ -18,4 +27,8 @@
   # Auth is run after corosync.conf has been distributed so that pcs
   # distributes pcs tokens in the cluster automatically.
   include_tasks: pcs-auth.yml
+  when: HA_Cluster_cluster_present == "yes"
+
+- name: Start the cluster and reload corosync.conf
+  include_tasks: cluster-start-and-reload.yml
   when: HA_Cluster_cluster_present == "yes"

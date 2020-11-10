@@ -1,0 +1,82 @@
+# All options are changeable during runtime with exception of:
+# totem.version
+# totem.threads (not used at all - to remove)
+# totem.ip_version
+# totem.rrp_mode (not used at all - to remove)
+# totem.netmtu
+# totem.interface.ringnumber (no used at all - to remove)
+# totem.interface.bindnetaddr (not used when nodelist is)
+# totem.interface.mcastaddr (not used when nodelist is)
+# totem.interface.broadcast (not used when nodelist is)
+# totem.interface.mcastport
+# totem.interface.ttl
+# totem.interface.<x>.knet_transport
+# totem.transport
+# totem.cluster_name
+# quorum.provider
+# system.move_to_root_cgroup
+# system.sched_rr
+# system.priority
+# system.qb_ipc_type
+# system.state_dir
+#
+# This list applies to latest corosync. Older versions have longer lists.
+# RHEL 7 corosync versions have a different list.
+#
+# Pcs only configures a subset of those. That's irrelevant, a node may have a
+# corosync.conf file which contains them and gets overwritten by pcs.
+
+- name: Stop cluster daemons to reload configuration
+  service:
+    name: "{{ item }}"
+    state: stopped
+  loop:
+    - pacemaker
+    - corosync-qdevice
+    - corosync
+  # Corosync-qdevice does not support relaod, it must always be restarted to
+  # apply changes.
+  # We only stop the whole cluster if this was preaproved by the user.
+  # Otherwise we go with a reload - it may not apply all the changes but it
+  # doesn't cause downtime.
+  when:
+    - HA_Cluster_internal_distribute_corosync_conf.changed
+    - (item == "corosync-qdevice") or (HA_Cluster_allow_shutdown_to_reload_config == "yes")
+
+# We must always start daemons to get the cluster running on newly added nodes.
+
+- name: Start corosync
+  service:
+    name: corosync
+    state: started
+
+# It is sufficient to run the reload command on one node. Corosync then reloads
+# config on all cluster nodes. If there was no change in corosync.conf, the
+# reload is an empty operation.
+- name: Reload corosync configuration
+  command:
+    cmd: corosync-cfgtool -R
+  run_once: true
+  when: not ansible_check_mode
+
+- name: Start corosync-qdevice
+  service:
+    name: corosync-qdevice
+    state: started
+  when: ( "Device:" in HA_Cluster_internal_pcs_quorum_config.stdout_lines)
+
+- name: Start pacemaker
+  service:
+    name: pacemaker
+    state: started
+
+- name: Wait for the cluster to fully start and form membership
+  command:
+    cmd: pcs cluster start --all --wait
+  run_once: true
+  # There is no way to figure out if a change ocurred. However, the waiting
+  # always happens, so technically 'changed' should always be true. There is no
+  # point in waiting in check mode as there is nothing to wait for, no daemons
+  # are actually starting.
+  when: not ansible_check_mode
+  changed_when: not ansible_check_mode

@@ -28,6 +28,7 @@
     owner: root
     group: root
     mode: '0644'
+  register: HA_Cluster_internal_distribute_corosync_conf
   when: HA_Cluster_internal_data_corosync_conf is defined
 
 - name: Remove a corosync.conf tempfile
