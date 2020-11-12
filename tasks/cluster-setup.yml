@@ -25,9 +25,9 @@
   copy:
     content: "{{ HA_Cluster_internal_data_corosync_conf['content'] | b64decode }}"
     dest: /etc/corosync/corosync.conf
-    owner: root
-    group: root
-    mode: '0644'
+    owner: "root"
+    group: "root"
+    mode: "0644"
   register: HA_Cluster_internal_distribute_corosync_conf
   when: HA_Cluster_internal_data_corosync_conf is defined
 
@@ -43,3 +43,19 @@
   # resulting corosync.conf to cluster nodes.
   check_mode: no
   changed_when: not ansible_check_mode
+
+- name: Distribute corosync authkey
+  copy:
+    content: "{{ HA_Cluster_authkey_corosync }}"
+    dest: /etc/corosync/authkey
+    owner: "root"
+    group: "root"
+    mode: "0400"
+
+- name: Distribute pacemaker authkey
+  copy:
+    content: "{{ HA_Cluster_authkey_pacemaker }}"
+    dest: /etc/pacemaker/authkey
+    owner: "hacluster"
+    group: "haclient"
+    mode: "0400"

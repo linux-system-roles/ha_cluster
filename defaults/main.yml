@@ -8,7 +8,12 @@ HA_Cluster_cluster_present: "yes"
 HA_Cluster_start_on_boot: "yes"
 HA_Cluster_allow_shutdown_to_reload_config: "no"
 
+HA_Cluster_hacluster_password: ""
+# 256 bytes of random data
+HA_Cluster_authkey_corosync: ""
+# 256 bytes of random data
+HA_Cluster_authkey_pacemaker: ""
+
 HA_Cluster_cluster_name: "my-cluster"
-HA_Cluster_hacluster_password: "password"
 
 HA_Cluster_pcs_provider: "pcs-0.10" # TODO autodetection

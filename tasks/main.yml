@@ -4,6 +4,10 @@
   include_tasks: "cluster-destroy-{{ HA_Cluster_pcs_provider }}.yml"
   when: HA_Cluster_cluster_present == "no"
 
+- name: Check role variables
+  include_tasks: check-role-variables.yml
+  when: HA_Cluster_cluster_present == "yes"
+
 - name: Configure cluster nodes
   include_tasks: cluster-setup.yml
   when: HA_Cluster_cluster_present == "yes"

@@ -1,0 +1,9 @@
+- name: Fail if passwords or authkeys are not specified
+  fail:
+    msg: "{{ item }} must be specified"
+  when: lookup("vars", item, default="") | length < 1
+  loop:
+    - HA_Cluster_hacluster_password
+    - HA_Cluster_authkey_corosync
+    - HA_Cluster_authkey_pacemaker
+  run_once: true
