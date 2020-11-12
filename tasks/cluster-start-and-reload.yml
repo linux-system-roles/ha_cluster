@@ -80,3 +80,27 @@
   # are actually starting.
   when: not ansible_check_mode
   changed_when: not ansible_check_mode
+
+- name: List pacemaker nodes
+  shell:
+    cmd: crm_node --list | awk '{print $2}'
+  register: HA_Cluster_internal_list_pacemaker_nodes
+  run_once: true
+  # This cannot be run in the check mode as it requires cluster to be started.
+  # Check mode does not start the cluster, it only shows the cluster would be
+  # started.
+  when: not ansible_check_mode
+  changed_when: not ansible_check_mode
+
+- name: Purge removed nodes from pacemaker's cache
+  command:
+    cmd: pcs cluster node clear {{ item | quote }}
+  run_once: true
+  loop: "{{ HA_Cluster_internal_list_pacemaker_nodes.stdout_lines }}"
+  # This cannot be run in the check mode as it requires cluster to be started.
+  # Check mode does not start the cluster, it only shows the cluster would be
+  # started.
+  when:
+    - not ansible_check_mode
+    # TODO support node names instead of ansible_play_hosts
+    - item not in ansible_play_hosts
