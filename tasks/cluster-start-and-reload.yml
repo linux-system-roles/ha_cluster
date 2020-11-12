@@ -41,7 +41,7 @@
   # doesn't cause downtime.
   when:
     - HA_Cluster_internal_distribute_corosync_conf.changed
-    - (item == "corosync-qdevice") or (HA_Cluster_allow_shutdown_to_reload_config == "yes")
+    - (item == "corosync-qdevice") or HA_Cluster_allow_shutdown_to_reload_config
 
 # We must always start daemons to get the cluster running on newly added nodes.
 
@@ -56,14 +56,14 @@
 - name: Reload corosync configuration
   command:
     cmd: corosync-cfgtool -R
-  run_once: true
+  run_once: yes
   when: not ansible_check_mode
 
 - name: Start corosync-qdevice
   service:
     name: corosync-qdevice
     state: started
-  when: ( "Device:" in HA_Cluster_internal_pcs_quorum_config.stdout_lines)
+  when: ("Device:" in HA_Cluster_internal_pcs_quorum_config.stdout_lines)
 
 - name: Start pacemaker
   service:
@@ -73,7 +73,7 @@
 - name: Wait for the cluster to fully start and form membership
   command:
     cmd: pcs cluster start --all --wait
-  run_once: true
+  run_once: yes
   # There is no way to figure out if a change ocurred. However, the waiting
   # always happens, so technically 'changed' should always be true. There is no
   # point in waiting in check mode as there is nothing to wait for, no daemons
@@ -85,7 +85,7 @@
   shell:
     cmd: crm_node --list | awk '{print $2}'
   register: HA_Cluster_internal_list_pacemaker_nodes
-  run_once: true
+  run_once: yes
   # This cannot be run in the check mode as it requires cluster to be started.
   # Check mode does not start the cluster, it only shows the cluster would be
   # started.
@@ -95,7 +95,7 @@
 - name: Purge removed nodes from pacemaker's cache
   command:
     cmd: pcs cluster node clear {{ item | quote }}
-  run_once: true
+  run_once: yes
   loop: "{{ HA_Cluster_internal_list_pacemaker_nodes.stdout_lines }}"
   # This cannot be run in the check mode as it requires cluster to be started.
   # Check mode does not start the cluster, it only shows the cluster would be

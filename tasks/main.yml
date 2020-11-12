@@ -2,37 +2,33 @@
 ---
 - name: Remove cluster configuration
   include_tasks: "cluster-destroy-{{ HA_Cluster_pcs_provider }}.yml"
-  when: HA_Cluster_cluster_present == "no"
+  when: not HA_Cluster_cluster_present
 
-- name: Check role variables
-  include_tasks: check-role-variables.yml
-  when: HA_Cluster_cluster_present == "yes"
+- name: Install and configure HA cluster
+  block:
+    - name: Check role variables
+      include_tasks: check-role-variables.yml
 
-- name: Configure cluster nodes
-  include_tasks: cluster-setup.yml
-  when: HA_Cluster_cluster_present == "yes"
+    - name: Configure cluster nodes
+      include_tasks: cluster-setup.yml
 
-- name: Check if qdevice is configured
-  command:
-    cmd: pcs quorum config
-  register: HA_Cluster_internal_pcs_quorum_config
-  run_once: true
-  check_mode: no
-  changed_when: false
-  when: HA_Cluster_cluster_present == "yes"
+    - name: Check if qdevice is configured
+      command:
+        cmd: pcs quorum config
+      register: HA_Cluster_internal_pcs_quorum_config
+      run_once: yes
+      check_mode: no
+      changed_when: no
 
-- name: Enable or disable cluster services on boot
-  include_tasks: cluster-enable-disable.yml
-  when:
-    - HA_Cluster_cluster_present == "yes"
-    - HA_Cluster_start_on_boot != "nochange"
+    - name: Enable or disable cluster services on boot
+      include_tasks: cluster-enable-disable.yml
+      when: HA_Cluster_start_on_boot != "nochange"
 
-- name: Pcs auth
-  # Auth is run after corosync.conf has been distributed so that pcs
-  # distributes pcs tokens in the cluster automatically.
-  include_tasks: pcs-auth.yml
-  when: HA_Cluster_cluster_present == "yes"
+    - name: Pcs auth
+      # Auth is run after corosync.conf has been distributed so that pcs
+      # distributes pcs tokens in the cluster automatically.
+      include_tasks: pcs-auth.yml
 
-- name: Start the cluster and reload corosync.conf
-  include_tasks: cluster-start-and-reload.yml
-  when: HA_Cluster_cluster_present == "yes"
+    - name: Start the cluster and reload corosync.conf
+      include_tasks: cluster-start-and-reload.yml
+  when: HA_Cluster_cluster_present

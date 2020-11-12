@@ -1,7 +1,7 @@
 - name: Enable or disable configured cluster services on boot
   service:
     name: "{{ item }}"
-    enabled: "{{ (HA_Cluster_start_on_boot == 'yes') | ternary(true, false) }}"
+    enabled: "{{ HA_Cluster_start_on_boot }}"
   loop:
     - corosync
     - corosync-qdevice

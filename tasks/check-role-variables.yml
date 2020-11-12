@@ -6,4 +6,4 @@
     - HA_Cluster_hacluster_password
     - HA_Cluster_authkey_corosync
     - HA_Cluster_authkey_pacemaker
-  run_once: true
+  run_once: yes

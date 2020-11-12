@@ -3,7 +3,7 @@
     state: file
     suffix: _HA_Cluster_corosync_conf
   register: HA_Cluster_internal_tempfile_corosync_conf
-  run_once: true
+  run_once: yes
   # We always need to create corosync.conf file to see whether it's the same as
   # what is already present on the cluster nodes. However, we don't want to
   # report it as a change since the only thing which matters is copying the
@@ -18,7 +18,7 @@
   slurp:
     src: "{{ HA_Cluster_internal_tempfile_corosync_conf.path }}"
   register: HA_Cluster_internal_data_corosync_conf
-  run_once: true
+  run_once: yes
   when: HA_Cluster_internal_tempfile_corosync_conf.path is defined
 
 - name: Distribute corosync.conf file
@@ -36,7 +36,7 @@
     path: "{{ HA_Cluster_internal_tempfile_corosync_conf.path }}"
     state: absent
   when: HA_Cluster_internal_tempfile_corosync_conf.path is defined
-  run_once: true
+  run_once: yes
   # We always need to create corosync.conf file to see whether it's the same as
   # what is already present on the cluster nodes. However, we don't want to
   # report it as a change since the only thing which matters is copying the
