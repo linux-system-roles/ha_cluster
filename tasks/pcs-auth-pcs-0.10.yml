@@ -1,7 +1,13 @@
 - name: Pcs auth with pcs-0.10
   command:
-    # TODO switch to inventory variables: node names and addresses
-    cmd: pcs host auth {% for node in ansible_play_hosts %} "{{ node|quote }}" {% endfor %} -u hacluster
+    cmd: >
+      pcs host auth -u hacluster
+      {% for node in ansible_play_hosts %}
+        '{{ hostvars[node].HA_Cluster.node_name | default(node) | quote }}'
+        {% if hostvars[node].HA_Cluster.pcs_address | default("") %}
+          addr={{ hostvars[node].HA_Cluster.pcs_address | quote }}
+        {% endif %}
+      {% endfor %}
     stdin: "{{ HA_Cluster_hacluster_password }}"
   run_once: yes
   when: not ansible_check_mode and HA_Cluster_internal_pcs_auth_status.rc == 2

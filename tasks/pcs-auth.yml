@@ -1,7 +1,10 @@
 - name: Check pcs auth status
   command:
-    # TODO switch to inventory variables: node names and addresses
-    cmd: pcs status pcsd {% for node in ansible_play_hosts %} "{{ node|quote }}" {% endfor %}
+    cmd: >
+      pcs status pcsd
+      {% for node in ansible_play_hosts %}
+        '{{ hostvars[node].HA_Cluster.node_name | default(node) | quote }}'
+      {% endfor %}
   register: HA_Cluster_internal_pcs_auth_status
   check_mode: no
   # rc == 0 means all nodes are authenticated

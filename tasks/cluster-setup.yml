@@ -14,7 +14,7 @@
 - name: Create a corosync.conf file content
   include_tasks: "cluster-setup-{{ HA_Cluster_pcs_provider }}.yml"
 
-- name: Fetch corosync.conf file
+- name: Fetch created corosync.conf file
   slurp:
     src: "{{ HA_Cluster_internal_tempfile_corosync_conf.path }}"
   register: HA_Cluster_internal_data_corosync_conf

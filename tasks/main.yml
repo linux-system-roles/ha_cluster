@@ -9,6 +9,14 @@
     - name: Check role variables
       include_tasks: check-role-variables.yml
 
+    - name: Extract all node names
+      set_fact:
+        HA_Cluster_internal_all_node_names: "\
+        {{ HA_Cluster_internal_all_node_names | default([]) }} + \
+        [ {{ hostvars[item].HA_Cluster.node_name | default(item) }} ]"
+      loop: "{{ ansible_play_hosts }}"
+      run_once: yes
+
     - name: Set pcsd SSL certificates
       include_tasks: pcs-set-ssl-certs.yml
       when:

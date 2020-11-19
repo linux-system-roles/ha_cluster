@@ -102,5 +102,4 @@
   # started.
   when:
     - not ansible_check_mode
-    # TODO support node names instead of ansible_play_hosts
-    - item not in ansible_play_hosts
+    - item not in HA_Cluster_internal_all_node_names
