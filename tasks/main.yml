@@ -9,6 +9,12 @@
     - name: Check role variables
       include_tasks: check-role-variables.yml
 
+    - name: Set pcsd SSL certificates
+      include_tasks: pcs-set-ssl-certs.yml
+      when:
+        - HA_Cluster_pcsd_SSL_cert.public
+        - HA_Cluster_pcsd_SSL_cert.private
+
     - name: Configure cluster nodes
       include_tasks: cluster-setup.yml
 

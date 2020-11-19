@@ -11,6 +11,10 @@ HA_Cluster_hacluster_password: ""
 HA_Cluster_authkey_corosync: ""
 # 256 bytes of random data
 HA_Cluster_authkey_pacemaker: ""
+# SSL certificate for pcsd daemon, paths to public and private part
+HA_Cluster_pcsd_SSL_cert:
+  public: ""
+  private: ""
 
 HA_Cluster_cluster_name: "my-cluster"
 
