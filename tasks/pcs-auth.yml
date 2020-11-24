@@ -17,4 +17,10 @@
 
 - name: Run pcs auth
   include_tasks: "pcs-auth-{{ HA_Cluster_pcs_provider }}.yml"
+  # Include the tasks for nodes which can not talk to other nodes due to
+  # missing pcs auth tokens. The pcs-auth-*.yml contains "run_once: yes" as
+  # running the auth on one node is sufficient (auth tokens are distributed by
+  # pcs automatically). By appling "when" here and "run_once" in the included
+  # task, it is achieved that the pcs auth command is run once on one of the
+  # nodes which lack pcs auth tokens.
   when: not ansible_check_mode and HA_Cluster_internal_pcs_auth_status.rc == 2

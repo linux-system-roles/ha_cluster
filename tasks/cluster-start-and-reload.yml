@@ -74,12 +74,12 @@
   command:
     cmd: pcs cluster start --all --wait
   run_once: yes
-  # There is no way to figure out if a change ocurred. However, the waiting
-  # always happens, so technically 'changed' should always be true. There is no
-  # point in waiting in check mode as there is nothing to wait for, no daemons
-  # are actually starting.
+  # There is no point in waiting in check mode as there is nothing to wait for,
+  # no daemons are actually starting.
   when: not ansible_check_mode
-  changed_when: not ansible_check_mode
+  # This is just waiting for cluster to finish starting, no change in
+  # configuration / state occurs as the services were started by tasks above.
+  changed_when: no
 
 - name: List pacemaker nodes
   shell:

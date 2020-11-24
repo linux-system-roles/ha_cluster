@@ -1,5 +1,7 @@
-- name: Pcs auth with pcs-0.10
+- name: Pcs auth using pcs-0.10
   command:
+    # Always auth all nodes to prevent possible corner cases with synchronizing
+    # pcs auth tokens in the cluster when not all nodes are auth-ed.
     cmd: >
       pcs host auth -u hacluster
       {% for node in ansible_play_hosts %}
@@ -10,4 +12,3 @@
       {% endfor %}
     stdin: "{{ HA_Cluster_hacluster_password }}"
   run_once: yes
-  when: not ansible_check_mode and HA_Cluster_internal_pcs_auth_status.rc == 2
