@@ -63,7 +63,7 @@
   service:
     name: corosync-qdevice
     state: started
-  when: ("Device:" in HA_Cluster_internal_pcs_quorum_config.stdout_lines)
+  when: HA_Cluster_internal_qdevice_in_use
 
 - name: Start pacemaker
   service:

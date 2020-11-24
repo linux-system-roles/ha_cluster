@@ -6,8 +6,5 @@
     - corosync
     - corosync-qdevice
     - pacemaker
-  when: >
-    item != "corosync-qdevice"
-    or
-    "Device:" in HA_Cluster_internal_pcs_quorum_config.stdout_lines
+  when: item != "corosync-qdevice" or HA_Cluster_internal_qdevice_in_use
 
