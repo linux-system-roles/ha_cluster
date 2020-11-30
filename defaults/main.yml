@@ -4,7 +4,6 @@
 HA_Cluster_cluster_present: yes
 # yes | no | "nochange"
 HA_Cluster_start_on_boot: yes
-HA_Cluster_allow_shutdown_to_reload_config: no
 
 HA_Cluster_hacluster_password: ""
 # 256 bytes of random data

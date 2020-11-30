@@ -1,30 +1,20 @@
-# All options are changeable during runtime with exception of:
-# totem.version
-# totem.threads (not used at all - to remove)
-# totem.ip_version
-# totem.rrp_mode (not used at all - to remove)
-# totem.netmtu
-# totem.interface.ringnumber (no used at all - to remove)
-# totem.interface.bindnetaddr (not used when nodelist is)
-# totem.interface.mcastaddr (not used when nodelist is)
-# totem.interface.broadcast (not used when nodelist is)
-# totem.interface.mcastport
-# totem.interface.ttl
-# totem.interface.<x>.knet_transport
-# totem.transport
-# totem.cluster_name
-# quorum.provider
-# system.move_to_root_cgroup
-# system.sched_rr
-# system.priority
-# system.qb_ipc_type
-# system.state_dir
+# Some changes to corosync.conf can be applied when a cluster is running by
+# instructing Corosync to reload its configuration. Other changes, however,
+# require the whole cluster to be restarted. Different Corosync versions have
+# different abilities as of which changes require restart and which are applied
+# fine by reloading.
 #
-# This list applies to latest corosync. Older versions have longer lists.
-# RHEL 7 corosync versions have a different list.
+# Currently, there is no reliable way to detect if a restart is necessary or we
+# would be fine with just the reload. Until then, we always restart to make
+# sure all changes are applied correctly and corner cases are avoided.
 #
-# Pcs only configures a subset of those. That's irrelevant, a node may have a
-# corosync.conf file which contains them and gets overwritten by pcs.
+# The plan is to implement a functionality to pcs (a CLI or library command) to
+# inspect changes done to corosync.conf and decide if cluster restart is
+# necessary based on Corosync version.
+#
+# Corosync-qdevice does not support reload, it must always be restarted to
+# apply changes.
+
 
 - name: Stop cluster daemons to reload configuration
   service:
@@ -34,14 +24,9 @@
     - pacemaker
     - corosync-qdevice
     - corosync
-  # Corosync-qdevice does not support relaod, it must always be restarted to
-  # apply changes.
-  # We only stop the whole cluster if this was preaproved by the user.
-  # Otherwise we go with a reload - it may not apply all the changes but it
-  # doesn't cause downtime.
   when:
     - HA_Cluster_internal_distribute_corosync_conf.changed
-    - (item == "corosync-qdevice") or HA_Cluster_allow_shutdown_to_reload_config
+
 
 # We must always start daemons to get the cluster running on newly added nodes.
 
@@ -50,9 +35,10 @@
     name: corosync
     state: started
 
-# It is sufficient to run the reload command on one node. Corosync then reloads
-# config on all cluster nodes. If there was no change in corosync.conf, the
-# reload is an empty operation.
+# To prevent corner cases, always reload the config. It is sufficient to run
+# the reload command on one node. Corosync then reloads config on all cluster
+# nodes. If there was no change in corosync.conf, the reload is an empty
+# operation.
 - name: Reload corosync configuration
   command:
     cmd: corosync-cfgtool -R
@@ -70,6 +56,7 @@
     name: pacemaker
     state: started
 
+
 - name: Wait for the cluster to fully start and form membership
   command:
     cmd: pcs cluster start --all --wait
@@ -81,16 +68,29 @@
   # configuration / state occurs as the services were started by tasks above.
   changed_when: no
 
+
+# Purge removed nodes from Pacemaker's caches
+
 - name: List pacemaker nodes
   shell:
-    cmd: crm_node --list | awk '{print $2}'
+    cmd: >
+      crm_mon -X
+      | xmllint --xpath '/crm_mon/nodes/node/@name' -
+      | sed -E 's/\s*name="([^"]+)"\s*/\1\n/g'
+    # Using crm_node like this:
+    # cmd: crm_node --list | awk '{print $2}'
+    # would be a preferred solution. However, crm_node doesn't show nodes
+    # removed from a cluster after corosync / pacemaker restart. Therefore,
+    # crm_node is no help when we want to list such nodes.
   register: HA_Cluster_internal_list_pacemaker_nodes
   run_once: yes
-  # This cannot be run in the check mode as it requires cluster to be started.
-  # Check mode does not start the cluster, it only shows the cluster would be
+  # This cannot be run in the check mode as it requires cluster to be started
+  # and its configuration reloaded. Check mode does not start the cluster nor
+  # does it reload its configuration, it only shows the cluster would be
   # started.
   when: not ansible_check_mode
-  changed_when: not ansible_check_mode
+  # This only lists a part of cluster configuration.
+  changed_when: no
 
 - name: Purge removed nodes from pacemaker's cache
   command:
