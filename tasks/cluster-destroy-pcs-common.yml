@@ -5,8 +5,6 @@
 # run 'pcs cluster destroy'.
 
 - name: Remove cluster configuration
-  become: yes
-  become_user: root
   command:
     cmd: pcs cluster destroy
     removes: "{{ item }}"
