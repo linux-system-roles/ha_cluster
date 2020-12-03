@@ -1,10 +1,10 @@
 - name: Enable or disable configured cluster services on boot
   service:
     name: "{{ item }}"
-    enabled: "{{ HA_Cluster_start_on_boot }}"
+    enabled: "{{ ha_cluster_start_on_boot }}"
   loop:
     - corosync
     - corosync-qdevice
     - pacemaker
-  when: item != "corosync-qdevice" or HA_Cluster_internal_qdevice_in_use
+  when: item != "corosync-qdevice" or ha_cluster_internal_qdevice_in_use
 

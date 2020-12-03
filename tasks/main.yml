@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Remove cluster configuration
-  include_tasks: "cluster-destroy-{{ HA_Cluster_pcs_provider }}.yml"
-  when: not HA_Cluster_cluster_present
+  include_tasks: "cluster-destroy-{{ ha_cluster_pcs_provider }}.yml"
+  when: not ha_cluster_cluster_present
 
 - name: Install and configure HA cluster
   block:
@@ -19,7 +19,7 @@
 #    - name: Fetch corosync quorum configuration
 #      command:
 #        cmd: pcs quorum config
-#      register: HA_Cluster_internal_pcs_quorum_config
+#      register: ha_cluster_internal_pcs_quorum_config
 #      run_once: yes
 #      check_mode: no
 #      changed_when: no
@@ -28,12 +28,12 @@
 #      when: not ansible_check_mode
     - name: Check if qdevice is configured
       set_fact:
-        HA_Cluster_internal_qdevice_in_use: no
+        ha_cluster_internal_qdevice_in_use: no
       run_once: yes
 
     - name: Enable or disable cluster services on boot
       include_tasks: cluster-enable-disable.yml
-      when: HA_Cluster_start_on_boot != "nochange"
+      when: ha_cluster_start_on_boot != "nochange"
 
     - name: Pcs auth
       # Auth is run after corosync.conf has been distributed so that pcs
@@ -42,4 +42,4 @@
 
     - name: Start the cluster and reload corosync.conf
       include_tasks: cluster-start-and-reload.yml
-  when: HA_Cluster_cluster_present
+  when: ha_cluster_cluster_present

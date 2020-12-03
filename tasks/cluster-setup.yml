@@ -1,8 +1,8 @@
 - name: Create a corosync.conf tempfile
   tempfile:
     state: file
-    suffix: _HA_Cluster_corosync_conf
-  register: HA_Cluster_internal_tempfile_corosync_conf
+    suffix: _ha_cluster_corosync_conf
+  register: ha_cluster_internal_tempfile_corosync_conf
   run_once: yes
   # We always need to create corosync.conf file to see whether it's the same as
   # what is already present on the cluster nodes. However, we don't want to
@@ -12,30 +12,30 @@
   changed_when: not ansible_check_mode
 
 - name: Create a corosync.conf file content
-  include_tasks: "cluster-setup-{{ HA_Cluster_pcs_provider }}.yml"
+  include_tasks: "cluster-setup-{{ ha_cluster_pcs_provider }}.yml"
 
 - name: Fetch created corosync.conf file
   slurp:
-    src: "{{ HA_Cluster_internal_tempfile_corosync_conf.path }}"
-  register: HA_Cluster_internal_data_corosync_conf
+    src: "{{ ha_cluster_internal_tempfile_corosync_conf.path }}"
+  register: ha_cluster_internal_data_corosync_conf
   run_once: yes
-  when: HA_Cluster_internal_tempfile_corosync_conf.path is defined
+  when: ha_cluster_internal_tempfile_corosync_conf.path is defined
 
 - name: Distribute corosync.conf file
   copy:
-    content: "{{ HA_Cluster_internal_data_corosync_conf['content'] | b64decode }}"
+    content: "{{ ha_cluster_internal_data_corosync_conf['content'] | b64decode }}"
     dest: /etc/corosync/corosync.conf
     owner: "root"
     group: "root"
     mode: "0644"
-  register: HA_Cluster_internal_distribute_corosync_conf
-  when: HA_Cluster_internal_data_corosync_conf is defined
+  register: ha_cluster_internal_distribute_corosync_conf
+  when: ha_cluster_internal_data_corosync_conf is defined
 
 - name: Remove a corosync.conf tempfile
   file:
-    path: "{{ HA_Cluster_internal_tempfile_corosync_conf.path }}"
+    path: "{{ ha_cluster_internal_tempfile_corosync_conf.path }}"
     state: absent
-  when: HA_Cluster_internal_tempfile_corosync_conf.path is defined
+  when: ha_cluster_internal_tempfile_corosync_conf.path is defined
   run_once: yes
   # We always need to create corosync.conf file to see whether it's the same as
   # what is already present on the cluster nodes. However, we don't want to
@@ -46,7 +46,7 @@
 
 - name: Distribute corosync authkey
   copy:
-    content: "{{ HA_Cluster_authkey_corosync }}"
+    content: "{{ ha_cluster_authkey_corosync }}"
     dest: /etc/corosync/authkey
     owner: "root"
     group: "root"
@@ -54,7 +54,7 @@
 
 - name: Distribute pacemaker authkey
   copy:
-    content: "{{ HA_Cluster_authkey_pacemaker }}"
+    content: "{{ ha_cluster_authkey_pacemaker }}"
     dest: /etc/pacemaker/authkey
     owner: "hacluster"
     group: "haclient"

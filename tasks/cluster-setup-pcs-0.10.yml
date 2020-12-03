@@ -2,11 +2,11 @@
   command:
     cmd: >
       pcs cluster setup
-      --corosync_conf {{ HA_Cluster_internal_tempfile_corosync_conf.path | quote }} --overwrite
-      {{ HA_Cluster_cluster_name | quote }}
+      --corosync_conf {{ ha_cluster_internal_tempfile_corosync_conf.path | quote }} --overwrite
+      {{ ha_cluster_cluster_name | quote }}
       {% for node in ansible_play_hosts %}
-        '{{ hostvars[node].HA_Cluster.node_name | default(node) | quote }}'
-        {% for addr in hostvars[node].HA_Cluster.corosync_addresses | default([]) %}
+        '{{ hostvars[node].ha_cluster.node_name | default(node) | quote }}'
+        {% for addr in hostvars[node].ha_cluster.corosync_addresses | default([]) %}
           addr={{ addr | quote }}
         {% endfor %}
       {% endfor %}

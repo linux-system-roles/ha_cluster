@@ -5,10 +5,10 @@
     cmd: >
       pcs host auth -u hacluster
       {% for node in ansible_play_hosts %}
-        '{{ hostvars[node].HA_Cluster.node_name | default(node) | quote }}'
-        {% if hostvars[node].HA_Cluster.pcs_address | default("") %}
-          addr={{ hostvars[node].HA_Cluster.pcs_address | quote }}
+        '{{ hostvars[node].ha_cluster.node_name | default(node) | quote }}'
+        {% if hostvars[node].ha_cluster.pcs_address | default("") %}
+          addr={{ hostvars[node].ha_cluster.pcs_address | quote }}
         {% endif %}
       {% endfor %}
-    stdin: "{{ HA_Cluster_hacluster_password }}"
+    stdin: "{{ ha_cluster_hacluster_password }}"
   run_once: yes

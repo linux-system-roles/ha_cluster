@@ -25,7 +25,7 @@
     - corosync-qdevice
     - corosync
   when:
-    - HA_Cluster_internal_distribute_corosync_conf.changed
+    - ha_cluster_internal_distribute_corosync_conf.changed
 
 
 # We must always start daemons to get the cluster running on newly added nodes.
@@ -49,7 +49,7 @@
   service:
     name: corosync-qdevice
     state: started
-  when: HA_Cluster_internal_qdevice_in_use
+  when: ha_cluster_internal_qdevice_in_use
 
 - name: Start pacemaker
   service:
@@ -82,7 +82,7 @@
     # would be a preferred solution. However, crm_node doesn't show nodes
     # removed from a cluster after corosync / pacemaker restart. Therefore,
     # crm_node is no help when we want to list such nodes.
-  register: HA_Cluster_internal_list_pacemaker_nodes
+  register: ha_cluster_internal_list_pacemaker_nodes
   run_once: yes
   # This cannot be run in the check mode as it requires cluster to be started
   # and its configuration reloaded. Check mode does not start the cluster nor
@@ -96,10 +96,10 @@
   command:
     cmd: pcs cluster node clear {{ item | quote }}
   run_once: yes
-  loop: "{{ HA_Cluster_internal_list_pacemaker_nodes.stdout_lines }}"
+  loop: "{{ ha_cluster_internal_list_pacemaker_nodes.stdout_lines }}"
   # This cannot be run in the check mode as it requires cluster to be started.
   # Check mode does not start the cluster, it only shows the cluster would be
   # started.
   when:
     - not ansible_check_mode
-    - item not in HA_Cluster_internal_all_node_names
+    - item not in ha_cluster_internal_all_node_names

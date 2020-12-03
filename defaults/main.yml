@@ -1,25 +1,25 @@
 # SPDX-License-Identifier: MIT
 ---
 
-HA_Cluster_cluster_present: yes
+ha_cluster_cluster_present: yes
 # yes | no | "nochange"
-HA_Cluster_start_on_boot: yes
+ha_cluster_start_on_boot: yes
 
-HA_Cluster_hacluster_password: ""
+ha_cluster_hacluster_password: ""
 # 256 bytes of random data
-HA_Cluster_authkey_corosync: ""
+ha_cluster_authkey_corosync: ""
 # 256 bytes of random data
-HA_Cluster_authkey_pacemaker: ""
+ha_cluster_authkey_pacemaker: ""
 # SSL certificate for pcsd daemon, paths to public and private part
-HA_Cluster_pcsd_SSL_cert:
+ha_cluster_pcsd_SSL_cert:
   public: ""
   private: ""
 
-HA_Cluster_cluster_name: "my-cluster"
+ha_cluster_cluster_name: "my-cluster"
 
-HA_Cluster_pcs_provider: "pcs-0.10" # TODO autodetection
+ha_cluster_pcs_provider: "pcs-0.10" # TODO autodetection
 
-HA_Cluster_pcs_permission_list:
+ha_cluster_pcs_permission_list:
 - type: "group"
   name: "hacluster"
   allow_list:

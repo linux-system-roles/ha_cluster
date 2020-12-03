@@ -3,25 +3,25 @@
     msg: "{{ item }} must be specified"
   when: lookup("vars", item, default="") | length < 1
   loop:
-    - HA_Cluster_hacluster_password
-    - HA_Cluster_authkey_corosync
-    - HA_Cluster_authkey_pacemaker
+    - ha_cluster_hacluster_password
+    - ha_cluster_authkey_corosync
+    - ha_cluster_authkey_pacemaker
   run_once: yes
 
 - name: Extract all node names
   set_fact:
-    HA_Cluster_internal_node_name: "{{ \
-        hostvars[item].HA_Cluster.node_name | default(item) \
+    ha_cluster_internal_node_name: "{{ \
+        hostvars[item].ha_cluster.node_name | default(item) \
       }}"
   loop: "{{ ansible_play_hosts }}"
   run_once: yes
-  register: HA_Cluster_internal_node_name_result
+  register: ha_cluster_internal_node_name_result
 
 - name: Collect all node names
   set_fact:
-    HA_Cluster_internal_all_node_names: "{{
-        HA_Cluster_internal_node_name_result.results \
-        | map(attribute='ansible_facts.HA_Cluster_internal_node_name') \
+    ha_cluster_internal_all_node_names: "{{
+        ha_cluster_internal_node_name_result.results \
+        | map(attribute='ansible_facts.ha_cluster_internal_node_name') \
         | list \
       }}"
   run_once: yes
