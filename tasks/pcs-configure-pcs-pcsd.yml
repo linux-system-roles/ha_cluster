@@ -1,0 +1,41 @@
+# Pcsd must be stopped when its config files are being updated. This is to
+# prevent a race condition caused by pcsd syncing its files in the cluster on
+# its own.
+- name: Stop pcsd
+  service:
+    name: pcsd
+    state: stopped
+
+- name: Distribute pcsd SSL certificate and key
+  block:
+    - name: Distribute pcsd SSL private key
+      copy:
+        src: "{{ HA_Cluster_pcsd_SSL_cert.private }}"
+        dest: /var/lib/pcsd/pcsd.key
+        owner: "root"
+        group: "root"
+        mode: "0600"
+    - name: Distribute pcsd SSL certificate
+      copy:
+        src: "{{ HA_Cluster_pcsd_SSL_cert.public }}"
+        dest: /var/lib/pcsd/pcsd.crt
+        owner: "root"
+        group: "root"
+        mode: "0600"
+  when:
+    - HA_Cluster_pcsd_SSL_cert.public
+    - HA_Cluster_pcsd_SSL_cert.private
+
+- name: Distribute pcs_settings.conf
+  template:
+    src: templates/pcs_settings.conf
+    dest: /var/lib/pcsd/pcs_settings.conf
+    owner: "root"
+    group: "root"
+    mode: "0644"
+    trim_blocks: no
+
+- name: Start pcsd with updated config files
+  service:
+    name: pcsd
+    state: started

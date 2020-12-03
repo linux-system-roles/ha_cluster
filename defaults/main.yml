@@ -18,3 +18,11 @@ HA_Cluster_pcsd_SSL_cert:
 HA_Cluster_cluster_name: "my-cluster"
 
 HA_Cluster_pcs_provider: "pcs-0.10" # TODO autodetection
+
+HA_Cluster_pcs_permission_list:
+- type: "group"
+  name: "hacluster"
+  allow_list:
+  - "grant"
+  - "read"
+  - "write"
