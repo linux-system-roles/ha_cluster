@@ -1,0 +1,28 @@
+- name: Deconfigure cluster
+  hosts: all
+  vars:
+    ha_cluster_cluster_present: no
+  roles:
+    - linux-system-roles.ha-cluster
+
+  tasks:
+    - block:
+        - meta: flush_handlers
+
+        - name: Stat corosync.conf
+          stat:
+            path: /etc/corosync/corosync.conf
+          register: stat_corosync_conf
+
+        - name: Stat cib.xml
+          stat:
+            path: /var/lib/pacemaker/cib/cib.xml
+          register: stat_cib_xml
+
+        - name: Check the files do not exist
+          assert:
+            that:
+              - not stat_corosync_conf.stat.exists
+              - not stat_cib_xml.stat.exists
+
+      tags: tests::verify

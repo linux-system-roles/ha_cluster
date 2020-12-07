@@ -1,0 +1,26 @@
+- name: Minimal cluster configuration, daemons disabled
+  hosts: all
+  vars_files: vars.yml
+  vars:
+    ha_cluster_start_on_boot: no
+  roles:
+    - linux-system-roles.ha-cluster
+
+  tasks:
+    - block:
+        - meta: flush_handlers
+
+        - name: Get services status
+          service_facts:
+
+        - name: Check services status
+          assert:
+            that:
+              - ansible_facts.services["pcsd.service"].status == "enabled"
+              - ansible_facts.services["corosync.service"].status == "disabled"
+              - ansible_facts.services["pacemaker.service"].status == "disabled"
+
+        - name: Assert cluster status
+          include_tasks: assert_cluster_basic.yml
+
+      tags: tests::verify

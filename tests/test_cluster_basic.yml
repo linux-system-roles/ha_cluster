@@ -1,0 +1,24 @@
+- name: Minimal cluster configuration
+  hosts: all
+  vars_files: vars.yml
+  roles:
+    - linux-system-roles.ha-cluster
+
+  tasks:
+    - block:
+        - meta: flush_handlers
+
+        - name: Get services status
+          service_facts:
+
+        - name: Check services status
+          assert:
+            that:
+              - ansible_facts.services["pcsd.service"].status == "enabled"
+              - ansible_facts.services["corosync.service"].status == "enabled"
+              - ansible_facts.services["pacemaker.service"].status == "enabled"
+
+        - name: Assert cluster status
+          include_tasks: assert_cluster_basic.yml
+
+      tags: tests::verify
