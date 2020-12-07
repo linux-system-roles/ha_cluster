@@ -3,74 +3,157 @@
 
 An Ansible role for managing High Availability Clustering.
 
-## Requirements
+## Limitations
 
-Any pre-requisites that may not be covered by Ansible itself or the role should
-be mentioned here. For instance, if the role uses the EC2 module, it may be a
-good idea to mention in this section that the `boto` package is required.
+* The role replaces the configuration of HA Cluster on specified nodes. Any
+  settings not specified in the role variables will be lost.
+* For now, the role is only capable of configuring a basic corosync cluster.
 
 ## Role Variables
 
-A description of all input variables (i.e. variables that are defined in
-`defaults/main.yml`) for the role should go here as these form an API of the
-role.
+### Defined in `defaults/main.yml`
 
-Variables that are not intended as input, like variables defined in
-`vars/main.yml`, variables that are read from other roles and/or the global
-scope (ie. hostvars, group vars, etc.) can be also mentioned here but keep in
-mind that as these are probably not part of the role API they may change during
-the lifetime.
+#### `ha_cluster_cluster_present`
 
-Example of setting the variables:
+boolean, default: `yes`
 
+If set to `yes`, HA cluster will be configured on the hosts according to other
+variables. If set to `no`, all HA Cluster configuration will be purged from
+target hosts.
+
+#### `ha_cluster_start_on_boot`
+
+values: `yes`, `no`, `'nochange'`, default: `yes`
+
+If set to `yes`, cluster services will be configured to start on boot. If set
+to `no`, cluster services will be configured not to start on boot. If set to
+`'nochange'`, current settings will be kept.
+
+#### `ha_cluster_hacluster_password`
+
+string, no default - must be specified
+
+Password of the `hacluster` user. This user has full access to a cluster.
+
+#### `ha_cluster_authkey_corosync`
+
+256 bytes of random data, no default - must be specified
+
+Authentication and encryption key for Corosync communication. It is highly
+recommended to have a unique value for each cluster.
+
+#### `ha_cluster_authkey_pacemaker`
+
+256 bytes of random data, no default - must be specified
+
+Authentication and encryption key for Pacemaker communication. It is highly
+recommended to have a unique value for each cluster.
+
+#### `ha_cluster_pcsd_SSL_cert`
+
+Structure and default value:
 ```yaml
-ha_cluster_foo: "oof"
-ha_cluster_bar: "baz"
+ha_cluster_pcsd_SSL_cert:
+  public: ''
+  private: ''
 ```
 
-### Variables Exported by the Role
+Filepaths to SSL certificate and private key pair for pcsd. If this is not
+specified, a certificate - key pair already present on a node will be used or a
+random new one will be generated.
 
-This section is optional.  Some roles may export variables for playbooks to
-use later.  These are analogous to "return values" in Ansible modules.  For
-example, if a role performs some action that will require a system reboot, but
-the user wants to defer the reboot, the role might set a variable like
-`ha_cluster_reboot_needed: true` that the playbook can use to reboot at a more
-convenient time.
+#### `ha_cluster_pcs_permission_list`
 
-Example:
+Structure and default value:
+```yaml
+ha_cluster_pcs_permission_list:
+  - type: "group"
+    name: "hacluster"
+    allow_list:
+      - "grant"
+      - "read"
+      - "write"
+```
 
-`ha_cluster_reboot_needed` - default `false` - if `true`, this means
-a reboot is needed to apply the changes made by the role
+This configures permissions to manage a cluster using pcsd. The items are as
+follows:
 
-## Dependencies
+* `type` - `user` or `group`
+* `name` - user or group name
+* `allow_list` - Allowed actions for the specified user or group: `read` -
+  allows to view cluster status and settings, `write` - allows to modify
+  cluster settings except permissions and ACLs, `grant` - allows to modify
+  cluster permissions and ACLs, `full` - allows unrestricted access to a
+  cluster including adding and removing nodes and access to keys and
+  certificates
 
-A list of other roles hosted on Galaxy should go here, plus any details in
-regards to parameters that may need to be set for other roles, or variables
-that are used from other roles.
+#### `ha_cluster_cluster_name`
+
+string, default: `'my-cluster'`
+
+Name of the cluster.
+
+### Inventory
+
+Nodes' names and addresses can be configured in inventory. This is optional. If
+no names or addresses are configured, play's targets will be used.
+
+Example inventory with targets `node1` and `node2`:
+```yaml
+all:
+  hosts:
+    node1:
+      ha_cluster:
+        node_name: node-A
+        pcs_address: node1-address
+        corosync_addresses:
+          - 192.168.1.11
+          - 192.168.2.11
+    node2:
+      ha_cluster:
+        node_name: node-B
+        pcs_address: node2-address:2224
+        corosync_addresses:
+          - 192.168.1.12
+          - 192.168.2.12
+```
+
+* `node_name` - the name of a node in a cluster
+* `pcs_address` - an address used by pcs to communicate with the node, it can
+  be a name, FQDN or an IP address and it can contain port
+* `corosync_addresses` - list of addresses used by Corosync, all nodes must
+  have the same number of addresses and the order of the addresses matters
+
 
 ## Example Playbook
 
-Including an example of how to use your role (for instance, with variables
-passed in as parameters) is always nice for users too:
-
+Minimalistic example to create a cluster running no resources:
 ```yaml
-- hosts: all
+- hosts: node1 node2
   vars:
-    ha_cluster_foo: "foo foo!"
-    ha_cluster_bar: "progress bar"
+    ha_cluster_cluster_name: "my-new-cluster"
+    ha_cluster_hacluster_password: "password"
+    ha_cluster_authkey_corosync: "corosync key, 256 bytes of random data"
+    ha_cluster_authkey_pacemaker: "pacemaker key, 256 bytes of random data"
 
   roles:
-    - linux-system-roles.ha_cluster
+    - linux-system-roles.ha-cluster
 ```
 
-More examples can be provided in the [`examples/`](examples) directory. These
-can be useful especially for documentation.
+To purge all cluster configuration, run this:
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_present: no
+
+  roles:
+    - linux-system-roles.ha-cluster
+```
 
 ## License
 
-Whenever possible, please prefer MIT.
+MIT
 
 ## Author Information
 
-An optional section for the role authors to include contact information, or a
-website (HTML is not allowed).
+Tomas Jelinek
