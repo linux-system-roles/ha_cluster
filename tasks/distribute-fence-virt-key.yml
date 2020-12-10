@@ -1,0 +1,13 @@
+- name: Create /etc/cluster directory
+  file:
+    path: "/etc/cluster"
+    state: "directory"
+    mode: "0755"
+
+- name: Send fence_xvm.key to nodes
+  copy:
+    src: "{{ ha_cluster_authkey_fence_virt_path }}"
+    dest: /etc/cluster/fence_xvm.key
+    owner: "root"
+    group: "root"
+    mode: "0600"

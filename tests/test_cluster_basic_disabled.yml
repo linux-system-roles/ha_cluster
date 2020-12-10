@@ -21,6 +21,6 @@
               - ansible_facts.services["pacemaker.service"].status == "disabled"
 
         - name: Assert cluster status
-          include_tasks: assert_cluster_basic.yml
+          include_tasks: assert_cluster_running.yml
 
       tags: tests::verify

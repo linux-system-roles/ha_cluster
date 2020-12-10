@@ -1,0 +1,20 @@
+- name: Ensure fence-virt authkey is specified if fence-virt is being installed
+  hosts: all
+  vars_files: vars.yml
+  tasks:
+    - block:
+        - name: Run the role
+          include_role:
+            name: linux-system-roles.ha-cluster
+          vars:
+            ha_cluster_authkey_fence_virt_path: ""
+      rescue:
+        - meta: flush_handlers
+
+        - name: Check errors
+          assert:
+            that:
+              - ansible_failed_result.msg == 'ha_cluster_authkey_fence_virt_path must be specified if fence-virt is installed'
+          run_once: yes
+
+      tags: tests::verify

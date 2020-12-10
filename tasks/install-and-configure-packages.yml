@@ -1,0 +1,24 @@
+- name: Install cluster packages
+  package:
+    name: "{{ \
+      ha_cluster_internal_fullstack_node_packages \
+      + \
+      ha_cluster_fence_agent_packages \
+    }}"
+    state: present
+
+# The user is created by installing pacemaker packages. We just need to set the
+# password.
+- name: Set hacluster password
+  user:
+    name: "hacluster"
+    password: "{{ \
+      ha_cluster_hacluster_password | \
+      password_hash('sha512', ansible_hostname|replace('-','x')) \
+    }}"
+
+- name: Start pcsd and configure it to start on boot
+  service:
+    name: "pcsd"
+    enabled: yes
+    state: started

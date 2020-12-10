@@ -19,10 +19,16 @@
             path: /var/lib/pacemaker/cib/cib.xml
           register: stat_cib_xml
 
+        - name: Stat fence_xvm.key
+          stat:
+            path: /var/lib/pacemaker/cib/cib.xml
+          register: stat_fence_xvm_key
+
         - name: Check the files do not exist
           assert:
             that:
               - not stat_corosync_conf.stat.exists
               - not stat_cib_xml.stat.exists
+              - not stat_fence_xvm_key.stat.exists
 
       tags: tests::verify

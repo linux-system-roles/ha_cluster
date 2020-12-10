@@ -18,7 +18,17 @@
               - ansible_facts.services["corosync.service"].status == "enabled"
               - ansible_facts.services["pacemaker.service"].status == "enabled"
 
-        - name: Assert cluster status
-          include_tasks: assert_cluster_basic.yml
+        - name: Check cluster status
+          include_tasks: assert_cluster_running.yml
+
+        - name: Stat fence-virt authkey
+          stat:
+            path: /var/lib/pacemaker/cib/cib.xml
+          register: stat_fence_xvm_key
+
+        - name: Check fence-virt authkey is present
+          assert:
+            that:
+              - stat_fence_xvm_key.stat.exists
 
       tags: tests::verify

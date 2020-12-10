@@ -5,6 +5,9 @@ An Ansible role for managing High Availability Clustering.
 
 ## Limitations
 
+* Supported OS: RHEL 8.3+, Fedora 31+
+* The role expects High-Availability Add-on repositories to be enabled on
+  systems running RHEL.
 * The role replaces the configuration of HA Cluster on specified nodes. Any
   settings not specified in the role variables will be lost.
 * For now, the role is only capable of configuring a basic corosync cluster.
@@ -29,6 +32,10 @@ If set to `yes`, cluster services will be configured to start on boot. If set
 to `no`, cluster services will be configured not to start on boot. If set to
 `'nochange'`, current settings will be kept.
 
+#### `ha_cluster_fence_agent_packages`
+
+list of fence agent packages to install, default: fence-agents-all, fence-virt
+
 #### `ha_cluster_hacluster_password`
 
 string, no default - must be specified
@@ -48,6 +55,11 @@ recommended to have a unique value for each cluster.
 
 Authentication and encryption key for Pacemaker communication. It is highly
 recommended to have a unique value for each cluster.
+
+#### `ha_cluster_authkey_fence_virt_path`
+
+Path to an authentication key for fence-virt or fence-xvm fence agent. This is
+mandatory if you intend to install and use those fence agents.
 
 #### `ha_cluster_pcsd_SSL_cert`
 
@@ -135,6 +147,7 @@ Minimalistic example to create a cluster running no resources:
     ha_cluster_hacluster_password: "password"
     ha_cluster_authkey_corosync: "corosync key, 256 bytes of random data"
     ha_cluster_authkey_pacemaker: "pacemaker key, 256 bytes of random data"
+    ha_cluster_authkey_fence_virt_path: "./fence_xvm.key"
 
   roles:
     - linux-system-roles.ha-cluster

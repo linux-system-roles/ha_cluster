@@ -1,0 +1,37 @@
+- name: Minimal cluster configuration, install custom fence agents
+  hosts: all
+  vars_files: vars.yml
+  vars:
+    ha_cluster_fence_agent_packages:
+      - "fence-agents-ipmilan"
+    ha_cluster_authkey_fence_virt_path: ""
+  roles:
+    - linux-system-roles.ha-cluster
+
+  tasks:
+    - block:
+        - meta: flush_handlers
+
+        - name: Stat fence-virt authkey
+          stat:
+            path: /etc/cluster/fence_xvm.key
+          register: stat_fence_xvm_key
+
+        - name: Check fence-virt authkey is not present
+          assert:
+            that:
+              - not stat_fence_xvm_key.stat.exists
+
+        - name: Get packages status
+          package_facts:
+
+        - name: Check installed fence-agents packages
+          assert:
+            that:
+              - "'fence-agents-all' not in ansible_facts.packages"
+              - "'fence-agents-ipmilan' in ansible_facts.packages"
+
+        - name: Check cluster status
+          include_tasks: assert_cluster_running.yml
+
+      tags: tests::verify

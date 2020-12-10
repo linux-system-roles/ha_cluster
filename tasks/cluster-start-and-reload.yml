@@ -13,8 +13,11 @@
 # necessary based on Corosync version.
 #
 # Corosync-qdevice does not support reload, it must always be restarted to
-# apply changes.
+# apply changes. If qdevice is not to be used in a cluster, we make sure it is
+# stopped. The only exceoptiion to taht is when qdevice is not installed at all.
 
+- name: Get services status
+  service_facts:
 
 - name: Stop cluster daemons to reload configuration
   service:
@@ -26,6 +29,7 @@
     - corosync
   when:
     - ha_cluster_internal_distribute_corosync_conf.changed
+    - item != "corosync-qdevice" or "corosync-qdevice.service" in ansible_facts.services
 
 
 # We must always start daemons to get the cluster running on newly added nodes.

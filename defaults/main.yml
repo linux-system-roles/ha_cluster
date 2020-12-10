@@ -2,14 +2,20 @@
 ---
 
 ha_cluster_cluster_present: yes
+
 # yes | no | "nochange"
 ha_cluster_start_on_boot: yes
+
+ha_cluster_fence_agent_packages:
+  - "fence-agents-all"
+  - "fence-virt"
 
 ha_cluster_hacluster_password: ""
 # 256 bytes of random data
 ha_cluster_authkey_corosync: ""
 # 256 bytes of random data
 ha_cluster_authkey_pacemaker: ""
+ha_cluster_authkey_fence_virt_path: ""
 # SSL certificate for pcsd daemon, paths to public and private part
 ha_cluster_pcsd_SSL_cert:
   public: ""
