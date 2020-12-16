@@ -11,6 +11,9 @@
 
 - name: Install and configure HA cluster
   block:
+    - name: Configure firewall
+      include_tasks: firewall.yml
+
     - name: Configure pcs / pcsd
       include_tasks: pcs-configure-pcs-pcsd.yml
 
