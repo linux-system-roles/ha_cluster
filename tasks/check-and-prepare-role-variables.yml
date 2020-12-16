@@ -6,8 +6,8 @@
       when: lookup("vars", item, default="") | length < 1
       loop:
         - ha_cluster_hacluster_password
-        - ha_cluster_authkey_corosync
-        - ha_cluster_authkey_pacemaker
+        - ha_cluster_authkey_corosync_path
+        - ha_cluster_authkey_pacemaker_path
       run_once: yes
 
     - name: Fail if fence-virt is installed with no authkey specified

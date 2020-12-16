@@ -10,21 +10,21 @@
   block:
     - name: Distribute pcsd SSL private key
       copy:
-        src: "{{ ha_cluster_pcsd_SSL_cert.private }}"
+        src: "{{ ha_cluster_pcsd_SSL_cert_path.private }}"
         dest: /var/lib/pcsd/pcsd.key
         owner: "root"
         group: "root"
         mode: "0600"
     - name: Distribute pcsd SSL certificate
       copy:
-        src: "{{ ha_cluster_pcsd_SSL_cert.public }}"
+        src: "{{ ha_cluster_pcsd_SSL_cert_path.public }}"
         dest: /var/lib/pcsd/pcsd.crt
         owner: "root"
         group: "root"
         mode: "0600"
   when:
-    - ha_cluster_pcsd_SSL_cert.public
-    - ha_cluster_pcsd_SSL_cert.private
+    - ha_cluster_pcsd_SSL_cert_path.public
+    - ha_cluster_pcsd_SSL_cert_path.private
 
 - name: Distribute pcs_settings.conf
   template:

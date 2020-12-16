@@ -42,30 +42,32 @@ string, no default - must be specified
 
 Password of the `hacluster` user. This user has full access to a cluster.
 
-#### `ha_cluster_authkey_corosync`
+#### `ha_cluster_authkey_corosync_path`
 
-256 bytes of random data, no default - must be specified
+path to corosync authkey file, no default - must be specified
 
 Authentication and encryption key for Corosync communication. It is highly
-recommended to have a unique value for each cluster.
+recommended to have a unique value for each cluster. The key should be 256
+bytes of random data.
 
-#### `ha_cluster_authkey_pacemaker`
+#### `ha_cluster_authkey_pacemaker_path`
 
-256 bytes of random data, no default - must be specified
+path to pacemaker authkey file, no default - must be specified
 
 Authentication and encryption key for Pacemaker communication. It is highly
-recommended to have a unique value for each cluster.
+recommended to have a unique value for each cluster. The key should be 256
+bytes of random data.
 
 #### `ha_cluster_authkey_fence_virt_path`
 
 Path to an authentication key for fence-virt or fence-xvm fence agent. This is
 mandatory if you intend to install and use those fence agents.
 
-#### `ha_cluster_pcsd_SSL_cert`
+#### `ha_cluster_pcsd_SSL_cert_path`
 
 Structure and default value:
 ```yaml
-ha_cluster_pcsd_SSL_cert:
+ha_cluster_pcsd_SSL_cert_path:
   public: ''
   private: ''
 ```
@@ -145,8 +147,8 @@ Minimalistic example to create a cluster running no resources:
   vars:
     ha_cluster_cluster_name: "my-new-cluster"
     ha_cluster_hacluster_password: "password"
-    ha_cluster_authkey_corosync: "corosync key, 256 bytes of random data"
-    ha_cluster_authkey_pacemaker: "pacemaker key, 256 bytes of random data"
+    ha_cluster_authkey_corosync_path: "./corosync-authkey"
+    ha_cluster_authkey_pacemaker_path: "./pacemaker-authkey"
     ha_cluster_authkey_fence_virt_path: "./fence_xvm.key"
 
   roles:

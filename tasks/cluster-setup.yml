@@ -46,7 +46,7 @@
 
 - name: Distribute corosync authkey
   copy:
-    content: "{{ ha_cluster_authkey_corosync }}"
+    src: "{{ ha_cluster_authkey_corosync_path }}"
     dest: /etc/corosync/authkey
     owner: "root"
     group: "root"
@@ -54,7 +54,7 @@
 
 - name: Distribute pacemaker authkey
   copy:
-    content: "{{ ha_cluster_authkey_pacemaker }}"
+    src: "{{ ha_cluster_authkey_pacemaker_path }}"
     dest: /etc/pacemaker/authkey
     owner: "hacluster"
     group: "haclient"
