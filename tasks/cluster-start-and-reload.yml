@@ -16,7 +16,7 @@
 # apply changes. If qdevice is not to be used in a cluster, we make sure it is
 # stopped. The only exceoptiion to taht is when qdevice is not installed at all.
 
-- name: Get services status
+- name: Get services status - detect corosync-qdevice
   service_facts:
 
 - name: Stop cluster daemons to reload configuration

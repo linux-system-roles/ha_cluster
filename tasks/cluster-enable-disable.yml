@@ -6,5 +6,17 @@
     - corosync
     - corosync-qdevice
     - pacemaker
-  when: item != "corosync-qdevice" or ha_cluster_internal_qdevice_in_use
+  when:
+    - ha_cluster_start_on_boot != "nochange"
+    - item != "corosync-qdevice" or ha_cluster_internal_qdevice_in_use
 
+- name: Get services status - detect SBD
+  service_facts:
+
+# The role does not support configuring SBD yet, therefore we always disable it.
+- name: Enable or disable SBD
+  service:
+    name: "sbd"
+    enabled: no
+  when:
+    - '"sbd.service" in ansible_facts.services'
