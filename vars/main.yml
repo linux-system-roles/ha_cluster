@@ -4,7 +4,8 @@
 # You can override these by defining the same variable with a different
 # value in a platform/version specific file in vars/
 
-# Examples of non-distribution specific (generic) internal variables:
-__ha_cluster_foo_config: "ha_cluster.conf"
-__ha_cluster_packages: []
-__ha_cluster_services: []
+ha_cluster_internal_fullstack_node_packages:
+  - corosync
+  - libknet1-plugins-all
+  - pacemaker
+  - pcs

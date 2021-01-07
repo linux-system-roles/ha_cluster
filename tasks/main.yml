@@ -1,8 +1,5 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Include package variables
-  include_vars: packages.yml
-
 - name: Check and prepare role variables
   include_tasks: check-and-prepare-role-variables.yml
 
