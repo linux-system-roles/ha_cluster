@@ -1,9 +1,9 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Example template role invocation
+- name: Example ha_cluster role invocation
   hosts: all
   vars:
-    template_foo: example variable value
+    ha_cluster_foo: example variable value
 
   roles:
-    - linux-system-roles.template
+    - linux-system-roles.ha_cluster

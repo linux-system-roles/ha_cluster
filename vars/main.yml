@@ -5,6 +5,6 @@
 # value in a platform/version specific file in vars/
 
 # Examples of non-distribution specific (generic) internal variables:
-__template_foo_config: "foo.conf"
-__template_packages: []
-__template_services: []
+__ha_cluster_foo_config: "ha_cluster.conf"
+__ha_cluster_packages: []
+__ha_cluster_services: []
