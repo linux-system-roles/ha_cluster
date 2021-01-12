@@ -1,8 +1,7 @@
-# Role Name
-![CI Testing](https://github.com/linux-system-roles/template/workflows/tox/badge.svg)
+# ha_cluster
+![CI Testing](https://github.com/linux-system-roles/ha_cluster/workflows/tox/badge.svg)
 
-A template for an ansible role which configures some GNU/Linux subsystem or
-service. A brief description of the role goes here.
+An Ansible role for managing High Availability Clustering.
 
 ## Requirements
 
@@ -25,8 +24,8 @@ the lifetime.
 Example of setting the variables:
 
 ```yaml
-template_foo: "oof"
-template_bar: "baz"
+ha_cluster_foo: "oof"
+ha_cluster_bar: "baz"
 ```
 
 ### Variables Exported by the Role
@@ -35,12 +34,12 @@ This section is optional.  Some roles may export variables for playbooks to
 use later.  These are analogous to "return values" in Ansible modules.  For
 example, if a role performs some action that will require a system reboot, but
 the user wants to defer the reboot, the role might set a variable like
-`template_reboot_needed: true` that the playbook can use to reboot at a more
+`ha_cluster_reboot_needed: true` that the playbook can use to reboot at a more
 convenient time.
 
 Example:
 
-`template_reboot_needed` - default `false` - if `true`, this means
+`ha_cluster_reboot_needed` - default `false` - if `true`, this means
 a reboot is needed to apply the changes made by the role
 
 ## Dependencies
@@ -57,11 +56,11 @@ passed in as parameters) is always nice for users too:
 ```yaml
 - hosts: all
   vars:
-    template_foo: "foo foo!"
-    template_bar: "progress bar"
+    ha_cluster_foo: "foo foo!"
+    ha_cluster_bar: "progress bar"
 
   roles:
-    - linux-system-roles.template
+    - linux-system-roles.ha_cluster
 ```
 
 More examples can be provided in the [`examples/`](examples) directory. These
