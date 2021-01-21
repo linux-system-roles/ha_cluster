@@ -28,7 +28,7 @@
     - corosync-qdevice
     - corosync
   when:
-    - ha_cluster_internal_distribute_corosync_conf.changed
+    - __ha_cluster_distribute_corosync_conf.changed
     - item != "corosync-qdevice" or "corosync-qdevice.service" in ansible_facts.services
 
 
@@ -53,7 +53,7 @@
   service:
     name: corosync-qdevice
     state: started
-  when: ha_cluster_internal_qdevice_in_use
+  when: __ha_cluster_qdevice_in_use
 
 - name: Start pacemaker
   service:
@@ -86,7 +86,7 @@
     # would be a preferred solution. However, crm_node doesn't show nodes
     # removed from a cluster after corosync / pacemaker restart. Therefore,
     # crm_node is no help when we want to list such nodes.
-  register: ha_cluster_internal_list_pacemaker_nodes
+  register: __ha_cluster_list_pacemaker_nodes
   run_once: yes
   # This cannot be run in the check mode as it requires cluster to be started
   # and its configuration reloaded. Check mode does not start the cluster nor
@@ -100,10 +100,10 @@
   command:
     cmd: pcs cluster node clear {{ item | quote }}
   run_once: yes
-  loop: "{{ ha_cluster_internal_list_pacemaker_nodes.stdout_lines }}"
+  loop: "{{ __ha_cluster_list_pacemaker_nodes.stdout_lines }}"
   # This cannot be run in the check mode as it requires cluster to be started.
   # Check mode does not start the cluster, it only shows the cluster would be
   # started.
   when:
     - not ansible_check_mode
-    - item not in ha_cluster_internal_all_node_names
+    - item not in __ha_cluster_all_node_names

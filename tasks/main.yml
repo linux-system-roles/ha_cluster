@@ -26,7 +26,7 @@
 #    - name: Fetch corosync quorum configuration
 #      command:
 #        cmd: pcs quorum config
-#      register: ha_cluster_internal_pcs_quorum_config
+#      register: __ha_cluster_pcs_quorum_config
 #      run_once: yes
 #      check_mode: no
 #      changed_when: no
@@ -35,7 +35,7 @@
 #      when: not ansible_check_mode
     - name: Check if qdevice is configured
       set_fact:
-        ha_cluster_internal_qdevice_in_use: no
+        __ha_cluster_qdevice_in_use: no
       run_once: yes
 
     - name: Enable or disable cluster services on boot

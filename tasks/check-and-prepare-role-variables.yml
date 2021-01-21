@@ -21,18 +21,18 @@
 
 - name: Extract all node names
   set_fact:
-    ha_cluster_internal_node_name: "{{ \
+    __ha_cluster_node_name: "{{ \
         hostvars[item].ha_cluster.node_name | default(item) \
       }}"
   loop: "{{ ansible_play_hosts }}"
   run_once: yes
-  register: ha_cluster_internal_node_name_result
+  register: __ha_cluster_node_name_result
 
 - name: Collect all node names
   set_fact:
-    ha_cluster_internal_all_node_names: "{{
-        ha_cluster_internal_node_name_result.results \
-        | map(attribute='ansible_facts.ha_cluster_internal_node_name') \
+    __ha_cluster_all_node_names: "{{
+        __ha_cluster_node_name_result.results \
+        | map(attribute='ansible_facts.__ha_cluster_node_name') \
         | list \
       }}"
   run_once: yes

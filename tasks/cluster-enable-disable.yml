@@ -8,7 +8,7 @@
     - pacemaker
   when:
     - ha_cluster_start_on_boot != "nochange"
-    - item != "corosync-qdevice" or ha_cluster_internal_qdevice_in_use
+    - item != "corosync-qdevice" or __ha_cluster_qdevice_in_use
 
 - name: Get services status - detect SBD
   service_facts:

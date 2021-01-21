@@ -2,7 +2,7 @@
   command:
     cmd: >
       pcs cluster setup
-      --corosync_conf {{ ha_cluster_internal_tempfile_corosync_conf.path | quote }} --overwrite
+      --corosync_conf {{ __ha_cluster_tempfile_corosync_conf.path | quote }} --overwrite
       {{ ha_cluster_cluster_name | quote }}
       {% for node in ansible_play_hosts %}
         '{{ hostvars[node].ha_cluster.node_name | default(node) | quote }}'
