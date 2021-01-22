@@ -26,11 +26,10 @@ target hosts.
 
 #### `ha_cluster_start_on_boot`
 
-values: `yes`, `no`, `'nochange'`, default: `yes`
+boolean, default: `yes`
 
 If set to `yes`, cluster services will be configured to start on boot. If set
-to `no`, cluster services will be configured not to start on boot. If set to
-`'nochange'`, current settings will be kept.
+to `no`, cluster services will be configured not to start on boot.
 
 #### `ha_cluster_fence_agent_packages`
 

@@ -3,7 +3,6 @@
 
 ha_cluster_cluster_present: yes
 
-# yes | no | "nochange"
 ha_cluster_start_on_boot: yes
 
 ha_cluster_fence_agent_packages:

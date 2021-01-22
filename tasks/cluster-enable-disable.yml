@@ -7,7 +7,11 @@
     - corosync-qdevice
     - pacemaker
   when:
-    - ha_cluster_start_on_boot != "nochange"
+    # Null (i.e. nochange) is currently not supported: Either all nodes are
+    # configured to start the cluster on boot or not to start the cluster on
+    # boot. Null (nochange) could lead to situations where part of cluster
+    # nodes are configured to start the cluster on boot while other nodes in
+    # the same cluster are not.
     - item != "corosync-qdevice" or __ha_cluster_qdevice_in_use
 
 - name: Get services status - detect SBD
