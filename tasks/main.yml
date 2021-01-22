@@ -53,7 +53,7 @@
 - name: Remove cluster configuration
   block:
     - name: Remove cluster configuration
-      include_tasks: "cluster-destroy-{{ ha_cluster_pcs_provider }}.yml"
+      include_tasks: "cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml"
 
     - name: Remove fence-virt authkey
       file:

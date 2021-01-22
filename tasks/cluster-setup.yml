@@ -12,7 +12,7 @@
   changed_when: not ansible_check_mode
 
 - name: Create a corosync.conf file content
-  include_tasks: "cluster-setup-{{ ha_cluster_pcs_provider }}.yml"
+  include_tasks: "cluster-setup-{{ __ha_cluster_pcs_provider }}.yml"
 
 - name: Fetch created corosync.conf file
   slurp:

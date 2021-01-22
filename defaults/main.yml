@@ -20,8 +20,6 @@ ha_cluster_pcsd_SSL_cert_path:
 
 ha_cluster_cluster_name: "my-cluster"
 
-ha_cluster_pcs_provider: "pcs-0.10" # TODO autodetection
-
 ha_cluster_pcs_permission_list:
 - type: "group"
   name: "hacluster"
