@@ -10,13 +10,11 @@ ha_cluster_fence_agent_packages:
   - "fence-virt"
 
 ha_cluster_hacluster_password: ""
-ha_cluster_authkey_corosync_path: ""
-ha_cluster_authkey_pacemaker_path: ""
-ha_cluster_authkey_fence_virt_path: ""
-# SSL certificate for pcsd daemon, paths to public and private part
-ha_cluster_pcsd_SSL_cert_path:
-  public: ""
-  private: ""
+ha_cluster_corosync_key_src: ""
+ha_cluster_pacemaker_key_src: ""
+ha_cluster_fence_virt_key_src: ""
+ha_cluster_pcsd_public_key_src: ""
+ha_cluster_pcsd_private_key_src: ""
 
 ha_cluster_cluster_name: "my-cluster"
 

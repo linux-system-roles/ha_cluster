@@ -41,7 +41,7 @@ string, no default - must be specified
 
 Password of the `hacluster` user. This user has full access to a cluster.
 
-#### `ha_cluster_authkey_corosync_path`
+#### `ha_cluster_corosync_key_src`
 
 path to corosync authkey file, no default - must be specified
 
@@ -49,7 +49,7 @@ Authentication and encryption key for Corosync communication. It is highly
 recommended to have a unique value for each cluster. The key should be 256
 bytes of random data.
 
-#### `ha_cluster_authkey_pacemaker_path`
+#### `ha_cluster_pacemaker_key_src`
 
 path to pacemaker authkey file, no default - must be specified
 
@@ -57,21 +57,14 @@ Authentication and encryption key for Pacemaker communication. It is highly
 recommended to have a unique value for each cluster. The key should be 256
 bytes of random data.
 
-#### `ha_cluster_authkey_fence_virt_path`
+#### `ha_cluster_fence_virt_key_src`
 
 Path to an authentication key for fence-virt or fence-xvm fence agent. This is
 mandatory if you intend to install and use those fence agents.
 
-#### `ha_cluster_pcsd_SSL_cert_path`
+#### `ha_cluster_pcsd_public_key_src`, `ha_cluster_pcsd_private_key_src`
 
-Structure and default value:
-```yaml
-ha_cluster_pcsd_SSL_cert_path:
-  public: ''
-  private: ''
-```
-
-Filepaths to SSL certificate and private key pair for pcsd. If this is not
+Filepaths to TLS certificate and private key pair for pcsd. If this is not
 specified, a certificate - key pair already present on a node will be used or a
 random new one will be generated.
 
@@ -146,9 +139,9 @@ Minimalistic example to create a cluster running no resources:
   vars:
     ha_cluster_cluster_name: "my-new-cluster"
     ha_cluster_hacluster_password: "password"
-    ha_cluster_authkey_corosync_path: "./corosync-authkey"
-    ha_cluster_authkey_pacemaker_path: "./pacemaker-authkey"
-    ha_cluster_authkey_fence_virt_path: "./fence_xvm.key"
+    ha_cluster_corosync_key_src: "./corosync-authkey"
+    ha_cluster_pacemaker_key_src: "./pacemaker-authkey"
+    ha_cluster_fence_virt_key_src: "./fence_xvm.key"
 
   roles:
     - linux-system-roles.ha-cluster

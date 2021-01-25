@@ -4,7 +4,7 @@
   vars:
     ha_cluster_fence_agent_packages:
       - "fence-agents-ipmilan"
-    ha_cluster_authkey_fence_virt_path: ""
+    ha_cluster_fence_virt_key_src: ""
   roles:
     - linux-system-roles.ha-cluster
 

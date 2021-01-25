@@ -6,25 +6,25 @@
     name: pcsd
     state: stopped
 
-- name: Distribute pcsd SSL certificate and key
+- name: Distribute pcsd TLS certificate and key
   block:
-    - name: Distribute pcsd SSL private key
+    - name: Distribute pcsd TLS private key
       copy:
-        src: "{{ ha_cluster_pcsd_SSL_cert_path.private }}"
+        src: "{{ ha_cluster_pcsd_private_key_src }}"
         dest: /var/lib/pcsd/pcsd.key
         owner: "root"
         group: "root"
         mode: "0600"
-    - name: Distribute pcsd SSL certificate
+    - name: Distribute pcsd TLS certificate
       copy:
-        src: "{{ ha_cluster_pcsd_SSL_cert_path.public }}"
+        src: "{{ ha_cluster_pcsd_public_key_src }}"
         dest: /var/lib/pcsd/pcsd.crt
         owner: "root"
         group: "root"
         mode: "0600"
   when:
-    - ha_cluster_pcsd_SSL_cert_path.public
-    - ha_cluster_pcsd_SSL_cert_path.private
+    - ha_cluster_pcsd_public_key_src | length < 1
+    - ha_cluster_pcsd_private_key_src | length < 1
 
 - name: Distribute pcs_settings.conf
   template:

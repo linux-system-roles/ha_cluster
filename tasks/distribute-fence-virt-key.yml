@@ -6,7 +6,7 @@
 
 - name: Send fence_xvm.key to nodes
   copy:
-    src: "{{ ha_cluster_authkey_fence_virt_path }}"
+    src: "{{ ha_cluster_fence_virt_key_src }}"
     dest: /etc/cluster/fence_xvm.key
     owner: "root"
     group: "root"

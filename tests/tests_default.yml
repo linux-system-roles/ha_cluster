@@ -21,7 +21,7 @@
           assert:
             that:
               - "{{ 'ha_cluster_hacluster_password must be specified' in error_list }}"
-              - "{{ 'ha_cluster_authkey_corosync_path must be specified' in error_list }}"
-              - "{{ 'ha_cluster_authkey_pacemaker_path must be specified' in error_list }}"
+              - "{{ 'ha_cluster_corosync_key_src must be specified' in error_list }}"
+              - "{{ 'ha_cluster_pacemaker_key_src must be specified' in error_list }}"
 
       tags: tests::verify
