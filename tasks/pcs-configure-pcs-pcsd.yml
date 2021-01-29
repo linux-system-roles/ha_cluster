@@ -6,6 +6,17 @@
     name: pcsd
     state: stopped
 
+- name: Regenerate pcsd TLS certificate and key
+  # pcsd will generate a certificate - key pair once it is started
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/lib/pcsd/pcsd.key
+    - /var/lib/pcsd/pcsd.crt
+  when:
+    - ha_cluster_regenerate_keys
+
 - name: Distribute pcsd TLS certificate and key
   block:
     - name: Distribute pcsd TLS private key
@@ -23,8 +34,8 @@
         group: "root"
         mode: "0600"
   when:
-    - ha_cluster_pcsd_public_key_src | length < 1
-    - ha_cluster_pcsd_private_key_src | length < 1
+    - ha_cluster_pcsd_public_key_src is string and ha_cluster_pcsd_public_key_src | length > 0
+    - ha_cluster_pcsd_private_key_src is string and ha_cluster_pcsd_private_key_src | length > 0
 
 - name: Distribute pcs_settings.conf
   template:

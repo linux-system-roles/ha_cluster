@@ -1,5 +1,1 @@
 ha_cluster_hacluster_password: "1asfbJHV53vJH"
-ha_cluster_corosync_key_src: "./files/corosync-authkey"
-ha_cluster_pacemaker_key_src: "./files/pacemaker-authkey"
-ha_cluster_fence_virt_key_src: "./files/fence_xvm.key"
-

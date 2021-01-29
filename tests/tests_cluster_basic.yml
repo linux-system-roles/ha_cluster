@@ -1,11 +1,26 @@
 - name: Minimal cluster configuration
   hosts: all
   vars_files: vars.yml
-  roles:
-    - linux-system-roles.ha-cluster
+  vars:
+    ha_cluster_cluster_name: "test-cluster"
 
   tasks:
     - block:
+        - name: Ensure pre-shared keys and TLS certificates are not present
+          file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - /etc/corosync/authkey
+            - /etc/pacemaker/authkey
+            - /etc/cluster/fence_xvm.key
+            - /var/lib/pcsd/pcsd.key
+            - /var/lib/pcsd/pcsd.crt
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha-cluster
+
         - meta: flush_handlers
 
         - name: Get services status
@@ -18,17 +33,41 @@
               - ansible_facts.services["corosync.service"].status == "enabled"
               - ansible_facts.services["pacemaker.service"].status == "enabled"
 
-        - name: Check cluster status
-          include_tasks: assert_cluster_running.yml
+        - name: Stat corosync authkey
+          stat:
+            path: /etc/corosync/authkey
+          register: stat_corosync_key
+
+        - name: Stat pacemaker authkey
+          stat:
+            path: /etc/pacemaker/authkey
+          register: stat_pacemaker_key
 
         - name: Stat fence-virt authkey
           stat:
-            path: /var/lib/pacemaker/cib/cib.xml
+            path: /etc/cluster/fence_xvm.key
           register: stat_fence_xvm_key
 
-        - name: Check fence-virt authkey is present
+        - name: Stat pcsd TLS certificate
+          stat:
+            path: /var/lib/pcsd/pcsd.crt
+          register: stat_pcsd_cert
+
+        - name: Stat pcsd TLS key
+          stat:
+            path: /var/lib/pcsd/pcsd.key
+          register: stat_pcsd_key
+
+        - name: Check pre-shared keys and TLS certificates are present
           assert:
             that:
+              - stat_corosync_key.stat.exists
+              - stat_pacemaker_key.stat.exists
               - stat_fence_xvm_key.stat.exists
+              - stat_pcsd_cert.stat.exists
+              - stat_pcsd_key.stat.exists
+
+        - name: Check cluster status
+          include_tasks: assert_cluster_running.yml
 
       tags: tests::verify

@@ -21,7 +21,7 @@
 
         - name: Stat fence_xvm.key
           stat:
-            path: /var/lib/pacemaker/cib/cib.xml
+            path: /etc/cluster/fence_xvm.key
           register: stat_fence_xvm_key
 
         - name: Check the files do not exist

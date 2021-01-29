@@ -43,30 +43,73 @@ Password of the `hacluster` user. This user has full access to a cluster.
 
 #### `ha_cluster_corosync_key_src`
 
-path to corosync authkey file, no default - must be specified
+path to corosync authkey file, default: `null`
 
 Authentication and encryption key for Corosync communication. It is highly
 recommended to have a unique value for each cluster. The key should be 256
 bytes of random data.
 
+If no key is specified, a key already present on the nodes will be used. If
+nodes don't have the same key, a key from one node will be distributed to other
+nodes so that all nodes have the same key. If no node has a key, a new key will
+be generated and distributed to the nodes.
+
+If this variable is set, `ha_cluster_regenerate_keys` is ignored for this key.
+
 #### `ha_cluster_pacemaker_key_src`
 
-path to pacemaker authkey file, no default - must be specified
+path to pacemaker authkey file, default: `null`
 
 Authentication and encryption key for Pacemaker communication. It is highly
 recommended to have a unique value for each cluster. The key should be 256
 bytes of random data.
 
+If no key is specified, a key already present on the nodes will be used. If
+nodes don't have the same key, a key from one node will be distributed to other
+nodes so that all nodes have the same key. If no node has a key, a new key will
+be generated and distributed to the nodes.
+
+If this variable is set, `ha_cluster_regenerate_keys` is ignored for this key.
+
 #### `ha_cluster_fence_virt_key_src`
 
-Path to an authentication key for fence-virt or fence-xvm fence agent. This is
-mandatory if you intend to install and use those fence agents.
+path to fence-virt or fence-xvm pre-shared key file, default: `null`
+
+Authentication key for fence-virt or fence-xvm fence agent.
+
+If no key is specified, a key already present on the nodes will be used. If
+nodes don't have the same key, a key from one node will be distributed to other
+nodes so that all nodes have the same key. If no node has a key, a new key will
+be generated and distributed to the nodes.
+
+If this variable is set, `ha_cluster_regenerate_keys` is ignored for this key.
+
+If you let the role to generate new key, you are supposed to copy the key to
+your nodes' hypervisor to ensure that fencing works.
 
 #### `ha_cluster_pcsd_public_key_src`, `ha_cluster_pcsd_private_key_src`
 
-Filepaths to TLS certificate and private key pair for pcsd. If this is not
-specified, a certificate - key pair already present on a node will be used or a
-random new one will be generated.
+path to pcsd TLS certificate and key, default: `null`
+
+TLS certificate and private key for pcsd. If this is not specified, a
+certificate - key pair already present on the nodes will be used. If
+certificate - key pair is not present, a random new one will be generated.
+
+If these variables are set, `ha_cluster_regenerate_keys` is ignored for this
+certificate - key pair.
+
+#### `ha_cluster_regenerate_keys`
+
+boolean, default: `no`
+
+If this is set to `yes`, pre-shared keys and TLS certificates will be
+regenerated.
+See also:
+[`ha_cluster_corosync_key_src`](#ha_cluster_corosync_key_src),
+[`ha_cluster_pacemaker_key_src`](#ha_cluster_pacemaker_key_src),
+[`ha_cluster_fence_virt_key_src`](#ha_cluster_fence_virt_key_src),
+[`ha_cluster_pcsd_public_key_src`](#ha_cluster_pcsd_public_key_src-ha_cluster_pcsd_private_key_src),
+[`ha_cluster_pcsd_private_key_src`](#ha_cluster_pcsd_public_key_src-ha_cluster_pcsd_private_key_src)
 
 #### `ha_cluster_pcs_permission_list`
 
@@ -95,7 +138,7 @@ follows:
 
 #### `ha_cluster_cluster_name`
 
-string, default: `'my-cluster'`
+string, default: `my-cluster`
 
 Name of the cluster.
 
@@ -139,9 +182,6 @@ Minimalistic example to create a cluster running no resources:
   vars:
     ha_cluster_cluster_name: "my-new-cluster"
     ha_cluster_hacluster_password: "password"
-    ha_cluster_corosync_key_src: "./corosync-authkey"
-    ha_cluster_pacemaker_key_src: "./pacemaker-authkey"
-    ha_cluster_fence_virt_key_src: "./fence_xvm.key"
 
   roles:
     - linux-system-roles.ha-cluster

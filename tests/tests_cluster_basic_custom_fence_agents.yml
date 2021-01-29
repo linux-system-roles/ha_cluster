@@ -2,25 +2,22 @@
   hosts: all
   vars_files: vars.yml
   vars:
+    ha_cluster_cluster_name: "test-cluster"
     ha_cluster_fence_agent_packages:
       - "fence-agents-ipmilan"
-    ha_cluster_fence_virt_key_src: ""
-  roles:
-    - linux-system-roles.ha-cluster
 
   tasks:
     - block:
+        - name: Ensure fence-agents-all is not installed
+          package:
+            name: fence-agents-all
+            state: absent
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha-cluster
+
         - meta: flush_handlers
-
-        - name: Stat fence-virt authkey
-          stat:
-            path: /etc/cluster/fence_xvm.key
-          register: stat_fence_xvm_key
-
-        - name: Check fence-virt authkey is not present
-          assert:
-            that:
-              - not stat_fence_xvm_key.stat.exists
 
         - name: Get packages status
           package_facts:

@@ -1,0 +1,126 @@
+- name: Minimal cluster configuration, using existing PSKs
+  hosts: all
+  vars_files: vars.yml
+  vars:
+    ha_cluster_cluster_name: "test-cluster"
+    __pcsd_public_key_src: "./files/pcsd.crt"
+    __pcsd_private_key_src: "./files/pcsd.key"
+
+  tasks:
+    - block:
+        - name: Ensure corosync key is present
+          copy:
+            src: ./files/corosync-authkey
+            dest: /etc/corosync/authkey
+
+        - name: Ensure pacemaker key is present
+          copy:
+            src: ./files/pacemaker-authkey
+            dest: /etc/pacemaker/authkey
+
+        - name: Ensure fence-virt key is present
+          copy:
+            src: ./files/fence_xvm.key
+            dest: /etc/cluster/fence_xvm.key
+
+        - name: Ensure pcsd TLS certificate and key exist
+          block:
+            - name: Distribute pcsd TLS private key
+              copy:
+                src: "{{ __pcsd_private_key_src }}"
+                dest: /var/lib/pcsd/pcsd.key
+                owner: "root"
+                group: "root"
+                mode: "0600"
+            - name: Distribute pcsd TLS certificate
+              copy:
+                src: "{{ __pcsd_public_key_src }}"
+                dest: /var/lib/pcsd/pcsd.crt
+                owner: "root"
+                group: "root"
+                mode: "0600"
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha-cluster
+
+        - meta: flush_handlers
+
+        - name: Stat corosync authkey
+          stat:
+            path: /etc/corosync/authkey
+            checksum_algorithm: sha1
+          register: stat_corosync_key
+
+        - name: Stat pacemaker authkey
+          stat:
+            path: /etc/pacemaker/authkey
+            checksum_algorithm: sha1
+          register: stat_pacemaker_key
+
+        - name: Stat fence-virt authkey
+          stat:
+            path: /etc/cluster/fence_xvm.key
+            checksum_algorithm: sha1
+          register: stat_fence_xvm_key
+
+        - name: Stat pcsd TLS certificate
+          stat:
+            path: /var/lib/pcsd/pcsd.crt
+            checksum_algorithm: sha1
+          register: stat_pcsd_cert
+
+        - name: Stat pcsd TLS key
+          stat:
+            path: /var/lib/pcsd/pcsd.key
+            checksum_algorithm: sha1
+          register: stat_pcsd_key
+
+        - name: Slurp pcsd TLS certificate
+          slurp:
+            src: /var/lib/pcsd/pcsd.crt
+          register: slurp_pcsd_cert
+
+        - name: Slurp pcsd TLS key
+          slurp:
+            src: /var/lib/pcsd/pcsd.key
+          register: slurp_pcsd_key
+
+        - name: Check pre-shared keys are present
+          assert:
+            that:
+              - stat_corosync_key.stat.exists
+              - stat_pacemaker_key.stat.exists
+              - stat_fence_xvm_key.stat.exists
+              - stat_pcsd_cert.stat.exists
+              - stat_pcsd_key.stat.exists
+
+        - name: Check corosync key content
+          assert:
+            that:
+              - stat_corosync_key.stat.checksum == lookup('file', './files/corosync-authkey') | hash('sha1')
+
+        - name: Check pacemaker key content
+          assert:
+            that:
+              - stat_pacemaker_key.stat.checksum == lookup('file', './files/pacemaker-authkey') | hash('sha1')
+
+        - name: Check fence-virt key content
+          assert:
+            that:
+              - stat_fence_xvm_key.stat.checksum == lookup('file', './files/fence_xvm.key') | hash('sha1')
+
+        - name: Check pcsd TLS certificate content
+          assert:
+            that:
+              - slurp_pcsd_cert.content | b64decode | trim == lookup('file', __pcsd_public_key_src) | trim
+
+        - name: Check pcsd TLS key content
+          assert:
+            that:
+              - slurp_pcsd_key.content | b64decode | trim == lookup('file', __pcsd_private_key_src) | trim
+
+        - name: Check cluster status
+          include_tasks: assert_cluster_running.yml
+
+      tags: tests::verify

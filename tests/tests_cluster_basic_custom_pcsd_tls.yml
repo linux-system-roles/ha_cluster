@@ -1,0 +1,55 @@
+- name: Minimal cluster configuration, custom pcsd TLS certificate - key pair
+  hosts: all
+  vars_files: vars.yml
+  vars:
+    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_pcsd_public_key_src: "./files/pcsd.crt"
+    ha_cluster_pcsd_private_key_src: "./files/pcsd.key"
+
+  tasks:
+    - block:
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha-cluster
+
+        - meta: flush_handlers
+
+        - name: Stat pcsd TLS certificate
+          stat:
+            path: /var/lib/pcsd/pcsd.crt
+            checksum_algorithm: sha1
+          register: stat_pcsd_cert
+
+        - name: Stat pcsd TLS key
+          stat:
+            path: /var/lib/pcsd/pcsd.key
+            checksum_algorithm: sha1
+          register: stat_pcsd_key
+
+        - name: Check pre-shared keys and TLS certificates are present
+          assert:
+            that:
+              - stat_pcsd_cert.stat.exists
+              - stat_pcsd_key.stat.exists
+
+        - name: Slurp pcsd TLS certificate
+          slurp:
+            src: /var/lib/pcsd/pcsd.crt
+          register: slurp_pcsd_cert
+
+        - name: Slurp pcsd TLS key
+          slurp:
+            src: /var/lib/pcsd/pcsd.key
+          register: slurp_pcsd_key
+
+        - name: Check pcsd TLS certificate content
+          assert:
+            that:
+              - slurp_pcsd_cert.content | b64decode | trim == lookup('file', ha_cluster_pcsd_public_key_src) | trim
+
+        - name: Check pcsd TLS key content
+          assert:
+            that:
+              - slurp_pcsd_key.content | b64decode | trim == lookup('file', ha_cluster_pcsd_private_key_src) | trim
+
+      tags: tests::verify

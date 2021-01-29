@@ -4,9 +4,17 @@
     state: "directory"
     mode: "0755"
 
+- name: Get fence_xvm.key
+  include_tasks: "presharedkey.yml"
+  vars:
+    preshared_key_label: "fence_xvm.key"
+    preshared_key_src: "{{ ha_cluster_fence_virt_key_src }}"
+    preshared_key_dest: /etc/cluster/fence_xvm.key
+    preshared_key_length: 512
+
 - name: Send fence_xvm.key to nodes
   copy:
-    src: "{{ ha_cluster_fence_virt_key_src }}"
+    content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
     dest: /etc/cluster/fence_xvm.key
     owner: "root"
     group: "root"
