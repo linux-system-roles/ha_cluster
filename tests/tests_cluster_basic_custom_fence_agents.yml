@@ -15,7 +15,7 @@
 
         - name: Run HA Cluster role
           include_role:
-            name: linux-system-roles.ha-cluster
+            name: linux-system-roles.ha_cluster
 
         - meta: flush_handlers
 

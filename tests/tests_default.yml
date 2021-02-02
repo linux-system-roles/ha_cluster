@@ -6,7 +6,7 @@
     - block:
         - name: Run the role
           include_role:
-            name: linux-system-roles.ha-cluster
+            name: linux-system-roles.ha_cluster
       rescue:
         - meta: flush_handlers
 

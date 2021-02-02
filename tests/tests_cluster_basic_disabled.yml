@@ -4,7 +4,7 @@
   vars:
     ha_cluster_start_on_boot: no
   roles:
-    - linux-system-roles.ha-cluster
+    - linux-system-roles.ha_cluster
 
   tasks:
     - block:

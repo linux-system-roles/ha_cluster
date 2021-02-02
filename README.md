@@ -184,7 +184,7 @@ Minimalistic example to create a cluster running no resources:
     ha_cluster_hacluster_password: "password"
 
   roles:
-    - linux-system-roles.ha-cluster
+    - linux-system-roles.ha_cluster
 ```
 
 To purge all cluster configuration, run this:
@@ -194,7 +194,7 @@ To purge all cluster configuration, run this:
     ha_cluster_cluster_present: no
 
   roles:
-    - linux-system-roles.ha-cluster
+    - linux-system-roles.ha_cluster
 ```
 
 ## License
