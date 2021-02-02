@@ -20,6 +20,9 @@
         - name: Check errors
           assert:
             that:
-              - "{{ 'ha_cluster_hacluster_password must be specified' in error_list }}"
+              - "{{ \
+                  'ha_cluster_hacluster_password must be specified' \
+                  in error_list
+                }}"
 
       tags: tests::verify

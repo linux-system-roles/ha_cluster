@@ -98,27 +98,37 @@
         - name: Check corosync key content
           assert:
             that:
-              - stat_corosync_key.stat.checksum == lookup('file', './files/corosync-authkey') | hash('sha1')
+              - >
+                stat_corosync_key.stat.checksum
+                == lookup('file', './files/corosync-authkey') | hash('sha1')
 
         - name: Check pacemaker key content
           assert:
             that:
-              - stat_pacemaker_key.stat.checksum == lookup('file', './files/pacemaker-authkey') | hash('sha1')
+              - >
+                stat_pacemaker_key.stat.checksum
+                == lookup('file', './files/pacemaker-authkey') | hash('sha1')
 
         - name: Check fence-virt key content
           assert:
             that:
-              - stat_fence_xvm_key.stat.checksum == lookup('file', './files/fence_xvm.key') | hash('sha1')
+              - >
+                stat_fence_xvm_key.stat.checksum
+                == lookup('file', './files/fence_xvm.key') | hash('sha1')
 
         - name: Check pcsd TLS certificate content
           assert:
             that:
-              - slurp_pcsd_cert.content | b64decode | trim == lookup('file', __pcsd_public_key_src) | trim
+              - >
+                slurp_pcsd_cert.content | b64decode | trim
+                == lookup('file', __pcsd_public_key_src) | trim
 
         - name: Check pcsd TLS key content
           assert:
             that:
-              - slurp_pcsd_key.content | b64decode | trim == lookup('file', __pcsd_private_key_src) | trim
+              - >
+                slurp_pcsd_key.content | b64decode | trim
+                == lookup('file', __pcsd_private_key_src) | trim
 
         - name: Check cluster status
           include_tasks: assert_cluster_running.yml

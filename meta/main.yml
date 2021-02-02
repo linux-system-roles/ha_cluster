@@ -51,15 +51,15 @@ galaxy_info:
       versions:
         - 8
 
-  galaxy_tags:
-    - hacluster
-    - corosync
-    - pacemaker
   # List tags for your role here, one per line. A tag is a keyword that
   # describes and categorizes the role. Users find roles by searching for tags.
   #
   # NOTE: A tag is limited to a single word comprised of alphanumeric
   #       characters. Maximum 20 tags per role.
+  galaxy_tags:
+    - hacluster
+    - corosync
+    - pacemaker
 
 dependencies: []
 # List your role dependencies here, one per line. Be sure to remove the '[]'

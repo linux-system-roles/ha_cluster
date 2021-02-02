@@ -8,7 +8,9 @@
         service: "high-availability"
         state: "enabled"
         permanent: yes
-        immediate: "{{ ansible_facts.services['firewalld.service'].state == 'running' }}"
+        immediate: "{{ \
+            ansible_facts.services['firewalld.service'].state == 'running' \
+          }}"
         offline: yes
 
     - name: Enable fence-virt port in firewalld
@@ -16,7 +18,9 @@
         port: "1229/tcp"
         state: "enabled"
         permanent: yes
-        immediate: "{{ ansible_facts.services['firewalld.service'].state == 'running' }}"
+        immediate: "{{ \
+            ansible_facts.services['firewalld.service'].state == 'running' \
+          }}"
         offline: yes
       when:
         - "'fence-virt' in ha_cluster_fence_agent_packages"

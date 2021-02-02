@@ -20,17 +20,18 @@
     - name: Configure cluster nodes
       include_tasks: cluster-setup.yml
 
-#    TODO: implement qdevice detection once qdevice is supported by the role
-#    - name: Fetch corosync quorum configuration
-#      command:
-#        cmd: pcs quorum config
-#      register: __ha_cluster_pcs_quorum_config
-#      run_once: yes
-#      check_mode: no
-#      changed_when: no
-#      # This reads corosync.conf from the nodes. The file is not sent to the
-#      # nodes in check mode.
-#      when: not ansible_check_mode
+    # TODO: implement qdevice detection once qdevice is supported by the role
+    # - name: Fetch corosync quorum configuration
+    #   command:
+    #     cmd: pcs quorum config
+    #   register: __ha_cluster_pcs_quorum_config
+    #   run_once: yes
+    #   check_mode: no
+    #   changed_when: no
+    #   # This reads corosync.conf from the nodes. The file is not sent to the
+    #   # nodes in check mode.
+    #   when: not ansible_check_mode
+
     - name: Check if qdevice is configured
       set_fact:
         __ha_cluster_qdevice_in_use: no

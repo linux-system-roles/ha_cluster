@@ -45,11 +45,15 @@
         - name: Check pcsd TLS certificate content
           assert:
             that:
-              - slurp_pcsd_cert.content | b64decode | trim == lookup('file', ha_cluster_pcsd_public_key_src) | trim
+              - >
+                slurp_pcsd_cert.content | b64decode | trim
+                == lookup('file', ha_cluster_pcsd_public_key_src) | trim
 
         - name: Check pcsd TLS key content
           assert:
             that:
-              - slurp_pcsd_key.content | b64decode | trim == lookup('file', ha_cluster_pcsd_private_key_src) | trim
+              - >
+                slurp_pcsd_key.content | b64decode | trim
+                == lookup('file', ha_cluster_pcsd_private_key_src) | trim
 
       tags: tests::verify

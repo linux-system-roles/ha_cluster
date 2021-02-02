@@ -20,9 +20,9 @@ ha_cluster_pcsd_private_key_src: null
 ha_cluster_cluster_name: "my-cluster"
 
 ha_cluster_pcs_permission_list:
-- type: "group"
-  name: "hacluster"
-  allow_list:
-  - "grant"
-  - "read"
-  - "write"
+  - type: "group"
+    name: "hacluster"
+    allow_list:
+      - "grant"
+      - "read"
+      - "write"

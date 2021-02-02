@@ -32,7 +32,9 @@
         __ha_cluster_distribute_corosync_conf.changed
         or __ha_cluster_distribute_corosync_authkey.changed
         or __ha_cluster_distribute_pacemaker_authkey.changed
-    - item != "corosync-qdevice" or "corosync-qdevice.service" in ansible_facts.services
+    - >
+        item != "corosync-qdevice"
+        or "corosync-qdevice.service" in ansible_facts.services
 
 
 # We must always start daemons to get the cluster running on newly added nodes.

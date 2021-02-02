@@ -34,8 +34,10 @@
         group: "root"
         mode: "0600"
   when:
-    - ha_cluster_pcsd_public_key_src is string and ha_cluster_pcsd_public_key_src | length > 0
-    - ha_cluster_pcsd_private_key_src is string and ha_cluster_pcsd_private_key_src | length > 0
+    - ha_cluster_pcsd_public_key_src is string
+    - ha_cluster_pcsd_public_key_src | length > 0
+    - ha_cluster_pcsd_private_key_src is string
+    - ha_cluster_pcsd_private_key_src | length > 0
 
 - name: Distribute pcs_settings.conf
   template:
