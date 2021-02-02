@@ -2,9 +2,3 @@
 ---
 # Put handlers for tasks here.
 
-# Example:
-- name: ha_cluster handler to restart services
-  service:
-    name: "{{ item }}"
-    state: restarted
-  loop: "{{ __ha_cluster_services }}"

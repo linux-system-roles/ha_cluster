@@ -3,7 +3,8 @@
 - name: Example ha_cluster role invocation
   hosts: all
   vars:
-    ha_cluster_foo: example variable value
+    ha_cluster_cluster_name: "my-new-cluster"
+    ha_cluster_hacluster_password: "password"
 
   roles:
     - linux-system-roles.ha_cluster
