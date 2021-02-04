@@ -1,6 +1,6 @@
 - name: Minimal cluster configuration, install custom fence agents
   hosts: all
-  vars_files: vars.yml
+  vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: "test-cluster"
     ha_cluster_fence_agent_packages:
@@ -16,8 +16,6 @@
         - name: Run HA Cluster role
           include_role:
             name: linux-system-roles.ha_cluster
-
-        - meta: flush_handlers
 
         - name: Get packages status
           package_facts:

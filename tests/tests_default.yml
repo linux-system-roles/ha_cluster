@@ -8,8 +8,6 @@
           include_role:
             name: linux-system-roles.ha_cluster
       rescue:
-        - meta: flush_handlers
-
         - name: Extract errors
           set_fact:
             error_list: "{{ \

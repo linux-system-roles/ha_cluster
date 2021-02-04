@@ -7,8 +7,6 @@
 
   tasks:
     - block:
-        - meta: flush_handlers
-
         - name: Stat corosync.conf
           stat:
             path: /etc/corosync/corosync.conf

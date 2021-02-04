@@ -2,10 +2,7 @@
   service:
     name: "{{ item }}"
     enabled: "{{ ha_cluster_start_on_boot }}"
-  loop:
-    - corosync
-    - corosync-qdevice
-    - pacemaker
+  loop: "{{ __ha_cluster_services }}"
   when:
     # Null (i.e. nochange) is currently not supported: Either all nodes are
     # configured to start the cluster on boot or not to start the cluster on
@@ -18,7 +15,7 @@
   service_facts:
 
 # The role does not support configuring SBD yet, therefore we always disable it.
-- name: Enable or disable SBD
+- name: Disable SBD
   service:
     name: "sbd"
     enabled: no

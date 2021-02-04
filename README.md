@@ -39,7 +39,9 @@ list of fence agent packages to install, default: fence-agents-all, fence-virt
 
 string, no default - must be specified
 
-Password of the `hacluster` user. This user has full access to a cluster.
+Password of the `hacluster` user. This user has full access to a cluster. It is
+recommended to vault encrypt the value, see
+https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 
 #### `ha_cluster_corosync_key_src`
 
@@ -48,6 +50,9 @@ path to corosync authkey file, default: `null`
 Authentication and encryption key for Corosync communication. It is highly
 recommended to have a unique value for each cluster. The key should be 256
 bytes of random data.
+
+If value is provided, it is recommended to vault encrypt it. See
+https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 
 If no key is specified, a key already present on the nodes will be used. If
 nodes don't have the same key, a key from one node will be distributed to other
@@ -64,6 +69,9 @@ Authentication and encryption key for Pacemaker communication. It is highly
 recommended to have a unique value for each cluster. The key should be 256
 bytes of random data.
 
+If value is provided, it is recommended to vault encrypt it. See
+https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
+
 If no key is specified, a key already present on the nodes will be used. If
 nodes don't have the same key, a key from one node will be distributed to other
 nodes so that all nodes have the same key. If no node has a key, a new key will
@@ -76,6 +84,9 @@ If this variable is set, `ha_cluster_regenerate_keys` is ignored for this key.
 path to fence-virt or fence-xvm pre-shared key file, default: `null`
 
 Authentication key for fence-virt or fence-xvm fence agent.
+
+If value is provided, it is recommended to vault encrypt it. See
+https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 
 If no key is specified, a key already present on the nodes will be used. If
 nodes don't have the same key, a key from one node will be distributed to other
@@ -94,6 +105,9 @@ path to pcsd TLS certificate and key, default: `null`
 TLS certificate and private key for pcsd. If this is not specified, a
 certificate - key pair already present on the nodes will be used. If
 certificate - key pair is not present, a random new one will be generated.
+
+If private key value is provided, it is recommended to vault encrypt it. See
+https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 
 If these variables are set, `ha_cluster_regenerate_keys` is ignored for this
 certificate - key pair.
