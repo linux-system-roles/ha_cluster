@@ -3,38 +3,44 @@
   vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: "test-cluster"
-    __pcsd_public_key_src: "./files/pcsd.crt"
-    __pcsd_private_key_src: "./files/pcsd.key"
+    __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
+    __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
+    __test_corosync_key_path: "{{ playbook_dir }}/tmp/corosync-authkey"
+    __test_pacemaker_key_path: "{{ playbook_dir }}/tmp/pacemaker-authkey"
+    __test_fence_xvm_key_path: "{{ playbook_dir }}/tmp/fence_xvm.key"
 
   tasks:
     - block:
+        - name: Run PSKs and certificates fixture
+          include_tasks: fixture_psks.yml
+
         - name: Ensure corosync key is present
           copy:
-            src: ./files/corosync-authkey
+            src: "{{ __test_corosync_key_path }}"
             dest: /etc/corosync/authkey
 
         - name: Ensure pacemaker key is present
           copy:
-            src: ./files/pacemaker-authkey
+            src: "{{ __test_pacemaker_key_path }}"
             dest: /etc/pacemaker/authkey
 
         - name: Ensure fence-virt key is present
           copy:
-            src: ./files/fence_xvm.key
+            src: "{{ __test_fence_xvm_key_path }}"
             dest: /etc/cluster/fence_xvm.key
 
         - name: Ensure pcsd TLS certificate and key exist
           block:
             - name: Distribute pcsd TLS private key
               copy:
-                src: "{{ __pcsd_private_key_src }}"
+                src: "{{ __test_pcsd_private_key_path }}"
                 dest: /var/lib/pcsd/pcsd.key
                 owner: "root"
                 group: "root"
                 mode: "0600"
             - name: Distribute pcsd TLS certificate
               copy:
-                src: "{{ __pcsd_public_key_src }}"
+                src: "{{ __test_pcsd_public_key_path }}"
                 dest: /var/lib/pcsd/pcsd.crt
                 owner: "root"
                 group: "root"
@@ -98,35 +104,35 @@
             that:
               - >
                 stat_corosync_key.stat.checksum
-                == lookup('file', './files/corosync-authkey') | hash('sha1')
+                == lookup('file', __test_corosync_key_path) | hash('sha1')
 
         - name: Check pacemaker key content
           assert:
             that:
               - >
                 stat_pacemaker_key.stat.checksum
-                == lookup('file', './files/pacemaker-authkey') | hash('sha1')
+                == lookup('file', __test_pacemaker_key_path) | hash('sha1')
 
         - name: Check fence-virt key content
           assert:
             that:
               - >
                 stat_fence_xvm_key.stat.checksum
-                == lookup('file', './files/fence_xvm.key') | hash('sha1')
+                == lookup('file', __test_fence_xvm_key_path) | hash('sha1')
 
         - name: Check pcsd TLS certificate content
           assert:
             that:
               - >
                 slurp_pcsd_cert.content | b64decode | trim
-                == lookup('file', __pcsd_public_key_src) | trim
+                == lookup('file', __test_pcsd_public_key_path) | trim
 
         - name: Check pcsd TLS key content
           assert:
             that:
               - >
                 slurp_pcsd_key.content | b64decode | trim
-                == lookup('file', __pcsd_private_key_src) | trim
+                == lookup('file', __test_pcsd_private_key_path) | trim
 
         - name: Check cluster status
           include_tasks: assert_cluster_running.yml

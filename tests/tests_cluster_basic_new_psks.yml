@@ -9,16 +9,19 @@
     # generate a new TLS certificate - key pair for pcsd, even if there already
     #   is one
     ha_cluster_regenerate_keys: yes
-    ha_cluster_corosync_key_src: "./files/corosync-authkey"
-    __pacemaker_key_content: "key content to be replaced"
-    __pcsd_public_key_src: "./files/pcsd.crt"
-    __pcsd_private_key_src: "./files/pcsd.key"
+    ha_cluster_corosync_key_src: "{{ playbook_dir }}/tmp/corosync-authkey"
+    __test_pacemaker_key_content: "key content to be replaced"
+    __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
+    __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
 
   tasks:
     - block:
+        - name: Run PSKs and certificates fixture
+          include_tasks: fixture_psks.yml
+
         - name: Ensure pacemaker key is present
           copy:
-            content: "{{ __pacemaker_key_content }}"
+            content: "{{ __test_pacemaker_key_content }}"
             dest: /etc/pacemaker/authkey
 
         - name: Ensure fence-virt key is not present
@@ -30,14 +33,14 @@
           block:
             - name: Distribute pcsd TLS private key
               copy:
-                src: "{{ __pcsd_private_key_src }}"
+                src: "{{ __test_pcsd_private_key_path }}"
                 dest: /var/lib/pcsd/pcsd.key
                 owner: "root"
                 group: "root"
                 mode: "0600"
             - name: Distribute pcsd TLS certificate
               copy:
-                src: "{{ __pcsd_public_key_src }}"
+                src: "{{ __test_pcsd_public_key_path }}"
                 dest: /var/lib/pcsd/pcsd.crt
                 owner: "root"
                 group: "root"
@@ -108,21 +111,21 @@
             that:
               - >
                 stat_pacemaker_key.stat.checksum
-                != __pacemaker_key_content | hash('sha1')
+                != __test_pacemaker_key_content | hash('sha1')
 
         - name: Check pcsd TLS certificate content
           assert:
             that:
               - >
                 slurp_pcsd_cert.content | b64decode | trim
-                != lookup('file', __pcsd_public_key_src) | trim
+                != lookup('file', __test_pcsd_public_key_path) | trim
 
         - name: Check pcsd TLS key content
           assert:
             that:
               - >
                 slurp_pcsd_key.content | b64decode | trim
-                != lookup('file', __pcsd_private_key_src) | trim
+                != lookup('file', __test_pcsd_private_key_path) | trim
 
         - name: Check cluster status
           include_tasks: assert_cluster_running.yml
