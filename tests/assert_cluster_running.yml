@@ -2,6 +2,7 @@
   command:
     cmd: pcs status pcsd
   register: auth_status
+  changed_when: no
 
 - name: Check pcs auth
   assert:
@@ -12,6 +13,7 @@
   command:
     cmd: pcs status
   register: cluster_status
+  changed_when: no
 
 - name: Check cluster is running
   assert:

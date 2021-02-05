@@ -18,16 +18,25 @@
           copy:
             src: "{{ __test_corosync_key_path }}"
             dest: /etc/corosync/authkey
+            owner: "root"
+            group: "root"
+            mode: "0400"
 
         - name: Ensure pacemaker key is present
           copy:
             src: "{{ __test_pacemaker_key_path }}"
             dest: /etc/pacemaker/authkey
+            owner: "root"
+            group: "root"
+            mode: "0400"
 
         - name: Ensure fence-virt key is present
           copy:
             src: "{{ __test_fence_xvm_key_path }}"
             dest: /etc/cluster/fence_xvm.key
+            owner: "root"
+            group: "root"
+            mode: "0400"
 
         - name: Ensure pcsd TLS certificate and key exist
           block:

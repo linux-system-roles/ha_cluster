@@ -12,3 +12,4 @@
       {% endfor %}
     stdin: "{{ ha_cluster_hacluster_password }}"
   run_once: yes
+  changed_when: yes

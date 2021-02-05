@@ -23,6 +23,9 @@
           copy:
             content: "{{ __test_pacemaker_key_content }}"
             dest: /etc/pacemaker/authkey
+            owner: "root"
+            group: "root"
+            mode: "0400"
 
         - name: Ensure fence-virt key is not present
           file:
