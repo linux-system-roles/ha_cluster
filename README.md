@@ -6,8 +6,8 @@ An Ansible role for managing High Availability Clustering.
 ## Limitations
 
 * Supported OS: RHEL 8.3+, Fedora 31+
-* The role expects High-Availability Add-on repositories to be enabled on
-  systems running RHEL.
+* Systems running RHEL are expected to be registered and have High-Availability
+  repositories accessible.
 * The role replaces the configuration of HA Cluster on specified nodes. Any
   settings not specified in the role variables will be lost.
 * For now, the role is only capable of configuring a basic corosync cluster.
@@ -15,6 +15,30 @@ An Ansible role for managing High Availability Clustering.
 ## Role Variables
 
 ### Defined in `defaults/main.yml`
+
+#### `ha_cluster_enable_repos`
+
+boolean, default: `yes`
+
+RHEL only, enable standard repositories contaning needed packages
+
+#### `ha_cluster_enable_repos_eus`
+
+boolean, default: `no`
+
+RHEL only, enable EUS repositories contaning needed packages
+
+#### `ha_cluster_enable_repos_e4s`
+
+boolean, default: `no`
+
+RHEL only, enable E4S repositories contaning needed packages
+
+#### `ha_cluster_enable_repos_tus`
+
+boolean, default: `no`
+
+RHEL only, enable TUS repositories contaning needed packages
 
 #### `ha_cluster_cluster_present`
 

@@ -11,6 +11,11 @@
 # at the top of tasks/main.yml.
 __ha_cluster_pcs_provider: "pcs-0.10"
 
+__ha_cluster_repos: []
+__ha_cluster_repos_eus: []
+__ha_cluster_repos_e4s: []
+__ha_cluster_repos_tus: []
+
 __ha_cluster_fullstack_node_packages:
   - corosync
   - libknet1-plugins-all

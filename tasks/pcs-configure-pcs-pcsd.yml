@@ -48,7 +48,8 @@
     mode: "0644"
     trim_blocks: no
 
-- name: Start pcsd with updated config files
+- name: Start pcsd with updated config files and configure it to start on boot
   service:
     name: pcsd
     state: started
+    enabled: yes

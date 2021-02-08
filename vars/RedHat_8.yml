@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: MIT
+---
+# Put internal variables here with Red Hat Enterprise Linux 8 specific values.
+
+__ha_cluster_repos:
+  - "rhel-8-for-{{ ansible_architecture }}-highavailability-rpms"
+__ha_cluster_repos_eus:
+  - "rhel-8-for-{{ ansible_architecture }}-highavailability-eus-rpms"
+__ha_cluster_repos_e4s:
+  - "rhel-8-for-{{ ansible_architecture }}-highavailability-e4s-rpms"
+__ha_cluster_repos_tus:
+  - "rhel-8-for-{{ ansible_architecture }}-highavailability-tus-rpms"
