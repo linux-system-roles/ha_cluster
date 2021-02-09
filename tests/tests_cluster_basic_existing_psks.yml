@@ -17,6 +17,19 @@
         - name: Run PSKs and certificates fixture
           include_tasks: tasks/fixture_psks.yml
 
+        - name: Ensure directories for keys exist
+          file:
+            path: "{{ item }}"
+            state: directory
+            owner: "root"
+            group: "root"
+            mode: "0755"
+          loop:
+            - /etc/corosync
+            - /etc/pacemaker
+            - /etc/cluster
+            - /var/lib/pcsd
+
         - name: Ensure corosync key is present
           copy:
             src: "{{ __test_corosync_key_path }}"

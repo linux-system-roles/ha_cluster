@@ -22,6 +22,17 @@
         - name: Run PSKs and certificates fixture
           include_tasks: tasks/fixture_psks.yml
 
+        - name: Ensure directories for keys exist
+          file:
+            path: "{{ item }}"
+            state: directory
+            owner: "root"
+            group: "root"
+            mode: "0755"
+          loop:
+            - /etc/pacemaker
+            - /var/lib/pcsd
+
         - name: Ensure pacemaker key is present
           copy:
             content: "{{ __test_pacemaker_key_content }}"
