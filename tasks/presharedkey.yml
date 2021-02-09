@@ -42,7 +42,7 @@
       # Following variables set the fact for all nodes
       delegate_facts: yes
       delegate_to: "{{ item }}"
-      with_items: "{{ ansible_play_hosts }}"
+      with_items: "{{ ansible_play_hosts_all }}"
   when:
     - not (preshared_key_src is string and preshared_key_src | length > 1)
     - not ha_cluster_regenerate_keys

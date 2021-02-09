@@ -2,11 +2,13 @@
   hosts: all
   vars:
     ha_cluster_cluster_present: no
-  roles:
-    - linux-system-roles.ha_cluster
 
   tasks:
     - block:
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
         - name: Stat corosync.conf
           stat:
             path: /etc/corosync/corosync.conf

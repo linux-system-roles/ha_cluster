@@ -8,6 +8,9 @@
 
   tasks:
     - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
         - name: Ensure fence-agents-all is not installed
           package:
             name: fence-agents-all
@@ -27,6 +30,6 @@
               - "'fence-agents-ipmilan' in ansible_facts.packages"
 
         - name: Check cluster status
-          include_tasks: assert_cluster_running.yml
+          include_tasks: tasks/assert_cluster_running.yml
 
       tags: tests::verify

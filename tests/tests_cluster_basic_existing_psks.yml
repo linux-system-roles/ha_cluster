@@ -11,8 +11,11 @@
 
   tasks:
     - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
         - name: Run PSKs and certificates fixture
-          include_tasks: fixture_psks.yml
+          include_tasks: tasks/fixture_psks.yml
 
         - name: Ensure corosync key is present
           copy:
@@ -144,6 +147,6 @@
                 == lookup('file', __test_pcsd_private_key_path) | trim
 
         - name: Check cluster status
-          include_tasks: assert_cluster_running.yml
+          include_tasks: tasks/assert_cluster_running.yml
 
       tags: tests::verify

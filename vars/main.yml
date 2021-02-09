@@ -7,8 +7,7 @@
 # TODO autodetection
 # Currently, only 'pcs-0.10' is supported by the role. When support for
 # 'pcs-0.9' is added, the variable will be moved to distro-specific variable
-# file and a task for including proper distro-specific variables will be added
-# at the top of tasks/main.yml.
+# files.
 __ha_cluster_pcs_provider: "pcs-0.10"
 
 __ha_cluster_repos: []

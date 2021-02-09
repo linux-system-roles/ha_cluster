@@ -6,6 +6,9 @@
 
   tasks:
     - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
         - name: Ensure pre-shared keys and TLS certificates are not present
           file:
             path: "{{ item }}"
@@ -66,6 +69,6 @@
               - stat_pcsd_key.stat.exists
 
         - name: Check cluster status
-          include_tasks: assert_cluster_running.yml
+          include_tasks: tasks/assert_cluster_running.yml
 
       tags: tests::verify

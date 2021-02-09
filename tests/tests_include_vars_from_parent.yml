@@ -37,6 +37,9 @@
           map('join') | product(versions) | map('join') | list +
           [facts['distribution'], facts['os_family']] }}"
 
+    - name: Set up test environment
+      include_tasks: tasks/setup_test.yml
+
     - import_role:
         name: caller
       vars:

@@ -9,20 +9,23 @@
       run_once: yes
   when: ha_cluster_cluster_present
 
-- name: Extract all node names
+- name: Discover cluster node names
   set_fact:
     __ha_cluster_node_name: "{{ \
-        hostvars[item].ha_cluster.node_name | default(item) \
+        hostvars[inventory_hostname].ha_cluster.node_name \
+        | default(inventory_hostname) \
       }}"
-  loop: "{{ ansible_play_hosts }}"
-  run_once: yes
+
+- name: Extract cluster node names
+  set_fact:
+    __ha_cluster_all_node_names: "{{ hostvars[item].__ha_cluster_node_name }}"
+  loop: "{{ ansible_play_hosts_all }}"
   register: __ha_cluster_node_name_result
 
-- name: Collect all node names
+- name: Collect cluster node names
   set_fact:
     __ha_cluster_all_node_names: "{{
         __ha_cluster_node_name_result.results \
-        | map(attribute='ansible_facts.__ha_cluster_node_name') \
+        | map(attribute='ansible_facts.__ha_cluster_all_node_names') \
         | list \
       }}"
-  run_once: yes
