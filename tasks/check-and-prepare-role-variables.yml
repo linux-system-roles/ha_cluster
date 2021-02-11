@@ -11,21 +11,14 @@
 
 - name: Discover cluster node names
   set_fact:
-    __ha_cluster_node_name: "{{ \
-        hostvars[inventory_hostname].ha_cluster.node_name \
-        | default(inventory_hostname) \
+    __ha_cluster_node_name: "{{
+        ha_cluster.node_name | default(inventory_hostname)
       }}"
-
-- name: Extract cluster node names
-  set_fact:
-    __ha_cluster_all_node_names: "{{ hostvars[item].__ha_cluster_node_name }}"
-  loop: "{{ ansible_play_hosts_all }}"
-  register: __ha_cluster_node_name_result
 
 - name: Collect cluster node names
   set_fact:
     __ha_cluster_all_node_names: "{{
-        __ha_cluster_node_name_result.results \
-        | map(attribute='ansible_facts.__ha_cluster_all_node_names') \
-        | list \
+        ansible_play_hosts_all
+        | map('extract', hostvars, '__ha_cluster_node_name')
+        | list
       }}"
