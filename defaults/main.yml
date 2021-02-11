@@ -1,9 +1,6 @@
 # SPDX-License-Identifier: MIT
 ---
 ha_cluster_enable_repos: yes
-ha_cluster_enable_repos_eus: no
-ha_cluster_enable_repos_e4s: no
-ha_cluster_enable_repos_tus: no
 
 ha_cluster_cluster_present: yes
 

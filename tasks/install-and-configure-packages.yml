@@ -5,30 +5,7 @@
   loop: "{{ __ha_cluster_repos }}"
   when:
     - ha_cluster_enable_repos
-
-- name: Enable EUS repositories
-  rhsm_repository:
-    name: "{{ item }}"
-    state: enabled
-  loop: "{{ __ha_cluster_repos_eus }}"
-  when:
-    - ha_cluster_enable_repos_eus
-
-- name: Enable E4S repositories
-  rhsm_repository:
-    name: "{{ item }}"
-    state: enabled
-  loop: "{{ __ha_cluster_repos_e4s }}"
-  when:
-    - ha_cluster_enable_repos_e4s
-
-- name: Enable TUS repositories
-  rhsm_repository:
-    name: "{{ item }}"
-    state: enabled
-  loop: "{{ __ha_cluster_repos_tus }}"
-  when:
-    - ha_cluster_enable_repos_tus
+  ignore_errors: yes
 
 - name: Install cluster packages
   package:

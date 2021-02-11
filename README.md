@@ -22,24 +22,6 @@ boolean, default: `yes`
 
 RHEL only, enable standard repositories contaning needed packages
 
-#### `ha_cluster_enable_repos_eus`
-
-boolean, default: `no`
-
-RHEL only, enable EUS repositories contaning needed packages
-
-#### `ha_cluster_enable_repos_e4s`
-
-boolean, default: `no`
-
-RHEL only, enable E4S repositories contaning needed packages
-
-#### `ha_cluster_enable_repos_tus`
-
-boolean, default: `no`
-
-RHEL only, enable TUS repositories contaning needed packages
-
 #### `ha_cluster_cluster_present`
 
 boolean, default: `yes`
