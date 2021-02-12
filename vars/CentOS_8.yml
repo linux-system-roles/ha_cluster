@@ -3,5 +3,4 @@
 # Put internal variables here with CentOS 8 specific values.
 
 __ha_cluster_repos:
-  - ha
   - HighAvailability

@@ -6,8 +6,6 @@
   when:
     - ansible_distribution == "RedHat"
     - ha_cluster_enable_repos
-  # support systems which use custom repositories
-  ignore_errors: yes
 
 - name: Enable CentOS repositories
   command:
@@ -18,8 +16,6 @@
   when:
     - ansible_distribution == "CentOS"
     - ha_cluster_enable_repos
-  # support systems which use custom repositories
-  ignore_errors: yes
 
 - name: Install cluster packages
   package:
