@@ -20,7 +20,7 @@ An Ansible role for managing High Availability Clustering.
 
 boolean, default: `yes`
 
-RHEL only, enable standard repositories contaning needed packages
+RHEL and CentOS only, enable repositories contaning needed packages
 
 #### `ha_cluster_cluster_present`
 

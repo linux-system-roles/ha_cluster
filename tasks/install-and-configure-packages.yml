@@ -1,10 +1,24 @@
-- name: Enable standard repositories
+- name: Enable RHEL repositories
   rhsm_repository:
     name: "{{ item }}"
     state: enabled
   loop: "{{ __ha_cluster_repos }}"
   when:
+    - ansible_distribution == "RedHat"
     - ha_cluster_enable_repos
+  # support systems which use custom repositories
+  ignore_errors: yes
+
+- name: Enable CentOS repositories
+  command:
+    cmd: "dnf config-manager --set-enabled {{ item | quote }}"
+    # there doesn't seem to be a plugin for enabling already defined repos
+    warn: no
+  loop: "{{ __ha_cluster_repos }}"
+  when:
+    - ansible_distribution == "CentOS"
+    - ha_cluster_enable_repos
+  # support systems which use custom repositories
   ignore_errors: yes
 
 - name: Install cluster packages
