@@ -14,6 +14,20 @@
         - name: Run PSKs and certificates fixture
           include_tasks: tasks/fixture_psks.yml
 
+        - name: Get pcsd TLS private key hash
+          stat:
+            path: "{{ ha_cluster_pcsd_private_key_src }}"
+            checksum_algorithm: sha1
+          register: stat_pcsd_key_expected
+          delegate_to: localhost
+
+        - name: Get pcsd TLS certificate hash
+          stat:
+            path: "{{ ha_cluster_pcsd_public_key_src }}"
+            checksum_algorithm: sha1
+          register: stat_pcsd_cert_expected
+          delegate_to: localhost
+
         - name: Run HA Cluster role
           include_role:
             name: linux-system-roles.ha_cluster
@@ -36,28 +50,18 @@
               - stat_pcsd_cert.stat.exists
               - stat_pcsd_key.stat.exists
 
-        - name: Slurp pcsd TLS certificate
-          slurp:
-            src: /var/lib/pcsd/pcsd.crt
-          register: slurp_pcsd_cert
-
-        - name: Slurp pcsd TLS key
-          slurp:
-            src: /var/lib/pcsd/pcsd.key
-          register: slurp_pcsd_key
-
         - name: Check pcsd TLS certificate content
           assert:
             that:
               - >
-                slurp_pcsd_cert.content | b64decode | trim
-                == lookup('file', ha_cluster_pcsd_public_key_src) | trim
+                stat_pcsd_cert.stat.checksum
+                == stat_pcsd_cert_expected.stat.checksum
 
         - name: Check pcsd TLS key content
           assert:
             that:
               - >
-                slurp_pcsd_key.content | b64decode | trim
-                == lookup('file', ha_cluster_pcsd_private_key_src) | trim
+                stat_pcsd_key.stat.checksum
+                == stat_pcsd_key_expected.stat.checksum
 
       tags: tests::verify

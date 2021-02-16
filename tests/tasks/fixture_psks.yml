@@ -6,18 +6,18 @@
         state: directory
         mode: "0700"
 
-    - name: Generate pcsd private key
+    - name: Generate pcsd TLS private key
       openssl_privatekey:
         path: "{{ __test_pcsd_private_key_path }}"
         type: RSA
 
-    - name: Generate pcsd certificate signing request
+    - name: Generate pcsd TLS certificate signing request
       openssl_csr:
         path: "{{ playbook_dir }}/tmp/pcsd.csr"
         privatekey_path: "{{ __test_pcsd_private_key_path }}"
         common_name: "{{ ansible_host }}"
 
-    - name: Generate pcsd certificate
+    - name: Generate pcsd TLS certificate
       openssl_certificate:
         csr_path: "{{ playbook_dir }}/tmp/pcsd.csr"
         path: "{{ __test_pcsd_public_key_path }}"

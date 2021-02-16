@@ -63,6 +63,7 @@
                 owner: "root"
                 group: "root"
                 mode: "0600"
+
             - name: Distribute pcsd TLS certificate
               copy:
                 src: "{{ __test_pcsd_public_key_path }}"
@@ -70,6 +71,41 @@
                 owner: "root"
                 group: "root"
                 mode: "0600"
+
+        - name: Get corosync key hash
+          stat:
+            path: "{{ __test_corosync_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_corosync_key_expected
+          delegate_to: localhost
+
+        - name: Get pacemaker key hash
+          stat:
+            path: "{{ __test_pacemaker_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_pacemaker_key_expected
+          delegate_to: localhost
+
+        - name: Get fence-virt key hash
+          stat:
+            path: "{{ __test_fence_xvm_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_fence_xvm_key_expected
+          delegate_to: localhost
+
+        - name: Get pcsd TLS private key hash
+          stat:
+            path: "{{ __test_pcsd_private_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_pcsd_key_expected
+          delegate_to: localhost
+
+        - name: Get pcsd TLS certificate hash
+          stat:
+            path: "{{ __test_pcsd_public_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_pcsd_cert_expected
+          delegate_to: localhost
 
         - name: Run HA Cluster role
           include_role:
@@ -99,21 +135,11 @@
             checksum_algorithm: sha1
           register: stat_pcsd_cert
 
-        - name: Stat pcsd TLS key
+        - name: Stat pcsd TLS private key
           stat:
             path: /var/lib/pcsd/pcsd.key
             checksum_algorithm: sha1
           register: stat_pcsd_key
-
-        - name: Slurp pcsd TLS certificate
-          slurp:
-            src: /var/lib/pcsd/pcsd.crt
-          register: slurp_pcsd_cert
-
-        - name: Slurp pcsd TLS key
-          slurp:
-            src: /var/lib/pcsd/pcsd.key
-          register: slurp_pcsd_key
 
         - name: Check pre-shared keys are present
           assert:
@@ -129,35 +155,35 @@
             that:
               - >
                 stat_corosync_key.stat.checksum
-                == lookup('file', __test_corosync_key_path) | hash('sha1')
+                == stat_corosync_key_expected.stat.checksum
 
         - name: Check pacemaker key content
           assert:
             that:
               - >
                 stat_pacemaker_key.stat.checksum
-                == lookup('file', __test_pacemaker_key_path) | hash('sha1')
+                == stat_pacemaker_key_expected.stat.checksum
 
         - name: Check fence-virt key content
           assert:
             that:
               - >
                 stat_fence_xvm_key.stat.checksum
-                == lookup('file', __test_fence_xvm_key_path) | hash('sha1')
+                == stat_fence_xvm_key_expected.stat.checksum
 
         - name: Check pcsd TLS certificate content
           assert:
             that:
               - >
-                slurp_pcsd_cert.content | b64decode | trim
-                == lookup('file', __test_pcsd_public_key_path) | trim
+                stat_pcsd_cert.stat.checksum
+                == stat_pcsd_cert_expected.stat.checksum
 
-        - name: Check pcsd TLS key content
+        - name: Check pcsd TLS private key content
           assert:
             that:
               - >
-                slurp_pcsd_key.content | b64decode | trim
-                == lookup('file', __test_pcsd_private_key_path) | trim
+                stat_pcsd_key.stat.checksum
+                == stat_pcsd_key_expected.stat.checksum
 
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml
