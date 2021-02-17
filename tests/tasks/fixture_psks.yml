@@ -1,0 +1,58 @@
+- name: Generate pre-shared keys and certificates on controller
+  block:
+    - name: Ensure a directory for temporary files exists
+      file:
+        path: "{{ playbook_dir }}/tmp"
+        state: directory
+        mode: "0700"
+
+    - name: Generate pcsd TLS private key
+      openssl_privatekey:
+        path: "{{ __test_pcsd_private_key_path }}"
+        type: RSA
+
+    - name: Generate pcsd TLS certificate signing request
+      openssl_csr:
+        path: "{{ playbook_dir }}/tmp/pcsd.csr"
+        privatekey_path: "{{ __test_pcsd_private_key_path }}"
+        common_name: "{{ ansible_host }}"
+
+    - name: Generate pcsd TLS certificate
+      openssl_certificate:
+        csr_path: "{{ playbook_dir }}/tmp/pcsd.csr"
+        path: "{{ __test_pcsd_public_key_path }}"
+        privatekey_path: "{{ __test_pcsd_private_key_path }}"
+        provider: selfsigned
+
+    - name: Generate pre-shared keys
+      set_fact:
+        __test_corosync_key: "{{ lookup('pipe', 'openssl rand -base64 256') }}"
+        __test_pacemaker_key: "{{ lookup('pipe', 'openssl rand -base64 256') }}"
+        __test_fence_xvm_key: "{{ lookup('pipe', 'openssl rand -base64 512') }}"
+
+    - name: Save corosync key
+      copy:
+        content: "{{ __test_corosync_key | b64decode }}"
+        dest: "{{ __test_corosync_key_path }}"
+        mode: "0400"
+
+    - name: Save pacemaker key
+      copy:
+        content: "{{ __test_pacemaker_key | b64decode }}"
+        dest: "{{ __test_pacemaker_key_path }}"
+        mode: "0400"
+
+    - name: Save fence_xvm key
+      copy:
+        content: "{{ __test_fence_xvm_key | b64decode }}"
+        dest: "{{ __test_fence_xvm_key_path }}"
+        mode: "0400"
+
+  delegate_to: localhost
+  run_once: yes
+  vars:
+    __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
+    __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
+    __test_corosync_key_path: "{{ playbook_dir }}/tmp/corosync-authkey"
+    __test_pacemaker_key_path: "{{ playbook_dir }}/tmp/pacemaker-authkey"
+    __test_fence_xvm_key_path: "{{ playbook_dir }}/tmp/fence_xvm.key"

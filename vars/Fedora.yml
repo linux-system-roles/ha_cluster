@@ -1,7 +1,0 @@
-# SPDX-License-Identifier: MIT
----
-# Put internal variables here with Fedora specific values.
-
-# Example:
-__ha_cluster_packages: []
-__ha_cluster_services: []

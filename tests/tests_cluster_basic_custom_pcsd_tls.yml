@@ -1,0 +1,67 @@
+- name: Minimal cluster configuration, custom pcsd TLS certificate - key pair
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_pcsd_public_key_src: "{{ playbook_dir }}/tmp/pcsd.crt"
+    ha_cluster_pcsd_private_key_src: "{{ playbook_dir }}/tmp/pcsd.key"
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Run PSKs and certificates fixture
+          include_tasks: tasks/fixture_psks.yml
+
+        - name: Get pcsd TLS private key hash
+          stat:
+            path: "{{ ha_cluster_pcsd_private_key_src }}"
+            checksum_algorithm: sha1
+          register: stat_pcsd_key_expected
+          delegate_to: localhost
+
+        - name: Get pcsd TLS certificate hash
+          stat:
+            path: "{{ ha_cluster_pcsd_public_key_src }}"
+            checksum_algorithm: sha1
+          register: stat_pcsd_cert_expected
+          delegate_to: localhost
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Stat pcsd TLS certificate
+          stat:
+            path: /var/lib/pcsd/pcsd.crt
+            checksum_algorithm: sha1
+          register: stat_pcsd_cert
+
+        - name: Stat pcsd TLS key
+          stat:
+            path: /var/lib/pcsd/pcsd.key
+            checksum_algorithm: sha1
+          register: stat_pcsd_key
+
+        - name: Check pre-shared keys and TLS certificates are present
+          assert:
+            that:
+              - stat_pcsd_cert.stat.exists
+              - stat_pcsd_key.stat.exists
+
+        - name: Check pcsd TLS certificate content
+          assert:
+            that:
+              - >
+                stat_pcsd_cert.stat.checksum
+                == stat_pcsd_cert_expected.stat.checksum
+
+        - name: Check pcsd TLS key content
+          assert:
+            that:
+              - >
+                stat_pcsd_key.stat.checksum
+                == stat_pcsd_key_expected.stat.checksum
+
+      tags: tests::verify

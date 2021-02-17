@@ -1,0 +1,23 @@
+- name: Enable or disable configured cluster services on boot
+  service:
+    name: "{{ item }}"
+    enabled: "{{ ha_cluster_start_on_boot }}"
+  loop: "{{ __ha_cluster_services }}"
+  when:
+    # Null (i.e. nochange) is currently not supported: Either all nodes are
+    # configured to start the cluster on boot or not to start the cluster on
+    # boot. Null (nochange) could lead to situations where part of cluster
+    # nodes are configured to start the cluster on boot while other nodes in
+    # the same cluster are not.
+    - item != "corosync-qdevice" or __ha_cluster_qdevice_in_use
+
+- name: Get services status - detect SBD
+  service_facts:
+
+# The role does not support configuring SBD yet, therefore we always disable it.
+- name: Disable SBD
+  service:
+    name: "sbd"
+    enabled: no
+  when:
+    - '"sbd.service" in ansible_facts.services'

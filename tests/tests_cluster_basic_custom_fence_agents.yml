@@ -1,0 +1,35 @@
+- name: Minimal cluster configuration, install custom fence agents
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_fence_agent_packages:
+      - "fence-agents-ipmilan"
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Ensure fence-agents-all is not installed
+          package:
+            name: fence-agents-all
+            state: absent
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Get packages status
+          package_facts:
+
+        - name: Check installed fence-agents packages
+          assert:
+            that:
+              - "'fence-agents-all' not in ansible_facts.packages"
+              - "'fence-agents-ipmilan' in ansible_facts.packages"
+
+        - name: Check cluster status
+          include_tasks: tasks/assert_cluster_running.yml
+
+      tags: tests::verify

@@ -4,7 +4,21 @@
 # You can override these by defining the same variable with a different
 # value in a platform/version specific file in vars/
 
-# Examples of non-distribution specific (generic) internal variables:
-__ha_cluster_foo_config: "ha_cluster.conf"
-__ha_cluster_packages: []
-__ha_cluster_services: []
+# TODO autodetection
+# Currently, only 'pcs-0.10' is supported by the role. When support for
+# 'pcs-0.9' is added, the variable will be moved to distro-specific variable
+# files.
+__ha_cluster_pcs_provider: "pcs-0.10"
+
+__ha_cluster_repos: []
+
+__ha_cluster_fullstack_node_packages:
+  - corosync
+  - libknet1-plugins-all
+  - pacemaker
+  - pcs
+
+__ha_cluster_services:
+  - corosync
+  - corosync-qdevice
+  - pacemaker

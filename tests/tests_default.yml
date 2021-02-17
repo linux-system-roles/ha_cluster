@@ -1,7 +1,26 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Ensure that the role runs with default parameters
+- name: Ensure mandatory variables are defined
   hosts: all
+  tasks:
+    - block:
+        - name: Run the role
+          include_role:
+            name: linux-system-roles.ha_cluster
+      rescue:
+        - name: Extract errors
+          set_fact:
+            error_list: "{{ \
+              ansible_failed_result.results | map(attribute='msg') | list
+            }}"
+          run_once: yes
 
-  roles:
-    - linux-system-roles.ha_cluster
+        - name: Check errors
+          assert:
+            that:
+              - "{{ \
+                  'ha_cluster_hacluster_password must be specified' \
+                  in error_list
+                }}"
+
+      tags: tests::verify

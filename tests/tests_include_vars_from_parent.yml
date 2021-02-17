@@ -1,4 +1,5 @@
-- hosts: all
+- name: Test include vars from parent
+  hosts: all
   tasks:
     - name: create var file in caller that can override the one in called role
       delegate_to: localhost
@@ -10,6 +11,7 @@
         # XXX ugly, self-modifying code - changes the "caller" role on
         # the controller
         dest: "{{ playbook_dir }}/roles/caller/vars/{{ item }}.yml"
+        mode: "0666"
       loop: "{{ varfiles | unique }}"
       # In case the playbook is executed against multiple hosts, use
       # only the first one. Otherwise the hosts would stomp on each
@@ -34,6 +36,9 @@
         varfiles: "{{ [facts['distribution']] | product(separators) |
           map('join') | product(versions) | map('join') | list +
           [facts['distribution'], facts['os_family']] }}"
+
+    - name: Set up test environment
+      include_tasks: tasks/setup_test.yml
 
     - import_role:
         name: caller

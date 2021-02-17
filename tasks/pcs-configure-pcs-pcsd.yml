@@ -1,0 +1,55 @@
+# Pcsd must be stopped when its config files are being updated. This is to
+# prevent a race condition caused by pcsd syncing its files in the cluster on
+# its own.
+- name: Stop pcsd
+  service:
+    name: pcsd
+    state: stopped
+
+- name: Regenerate pcsd TLS certificate and key
+  # pcsd will generate a certificate - key pair once it is started
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /var/lib/pcsd/pcsd.key
+    - /var/lib/pcsd/pcsd.crt
+  when:
+    - ha_cluster_regenerate_keys
+
+- name: Distribute pcsd TLS certificate and key
+  block:
+    - name: Distribute pcsd TLS private key
+      copy:
+        src: "{{ ha_cluster_pcsd_private_key_src }}"
+        dest: /var/lib/pcsd/pcsd.key
+        owner: "root"
+        group: "root"
+        mode: "0600"
+    - name: Distribute pcsd TLS certificate
+      copy:
+        src: "{{ ha_cluster_pcsd_public_key_src }}"
+        dest: /var/lib/pcsd/pcsd.crt
+        owner: "root"
+        group: "root"
+        mode: "0600"
+  when:
+    - ha_cluster_pcsd_public_key_src is string
+    - ha_cluster_pcsd_public_key_src | length > 0
+    - ha_cluster_pcsd_private_key_src is string
+    - ha_cluster_pcsd_private_key_src | length > 0
+
+- name: Distribute pcs_settings.conf
+  template:
+    src: templates/pcs_settings.conf
+    dest: /var/lib/pcsd/pcs_settings.conf
+    owner: "root"
+    group: "root"
+    mode: "0644"
+    trim_blocks: no
+
+- name: Start pcsd with updated config files and configure it to start on boot
+  service:
+    name: pcsd
+    state: started
+    enabled: yes

@@ -1,0 +1,22 @@
+- name: Get pcs auth status
+  command:
+    cmd: pcs status pcsd
+  register: auth_status
+  changed_when: no
+
+- name: Check pcs auth
+  assert:
+    that:
+      - auth_status.rc == 0
+
+- name: Get cluster status
+  command:
+    cmd: pcs status
+  register: cluster_status
+  changed_when: no
+
+- name: Check cluster is running
+  assert:
+    that:
+      - "'Cluster name: {{ ha_cluster_cluster_name }}' in cluster_status.stdout"
+      - cluster_status.rc == 0

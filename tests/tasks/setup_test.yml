@@ -1,0 +1,11 @@
+- name: Set node name to 'localhost' for single-node clusters
+  set_fact:
+    inventory_hostname: "localhost"
+  when: ansible_play_hosts_all | length == 1
+
+# Test systems may not have repositories available through subscriptions
+- name: Do not try to enable RHEL repositories
+  set_fact:
+    ha_cluster_enable_repos: no
+  when:
+    - ansible_distribution == "RedHat"

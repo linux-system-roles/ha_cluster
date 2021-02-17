@@ -1,0 +1,79 @@
+- name: Create a corosync.conf tempfile
+  tempfile:
+    state: file
+    suffix: _ha_cluster_corosync_conf
+  register: __ha_cluster_tempfile_corosync_conf
+  run_once: yes
+  # We always need to create corosync.conf file to see whether it's the same as
+  # what is already present on the cluster nodes. However, we don't want to
+  # report it as a change since the only thing which matters is copying the
+  # resulting corosync.conf to cluster nodes.
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+- name: Create a corosync.conf file content
+  include_tasks: "cluster-setup-{{ __ha_cluster_pcs_provider }}.yml"
+
+- name: Fetch created corosync.conf file
+  slurp:
+    src: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
+  register: __ha_cluster_data_corosync_conf
+  run_once: yes
+  when: __ha_cluster_tempfile_corosync_conf.path is defined
+
+- name: Distribute corosync.conf file
+  copy:
+    content: "{{ __ha_cluster_data_corosync_conf['content'] | b64decode }}"
+    dest: /etc/corosync/corosync.conf
+    owner: "root"
+    group: "root"
+    mode: "0644"
+  register: __ha_cluster_distribute_corosync_conf
+  when: __ha_cluster_data_corosync_conf is defined
+
+- name: Remove a corosync.conf tempfile
+  file:
+    path: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
+    state: absent
+  when: __ha_cluster_tempfile_corosync_conf.path is defined
+  run_once: yes
+  # We always need to create corosync.conf file to see whether it's the same as
+  # what is already present on the cluster nodes. However, we don't want to
+  # report it as a change since the only thing which matters is copying the
+  # resulting corosync.conf to cluster nodes.
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+- name: Get corosync authkey
+  include_tasks: "presharedkey.yml"
+  vars:
+    preshared_key_label: "corosync authkey"
+    preshared_key_src: "{{ ha_cluster_corosync_key_src }}"
+    preshared_key_dest: /etc/corosync/authkey
+    preshared_key_length: 256
+
+- name: Distribute corosync authkey
+  copy:
+    content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
+    dest: /etc/corosync/authkey
+    owner: "root"
+    group: "root"
+    mode: "0400"
+  register: __ha_cluster_distribute_corosync_authkey
+
+- name: Get pacemaker authkey
+  include_tasks: "presharedkey.yml"
+  vars:
+    preshared_key_label: "pacemaker authkey"
+    preshared_key_src: "{{ ha_cluster_pacemaker_key_src }}"
+    preshared_key_dest: /etc/pacemaker/authkey
+    preshared_key_length: 256
+
+- name: Distribute pacemaker authkey
+  copy:
+    content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
+    dest: /etc/pacemaker/authkey
+    owner: "hacluster"
+    group: "haclient"
+    mode: "0400"
+  register: __ha_cluster_distribute_pacemaker_authkey

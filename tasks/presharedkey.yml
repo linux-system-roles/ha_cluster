@@ -1,0 +1,48 @@
+# 1) If a key has been specified by the user, go with the specified key.
+# 2) Otherwise generate a new random key. This is used as a default if no key
+# can be slurped from existing cluster nodes.
+# 3) If the user does not want to regenerate a key, try slurping an existing
+# key from cluster nodes. If no node has a key, a random key generated in step
+# 2 is going to be used.
+
+- name: "Fetch {{ preshared_key_label }} if provided"
+  set_fact:
+    __ha_cluster_some_preshared_key: >
+      "{{ lookup('file', preshared_key_src) | b64encode }}"
+  when:
+    - preshared_key_src is string and preshared_key_src | length > 1
+  run_once: yes
+
+- name: "Generate random {{ preshared_key_label }}"
+  set_fact:
+    __ha_cluster_some_preshared_key: >
+      "{{ lookup('pipe', 'openssl rand -base64 {{ preshared_key_length }}') }}"
+  when:
+    - not (preshared_key_src is string and preshared_key_src | length > 1)
+  run_once: yes
+
+- name: "Retrieve {{ preshared_key_label }} from cluster nodes"
+  block:
+    - name: Check if {{ preshared_key_label }} exists on cluster nodes
+      stat:
+        path: "{{ preshared_key_dest }}"
+      register: preshared_key_stat
+
+    - name: "Slurp existing {{ preshared_key_label }} from cluster nodes"
+      slurp:
+        src: "{{ preshared_key_dest }}"
+      register: preshared_key_slurp
+      when: preshared_key_stat.stat.exists
+
+    - name: "Use the slurped {{ preshared_key_label }}"
+      set_fact:
+        __ha_cluster_some_preshared_key: >
+          "{{ preshared_key_slurp.content }}"
+      when: preshared_key_stat.stat.exists
+      # Following variables set the fact for all nodes
+      delegate_facts: yes
+      delegate_to: "{{ item }}"
+      with_items: "{{ ansible_play_hosts_all }}"
+  when:
+    - not (preshared_key_src is string and preshared_key_src | length > 1)
+    - not ha_cluster_regenerate_keys

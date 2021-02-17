@@ -1,0 +1,191 @@
+- name: Minimal cluster configuration, using existing PSKs
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: "test-cluster"
+    __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
+    __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
+    __test_corosync_key_path: "{{ playbook_dir }}/tmp/corosync-authkey"
+    __test_pacemaker_key_path: "{{ playbook_dir }}/tmp/pacemaker-authkey"
+    __test_fence_xvm_key_path: "{{ playbook_dir }}/tmp/fence_xvm.key"
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Run PSKs and certificates fixture
+          include_tasks: tasks/fixture_psks.yml
+
+        - name: Ensure directories for keys exist
+          file:
+            path: "{{ item }}"
+            state: directory
+            owner: "root"
+            group: "root"
+            mode: "0755"
+          loop:
+            - /etc/corosync
+            - /etc/pacemaker
+            - /etc/cluster
+            - /var/lib/pcsd
+
+        - name: Ensure corosync key is present
+          copy:
+            src: "{{ __test_corosync_key_path }}"
+            dest: /etc/corosync/authkey
+            owner: "root"
+            group: "root"
+            mode: "0400"
+
+        - name: Ensure pacemaker key is present
+          copy:
+            src: "{{ __test_pacemaker_key_path }}"
+            dest: /etc/pacemaker/authkey
+            owner: "root"
+            group: "root"
+            mode: "0400"
+
+        - name: Ensure fence-virt key is present
+          copy:
+            src: "{{ __test_fence_xvm_key_path }}"
+            dest: /etc/cluster/fence_xvm.key
+            owner: "root"
+            group: "root"
+            mode: "0400"
+
+        - name: Ensure pcsd TLS certificate and key exist
+          block:
+            - name: Distribute pcsd TLS private key
+              copy:
+                src: "{{ __test_pcsd_private_key_path }}"
+                dest: /var/lib/pcsd/pcsd.key
+                owner: "root"
+                group: "root"
+                mode: "0600"
+
+            - name: Distribute pcsd TLS certificate
+              copy:
+                src: "{{ __test_pcsd_public_key_path }}"
+                dest: /var/lib/pcsd/pcsd.crt
+                owner: "root"
+                group: "root"
+                mode: "0600"
+
+        - name: Get corosync key hash
+          stat:
+            path: "{{ __test_corosync_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_corosync_key_expected
+          delegate_to: localhost
+
+        - name: Get pacemaker key hash
+          stat:
+            path: "{{ __test_pacemaker_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_pacemaker_key_expected
+          delegate_to: localhost
+
+        - name: Get fence-virt key hash
+          stat:
+            path: "{{ __test_fence_xvm_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_fence_xvm_key_expected
+          delegate_to: localhost
+
+        - name: Get pcsd TLS private key hash
+          stat:
+            path: "{{ __test_pcsd_private_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_pcsd_key_expected
+          delegate_to: localhost
+
+        - name: Get pcsd TLS certificate hash
+          stat:
+            path: "{{ __test_pcsd_public_key_path }}"
+            checksum_algorithm: sha1
+          register: stat_pcsd_cert_expected
+          delegate_to: localhost
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Stat corosync authkey
+          stat:
+            path: /etc/corosync/authkey
+            checksum_algorithm: sha1
+          register: stat_corosync_key
+
+        - name: Stat pacemaker authkey
+          stat:
+            path: /etc/pacemaker/authkey
+            checksum_algorithm: sha1
+          register: stat_pacemaker_key
+
+        - name: Stat fence-virt authkey
+          stat:
+            path: /etc/cluster/fence_xvm.key
+            checksum_algorithm: sha1
+          register: stat_fence_xvm_key
+
+        - name: Stat pcsd TLS certificate
+          stat:
+            path: /var/lib/pcsd/pcsd.crt
+            checksum_algorithm: sha1
+          register: stat_pcsd_cert
+
+        - name: Stat pcsd TLS private key
+          stat:
+            path: /var/lib/pcsd/pcsd.key
+            checksum_algorithm: sha1
+          register: stat_pcsd_key
+
+        - name: Check pre-shared keys are present
+          assert:
+            that:
+              - stat_corosync_key.stat.exists
+              - stat_pacemaker_key.stat.exists
+              - stat_fence_xvm_key.stat.exists
+              - stat_pcsd_cert.stat.exists
+              - stat_pcsd_key.stat.exists
+
+        - name: Check corosync key content
+          assert:
+            that:
+              - >
+                stat_corosync_key.stat.checksum
+                == stat_corosync_key_expected.stat.checksum
+
+        - name: Check pacemaker key content
+          assert:
+            that:
+              - >
+                stat_pacemaker_key.stat.checksum
+                == stat_pacemaker_key_expected.stat.checksum
+
+        - name: Check fence-virt key content
+          assert:
+            that:
+              - >
+                stat_fence_xvm_key.stat.checksum
+                == stat_fence_xvm_key_expected.stat.checksum
+
+        - name: Check pcsd TLS certificate content
+          assert:
+            that:
+              - >
+                stat_pcsd_cert.stat.checksum
+                == stat_pcsd_cert_expected.stat.checksum
+
+        - name: Check pcsd TLS private key content
+          assert:
+            that:
+              - >
+                stat_pcsd_key.stat.checksum
+                == stat_pcsd_key_expected.stat.checksum
+
+        - name: Check cluster status
+          include_tasks: tasks/assert_cluster_running.yml
+
+      tags: tests::verify

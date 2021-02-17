@@ -1,8 +1,29 @@
 # SPDX-License-Identifier: MIT
 ---
-# Here is the right place to put the role's input variables.
-# This file also serves as a documentation for such a variables.
+ha_cluster_enable_repos: yes
 
-# Examples of role input variables:
-ha_cluster_foo: "foo"
-ha_cluster_bar: "bar"
+ha_cluster_cluster_present: yes
+
+ha_cluster_start_on_boot: yes
+
+ha_cluster_fence_agent_packages:
+  - "fence-agents-all"
+  - "fence-virt"
+
+ha_cluster_hacluster_password: ""
+ha_cluster_regenerate_keys: no
+ha_cluster_corosync_key_src: null
+ha_cluster_pacemaker_key_src: null
+ha_cluster_fence_virt_key_src: null
+ha_cluster_pcsd_public_key_src: null
+ha_cluster_pcsd_private_key_src: null
+
+ha_cluster_cluster_name: "my-cluster"
+
+ha_cluster_pcs_permission_list:
+  - type: "group"
+    name: "hacluster"
+    allow_list:
+      - "grant"
+      - "read"
+      - "write"

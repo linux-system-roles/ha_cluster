@@ -1,0 +1,28 @@
+- name: Get services status - detect firewall
+  service_facts:
+
+- name: Configure firewalld
+  block:
+    - name: Enable service "high-availability" in firewalld
+      firewalld:
+        service: "high-availability"
+        state: "enabled"
+        permanent: yes
+        immediate: "{{ \
+            ansible_facts.services['firewalld.service'].state == 'running' \
+          }}"
+        offline: yes
+
+    - name: Enable fence-virt port in firewalld
+      firewalld:
+        port: "1229/tcp"
+        state: "enabled"
+        permanent: yes
+        immediate: "{{ \
+            ansible_facts.services['firewalld.service'].state == 'running' \
+          }}"
+        offline: yes
+      when:
+        - "'fence-virt' in ha_cluster_fence_agent_packages"
+  when:
+    - "'firewalld.service' in ansible_facts.services"
