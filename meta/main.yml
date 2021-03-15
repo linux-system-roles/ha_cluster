@@ -50,6 +50,7 @@ galaxy_info:
     - name: EL
       versions:
         - 8
+        - 9
 
   # List tags for your role here, one per line. A tag is a keyword that
   # describes and categorizes the role. Users find roles by searching for tags.
