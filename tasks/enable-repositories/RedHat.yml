@@ -1,0 +1,7 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Enable RHEL repositories
+  rhsm_repository:
+    name: "{{ item }}"
+    state: enabled
+  loop: "{{ __ha_cluster_repos }}"

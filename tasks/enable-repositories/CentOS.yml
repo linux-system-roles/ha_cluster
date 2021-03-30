@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Enable CentOS repositories
+  command:
+    cmd: "dnf config-manager --set-enabled {{ item | quote }}"
+    # There doesn't seem to be a plugin for enabling already defined repos. So
+    # we silence the warning which recommends using an ansible plugin instead
+    # of running dnf command.
+    warn: no
+  loop: "{{ __ha_cluster_repos }}"
+  # The dnf command does not indicate if any changes have been made. To silence
+  # ansible lint (301 Commands should not change things if nothing needs doing),
+  # changed_when is set explicitly.
+  changed_when: yes
