@@ -1,7 +1,16 @@
 # SPDX-License-Identifier: MIT
 ---
+- name: List active RHEL repositories
+  command:
+    cmd: dnf repolist
+    warn: no
+  register: __ha_cluster_repolist
+  changed_when: no
+  check_mode: no
+
 - name: Enable RHEL repositories
   rhsm_repository:
-    name: "{{ item }}"
+    name: "{{ item.id }}"
     state: enabled
   loop: "{{ __ha_cluster_repos }}"
+  when: item.name not in __ha_cluster_repolist.stdout

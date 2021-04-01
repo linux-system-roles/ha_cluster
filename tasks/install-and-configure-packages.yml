@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Find platform/version specific tasks for enable repositories
+- name: Find platform/version specific tasks to enable repositories
   set_fact:
     __ha_cluster_enable_repo_tasks_file: "{{ \
       __ha_cluster_enable_repo_tasks_file_candidate \
@@ -21,7 +21,7 @@
     - ha_cluster_enable_repos
     - __ha_cluster_enable_repo_tasks_file_candidate is file
 
-- name: Run platform/version specific tasks for enable repositories
+- name: Run platform/version specific tasks to enable repositories
   include_tasks: "{{ __ha_cluster_enable_repo_tasks_file }}"
   when:
     - ha_cluster_enable_repos
