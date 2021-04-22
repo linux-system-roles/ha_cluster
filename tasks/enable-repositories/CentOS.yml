@@ -1,0 +1,28 @@
+# SPDX-License-Identifier: MIT
+---
+- name: List active CentOS repositories
+  command:
+    cmd: dnf repolist
+    # See the comment bellow.
+    warn: no
+  register: __ha_cluster_repolist
+  changed_when: no
+  check_mode: no
+
+- name: Enable CentOS repositories
+  command:
+    cmd: "dnf config-manager --set-enabled {{ item.id | quote }}"
+    # Silence a warning which recommends using ansible dnf module instead of
+    # running dnf command.
+    #
+    # yum_repository module documentation states, "If you wish to update an
+    # existing repository definition use ini_file instead."
+    #
+    # ini_file requires a file path and a section name, both of which are
+    # different in various CentOS minor versions.
+    #
+    # Using dnf, similar differences must also be handled. But at least the
+    # approach and __ha_cluster_repos structure is the same as for RHEL.
+    warn: no
+  loop: "{{ __ha_cluster_repos }}"
+  when: item.name not in __ha_cluster_repolist.stdout

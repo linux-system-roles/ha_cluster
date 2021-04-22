@@ -2,5 +2,9 @@
 ---
 # Put internal variables here with Red Hat Enterprise Linux 8 specific values.
 
+# List of repositories holding HA cluster packages.
+# id: repo ID used to enable the repo
+# name: user-friendly name of a repo used to check if the repo is enabled
 __ha_cluster_repos:
-  - "rhel-8-for-{{ ansible_architecture }}-highavailability-rpms"
+  - id: "rhel-8-for-{{ ansible_architecture }}-highavailability-rpms"
+    name: "High Availability"
