@@ -5,13 +5,32 @@
 # key from cluster nodes. If no node has a key, a random key generated in step
 # 2 is going to be used.
 
-- name: "Fetch {{ preshared_key_label }} if provided"
-  set_fact:
-    __ha_cluster_some_preshared_key: >
-      "{{ lookup('file', preshared_key_src) | b64encode }}"
+- name: "Retrieve {{ preshared_key_label }} from the controller"
+  block:
+    - name: "Check if {{ preshared_key_label }} exists on the controller"
+      stat:
+        path: "{{ preshared_key_src }}"
+      register: __ha_cluster_preshared_key_stat_controller
+
+    - name: "Slurp existing {{ preshared_key_label }} from the controller"
+      slurp:
+        src: "{{ preshared_key_src }}"
+      register: __ha_cluster_preshared_key_slurp_controller
+      when: __ha_cluster_preshared_key_stat_controller.stat.exists
+      # Prevent key contents to be printed to the output
+      no_log: true
+
+    - name: "Use the slurped {{ preshared_key_label }} from the controller"
+      set_fact:
+        __ha_cluster_some_preshared_key: >
+          "{{ __ha_cluster_preshared_key_slurp_controller.content }}"
+      when: __ha_cluster_preshared_key_stat_controller.stat.exists
+      # Prevent key contents to be printed to the output
+      no_log: true
   when:
     - preshared_key_src is string and preshared_key_src | length > 1
   run_once: yes
+  delegate_to: localhost
 
 - name: "Generate random {{ preshared_key_label }}"
   set_fact:
@@ -20,25 +39,31 @@
   when:
     - not (preshared_key_src is string and preshared_key_src | length > 1)
   run_once: yes
+  # Prevent key contents to be printed to the output
+  no_log: true
 
 - name: "Retrieve {{ preshared_key_label }} from cluster nodes"
   block:
-    - name: Check if {{ preshared_key_label }} exists on cluster nodes
+    - name: "Check if {{ preshared_key_label }} exists on cluster nodes"
       stat:
         path: "{{ preshared_key_dest }}"
-      register: preshared_key_stat
+      register: __ha_cluster_preshared_key_stat
 
     - name: "Slurp existing {{ preshared_key_label }} from cluster nodes"
       slurp:
         src: "{{ preshared_key_dest }}"
-      register: preshared_key_slurp
-      when: preshared_key_stat.stat.exists
+      register: __ha_cluster_preshared_key_slurp
+      when: __ha_cluster_preshared_key_stat.stat.exists
+      # Prevent key contents to be printed to the output
+      no_log: true
 
-    - name: "Use the slurped {{ preshared_key_label }}"
+    - name: "Use the slurped {{ preshared_key_label }} from cluster nodes"
       set_fact:
         __ha_cluster_some_preshared_key: >
-          "{{ preshared_key_slurp.content }}"
-      when: preshared_key_stat.stat.exists
+          "{{ __ha_cluster_preshared_key_slurp.content }}"
+      when: __ha_cluster_preshared_key_stat.stat.exists
+      # Prevent key contents to be printed to the output
+      no_log: true
       # Following variables set the fact for all nodes
       delegate_facts: yes
       delegate_to: "{{ item }}"
