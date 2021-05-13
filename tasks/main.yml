@@ -62,6 +62,10 @@
 
     - name: Start the cluster and reload corosync.conf
       include_tasks: cluster-start-and-reload.yml
+
+    - name: Create and push CIB
+      include_tasks: create-and-push-cib.yml
+
   when: ha_cluster_cluster_present
 
 - name: Remove cluster configuration

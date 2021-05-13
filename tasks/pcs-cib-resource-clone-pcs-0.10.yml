@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Check '{{ resource_clone.resource_id }}' resource clone options
+  fail:
+    msg: >
+      Custom clone id '{{ resource_clone.id }}' is ignored
+      for resource clone '{{ resource_clone.resource_id }}', please upgrade pcs
+  ignore_errors: yes
+  when:
+    - resource_clone.id is defined
+    - not (
+        (
+          resource_clone.promotable | default(false)
+          and
+          'pcmk.resource.promotable.custom-id' in __ha_cluster_pcs_capabilities
+        )
+        or (
+          not resource_clone.promotable | default(false)
+          and
+          'pcmk.resource.clone.custom-id' in __ha_cluster_pcs_capabilities
+        )
+      )
+
+- name: Configure '{{ resource_clone.resource_id }}' resource clone
+  command:
+    # pcs-0.10 supports only one set of attributes, that's the reason for
+    # *_attrs[0] instead of looping over *_attrs
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      resource
+      {% if resource_clone.promotable | default(false) %}
+        promotable
+      {% else %}
+        clone
+      {% endif %}
+      '{{ resource_clone.resource_id | quote }}'
+      {%
+        if
+        resource_clone.id is defined
+        and (
+        (
+          resource_clone.promotable | default(false)
+          and
+          'pcmk.resource.promotable.custom-id' in __ha_cluster_pcs_capabilities
+        )
+        or (
+          not resource_clone.promotable | default(false)
+          and
+          'pcmk.resource.clone.custom-id' in __ha_cluster_pcs_capabilities
+        )
+        )
+      %}
+        '{{ resource_clone.id | quote }}'
+      {% endif %}
+      {% if resource_clone.meta_attrs[0].attrs | default({}) %}
+        {% for attr in resource_clone.meta_attrs[0].attrs | dict2items %}
+          {{ attr.key | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: no
+  changed_when: not ansible_check_mode

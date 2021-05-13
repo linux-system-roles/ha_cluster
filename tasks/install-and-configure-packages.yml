@@ -33,6 +33,8 @@
       __ha_cluster_fullstack_node_packages \
       + \
       ha_cluster_fence_agent_packages \
+      + \
+      ha_cluster_extra_packages \
     }}"
     state: present
 

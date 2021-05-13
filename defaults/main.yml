@@ -6,6 +6,8 @@ ha_cluster_cluster_present: yes
 
 ha_cluster_start_on_boot: yes
 
+ha_cluster_extra_packages: []
+
 ha_cluster_fence_agent_packages:
   - "fence-agents-all"
   - "fence-virt"
@@ -27,3 +29,7 @@ ha_cluster_pcs_permission_list:
       - "grant"
       - "read"
       - "write"
+
+ha_cluster_resource_primitives: []
+ha_cluster_resource_groups: []
+ha_cluster_resource_clones: []

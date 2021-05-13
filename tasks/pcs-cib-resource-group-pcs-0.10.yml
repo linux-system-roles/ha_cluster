@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure resource group '{{ resource_group.id }}'
+  command:
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      resource group add {{ resource_group.id | quote }}
+      {% for resource in resource_group.resource_ids %}
+        {{ resource | quote }}
+      {% endfor %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+- name: Configure meta attributes of resource group '{{ resource_group.id }}'
+  command:
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      resource meta {{ resource_group.id | quote }}
+      {% for attr in resource_group.meta_attrs[0].attrs | dict2items %}
+        {{ attr.key | quote }}={{ attr.value | quote }}
+      {% endfor %}
+  when: resource_group.meta_attrs[0].attrs | default({})
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: no
+  changed_when: not ansible_check_mode

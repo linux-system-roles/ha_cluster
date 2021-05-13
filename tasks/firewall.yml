@@ -23,6 +23,11 @@
           }}"
         offline: yes
       when:
-        - "'fence-virt' in ha_cluster_fence_agent_packages"
+        - " \
+          'fence-virt' in ha_cluster_fence_agent_packages or \
+          'fence-virt' in ha_cluster_extra_packages or \
+          'fence-agents-all' in ha_cluster_fence_agent_packages or \
+          'fence-agents-all' in ha_cluster_extra_packages \
+          "
   when:
     - "'firewalld.service' in ansible_facts.services"

@@ -1,0 +1,34 @@
+- name: Minimal cluster configuration, install custom packages
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_extra_packages:
+      - "resource-agents-gcp"
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Ensure resource-agents-gcp is not installed
+          package:
+            name: resource-agents-gcp
+            state: absent
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Get packages status
+          package_facts:
+
+        - name: Check installed packages
+          assert:
+            that:
+              - "'resource-agents-gcp' in ansible_facts.packages"
+
+        - name: Check cluster status
+          include_tasks: tasks/assert_cluster_running.yml
+
+      tags: tests::verify
