@@ -173,6 +173,17 @@
           include_role:
             name: linux-system-roles.ha_cluster
 
+        - name: Fetch pcs capabilities
+          command:
+            cmd: pcs --version --full
+          register: __test_pcs_version
+
+        - name: Parse pcs capabilities
+          set_fact:
+            __test_pcs_capabilities: "{{
+                __test_pcs_version.stdout_lines[1].split()
+              }}"
+
         - name: Fetch stonith configuration from the cluster
           command:
             cmd: pcs stonith config
@@ -207,7 +218,7 @@
                   '  Attributes: delay=1 pcmk_host_list="node1 node2"',
                   '  Meta Attrs: an-attr="a value" target-role=Stopped',
                   '  Operations: monitor interval=26 timeout=13 (xvm-with-attrs-monitor-interval-26)',
-                  '              monitor interval=28 timeout=14 (xvm-with-attrs-monitor-interval-28)'
+                  '              monitor interval=28 timeout=14 (xvm-with-attrs-monitor-interval-28)',
                 ]
 
         - name: Check resource configuration
@@ -304,7 +315,9 @@
                   '               reload interval=0s timeout=20s (dummy-clone-promotable-reload-interval-0s)',
                   '               start interval=0s timeout=20s (dummy-clone-promotable-start-interval-0s)',
                   '               stop interval=0s timeout=20s (dummy-clone-promotable-stop-interval-0s)',
-                  ' Clone: custom-clone-id1',
+                  ' Clone: {{
+                      ("pcmk.resource.clone.custom-id" in __test_pcs_capabilities)
+                      | ternary("custom-clone-id1", "dummy-clone-id-clone") }}',
                   '  Resource: dummy-clone-id (class=ocf provider=pacemaker type=Dummy)',
                   '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-id-migrate_from-interval-0s)',
                   '               migrate_to interval=0s timeout=20s (dummy-clone-id-migrate_to-interval-0s)',
@@ -337,7 +350,9 @@
                   '               reload interval=0s timeout=20s (dummy-clone-with-attrs1-reload-interval-0s)',
                   '               start interval=0s timeout=20s (dummy-clone-with-attrs1-start-interval-0s)',
                   '               stop interval=0s timeout=20s (dummy-clone-with-attrs1-stop-interval-0s)',
-                  ' Clone: custom-clone-id2',
+                  ' Clone: {{
+                      ("pcmk.resource.promotable.custom-id" in __test_pcs_capabilities)
+                      | ternary("custom-clone-id2", "dummy-clone-with-attrs2-clone") }}',
                   '  Meta Attrs: an-attr="a value" promotable=true target-role=Stopped',
                   '  Resource: dummy-clone-with-attrs2 (class=ocf provider=pacemaker type=Dummy)',
                   '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-with-attrs2-migrate_from-interval-0s)',
@@ -354,7 +369,7 @@
                   '                monitor interval=10s timeout=20s (dummy-3a-monitor-interval-10s)',
                   '                reload interval=0s timeout=20s (dummy-3a-reload-interval-0s)',
                   '                start interval=0s timeout=20s (dummy-3a-start-interval-0s)',
-                  '                stop interval=0s timeout=20s (dummy-3a-stop-interval-0s)'
+                  '                stop interval=0s timeout=20s (dummy-3a-stop-interval-0s)',
                 ]
         # yamllint enable rule:line-length
 
