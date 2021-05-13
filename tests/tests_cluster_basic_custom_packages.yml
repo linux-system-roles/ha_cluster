@@ -3,17 +3,21 @@
   vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: "test-cluster"
+    __test_extra_package: "{{
+        (ansible_facts['distribution'] == 'Fedora')
+        | ternary('glusterfs-resource-agents', 'resource-agents-gcp')
+      }}"
     ha_cluster_extra_packages:
-      - "resource-agents-gcp"
+      - "{{ __test_extra_package }}"
 
   tasks:
     - block:
         - name: Set up test environment
           include_tasks: tasks/setup_test.yml
 
-        - name: Ensure resource-agents-gcp is not installed
+        - name: Ensure extra package is not installed
           package:
-            name: resource-agents-gcp
+            name: "{{ __test_extra_package }}"
             state: absent
 
         - name: Run HA Cluster role
@@ -26,7 +30,7 @@
         - name: Check installed packages
           assert:
             that:
-              - "'resource-agents-gcp' in ansible_facts.packages"
+              - "'{{ __test_extra_package }}' in ansible_facts.packages"
 
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml
