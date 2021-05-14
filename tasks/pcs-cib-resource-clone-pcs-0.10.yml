@@ -33,7 +33,7 @@
       {% else %}
         clone
       {% endif %}
-      '{{ resource_clone.resource_id | quote }}'
+      {{ resource_clone.resource_id | quote }}
       {%
         if
         resource_clone.id is defined
@@ -50,7 +50,7 @@
         )
         )
       %}
-        '{{ resource_clone.id | quote }}'
+        {{ resource_clone.id | quote }}
       {% endif %}
       {% if resource_clone.meta_attrs[0].attrs | default({}) %}
         {% for attr in resource_clone.meta_attrs[0].attrs | dict2items %}

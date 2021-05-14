@@ -9,7 +9,7 @@
       {% if resource_is_stonith %} stonith {% else %} resource {% endif %}
       create {{ resource.id | quote }}
       {% if resource_is_stonith %}
-        '{{ resource.agent | replace("stonith:", "") | quote }}'
+        {{ resource.agent | replace("stonith:", "") | quote }}
       {% else %}
         {{ resource.agent | quote }}
       {% endif %}
