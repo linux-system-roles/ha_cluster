@@ -14,16 +14,16 @@
         {{ resource.agent | quote }}
       {% endif %}
 
-      {% if resource.instance_attrs[0].attrs | default({}) %}
-        {% for attr in resource.instance_attrs[0].attrs | dict2items %}
-          {{ attr.key | quote }}={{ attr.value | quote }}
+      {% if resource.instance_attrs[0].attrs | default([]) %}
+        {% for attr in resource.instance_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
 
-      {% if resource.meta_attrs[0].attrs | default({}) %}
+      {% if resource.meta_attrs[0].attrs | default([]) %}
         meta
-        {% for attr in resource.meta_attrs[0].attrs | dict2items %}
-          {{ attr.key | quote }}={{ attr.value | quote }}
+        {% for attr in resource.meta_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
 
@@ -33,9 +33,9 @@
           {% if operation.action is defined %}
             {{ operation.action | quote }}
           {% endif %}
-          {% if operation.attrs | default({}) %}
-            {% for attr in operation.attrs | dict2items %}
-              {{ attr.key | quote }}={{ attr.value | quote }}
+          {% if operation.attrs | default([]) %}
+            {% for attr in operation.attrs %}
+              {{ attr.name | quote }}={{ attr.value | quote }}
             {% endfor %}
           {% endif %}
         {% endfor %}

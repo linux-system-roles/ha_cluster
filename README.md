@@ -184,21 +184,29 @@ ha_cluster_resource_primitives:
     agent: "resource-agent"
     instance_attrs:
       - attrs:
-          attribute1_name: "attribute1_value"
-          attribute2_name: "attribute2_value"
+          - name: "attribute1_name"
+            value: "attribute1_value"
+          - name: "attribute2_name"
+            value: "attribute2_value"
     meta_attrs:
       - attrs:
-          meta_attribute1_name: "meta_attribute1_value"
-          meta_attribute2_name: "meta_attribute2_value"
+          - name: "meta_attribute1_name"
+            value: "meta_attribute1_value"
+          - name: "meta_attribute2_name"
+            value: "meta_attribute2_value"
     operations:
       - action: "operation1-action"
         attrs:
-          operation1_attribute1_name: "operation1_attribute1_value"
-          operation1_attribute2_name: "operation1_attribute2_value"
+          - name: "operation1_attribute1_name"
+            value: "operation1_attribute1_value"
+          - name: "operation1_attribute2_name"
+            value: "operation1_attribute2_value"
       - action: "operation2-action"
         attrs:
-          operation2_attribute1_name: "operation2_attribute1_value"
-          operation2_attribute2_name: "operation2_attribute2_value"
+          - name: "operation2_attribute1_name"
+            value: "operation2_attribute1_value"
+          - name: "operation2_attribute2_name"
+            value: "operation2_attribute2_value"
 ```
 
 This variable defines pacemaker resources (including stonith) configured by the
@@ -238,8 +246,10 @@ ha_cluster_resource_groups:
       - "resource2-id"
     meta_attrs:
       - attrs:
-          group_meta_attribute1_name: "group_meta_attribute1_value"
-          group_meta_attribute2_name: "group_meta_attribute2_value"
+          - name: "group_meta_attribute1_name"
+            value: "group_meta_attribute1_value"
+          - name: "group_meta_attribute2_name"
+            value: "group_meta_attribute2_value"
 ```
 
 This variable defines resource groups. The items are as follows:
@@ -265,8 +275,10 @@ ha_cluster_resource_clones:
     id: "custom-clone-id"
     meta_attrs:
       - attrs:
-          clone_meta_attribute1_name: "clone_meta_attribute1_value"
-          clone_meta_attribute2_name: "clone_meta_attribute2_value"
+          - name: "clone_meta_attribute1_name"
+            value: "clone_meta_attribute1_value"
+          - name: "clone_meta_attribute2_name"
+            value: "clone_meta_attribute2_value"
 ```
 
 This variable defines resource clones. The items are as follows:
@@ -340,27 +352,35 @@ all:
         agent: "stonith:fence_xvm"
         instance_attrs:
           - attrs:
-              pcmk_host_list: "node1 node2"
+              - name: "pcmk_host_list"
+                value: "node1 node2"
       - id: "simple-resource"
         agent: "ocf:pacemaker:Dummy"
       - id: "resource-with-options"
         agent: "ocf:pacemaker:Dummy"
         instance_attrs:
           - attrs:
-              fake: "fake-value"
-              passwd: "passwd-value"
+              - name: "fake"
+                value: "fake-value"
+              - name: "passwd"
+                value: "passwd-value"
         meta_attrs:
           - attrs:
-              target-role: "Started"
-              is-managed: "true"
+              - name: "target-role"
+                value: "Started"
+              - name: "is-managed"
+                value: "true"
         operations:
           - action: "start"
             attrs:
-              timeout: "30"
+              - name: "timeout"
+                value: "30"
           - action: "monitor"
             attrs:
-              timeout: "5"
-              interval: "20"
+              - name: "timeout"
+                value: "5"
+              - name: "interval"
+                value: "20"
       - id: "dummy-1"
         agent: "ocf:pacemaker:Dummy"
       - id: "dummy-2"
@@ -378,8 +398,10 @@ all:
           - "dummy-2"
         meta_attrs:
           - attrs:
-              target-role: "Started"
-              is-managed: "true"
+              - name: "target-role"
+                value: "Started"
+              - name: "is-managed"
+                value: "true"
       - id: "cloned-group"
         resource_ids:
           - "dummy-3"
@@ -390,8 +412,10 @@ all:
         id: "custom-clone-id"
         meta_attrs:
           - attrs:
-              clone-max: "2"
-              clone-node-max: "1"
+              - name: "clone-max"
+                value: "2"
+              - name: "clone-node-max"
+                value: "1"
       - resource_id: "cloned-group"
         promotable: yes
 

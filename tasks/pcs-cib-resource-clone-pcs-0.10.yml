@@ -52,9 +52,9 @@
       %}
         {{ resource_clone.id | quote }}
       {% endif %}
-      {% if resource_clone.meta_attrs[0].attrs | default({}) %}
-        {% for attr in resource_clone.meta_attrs[0].attrs | dict2items %}
-          {{ attr.key | quote }}={{ attr.value | quote }}
+      {% if resource_clone.meta_attrs[0].attrs | default([]) %}
+        {% for attr in resource_clone.meta_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
   # We always need to create CIB to see whether it's the same as what is

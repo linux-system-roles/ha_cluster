@@ -28,21 +28,29 @@
         agent: "stonith:fence_xvm"
         instance_attrs:
           - attrs:
-              pcmk_host_list: "node1 node2"
-              delay: "1"
+              - name: "pcmk_host_list"
+                value: "node1 node2"
+              - name: "delay"
+                value: "1"
         meta_attrs:
           - attrs:
-              target-role: "Stopped"
-              an-attr: "a value"
+              - name: "target-role"
+                value: "Stopped"
+              - name: "an-attr"
+                value: "a value"
         operations:
           - action: "monitor"
             attrs:
-              timeout: "13"
-              interval: "26"
+              - name: "timeout"
+                value: "13"
+              - name: "interval"
+                value: "26"
           - action: "monitor"
             attrs:
-              timeout: "14"
-              interval: "28"
+              - name: "timeout"
+                value: "14"
+              - name: "interval"
+                value: "28"
 
       - id: "dummy-no-attrs"
         agent: "ocf:pacemaker:Dummy"
@@ -64,33 +72,44 @@
         agent: "ocf:pacemaker:Dummy"
         instance_attrs:
           - attrs:
-              fake: "fake value"
+              - name: "fake"
+                value: "fake value"
         meta_attrs:
           - attrs:
-              target-role: "Stopped"
+              - name: "target-role"
+                value: "Stopped"
         operations:
           - action: "monitor"
             attrs:
-              timeout: "13"
+              - name: "timeout"
+                value: "13"
       - id: "dummy-with-attrs2"
         agent: "ocf:pacemaker:Dummy"
         instance_attrs:
           - attrs:
-              fake: "fake value"
-              passwd: "passwd value1"
+              - name: "fake"
+                value: "fake value"
+              - name: "passwd"
+                value: "passwd value1"
         meta_attrs:
           - attrs:
-              target-role: "Stopped"
-              an-attr: "a value"
+              - name: "target-role"
+                value: "Stopped"
+              - name: "an-attr"
+                value: "a value"
         operations:
           - action: "monitor"
             attrs:
-              timeout: "13"
-              interval: "26"
+              - name: "timeout"
+                value: "13"
+              - name: "interval"
+                value: "26"
           - action: "monitor"
             attrs:
-              timeout: "14"
-              interval: "28"
+              - name: "timeout"
+                value: "14"
+              - name: "interval"
+                value: "28"
 
       - id: "dummy-1a"
         agent: "ocf:pacemaker:Dummy"
@@ -137,8 +156,10 @@
           - "dummy-4a"
         meta_attrs:
           - attrs:
-              target-role: "Stopped"
-              an-attr: "a value"
+              - name: "target-role"
+                value: "Stopped"
+              - name: "an-attr"
+                value: "a value"
 
     ha_cluster_resource_clones:
       - resource_id: "dummy-clone-no-options"
@@ -154,14 +175,17 @@
       - resource_id: "dummy-clone-with-attrs1"
         meta_attrs:
           - attrs:
-              target-role: "Stopped"
+              - name: "target-role"
+                value: "Stopped"
       - resource_id: "dummy-clone-with-attrs2"
         promotable: yes
         id: "custom-clone-id2"
         meta_attrs:
           - attrs:
-              target-role: "Stopped"
-              an-attr: "a value"
+              - name: "target-role"
+                value: "Stopped"
+              - name: "an-attr"
+                value: "a value"
       - resource_id: "group3"
 
   tasks:
