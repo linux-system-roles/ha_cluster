@@ -145,7 +145,7 @@ See also:
 
 #### `ha_cluster_pcs_permission_list`
 
-Structure and default value:
+structure and default value:
 ```yaml
 ha_cluster_pcs_permission_list:
   - type: "group"
@@ -176,7 +176,7 @@ Name of the cluster.
 
 #### `ha_cluster_resource_primitives`
 
-Structure, default: no resources
+structure, default: no resources
 
 ```yaml
 ha_cluster_resource_primitives:
@@ -232,11 +232,12 @@ role. The items are as follows:
   * `attrs` (mandatory) - Operation options, at least one option must be
     specified.
 
-You may take a look at [an example](#cluster-with-fencing-and-several-resources).
+You may take a look at
+[an example](#creating-a-cluster-with-fencing-and-several-resources).
 
 #### `ha_cluster_resource_groups`
 
-Structure, default: no resource groups
+structure, default: no resource groups
 
 ```yaml
 ha_cluster_resource_groups:
@@ -262,11 +263,12 @@ This variable defines resource groups. The items are as follows:
 * `meta_attrs` (optional) - List of sets of the group's meta attributes.
   Currently, only one set is supported.
 
-You may take a look at [an example](#cluster-with-fencing-and-several-resources).
+You may take a look at
+[an example](#creating-a-cluster-with-fencing-and-several-resources).
 
 #### `ha_cluster_resource_clones`
 
-Structure, default: no resource clones
+structure, default: no resource clones
 
 ```yaml
 ha_cluster_resource_clones:
@@ -294,7 +296,8 @@ This variable defines resource clones. The items are as follows:
 * `meta_attrs` (optional) - List of sets of the clone's meta attributes.
   Currently, only one set is supported.
 
-You may take a look at [an example](#cluster-with-fencing-and-several-resources).
+You may take a look at
+[an example](#creating-a-cluster-with-fencing-and-several-resources).
 
 ### Inventory
 
@@ -328,9 +331,9 @@ all:
   have the same number of addresses and the order of the addresses matters
 
 
-## Example Playbook
+## Example Playbooks
 
-### Minimalistic example to create a cluster running no resources
+### Creating a cluster running no resources
 ```yaml
 - hosts: node1 node2
   vars:
@@ -341,7 +344,7 @@ all:
     - linux-system-roles.ha_cluster
 ```
 
-### Cluster with fencing and several resources
+### Creating a cluster with fencing and several resources
 ```yaml
 - hosts: node1 node2
   vars:
@@ -423,7 +426,7 @@ all:
     - linux-system-roles.ha_cluster
 ```
 
-### To purge all cluster configuration, run this
+### Purging all cluster configuration
 ```yaml
 - hosts: node1 node2
   vars:
