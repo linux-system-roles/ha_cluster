@@ -3,7 +3,7 @@
     cmd: >
       pcs status pcsd
       {% for node in ansible_play_hosts_all %}
-        '{{ hostvars[node].__ha_cluster_node_name | quote }}'
+        {{ hostvars[node].__ha_cluster_node_name | quote }}
       {% endfor %}
   register: __ha_cluster_pcs_auth_status
   check_mode: no
@@ -16,7 +16,7 @@
     - __ha_cluster_pcs_auth_status.rc != 2
 
 - name: Run pcs auth
-  include_tasks: "pcs-auth-{{ __ha_cluster_pcs_provider }}.yml"
+  include_tasks: pcs-auth-{{ __ha_cluster_pcs_provider }}.yml
   # Include the tasks for nodes which can not talk to other nodes due to
   # missing pcs auth tokens. The pcs-auth-*.yml contains "run_once: yes" as
   # running the auth on one node is sufficient (auth tokens are distributed by

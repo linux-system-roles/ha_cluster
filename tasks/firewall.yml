@@ -3,31 +3,34 @@
 
 - name: Configure firewalld
   block:
-    - name: Enable service "high-availability" in firewalld
+    - name: Enable service 'high-availability' in firewalld
       firewalld:
-        service: "high-availability"
+        service: high-availability
         state: "enabled"
         permanent: yes
-        immediate: "{{ \
-            ansible_facts.services['firewalld.service'].state == 'running' \
+        immediate: "{{
+            ansible_facts.services['firewalld.service'].state == 'running'
           }}"
         offline: yes
 
     - name: Enable fence-virt port in firewalld
       firewalld:
-        port: "1229/tcp"
-        state: "enabled"
+        port: 1229/tcp
+        state: enabled
         permanent: yes
-        immediate: "{{ \
-            ansible_facts.services['firewalld.service'].state == 'running' \
+        immediate: "{{
+            ansible_facts.services['firewalld.service'].state == 'running'
           }}"
         offline: yes
       when:
-        - " \
-          'fence-virt' in ha_cluster_fence_agent_packages or \
-          'fence-virt' in ha_cluster_extra_packages or \
-          'fence-agents-all' in ha_cluster_fence_agent_packages or \
-          'fence-agents-all' in ha_cluster_extra_packages \
-          "
+        - (
+            'fence-virt' in ha_cluster_fence_agent_packages
+            or
+            'fence-virt' in ha_cluster_extra_packages
+            or
+            'fence-agents-all' in ha_cluster_fence_agent_packages
+            or
+            'fence-agents-all' in ha_cluster_extra_packages
+          )
   when:
-    - "'firewalld.service' in ansible_facts.services"
+    - '"firewalld.service" in ansible_facts.services'

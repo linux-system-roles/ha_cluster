@@ -2,7 +2,7 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_cluster_name: test-cluster
     # use a custom key for corosync
     # generate a new key for pacemaker, even if there already is a key
     # generate a new key for fence_xvm as there is no key present
@@ -10,7 +10,7 @@
     #   is one
     ha_cluster_regenerate_keys: yes
     ha_cluster_corosync_key_src: "{{ playbook_dir }}/tmp/corosync-authkey"
-    __test_pacemaker_key_content: "key content to be replaced"
+    __test_pacemaker_key_content: key content to be replaced
     __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
     __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
 
@@ -26,9 +26,9 @@
           file:
             path: "{{ item }}"
             state: directory
-            owner: "root"
-            group: "root"
-            mode: "0755"
+            owner: root
+            group: root
+            mode: 0755
           loop:
             - /etc/pacemaker
             - /var/lib/pcsd
@@ -37,9 +37,9 @@
           copy:
             content: "{{ __test_pacemaker_key_content }}"
             dest: /etc/pacemaker/authkey
-            owner: "root"
-            group: "root"
-            mode: "0400"
+            owner: root
+            group: root
+            mode: 0400
 
         - name: Ensure fence-virt key is not present
           file:
@@ -52,17 +52,17 @@
               copy:
                 src: "{{ __test_pcsd_private_key_path }}"
                 dest: /var/lib/pcsd/pcsd.key
-                owner: "root"
-                group: "root"
-                mode: "0600"
+                owner: root
+                group: root
+                mode: 0600
 
             - name: Distribute pcsd TLS certificate
               copy:
                 src: "{{ __test_pcsd_public_key_path }}"
                 dest: /var/lib/pcsd/pcsd.crt
-                owner: "root"
-                group: "root"
-                mode: "0600"
+                owner: root
+                group: root
+                mode: 0600
 
         - name: Get corosync key hash
           stat:

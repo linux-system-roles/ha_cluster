@@ -6,5 +6,5 @@
 # id: repo ID used to enable the repo
 # name: user-friendly name of a repo used to check if the repo is enabled
 __ha_cluster_repos:
-  - id: "rhel-9-for-{{ ansible_architecture }}-highavailability-rpms"
-    name: "High Availability"
+  - id: rhel-9-for-{{ ansible_architecture }}-highavailability-rpms
+    name: High Availability

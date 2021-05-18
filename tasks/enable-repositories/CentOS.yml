@@ -11,7 +11,7 @@
 
 - name: Enable CentOS repositories
   command:
-    cmd: "dnf config-manager --set-enabled {{ item.id | quote }}"
+    cmd: dnf config-manager --set-enabled {{ item.id | quote }}
     # Silence a warning which recommends using ansible dnf module instead of
     # running dnf command.
     #

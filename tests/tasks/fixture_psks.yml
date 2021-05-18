@@ -4,7 +4,7 @@
       file:
         path: "{{ playbook_dir }}/tmp"
         state: directory
-        mode: "0700"
+        mode: 0700
 
     - name: Generate pcsd TLS private key
       openssl_privatekey:
@@ -34,19 +34,19 @@
       copy:
         content: "{{ __test_corosync_key | b64decode }}"
         dest: "{{ __test_corosync_key_path }}"
-        mode: "0400"
+        mode: 0400
 
     - name: Save pacemaker key
       copy:
         content: "{{ __test_pacemaker_key | b64decode }}"
         dest: "{{ __test_pacemaker_key_path }}"
-        mode: "0400"
+        mode: 0400
 
     - name: Save fence_xvm key
       copy:
         content: "{{ __test_fence_xvm_key | b64decode }}"
         dest: "{{ __test_fence_xvm_key_path }}"
-        mode: "0400"
+        mode: 0400
 
   delegate_to: localhost
   run_once: yes

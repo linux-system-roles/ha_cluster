@@ -12,7 +12,7 @@
   changed_when: not ansible_check_mode
 
 - name: Create a corosync.conf file content
-  include_tasks: "cluster-setup-{{ __ha_cluster_pcs_provider }}.yml"
+  include_tasks: cluster-setup-{{ __ha_cluster_pcs_provider }}.yml
 
 - name: Fetch created corosync.conf file
   slurp:
@@ -25,9 +25,9 @@
   copy:
     content: "{{ __ha_cluster_data_corosync_conf['content'] | b64decode }}"
     dest: /etc/corosync/corosync.conf
-    owner: "root"
-    group: "root"
-    mode: "0644"
+    owner: root
+    group: root
+    mode: 0644
   register: __ha_cluster_distribute_corosync_conf
   when: __ha_cluster_data_corosync_conf is defined
 
@@ -45,9 +45,9 @@
   changed_when: not ansible_check_mode
 
 - name: Get corosync authkey
-  include_tasks: "presharedkey.yml"
+  include_tasks: presharedkey.yml
   vars:
-    preshared_key_label: "corosync authkey"
+    preshared_key_label: corosync authkey
     preshared_key_src: "{{ ha_cluster_corosync_key_src }}"
     preshared_key_dest: /etc/corosync/authkey
     preshared_key_length: 256
@@ -56,15 +56,15 @@
   copy:
     content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
     dest: /etc/corosync/authkey
-    owner: "root"
-    group: "root"
-    mode: "0400"
+    owner: root
+    group: root
+    mode: 0400
   register: __ha_cluster_distribute_corosync_authkey
 
 - name: Get pacemaker authkey
-  include_tasks: "presharedkey.yml"
+  include_tasks: presharedkey.yml
   vars:
-    preshared_key_label: "pacemaker authkey"
+    preshared_key_label: pacemaker authkey
     preshared_key_src: "{{ ha_cluster_pacemaker_key_src }}"
     preshared_key_dest: /etc/pacemaker/authkey
     preshared_key_length: 256
@@ -73,7 +73,7 @@
   copy:
     content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
     dest: /etc/pacemaker/authkey
-    owner: "hacluster"
-    group: "haclient"
-    mode: "0400"
+    owner: hacluster
+    group: haclient
+    mode: 0400
   register: __ha_cluster_distribute_pacemaker_authkey

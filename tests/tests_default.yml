@@ -10,7 +10,7 @@
       rescue:
         - name: Extract errors
           set_fact:
-            error_list: "{{ \
+            error_list: "{{
               ansible_failed_result.results | map(attribute='msg') | list
             }}"
           run_once: yes
@@ -18,8 +18,8 @@
         - name: Check errors
           assert:
             that:
-              - "{{ \
-                  'ha_cluster_hacluster_password must be specified' \
+              - "{{
+                  'ha_cluster_hacluster_password must be specified'
                   in error_list
                 }}"
 

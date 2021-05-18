@@ -2,9 +2,9 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_cluster_name: test-cluster
     ha_cluster_fence_agent_packages:
-      - "fence-agents-ipmilan"
+      - fence-agents-ipmilan
 
   tasks:
     - block:

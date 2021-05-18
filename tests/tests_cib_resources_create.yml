@@ -4,19 +4,19 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_cluster_name: test-cluster
     ha_cluster_fence_agent_packages:
-      - "fence-virt"
+      - fence-virt
     ha_cluster_resource_primitives:
-      - id: "xvm-no-attrs"
-        agent: "stonith:fence_xvm"
-      - id: "xvm-empty-attrs1"
-        agent: "stonith:fence_xvm"
+      - id: xvm-no-attrs
+        agent: stonith:fence_xvm
+      - id: xvm-empty-attrs1
+        agent: 'stonith:fence_xvm'
         instance_attrs:
         meta_attrs:
         operations:
-      - id: "xvm-empty-attrs2"
-        agent: "stonith:fence_xvm"
+      - id: xvm-empty-attrs2
+        agent: 'stonith:fence_xvm'
         instance_attrs:
           - attrs:
         meta_attrs:
@@ -24,43 +24,43 @@
           # Pcs requires action and at least one option to be defined for an
           # operation. Therefore, there are no tests for partially defined
           # operations.
-      - id: "xvm-with-attrs"
-        agent: "stonith:fence_xvm"
+      - id: xvm-with-attrs
+        agent: 'stonith:fence_xvm'
         instance_attrs:
           - attrs:
-              - name: "pcmk_host_list"
-                value: "node1 node2"
-              - name: "delay"
-                value: "1"
+              - name: pcmk_host_list
+                value: node1 node2
+              - name: delay
+                value: 1
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-              - name: "an-attr"
-                value: "a value"
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
         operations:
-          - action: "monitor"
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "13"
-              - name: "interval"
-                value: "26"
-          - action: "monitor"
+              - name: timeout
+                value: 13
+              - name: interval
+                value: 26
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "14"
-              - name: "interval"
-                value: "28"
+              - name: timeout
+                value: 14
+              - name: interval
+                value: 28
 
-      - id: "dummy-no-attrs"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-empty-attrs1"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-no-attrs
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-empty-attrs1
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
         meta_attrs:
         operations:
-      - id: "dummy-empty-attrs2"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-empty-attrs2
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
         meta_attrs:
@@ -68,125 +68,125 @@
           # Pcs requires action and at least one option to be defined for an
           # operation. Therefore, there are no tests for partially defined
           # operations.
-      - id: "dummy-with-attrs1"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-with-attrs1
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
-              - name: "fake"
-                value: "fake value"
+              - name: fake
+                value: fake value
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
+              - name: target-role
+                value: Stopped
         operations:
-          - action: "monitor"
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "13"
-      - id: "dummy-with-attrs2"
-        agent: "ocf:pacemaker:Dummy"
+              - name: timeout
+                value: 13
+      - id: dummy-with-attrs2
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
-              - name: "fake"
-                value: "fake value"
-              - name: "passwd"
-                value: "passwd value1"
+              - name: fake
+                value: fake value
+              - name: passwd
+                value: passwd value1
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-              - name: "an-attr"
-                value: "a value"
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
         operations:
-          - action: "monitor"
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "13"
-              - name: "interval"
-                value: "26"
-          - action: "monitor"
+              - name: timeout
+                value: 13
+              - name: interval
+                value: 26
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "14"
-              - name: "interval"
-                value: "28"
+              - name: timeout
+                value: 14
+              - name: interval
+                value: 28
 
-      - id: "dummy-1a"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-1b"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-2a"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-3a"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-4a"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-1a
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-1b
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-2a
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-3a
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-4a
+        agent: 'ocf:pacemaker:Dummy'
 
-      - id: "dummy-clone-no-options"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-promotable"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-id"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-empty-attrs1"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-empty-attrs2"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-with-attrs1"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-with-attrs2"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-clone-no-options
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-promotable
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-id
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-empty-attrs1
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-empty-attrs2
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-with-attrs1
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-with-attrs2
+        agent: 'ocf:pacemaker:Dummy'
 
     ha_cluster_resource_groups:
-      - id: "group1"
+      - id: group1
         resource_ids:
-          - "dummy-1a"
-          - "dummy-1b"
-      - id: "group2"
+          - dummy-1a
+          - dummy-1b
+      - id: group2
         resource_ids:
-          - "dummy-2a"
+          - dummy-2a
         meta_attrs:
-      - id: "group3"
+      - id: group3
         resource_ids:
-          - "dummy-3a"
-        meta_attrs:
-          - attrs:
-      - id: "group4"
-        resource_ids:
-          - "dummy-4a"
+          - dummy-3a
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-              - name: "an-attr"
-                value: "a value"
+      - id: group4
+        resource_ids:
+          - dummy-4a
+        meta_attrs:
+          - attrs:
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
 
     ha_cluster_resource_clones:
-      - resource_id: "dummy-clone-no-options"
-      - resource_id: "dummy-clone-promotable"
+      - resource_id: dummy-clone-no-options
+      - resource_id: dummy-clone-promotable
         promotable: yes
-      - resource_id: "dummy-clone-id"
-        id: "custom-clone-id1"
-      - resource_id: "dummy-clone-empty-attrs1"
+      - resource_id: dummy-clone-id
+        id: custom-clone-id1
+      - resource_id: dummy-clone-empty-attrs1
         meta_attrs:
-      - resource_id: "dummy-clone-empty-attrs2"
-        meta_attrs:
-          - attrs:
-      - resource_id: "dummy-clone-with-attrs1"
+      - resource_id: dummy-clone-empty-attrs2
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-      - resource_id: "dummy-clone-with-attrs2"
+      - resource_id: dummy-clone-with-attrs1
+        meta_attrs:
+          - attrs:
+              - name: target-role
+                value: Stopped
+      - resource_id: dummy-clone-with-attrs2
         promotable: yes
-        id: "custom-clone-id2"
+        id: custom-clone-id2
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-              - name: "an-attr"
-                value: "a value"
-      - resource_id: "group3"
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
+      - resource_id: group3
 
   tasks:
     - block:

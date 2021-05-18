@@ -148,12 +148,12 @@ See also:
 structure and default value:
 ```yaml
 ha_cluster_pcs_permission_list:
-  - type: "group"
-    name: "hacluster"
+  - type: group
+    name: hacluster
     allow_list:
-      - "grant"
-      - "read"
-      - "write"
+      - grant
+      - read
+      - write
 ```
 
 This configures permissions to manage a cluster using pcsd. The items are as
@@ -161,12 +161,12 @@ follows:
 
 * `type` - `user` or `group`
 * `name` - user or group name
-* `allow_list` - Allowed actions for the specified user or group: `read` -
-  allows to view cluster status and settings, `write` - allows to modify
-  cluster settings except permissions and ACLs, `grant` - allows to modify
-  cluster permissions and ACLs, `full` - allows unrestricted access to a
-  cluster including adding and removing nodes and access to keys and
-  certificates
+* `allow_list` - Allowed actions for the specified user or group:
+  * `read` - allows to view cluster status and settings
+  * `write` - allows to modify cluster settings except permissions and ACLs
+  * `grant` - allows to modify cluster permissions and ACLs
+  * `full` - allows unrestricted access to a cluster including adding and
+    removing nodes and access to keys and certificates
 
 #### `ha_cluster_cluster_name`
 
@@ -180,39 +180,39 @@ structure, default: no resources
 
 ```yaml
 ha_cluster_resource_primitives:
-  - id: "resource-id"
-    agent: "resource-agent"
+  - id: resource-id
+    agent: resource-agent
     instance_attrs:
       - attrs:
-          - name: "attribute1_name"
-            value: "attribute1_value"
-          - name: "attribute2_name"
-            value: "attribute2_value"
+          - name: attribute1_name
+            value: attribute1_value
+          - name: attribute2_name
+            value: attribute2_value
     meta_attrs:
       - attrs:
-          - name: "meta_attribute1_name"
-            value: "meta_attribute1_value"
-          - name: "meta_attribute2_name"
-            value: "meta_attribute2_value"
+          - name: meta_attribute1_name
+            value: meta_attribute1_value
+          - name: meta_attribute2_name
+            value: meta_attribute2_value
     operations:
-      - action: "operation1-action"
+      - action: operation1-action
         attrs:
-          - name: "operation1_attribute1_name"
-            value: "operation1_attribute1_value"
-          - name: "operation1_attribute2_name"
-            value: "operation1_attribute2_value"
-      - action: "operation2-action"
+          - name: operation1_attribute1_name
+            value: operation1_attribute1_value
+          - name: operation1_attribute2_name
+            value: operation1_attribute2_value
+      - action: operation2-action
         attrs:
-          - name: "operation2_attribute1_name"
-            value: "operation2_attribute1_value"
-          - name: "operation2_attribute2_name"
-            value: "operation2_attribute2_value"
+          - name: operation2_attribute1_name
+            value: operation2_attribute1_value
+          - name: operation2_attribute2_name
+            value: operation2_attribute2_value
 ```
 
 This variable defines pacemaker resources (including stonith) configured by the
 role. The items are as follows:
 
-* `id` (mandatory) -  Id of a resource.
+* `id` (mandatory) - Id of a resource.
 * `agent` (mandatory) - Name of a resource or stonith agent, for example
   `ocf:pacemaker:Dummy` or `stonith:fence_xvm`. It is mandatory to use
   `stonith:` for stonith agents. For resource agents, it is possible to use a
@@ -241,16 +241,16 @@ structure, default: no resource groups
 
 ```yaml
 ha_cluster_resource_groups:
-  - id: "group-id"
+  - id: group-id
     resource_ids:
-      - "resource1-id"
-      - "resource2-id"
+      - resource1-id
+      - resource2-id
     meta_attrs:
       - attrs:
-          - name: "group_meta_attribute1_name"
-            value: "group_meta_attribute1_value"
-          - name: "group_meta_attribute2_name"
-            value: "group_meta_attribute2_value"
+          - name: group_meta_attribute1_name
+            value: group_meta_attribute1_value
+          - name: group_meta_attribute2_name
+            value: group_meta_attribute2_value
 ```
 
 This variable defines resource groups. The items are as follows:
@@ -272,15 +272,15 @@ structure, default: no resource clones
 
 ```yaml
 ha_cluster_resource_clones:
-  - resource_id: "resource-to-be-cloned"
+  - resource_id: resource-to-be-cloned
     promotable: yes
-    id: "custom-clone-id"
+    id: custom-clone-id
     meta_attrs:
       - attrs:
-          - name: "clone_meta_attribute1_name"
-            value: "clone_meta_attribute1_value"
-          - name: "clone_meta_attribute2_name"
-            value: "clone_meta_attribute2_value"
+          - name: clone_meta_attribute1_name
+            value: clone_meta_attribute1_value
+          - name: clone_meta_attribute2_name
+            value: clone_meta_attribute2_value
 ```
 
 This variable defines resource clones. The items are as follows:
@@ -337,8 +337,8 @@ all:
 ```yaml
 - hosts: node1 node2
   vars:
-    ha_cluster_cluster_name: "my-new-cluster"
-    ha_cluster_hacluster_password: "password"
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
 
   roles:
     - linux-system-roles.ha_cluster
@@ -348,78 +348,78 @@ all:
 ```yaml
 - hosts: node1 node2
   vars:
-    ha_cluster_cluster_name: "my-new-cluster"
-    ha_cluster_hacluster_password: "password"
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
     ha_cluster_resource_primitives:
-      - id: "xvm-fencing"
-        agent: "stonith:fence_xvm"
+      - id: xvm-fencing
+        agent: 'stonith:fence_xvm'
         instance_attrs:
           - attrs:
-              - name: "pcmk_host_list"
-                value: "node1 node2"
-      - id: "simple-resource"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "resource-with-options"
-        agent: "ocf:pacemaker:Dummy"
+              - name: pcmk_host_list
+                value: node1 node2
+      - id: simple-resource
+        agent: 'ocf:pacemaker:Dummy'
+      - id: resource-with-options
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
-              - name: "fake"
-                value: "fake-value"
-              - name: "passwd"
-                value: "passwd-value"
+              - name: fake
+                value: fake-value
+              - name: passwd
+                value: passwd-value
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Started"
-              - name: "is-managed"
-                value: "true"
+              - name: target-role
+                value: Started
+              - name: is-managed
+                value: 'true'
         operations:
-          - action: "start"
+          - action: start
             attrs:
-              - name: "timeout"
-                value: "30"
-          - action: "monitor"
+              - name: timeout
+                value: 30
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "5"
-              - name: "interval"
-                value: "20"
-      - id: "dummy-1"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-2"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-3"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "simple-clone"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "clone-with-options"
-        agent: "ocf:pacemaker:Dummy"
+              - name: timeout
+                value: 5
+              - name: interval
+                value: 20
+      - id: dummy-1
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-2
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-3
+        agent: 'ocf:pacemaker:Dummy'
+      - id: simple-clone
+        agent: 'ocf:pacemaker:Dummy'
+      - id: clone-with-options
+        agent: 'ocf:pacemaker:Dummy'
     ha_cluster_resource_groups:
-      - id: "simple-group"
+      - id: simple-group
         resource_ids:
-          - "dummy-1"
-          - "dummy-2"
+          - dummy-1
+          - dummy-2
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Started"
-              - name: "is-managed"
-                value: "true"
-      - id: "cloned-group"
+              - name: target-role
+                value: Started
+              - name: is-managed
+                value: 'true'
+      - id: cloned-group
         resource_ids:
-          - "dummy-3"
+          - dummy-3
     ha_cluster_resource_clones:
-      - resource_id: "simple-clone"
-      - resource_id: "clone-with-options"
+      - resource_id: simple-clone
+      - resource_id: clone-with-options
         promotable: yes
-        id: "custom-clone-id"
+        id: custom-clone-id
         meta_attrs:
           - attrs:
-              - name: "clone-max"
-                value: "2"
-              - name: "clone-node-max"
-                value: "1"
-      - resource_id: "cloned-group"
+              - name: clone-max
+                value: 2
+              - name: clone-node-max
+                value: 1
+      - resource_id: cloned-group
         promotable: yes
 
   roles:
