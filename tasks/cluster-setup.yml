@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Create a corosync.conf tempfile
   tempfile:
     state: file

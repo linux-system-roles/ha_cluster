@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Minimal cluster configuration, install custom fence agents
   hosts: all
   vars_files: vars/main.yml

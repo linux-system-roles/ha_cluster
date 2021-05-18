@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Get pcs auth status
   command:
     cmd: pcs status pcsd

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Enable or disable configured cluster services on boot
   service:
     name: "{{ item }}"

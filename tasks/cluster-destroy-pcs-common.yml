@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 # Two tasks are needed due to how 'removes' works:
 # * if ALL files in 'removes' exist, the command is run
 # * if only one exists, the command is skipped.

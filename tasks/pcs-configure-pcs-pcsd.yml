@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 # Pcsd must be stopped when its config files are being updated. This is to
 # prevent a race condition caused by pcsd syncing its files in the cluster on
 # its own.

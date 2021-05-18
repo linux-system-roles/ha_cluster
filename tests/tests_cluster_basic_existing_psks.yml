@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Minimal cluster configuration, using existing PSKs
   hosts: all
   vars_files: vars/main.yml

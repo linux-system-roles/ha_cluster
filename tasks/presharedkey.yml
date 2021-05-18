@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 # 1) If a key has been specified by the user, go with the specified key.
 # 2) Otherwise generate a new random key. This is used as a default if no key
 # can be slurped from existing cluster nodes.

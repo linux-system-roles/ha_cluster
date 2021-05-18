@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Set node name to 'localhost' for single-node clusters
   set_fact:
     inventory_hostname: localhost

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Create a corosync.conf file content using pcs-0.10
   command:
     cmd: >

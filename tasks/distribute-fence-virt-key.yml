@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Create /etc/cluster directory
   file:
     path: /etc/cluster

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 # Some changes to corosync.conf can be applied when a cluster is running by
 # instructing Corosync to reload its configuration. Other changes, however,
 # require the whole cluster to be restarted. Different Corosync versions have
