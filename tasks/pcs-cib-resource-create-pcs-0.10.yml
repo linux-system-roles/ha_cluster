@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: MIT
+---
+- name: "Configure resource primitive '{{ resource.id }}'"
+  command:
+    # pcs-0.10 supports only one set of attributes, that's the reason for
+    # *_attrs[0] instead of looping over *_attrs
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      {% if resource_is_stonith %} stonith {% else %} resource {% endif %}
+      create {{ resource.id | quote }}
+      {% if resource_is_stonith %}
+        {{ resource.agent | replace("stonith:", "") | quote }}
+      {% else %}
+        {{ resource.agent | quote }}
+      {% endif %}
+
+      {% if resource.instance_attrs[0].attrs | default([]) %}
+        {% for attr in resource.instance_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+
+      {% if resource.meta_attrs[0].attrs | default([]) %}
+        meta
+        {% for attr in resource.meta_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+
+      {% if resource.operations | default([]) %}
+        {% for operation in resource.operations %}
+          op
+          {% if operation.action is defined %}
+            {{ operation.action | quote }}
+          {% endif %}
+          {% if operation.attrs | default([]) %}
+            {% for attr in operation.attrs %}
+              {{ attr.name | quote }}={{ attr.value | quote }}
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: no
+  changed_when: not ansible_check_mode

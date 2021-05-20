@@ -1,0 +1,149 @@
+# SPDX-License-Identifier: MIT
+---
+# We always need to create CIB to see whether it's the same as what is already
+# present in the cluster. However, we don't want to report it as a change since
+# the only thing which matters is pushing the resulting CIB to the cluster.
+
+
+# Prepare CIB files
+
+- name: Create a tempfile for original CIB
+  tempfile:
+    state: file
+    suffix: _ha_cluster_original_cib_xml
+  register: __ha_cluster_tempfile_original_cib_xml
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+- name: Create a tempfile for new CIB
+  tempfile:
+    state: file
+    suffix: _ha_cluster_cib_xml
+  register: __ha_cluster_tempfile_cib_xml
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+- name: Fetch CIB configuration
+  command:
+    cmd: cibadmin --query
+  register: __ha_cluster_fetch_cib
+  check_mode: no
+  changed_when: no  # this is a read-only command
+
+- name: Write CIB configuration
+  copy:
+    content: "{{ __ha_cluster_fetch_cib.stdout }}"
+    dest: "{{ item }}"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  loop:
+    - "{{ __ha_cluster_tempfile_cib_xml.path }}"
+    - "{{ __ha_cluster_tempfile_original_cib_xml.path }}"
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+# Starting with an empty CIB would remove all nodes and other parts of CIB
+# automatically created by pacemaker. That would effectively make the role to
+# report changed == True every time. Therefore, we start with the current
+# cluster CIB and purge it instead, thus keeping all the automatically created
+# parts in place and report only actual configuration changes.
+- name: Purge new CIB configuration
+  command:
+    cmd: >
+      cibadmin --force --delete-all --xpath
+      '/cib/configuration/*[not(
+        self::crm_config or
+        self::nodes or
+        self::resources or
+        self::constraints
+      )]
+      | /cib/configuration/*[self::resources or self::constraints]/*
+      | /cib/configuration/nodes/*/*
+      | /cib/configuration/crm_config//nvpair[not(
+        @name="cluster-infrastructure" or
+        @name="cluster-name" or
+        @name="dc-version" or
+        @name="have-watchdog" or
+        @name="last-lrm-refresh"
+      )]'
+  environment:
+    CIB_file: "{{ __ha_cluster_tempfile_cib_xml.path }}"
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+
+# Build the new CIB
+
+- name: Configure cluster resources
+  include_tasks: "pcs-cib-resource-create-pcs-0.10.yml"
+  vars:
+    resource: "{{ item }}"
+    resource_is_stonith: "{{ item.agent.startswith('stonith:') }}"
+  loop: "{{ ha_cluster_resource_primitives }}"
+
+- name: Configure cluster resource groups
+  include_tasks: "pcs-cib-resource-group-pcs-0.10.yml"
+  vars:
+    resource_group: "{{ item }}"
+  loop: "{{ ha_cluster_resource_groups }}"
+
+- name: Configure cluster resource clones
+  include_tasks: "pcs-cib-resource-clone-pcs-0.10.yml"
+  vars:
+    resource_clone: "{{ item }}"
+  loop: "{{ ha_cluster_resource_clones }}"
+
+
+# Push the new CIB into the cluster
+
+- name: Create a tempfile for CIB diff
+  tempfile:
+    state: file
+    suffix: _ha_cluster_cib_diff
+  register: __ha_cluster_tempfile_cib_diff
+  check_mode: no
+  changed_when: not ansible_check_mode
+
+- name: Compare new and original CIB
+  command:
+    cmd: >
+      crm_diff --no-version
+      --original {{ __ha_cluster_tempfile_original_cib_xml.path }}
+      --new {{ __ha_cluster_tempfile_cib_xml.path }}
+  register: __ha_cluster_cib_diff
+  check_mode: no
+  changed_when: not ansible_check_mode
+  failed_when:
+    - __ha_cluster_cib_diff.rc != 0  # success, CIBs are the same
+    - __ha_cluster_cib_diff.rc != 1  # success, CIBs are not the same
+
+- name: Write CIB diff to its tempfile
+  copy:
+    content: "{{ __ha_cluster_cib_diff.stdout }}"
+    dest: "{{ __ha_cluster_tempfile_cib_diff.path }}"
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  check_mode: no
+  changed_when: not ansible_check_mode
+  when: __ha_cluster_cib_diff.rc == 1
+
+- name: Push CIB diff to the cluster if it has any changes
+  command:
+    cmd: >
+      cibadmin --verbose --patch
+      --xml-file {{ __ha_cluster_tempfile_cib_diff.path | quote }}
+  run_once: yes
+  when: __ha_cluster_cib_diff.rc == 1
+
+- name: Remove CIB tempfiles
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop:
+    - "{{ __ha_cluster_tempfile_cib_xml }}"
+    - "{{ __ha_cluster_tempfile_original_cib_xml }}"
+    - "{{ __ha_cluster_tempfile_cib_diff }}"
+  check_mode: no
+  changed_when: not ansible_check_mode

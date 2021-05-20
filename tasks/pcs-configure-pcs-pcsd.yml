@@ -53,3 +53,16 @@
     name: pcsd
     state: started
     enabled: yes
+
+- name: Fetch pcs capabilities
+  command:
+    cmd: pcs --version --full
+  check_mode: no
+  changed_when: no  # this is a read-only command
+  register: __ha_cluster_pcs_version
+
+- name: Parse pcs capabilities
+  set_fact:
+    __ha_cluster_pcs_capabilities: "{{
+        __ha_cluster_pcs_version.stdout_lines[1].split()
+      }}"
