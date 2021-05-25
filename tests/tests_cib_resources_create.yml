@@ -48,9 +48,9 @@
           - action: monitor
             attrs:
               - name: timeout
-                value: 14
+                value: '14s'
               - name: interval
-                value: 28
+                value: '28s'
 
       - id: dummy-no-attrs
         agent: 'ocf:pacemaker:Dummy'
@@ -82,7 +82,7 @@
           - action: monitor
             attrs:
               - name: timeout
-                value: 13
+                value: '1min'
       - id: dummy-with-attrs2
         agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
@@ -242,7 +242,7 @@
                   '  Attributes: delay=1 pcmk_host_list="node1 node2"',
                   '  Meta Attrs: an-attr="a value" target-role=Stopped',
                   '  Operations: monitor interval=26 timeout=13 (xvm-with-attrs-monitor-interval-26)',
-                  '              monitor interval=28 timeout=14 (xvm-with-attrs-monitor-interval-28)',
+                  '              monitor interval=28s timeout=14s (xvm-with-attrs-monitor-interval-28s)',
                 ]
 
         - name: Check resource configuration
@@ -276,7 +276,7 @@
                   '  Meta Attrs: target-role=Stopped',
                   '  Operations: migrate_from interval=0s timeout=20s (dummy-with-attrs1-migrate_from-interval-0s)',
                   '              migrate_to interval=0s timeout=20s (dummy-with-attrs1-migrate_to-interval-0s)',
-                  '              monitor interval=60s timeout=13 (dummy-with-attrs1-monitor-interval-60s)',
+                  '              monitor interval=60s timeout=1min (dummy-with-attrs1-monitor-interval-60s)',
                   '              reload interval=0s timeout=20s (dummy-with-attrs1-reload-interval-0s)',
                   '              start interval=0s timeout=20s (dummy-with-attrs1-start-interval-0s)',
                   '              stop interval=0s timeout=20s (dummy-with-attrs1-stop-interval-0s)',

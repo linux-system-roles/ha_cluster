@@ -377,13 +377,13 @@ all:
           - action: start
             attrs:
               - name: timeout
-                value: 30
+                value: '30s'
           - action: monitor
             attrs:
               - name: timeout
-                value: 5
+                value: '5'
               - name: interval
-                value: 20
+                value: '1min'
       - id: dummy-1
         agent: 'ocf:pacemaker:Dummy'
       - id: dummy-2
@@ -416,9 +416,9 @@ all:
         meta_attrs:
           - attrs:
               - name: clone-max
-                value: 2
+                value: '2'
               - name: clone-node-max
-                value: 1
+                value: '1'
       - resource_id: cloned-group
         promotable: yes
 
