@@ -71,10 +71,10 @@
 - name: Remove cluster configuration
   block:
     - name: Remove cluster configuration
-      include_tasks: "cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml"
+      include_tasks: cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml
 
     - name: Remove fence-virt authkey
       file:
-        path: "/etc/cluster/fence_xvm.key"
-        state: "absent"
+        path: /etc/cluster/fence_xvm.key
+        state: absent
   when: not ha_cluster_cluster_present

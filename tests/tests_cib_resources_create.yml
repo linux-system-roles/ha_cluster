@@ -4,19 +4,19 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_cluster_name: test-cluster
     ha_cluster_fence_agent_packages:
-      - "fence-virt"
+      - fence-virt
     ha_cluster_resource_primitives:
-      - id: "xvm-no-attrs"
-        agent: "stonith:fence_xvm"
-      - id: "xvm-empty-attrs1"
-        agent: "stonith:fence_xvm"
+      - id: xvm-no-attrs
+        agent: stonith:fence_xvm
+      - id: xvm-empty-attrs1
+        agent: 'stonith:fence_xvm'
         instance_attrs:
         meta_attrs:
         operations:
-      - id: "xvm-empty-attrs2"
-        agent: "stonith:fence_xvm"
+      - id: xvm-empty-attrs2
+        agent: 'stonith:fence_xvm'
         instance_attrs:
           - attrs:
         meta_attrs:
@@ -24,43 +24,43 @@
           # Pcs requires action and at least one option to be defined for an
           # operation. Therefore, there are no tests for partially defined
           # operations.
-      - id: "xvm-with-attrs"
-        agent: "stonith:fence_xvm"
+      - id: xvm-with-attrs
+        agent: 'stonith:fence_xvm'
         instance_attrs:
           - attrs:
-              - name: "pcmk_host_list"
-                value: "node1 node2"
-              - name: "delay"
-                value: "1"
+              - name: pcmk_host_list
+                value: node1 node2
+              - name: delay
+                value: 1
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-              - name: "an-attr"
-                value: "a value"
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
         operations:
-          - action: "monitor"
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "13"
-              - name: "interval"
-                value: "26"
-          - action: "monitor"
+              - name: timeout
+                value: 13
+              - name: interval
+                value: 26
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "14"
-              - name: "interval"
-                value: "28"
+              - name: timeout
+                value: '14s'
+              - name: interval
+                value: '28s'
 
-      - id: "dummy-no-attrs"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-empty-attrs1"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-no-attrs
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-empty-attrs1
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
         meta_attrs:
         operations:
-      - id: "dummy-empty-attrs2"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-empty-attrs2
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
         meta_attrs:
@@ -68,125 +68,125 @@
           # Pcs requires action and at least one option to be defined for an
           # operation. Therefore, there are no tests for partially defined
           # operations.
-      - id: "dummy-with-attrs1"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-with-attrs1
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
-              - name: "fake"
-                value: "fake value"
+              - name: fake
+                value: fake value
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
+              - name: target-role
+                value: Stopped
         operations:
-          - action: "monitor"
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "13"
-      - id: "dummy-with-attrs2"
-        agent: "ocf:pacemaker:Dummy"
+              - name: timeout
+                value: '1min'
+      - id: dummy-with-attrs2
+        agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
-              - name: "fake"
-                value: "fake value"
-              - name: "passwd"
-                value: "passwd value1"
+              - name: fake
+                value: fake value
+              - name: passwd
+                value: passwd value1
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-              - name: "an-attr"
-                value: "a value"
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
         operations:
-          - action: "monitor"
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "13"
-              - name: "interval"
-                value: "26"
-          - action: "monitor"
+              - name: timeout
+                value: 13
+              - name: interval
+                value: 26
+          - action: monitor
             attrs:
-              - name: "timeout"
-                value: "14"
-              - name: "interval"
-                value: "28"
+              - name: timeout
+                value: 14
+              - name: interval
+                value: 28
 
-      - id: "dummy-1a"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-1b"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-2a"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-3a"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-4a"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-1a
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-1b
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-2a
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-3a
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-4a
+        agent: 'ocf:pacemaker:Dummy'
 
-      - id: "dummy-clone-no-options"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-promotable"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-id"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-empty-attrs1"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-empty-attrs2"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-with-attrs1"
-        agent: "ocf:pacemaker:Dummy"
-      - id: "dummy-clone-with-attrs2"
-        agent: "ocf:pacemaker:Dummy"
+      - id: dummy-clone-no-options
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-promotable
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-id
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-empty-attrs1
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-empty-attrs2
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-with-attrs1
+        agent: 'ocf:pacemaker:Dummy'
+      - id: dummy-clone-with-attrs2
+        agent: 'ocf:pacemaker:Dummy'
 
     ha_cluster_resource_groups:
-      - id: "group1"
+      - id: group1
         resource_ids:
-          - "dummy-1a"
-          - "dummy-1b"
-      - id: "group2"
+          - dummy-1a
+          - dummy-1b
+      - id: group2
         resource_ids:
-          - "dummy-2a"
+          - dummy-2a
         meta_attrs:
-      - id: "group3"
+      - id: group3
         resource_ids:
-          - "dummy-3a"
-        meta_attrs:
-          - attrs:
-      - id: "group4"
-        resource_ids:
-          - "dummy-4a"
+          - dummy-3a
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-              - name: "an-attr"
-                value: "a value"
+      - id: group4
+        resource_ids:
+          - dummy-4a
+        meta_attrs:
+          - attrs:
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
 
     ha_cluster_resource_clones:
-      - resource_id: "dummy-clone-no-options"
-      - resource_id: "dummy-clone-promotable"
+      - resource_id: dummy-clone-no-options
+      - resource_id: dummy-clone-promotable
         promotable: yes
-      - resource_id: "dummy-clone-id"
-        id: "custom-clone-id1"
-      - resource_id: "dummy-clone-empty-attrs1"
+      - resource_id: dummy-clone-id
+        id: custom-clone-id1
+      - resource_id: dummy-clone-empty-attrs1
         meta_attrs:
-      - resource_id: "dummy-clone-empty-attrs2"
-        meta_attrs:
-          - attrs:
-      - resource_id: "dummy-clone-with-attrs1"
+      - resource_id: dummy-clone-empty-attrs2
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-      - resource_id: "dummy-clone-with-attrs2"
+      - resource_id: dummy-clone-with-attrs1
+        meta_attrs:
+          - attrs:
+              - name: target-role
+                value: Stopped
+      - resource_id: dummy-clone-with-attrs2
         promotable: yes
-        id: "custom-clone-id2"
+        id: custom-clone-id2
         meta_attrs:
           - attrs:
-              - name: "target-role"
-                value: "Stopped"
-              - name: "an-attr"
-                value: "a value"
-      - resource_id: "group3"
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
+      - resource_id: group3
 
   tasks:
     - block:
@@ -207,6 +207,13 @@
             __test_pcs_capabilities: "{{
                 __test_pcs_version.stdout_lines[1].split()
               }}"
+
+        - name: Fetch package facts
+          package_facts:
+
+        - name: Debug pacemaker version
+          debug:
+            var: ansible_facts.packages['pacemaker']
 
         - name: Fetch stonith configuration from the cluster
           command:
@@ -242,159 +249,210 @@
                   '  Attributes: delay=1 pcmk_host_list="node1 node2"',
                   '  Meta Attrs: an-attr="a value" target-role=Stopped',
                   '  Operations: monitor interval=26 timeout=13 (xvm-with-attrs-monitor-interval-26)',
-                  '              monitor interval=28 timeout=14 (xvm-with-attrs-monitor-interval-28)',
+                  '              monitor interval=28s timeout=14s (xvm-with-attrs-monitor-interval-28s)',
                 ]
 
         - name: Check resource configuration
           assert:
             that:
-              - >
-                __test_pcs_resource_config.stdout_lines == [
-                  ' Resource: dummy-no-attrs (class=ocf provider=pacemaker type=Dummy)',
-                  '  Operations: migrate_from interval=0s timeout=20s (dummy-no-attrs-migrate_from-interval-0s)',
-                  '              migrate_to interval=0s timeout=20s (dummy-no-attrs-migrate_to-interval-0s)',
-                  '              monitor interval=10s timeout=20s (dummy-no-attrs-monitor-interval-10s)',
-                  '              reload interval=0s timeout=20s (dummy-no-attrs-reload-interval-0s)',
-                  '              start interval=0s timeout=20s (dummy-no-attrs-start-interval-0s)',
-                  '              stop interval=0s timeout=20s (dummy-no-attrs-stop-interval-0s)',
-                  ' Resource: dummy-empty-attrs1 (class=ocf provider=pacemaker type=Dummy)',
-                  '  Operations: migrate_from interval=0s timeout=20s (dummy-empty-attrs1-migrate_from-interval-0s)',
-                  '              migrate_to interval=0s timeout=20s (dummy-empty-attrs1-migrate_to-interval-0s)',
-                  '              monitor interval=10s timeout=20s (dummy-empty-attrs1-monitor-interval-10s)',
-                  '              reload interval=0s timeout=20s (dummy-empty-attrs1-reload-interval-0s)',
-                  '              start interval=0s timeout=20s (dummy-empty-attrs1-start-interval-0s)',
-                  '              stop interval=0s timeout=20s (dummy-empty-attrs1-stop-interval-0s)',
-                  ' Resource: dummy-empty-attrs2 (class=ocf provider=pacemaker type=Dummy)',
-                  '  Operations: migrate_from interval=0s timeout=20s (dummy-empty-attrs2-migrate_from-interval-0s)',
-                  '              migrate_to interval=0s timeout=20s (dummy-empty-attrs2-migrate_to-interval-0s)',
-                  '              monitor interval=10s timeout=20s (dummy-empty-attrs2-monitor-interval-10s)',
-                  '              reload interval=0s timeout=20s (dummy-empty-attrs2-reload-interval-0s)',
-                  '              start interval=0s timeout=20s (dummy-empty-attrs2-start-interval-0s)',
-                  '              stop interval=0s timeout=20s (dummy-empty-attrs2-stop-interval-0s)',
-                  ' Resource: dummy-with-attrs1 (class=ocf provider=pacemaker type=Dummy)',
-                  '  Attributes: fake="fake value"',
-                  '  Meta Attrs: target-role=Stopped',
-                  '  Operations: migrate_from interval=0s timeout=20s (dummy-with-attrs1-migrate_from-interval-0s)',
-                  '              migrate_to interval=0s timeout=20s (dummy-with-attrs1-migrate_to-interval-0s)',
-                  '              monitor interval=60s timeout=13 (dummy-with-attrs1-monitor-interval-60s)',
-                  '              reload interval=0s timeout=20s (dummy-with-attrs1-reload-interval-0s)',
-                  '              start interval=0s timeout=20s (dummy-with-attrs1-start-interval-0s)',
-                  '              stop interval=0s timeout=20s (dummy-with-attrs1-stop-interval-0s)',
-                  ' Resource: dummy-with-attrs2 (class=ocf provider=pacemaker type=Dummy)',
-                  '  Attributes: fake="fake value" passwd="passwd value1"',
-                  '  Meta Attrs: an-attr="a value" target-role=Stopped',
-                  '  Operations: migrate_from interval=0s timeout=20s (dummy-with-attrs2-migrate_from-interval-0s)',
-                  '              migrate_to interval=0s timeout=20s (dummy-with-attrs2-migrate_to-interval-0s)',
-                  '              monitor interval=26 timeout=13 (dummy-with-attrs2-monitor-interval-26)',
-                  '              monitor interval=28 timeout=14 (dummy-with-attrs2-monitor-interval-28)',
-                  '              reload interval=0s timeout=20s (dummy-with-attrs2-reload-interval-0s)',
-                  '              start interval=0s timeout=20s (dummy-with-attrs2-start-interval-0s)',
-                  '              stop interval=0s timeout=20s (dummy-with-attrs2-stop-interval-0s)',
-                  ' Group: group1',
-                  '  Resource: dummy-1a (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-1a-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-1a-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-1a-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-1a-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-1a-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-1a-stop-interval-0s)',
-                  '  Resource: dummy-1b (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-1b-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-1b-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-1b-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-1b-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-1b-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-1b-stop-interval-0s)',
-                  ' Group: group2',
-                  '  Resource: dummy-2a (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-2a-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-2a-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-2a-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-2a-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-2a-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-2a-stop-interval-0s)',
-                  ' Group: group4',
-                  '  Meta Attrs: an-attr="a value" target-role=Stopped',
-                  '  Resource: dummy-4a (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-4a-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-4a-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-4a-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-4a-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-4a-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-4a-stop-interval-0s)',
-                  ' Clone: dummy-clone-no-options-clone',
-                  '  Resource: dummy-clone-no-options (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-no-options-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-clone-no-options-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-clone-no-options-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-clone-no-options-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-clone-no-options-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-clone-no-options-stop-interval-0s)',
-                  ' Clone: dummy-clone-promotable-clone',
-                  '  Meta Attrs: promotable=true',
-                  '  Resource: dummy-clone-promotable (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-promotable-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-clone-promotable-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-clone-promotable-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-clone-promotable-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-clone-promotable-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-clone-promotable-stop-interval-0s)',
-                  ' Clone: {{
-                      ("pcmk.resource.clone.custom-id" in __test_pcs_capabilities)
-                      | ternary("custom-clone-id1", "dummy-clone-id-clone") }}',
-                  '  Resource: dummy-clone-id (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-id-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-clone-id-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-clone-id-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-clone-id-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-clone-id-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-clone-id-stop-interval-0s)',
-                  ' Clone: dummy-clone-empty-attrs1-clone',
-                  '  Resource: dummy-clone-empty-attrs1 (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-empty-attrs1-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-clone-empty-attrs1-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-clone-empty-attrs1-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-clone-empty-attrs1-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-clone-empty-attrs1-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-clone-empty-attrs1-stop-interval-0s)',
-                  ' Clone: dummy-clone-empty-attrs2-clone',
-                  '  Resource: dummy-clone-empty-attrs2 (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-empty-attrs2-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-clone-empty-attrs2-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-clone-empty-attrs2-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-clone-empty-attrs2-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-clone-empty-attrs2-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-clone-empty-attrs2-stop-interval-0s)',
-                  ' Clone: dummy-clone-with-attrs1-clone',
-                  '  Meta Attrs: target-role=Stopped',
-                  '  Resource: dummy-clone-with-attrs1 (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-with-attrs1-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-clone-with-attrs1-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-clone-with-attrs1-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-clone-with-attrs1-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-clone-with-attrs1-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-clone-with-attrs1-stop-interval-0s)',
-                  ' Clone: {{
-                      ("pcmk.resource.promotable.custom-id" in __test_pcs_capabilities)
-                      | ternary("custom-clone-id2", "dummy-clone-with-attrs2-clone") }}',
-                  '  Meta Attrs: an-attr="a value" promotable=true target-role=Stopped',
-                  '  Resource: dummy-clone-with-attrs2 (class=ocf provider=pacemaker type=Dummy)',
-                  '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-with-attrs2-migrate_from-interval-0s)',
-                  '               migrate_to interval=0s timeout=20s (dummy-clone-with-attrs2-migrate_to-interval-0s)',
-                  '               monitor interval=10s timeout=20s (dummy-clone-with-attrs2-monitor-interval-10s)',
-                  '               reload interval=0s timeout=20s (dummy-clone-with-attrs2-reload-interval-0s)',
-                  '               start interval=0s timeout=20s (dummy-clone-with-attrs2-start-interval-0s)',
-                  '               stop interval=0s timeout=20s (dummy-clone-with-attrs2-stop-interval-0s)',
-                  ' Clone: group3-clone',
-                  '  Group: group3',
-                  '   Resource: dummy-3a (class=ocf provider=pacemaker type=Dummy)',
-                  '    Operations: migrate_from interval=0s timeout=20s (dummy-3a-migrate_from-interval-0s)',
-                  '                migrate_to interval=0s timeout=20s (dummy-3a-migrate_to-interval-0s)',
-                  '                monitor interval=10s timeout=20s (dummy-3a-monitor-interval-10s)',
-                  '                reload interval=0s timeout=20s (dummy-3a-reload-interval-0s)',
-                  '                start interval=0s timeout=20s (dummy-3a-start-interval-0s)',
-                  '                stop interval=0s timeout=20s (dummy-3a-stop-interval-0s)',
-                ]
-        # yamllint enable rule:line-length
+              - __test_pcs_resource_config.stdout_lines == __test_expected_lines | select | list
+          vars:
+            __test_expected_lines:
+              - ' Resource: dummy-no-attrs (class=ocf provider=pacemaker type=Dummy)'
+              - '  Operations: migrate_from interval=0s timeout=20s (dummy-no-attrs-migrate_from-interval-0s)'
+              - '              migrate_to interval=0s timeout=20s (dummy-no-attrs-migrate_to-interval-0s)'
+              - '              monitor interval=10s timeout=20s (dummy-no-attrs-monitor-interval-10s)'
+              - '              reload interval=0s timeout=20s (dummy-no-attrs-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '              reload-agent interval=0s timeout=20s (dummy-no-attrs-reload-agent-interval-0s)',
+                '') }}"
+              - '              start interval=0s timeout=20s (dummy-no-attrs-start-interval-0s)'
+              - '              stop interval=0s timeout=20s (dummy-no-attrs-stop-interval-0s)'
+              - ' Resource: dummy-empty-attrs1 (class=ocf provider=pacemaker type=Dummy)'
+              - '  Operations: migrate_from interval=0s timeout=20s (dummy-empty-attrs1-migrate_from-interval-0s)'
+              - '              migrate_to interval=0s timeout=20s (dummy-empty-attrs1-migrate_to-interval-0s)'
+              - '              monitor interval=10s timeout=20s (dummy-empty-attrs1-monitor-interval-10s)'
+              - '              reload interval=0s timeout=20s (dummy-empty-attrs1-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '              reload-agent interval=0s timeout=20s (dummy-empty-attrs1-reload-agent-interval-0s)',
+                '') }}"
+              - '              start interval=0s timeout=20s (dummy-empty-attrs1-start-interval-0s)'
+              - '              stop interval=0s timeout=20s (dummy-empty-attrs1-stop-interval-0s)'
+              - ' Resource: dummy-empty-attrs2 (class=ocf provider=pacemaker type=Dummy)'
+              - '  Operations: migrate_from interval=0s timeout=20s (dummy-empty-attrs2-migrate_from-interval-0s)'
+              - '              migrate_to interval=0s timeout=20s (dummy-empty-attrs2-migrate_to-interval-0s)'
+              - '              monitor interval=10s timeout=20s (dummy-empty-attrs2-monitor-interval-10s)'
+              - '              reload interval=0s timeout=20s (dummy-empty-attrs2-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '              reload-agent interval=0s timeout=20s (dummy-empty-attrs2-reload-agent-interval-0s)',
+                '') }}"
+              - '              start interval=0s timeout=20s (dummy-empty-attrs2-start-interval-0s)'
+              - '              stop interval=0s timeout=20s (dummy-empty-attrs2-stop-interval-0s)'
+              - ' Resource: dummy-with-attrs1 (class=ocf provider=pacemaker type=Dummy)'
+              - '  Attributes: fake="fake value"'
+              - '  Meta Attrs: target-role=Stopped'
+              - '  Operations: migrate_from interval=0s timeout=20s (dummy-with-attrs1-migrate_from-interval-0s)'
+              - '              migrate_to interval=0s timeout=20s (dummy-with-attrs1-migrate_to-interval-0s)'
+              - '              monitor interval=60s timeout=1min (dummy-with-attrs1-monitor-interval-60s)'
+              - '              reload interval=0s timeout=20s (dummy-with-attrs1-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '              reload-agent interval=0s timeout=20s (dummy-with-attrs1-reload-agent-interval-0s)',
+                '') }}"
+              - '              start interval=0s timeout=20s (dummy-with-attrs1-start-interval-0s)'
+              - '              stop interval=0s timeout=20s (dummy-with-attrs1-stop-interval-0s)'
+              - ' Resource: dummy-with-attrs2 (class=ocf provider=pacemaker type=Dummy)'
+              - '  Attributes: fake="fake value" passwd="passwd value1"'
+              - '  Meta Attrs: an-attr="a value" target-role=Stopped'
+              - '  Operations: migrate_from interval=0s timeout=20s (dummy-with-attrs2-migrate_from-interval-0s)'
+              - '              migrate_to interval=0s timeout=20s (dummy-with-attrs2-migrate_to-interval-0s)'
+              - '              monitor interval=26 timeout=13 (dummy-with-attrs2-monitor-interval-26)'
+              - '              monitor interval=28 timeout=14 (dummy-with-attrs2-monitor-interval-28)'
+              - '              reload interval=0s timeout=20s (dummy-with-attrs2-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '              reload-agent interval=0s timeout=20s (dummy-with-attrs2-reload-agent-interval-0s)',
+                '') }}"
+              - '              start interval=0s timeout=20s (dummy-with-attrs2-start-interval-0s)'
+              - '              stop interval=0s timeout=20s (dummy-with-attrs2-stop-interval-0s)'
+              - ' Group: group1'
+              - '  Resource: dummy-1a (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-1a-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-1a-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-1a-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-1a-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-1a-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-1a-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-1a-stop-interval-0s)'
+              - '  Resource: dummy-1b (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-1b-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-1b-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-1b-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-1b-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-1b-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-1b-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-1b-stop-interval-0s)'
+              - ' Group: group2'
+              - '  Resource: dummy-2a (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-2a-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-2a-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-2a-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-2a-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-2a-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-2a-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-2a-stop-interval-0s)'
+              - ' Group: group4'
+              - '  Meta Attrs: an-attr="a value" target-role=Stopped'
+              - '  Resource: dummy-4a (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-4a-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-4a-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-4a-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-4a-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-4a-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-4a-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-4a-stop-interval-0s)'
+              - ' Clone: dummy-clone-no-options-clone'
+              - '  Resource: dummy-clone-no-options (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-no-options-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-clone-no-options-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-clone-no-options-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-clone-no-options-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-clone-no-options-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-clone-no-options-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-clone-no-options-stop-interval-0s)'
+              - ' Clone: dummy-clone-promotable-clone'
+              - '  Meta Attrs: promotable=true'
+              - '  Resource: dummy-clone-promotable (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-promotable-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-clone-promotable-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-clone-promotable-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-clone-promotable-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-clone-promotable-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-clone-promotable-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-clone-promotable-stop-interval-0s)'
+              - ' Clone: {{
+                    ("pcmk.resource.clone.custom-id" in __test_pcs_capabilities)
+                    | ternary("custom-clone-id1", "dummy-clone-id-clone") }}'
+              - '  Resource: dummy-clone-id (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-id-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-clone-id-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-clone-id-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-clone-id-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-clone-id-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-clone-id-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-clone-id-stop-interval-0s)'
+              - ' Clone: dummy-clone-empty-attrs1-clone'
+              - '  Resource: dummy-clone-empty-attrs1 (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-empty-attrs1-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-clone-empty-attrs1-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-clone-empty-attrs1-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-clone-empty-attrs1-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-clone-empty-attrs1-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-clone-empty-attrs1-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-clone-empty-attrs1-stop-interval-0s)'
+              - ' Clone: dummy-clone-empty-attrs2-clone'
+              - '  Resource: dummy-clone-empty-attrs2 (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-empty-attrs2-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-clone-empty-attrs2-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-clone-empty-attrs2-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-clone-empty-attrs2-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-clone-empty-attrs2-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-clone-empty-attrs2-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-clone-empty-attrs2-stop-interval-0s)'
+              - ' Clone: dummy-clone-with-attrs1-clone'
+              - '  Meta Attrs: target-role=Stopped'
+              - '  Resource: dummy-clone-with-attrs1 (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-with-attrs1-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-clone-with-attrs1-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-clone-with-attrs1-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-clone-with-attrs1-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-clone-with-attrs1-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-clone-with-attrs1-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-clone-with-attrs1-stop-interval-0s)'
+              - ' Clone: {{
+                    ("pcmk.resource.promotable.custom-id" in __test_pcs_capabilities)
+                    | ternary("custom-clone-id2", "dummy-clone-with-attrs2-clone") }}'
+              - '  Meta Attrs: an-attr="a value" promotable=true target-role=Stopped'
+              - '  Resource: dummy-clone-with-attrs2 (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-with-attrs2-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-clone-with-attrs2-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-clone-with-attrs2-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-clone-with-attrs2-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-clone-with-attrs2-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-clone-with-attrs2-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-clone-with-attrs2-stop-interval-0s)'
+              - ' Clone: group3-clone'
+              - '  Group: group3'
+              - '   Resource: dummy-3a (class=ocf provider=pacemaker type=Dummy)'
+              - '    Operations: migrate_from interval=0s timeout=20s (dummy-3a-migrate_from-interval-0s)'
+              - '                migrate_to interval=0s timeout=20s (dummy-3a-migrate_to-interval-0s)'
+              - '                monitor interval=10s timeout=20s (dummy-3a-monitor-interval-10s)'
+              - '                reload interval=0s timeout=20s (dummy-3a-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '                reload-agent interval=0s timeout=20s (dummy-3a-reload-agent-interval-0s)',
+                '') }}"
+              - '                start interval=0s timeout=20s (dummy-3a-start-interval-0s)'
+              - '                stop interval=0s timeout=20s (dummy-3a-stop-interval-0s)'
+      # yamllint enable rule:line-length
 
       tags: tests::verify

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Check cluster configuration variables
   block:
     - name: Fail if passwords are not specified

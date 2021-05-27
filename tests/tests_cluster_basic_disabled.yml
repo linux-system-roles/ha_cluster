@@ -1,8 +1,10 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Minimal cluster configuration, daemons disabled
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_cluster_name: test-cluster
     ha_cluster_start_on_boot: no
 
   tasks:

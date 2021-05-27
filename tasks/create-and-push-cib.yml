@@ -34,9 +34,9 @@
   copy:
     content: "{{ __ha_cluster_fetch_cib.stdout }}"
     dest: "{{ item }}"
-    owner: "root"
-    group: "root"
-    mode: "0600"
+    owner: root
+    group: root
+    mode: 0600
   loop:
     - "{{ __ha_cluster_tempfile_cib_xml.path }}"
     - "{{ __ha_cluster_tempfile_original_cib_xml.path }}"
@@ -76,20 +76,20 @@
 # Build the new CIB
 
 - name: Configure cluster resources
-  include_tasks: "pcs-cib-resource-create-pcs-0.10.yml"
+  include_tasks: pcs-cib-resource-create-pcs-0.10.yml
   vars:
     resource: "{{ item }}"
     resource_is_stonith: "{{ item.agent.startswith('stonith:') }}"
   loop: "{{ ha_cluster_resource_primitives }}"
 
 - name: Configure cluster resource groups
-  include_tasks: "pcs-cib-resource-group-pcs-0.10.yml"
+  include_tasks: pcs-cib-resource-group-pcs-0.10.yml
   vars:
     resource_group: "{{ item }}"
   loop: "{{ ha_cluster_resource_groups }}"
 
 - name: Configure cluster resource clones
-  include_tasks: "pcs-cib-resource-clone-pcs-0.10.yml"
+  include_tasks: pcs-cib-resource-clone-pcs-0.10.yml
   vars:
     resource_clone: "{{ item }}"
   loop: "{{ ha_cluster_resource_clones }}"
@@ -122,9 +122,9 @@
   copy:
     content: "{{ __ha_cluster_cib_diff.stdout }}"
     dest: "{{ __ha_cluster_tempfile_cib_diff.path }}"
-    owner: "root"
-    group: "root"
-    mode: "0600"
+    owner: root
+    group: root
+    mode: 0600
   check_mode: no
   changed_when: not ansible_check_mode
   when: __ha_cluster_cib_diff.rc == 1

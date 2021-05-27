@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 # Some changes to corosync.conf can be applied when a cluster is running by
 # instructing Corosync to reload its configuration. Other changes, however,
 # require the whole cluster to be restarted. Different Corosync versions have
@@ -33,8 +35,8 @@
         or __ha_cluster_distribute_corosync_authkey.changed
         or __ha_cluster_distribute_pacemaker_authkey.changed
     - >
-        item != "corosync-qdevice"
-        or "corosync-qdevice.service" in ansible_facts.services
+        item != 'corosync-qdevice'
+        or 'corosync-qdevice.service' in ansible_facts.services
 
 
 # We must always start daemons to get the cluster running on newly added nodes.

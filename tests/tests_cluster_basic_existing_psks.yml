@@ -1,8 +1,10 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Minimal cluster configuration, using existing PSKs
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_cluster_name: "test-cluster"
+    ha_cluster_cluster_name: test-cluster
     __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
     __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
     __test_corosync_key_path: "{{ playbook_dir }}/tmp/corosync-authkey"
@@ -21,9 +23,9 @@
           file:
             path: "{{ item }}"
             state: directory
-            owner: "root"
-            group: "root"
-            mode: "0755"
+            owner: root
+            group: root
+            mode: 0755
           loop:
             - /etc/corosync
             - /etc/pacemaker
@@ -34,25 +36,25 @@
           copy:
             src: "{{ __test_corosync_key_path }}"
             dest: /etc/corosync/authkey
-            owner: "root"
-            group: "root"
-            mode: "0400"
+            owner: root
+            group: root
+            mode: 0400
 
         - name: Ensure pacemaker key is present
           copy:
             src: "{{ __test_pacemaker_key_path }}"
             dest: /etc/pacemaker/authkey
-            owner: "root"
-            group: "root"
-            mode: "0400"
+            owner: root
+            group: root
+            mode: 0400
 
         - name: Ensure fence-virt key is present
           copy:
             src: "{{ __test_fence_xvm_key_path }}"
             dest: /etc/cluster/fence_xvm.key
-            owner: "root"
-            group: "root"
-            mode: "0400"
+            owner: root
+            group: root
+            mode: 0400
 
         - name: Ensure pcsd TLS certificate and key exist
           block:
@@ -60,17 +62,17 @@
               copy:
                 src: "{{ __test_pcsd_private_key_path }}"
                 dest: /var/lib/pcsd/pcsd.key
-                owner: "root"
-                group: "root"
-                mode: "0600"
+                owner: root
+                group: root
+                mode: 0600
 
             - name: Distribute pcsd TLS certificate
               copy:
                 src: "{{ __test_pcsd_public_key_path }}"
                 dest: /var/lib/pcsd/pcsd.crt
-                owner: "root"
-                group: "root"
-                mode: "0600"
+                owner: root
+                group: root
+                mode: 0600
 
         - name: Get corosync key hash
           stat:

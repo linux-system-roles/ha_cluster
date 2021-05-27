@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Create a corosync.conf file content using pcs-0.10
   command:
     cmd: >
@@ -6,7 +8,7 @@
       --overwrite
       {{ ha_cluster_cluster_name | quote }}
       {% for node in ansible_play_hosts_all %}
-        '{{ hostvars[node].__ha_cluster_node_name | quote }}'
+        {{ hostvars[node].__ha_cluster_node_name | quote }}
         {%
           for addr in hostvars[node].ha_cluster.corosync_addresses | default([])
         %}

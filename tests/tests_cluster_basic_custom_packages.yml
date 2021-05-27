@@ -1,12 +1,11 @@
-- name: Minimal cluster configuration, install custom packages
+# SPDX-License-Identifier: MIT
+---
+- name: Install custom packages
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_cluster_name: "test-cluster"
-    __test_extra_package: "{{
-        (ansible_facts['distribution'] == 'Fedora')
-        | ternary('glusterfs-resource-agents', 'resource-agents-gcp')
-      }}"
+    ha_cluster_cluster_present: no
+    __test_extra_package: pcs-snmp
     ha_cluster_extra_packages:
       - "{{ __test_extra_package }}"
 
@@ -31,8 +30,5 @@
           assert:
             that:
               - "'{{ __test_extra_package }}' in ansible_facts.packages"
-
-        - name: Check cluster status
-          include_tasks: tasks/assert_cluster_running.yml
 
       tags: tests::verify

@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 # Pcsd must be stopped when its config files are being updated. This is to
 # prevent a race condition caused by pcsd syncing its files in the cluster on
 # its own.
@@ -23,16 +25,16 @@
       copy:
         src: "{{ ha_cluster_pcsd_private_key_src }}"
         dest: /var/lib/pcsd/pcsd.key
-        owner: "root"
-        group: "root"
-        mode: "0600"
+        owner: root
+        group: root
+        mode: 0600
     - name: Distribute pcsd TLS certificate
       copy:
         src: "{{ ha_cluster_pcsd_public_key_src }}"
         dest: /var/lib/pcsd/pcsd.crt
-        owner: "root"
-        group: "root"
-        mode: "0600"
+        owner: root
+        group: root
+        mode: 0600
   when:
     - ha_cluster_pcsd_public_key_src is string
     - ha_cluster_pcsd_public_key_src | length > 0
@@ -43,9 +45,9 @@
   template:
     src: templates/pcs_settings.conf
     dest: /var/lib/pcsd/pcs_settings.conf
-    owner: "root"
-    group: "root"
-    mode: "0644"
+    owner: root
+    group: root
+    mode: 0644
     trim_blocks: no
 
 - name: Start pcsd with updated config files and configure it to start on boot

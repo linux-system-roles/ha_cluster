@@ -1,6 +1,8 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Set node name to 'localhost' for single-node clusters
   set_fact:
-    inventory_hostname: "localhost"
+    inventory_hostname: localhost
   when: ansible_play_hosts_all | length == 1
 
 # Test systems may not have repositories available through subscriptions
@@ -8,4 +10,4 @@
   set_fact:
     ha_cluster_enable_repos: no
   when:
-    - ansible_distribution == "RedHat"
+    - ansible_distribution == 'RedHat'
