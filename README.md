@@ -11,7 +11,7 @@ An Ansible role for managing High Availability Clustering.
 * The role replaces the configuration of HA Cluster on specified nodes. Any
   settings not specified in the role variables will be lost.
 * For now, the role is capable of configuring a basic corosync cluster and
-  pacemaker stonith and resources.
+  pacemaker cluster properties, stonith and resources.
 
 ## Role Variables
 
@@ -173,6 +173,24 @@ follows:
 string, default: `my-cluster`
 
 Name of the cluster.
+
+#### `ha_cluster_cluster_properties`
+
+structure, default: no properties
+
+```yaml
+ha_cluster_cluster_properties:
+  - attrs:
+      - name: property1_name
+        value: property1_value
+      - name: property2_name
+        value: property2_value
+```
+
+List of sets of cluster properties - pacemaker cluster-wide configuration.
+Currently, only one set is supported.
+
+You may take a look at [an example](#configuring-cluster-properties).
 
 #### `ha_cluster_resource_primitives`
 
@@ -339,6 +357,23 @@ all:
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Configuring cluster properties
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: stonith-enabled
+            value: 'true'
+          - name: no-quorum-policy
+            value: stop
 
   roles:
     - linux-system-roles.ha_cluster

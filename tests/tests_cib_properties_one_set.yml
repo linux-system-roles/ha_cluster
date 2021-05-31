@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure cluster properties - one set
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: stonith-enabled
+            value: 'true'
+          - name: no-quorum-policy
+            value: stop
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Fetch cluster properties configuration from the cluster
+          command:
+            cmd: pcs property
+          register: __test_pcs_property_config
+
+        - name: Debug cluster properties configuration
+          debug:
+            var: __test_pcs_property_config
+
+        - name: Check cluster properties configuration
+          assert:
+            that:
+              - >
+                'no-quorum-policy: stop'
+                in __test_pcs_property_config.stdout_lines | map('trim')
+              - >
+                'stonith-enabled: true'
+                in __test_pcs_property_config.stdout_lines | map('trim')
+
+      tags: tests::verify

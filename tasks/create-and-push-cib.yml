@@ -75,6 +75,15 @@
 
 # Build the new CIB
 
+- name: Configure cluster properties
+  include_tasks: pcs-cluster-properties-pcs-0.10.yml
+  # pcs-0.10 supports only one set of attributes, that's the reason for
+  # 'ha_cluster_cluster_properties[0]' and 'when' instead of looping over
+  # ha_cluster_cluster_properties
+  vars:
+    properties_set: "{{ ha_cluster_cluster_properties[0] }}"
+  when: ha_cluster_cluster_properties[0].attrs | default([])
+
 - name: Configure cluster resources
   include_tasks: pcs-cib-resource-create-pcs-0.10.yml
   vars:
