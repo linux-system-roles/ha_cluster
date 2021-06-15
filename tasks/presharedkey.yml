@@ -35,9 +35,17 @@
   delegate_to: localhost
 
 - name: Generate random {{ preshared_key_label }}
-  set_fact:
-    __ha_cluster_some_preshared_key: >
-      "{{ lookup('pipe', 'openssl rand -base64 {{ preshared_key_length }}') }}"
+  block:
+    - name: Generate {{ preshared_key_label }} using OpenSSL
+      command:
+        cmd: openssl rand -base64 {{ preshared_key_length | quote }}
+      register: __ha_cluster_openssl_rand
+      changed_when: no
+
+    - name: Fetch generated {{ preshared_key_label }}
+      set_fact:
+        __ha_cluster_some_preshared_key: >
+          "{{ __ha_cluster_openssl_rand.stdout }}"
   when:
     - not (preshared_key_src is string and preshared_key_src | length > 1)
   run_once: yes

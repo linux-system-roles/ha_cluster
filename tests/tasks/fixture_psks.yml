@@ -1,7 +1,12 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Generate pre-shared keys and certificates on controller
+- name: Generate pre-shared keys and certificates on the controller
   block:
+    - name: Ensure OpenSSL is installed on the controller
+      package:
+        name: openssl
+        state: present
+
     - name: Ensure a directory for temporary files exists
       file:
         path: "{{ playbook_dir }}/tmp"
@@ -26,27 +31,21 @@
         privatekey_path: "{{ __test_pcsd_private_key_path }}"
         provider: selfsigned
 
-    - name: Generate pre-shared keys
-      set_fact:
-        __test_corosync_key: "{{ lookup('pipe', 'openssl rand -base64 256') }}"
-        __test_pacemaker_key: "{{ lookup('pipe', 'openssl rand -base64 256') }}"
-        __test_fence_xvm_key: "{{ lookup('pipe', 'openssl rand -base64 512') }}"
-
-    - name: Save corosync key
+    - name: Generate corosync key
       copy:
-        content: "{{ __test_corosync_key | b64decode }}"
+        content: "{{ lookup('pipe', 'openssl rand -base64 256') | b64decode }}"
         dest: "{{ __test_corosync_key_path }}"
         mode: 0400
 
-    - name: Save pacemaker key
+    - name: Generate pacemaker key
       copy:
-        content: "{{ __test_pacemaker_key | b64decode }}"
+        content: "{{ lookup('pipe', 'openssl rand -base64 256') | b64decode }}"
         dest: "{{ __test_pacemaker_key_path }}"
         mode: 0400
 
-    - name: Save fence_xvm key
+    - name: Generate fence_xvm key
       copy:
-        content: "{{ __test_fence_xvm_key | b64decode }}"
+        content: "{{ lookup('pipe', 'openssl rand -base64 512') | b64decode }}"
         dest: "{{ __test_fence_xvm_key_path }}"
         mode: 0400
 

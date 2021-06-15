@@ -17,6 +17,7 @@ __ha_cluster_fullstack_node_packages:
   - libknet1-plugins-all
   - pacemaker
   - pcs
+  - openssl  # used in the role for generating preshared keys
 
 __ha_cluster_services:
   - corosync
