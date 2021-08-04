@@ -8,9 +8,9 @@
           - python-cryptography
         state: present
       when:
-        - ansible_facts["distribution"] == "CentOS" or
-          ansible_facts["distribution"] == "RedHat"
-        - ansible_facts["distribution_major_version"] == "7"
+        - hostvars["localhost"]["distribution"] == "CentOS" or
+          hostvars["localhost"]["distribution"] == "RedHat"
+        - hostvars["localhost"]["distribution_major_version"] == "7"
 
     - name: Install python3-cryptography
       package:
@@ -18,9 +18,9 @@
           - python3-cryptography
         state: present
       when:
-        - not (ansible_facts["distribution"] == "CentOS" or
-          ansible_facts["distribution"] == "RedHat") or
-          ansible_facts["distribution_major_version"] | int > 7
+        - not (hostvars["localhost"]["distribution"] == "CentOS" or
+          hostvars["localhost"]["distribution"] == "RedHat") or
+          hostvars["localhost"]["distribution_major_version"] | int > 7
 
     - name: Ensure OpenSSL is installed on the controller
       package:
