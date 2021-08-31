@@ -13,23 +13,14 @@
         state: directory
         mode: 0700
 
-    - name: Generate pcsd TLS private key
-      openssl_privatekey:
-        path: "{{ __test_pcsd_private_key_path }}"
-        type: RSA
 
-    - name: Generate pcsd TLS certificate signing request
-      openssl_csr:
-        path: "{{ playbook_dir }}/tmp/pcsd.csr"
-        privatekey_path: "{{ __test_pcsd_private_key_path }}"
-        common_name: "{{ ansible_host }}"
-
-    - name: Generate pcsd TLS certificate
-      openssl_certificate:
-        csr_path: "{{ playbook_dir }}/tmp/pcsd.csr"
-        path: "{{ __test_pcsd_public_key_path }}"
-        privatekey_path: "{{ __test_pcsd_private_key_path }}"
-        provider: selfsigned
+    - name: Generate a self signed pcsd cert and the pcsd key
+      command: >-
+        openssl req -x509 -newkey rsa:2048 -nodes
+        -keyout "{{ __test_pcsd_private_key_path }}"
+        -out "{{ __test_pcsd_public_key_path }}"
+        -subj "/CN={{ ansible_host }}"
+      changed_when: false
 
     - name: Generate corosync key
       copy:
