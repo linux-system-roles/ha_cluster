@@ -9,8 +9,6 @@
   check_mode: no
 
 - name: Enable RHEL repositories
-  rhsm_repository:
-    name: "{{ item.id }}"
-    state: enabled
+  command: subscription-manager repos --enable {{ item.id | quote }}
   loop: "{{ __ha_cluster_repos }}"
   when: item.name not in __ha_cluster_repolist.stdout
