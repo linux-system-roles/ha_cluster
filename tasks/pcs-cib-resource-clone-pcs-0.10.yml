@@ -5,7 +5,7 @@
     msg: >
       Custom clone id '{{ resource_clone.id }}' is ignored
       for resource clone '{{ resource_clone.resource_id }}', please upgrade pcs
-  ignore_errors: yes
+  ignore_errors: yes  # noqa ignore-errors
   when:
     - resource_clone.id is defined
     - not (
