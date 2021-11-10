@@ -177,6 +177,38 @@ string, default: `my-cluster`
 
 Name of the cluster.
 
+#### `ha_cluster_sbd_enable`
+
+bool, default: `false`
+
+Defines whether to use SBD.
+
+#### `ha_cluster_sbd_devices`
+
+list, default: `[]`
+
+List of devices (string) to use.
+
+#### `ha_cluster_sbd_create_params`
+
+str, default: `''`
+
+SBD parameters specified when creating the disks
+
+#### `ha_cluster_sbd_daemon_params`
+
+str, default: '`-W`'
+
+SBD daemon parameters used for startup
+
+#### `ha_cluster_sbd_startmode`
+
+str, default: '`always`'
+
+SBD cluster start mode. The default value will ensure that cluster nodes can re-join after being fenced. The more secure value is '`clean`'.
+
+#### `ha_cluster_`
+
 #### `ha_cluster_cluster_properties`
 
 structure, default: no properties
