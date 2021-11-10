@@ -12,14 +12,3 @@
     # nodes are configured to start the cluster on boot while other nodes in
     # the same cluster are not.
     - item != 'corosync-qdevice' or __ha_cluster_qdevice_in_use
-
-- name: Get services status - detect SBD
-  service_facts:
-
-# The role does not support configuring SBD yet, therefore we always disable it.
-- name: Disable SBD
-  service:
-    name: sbd
-    enabled: no
-  when:
-    - '"sbd.service" in ansible_facts.services'
