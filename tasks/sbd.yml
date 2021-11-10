@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: MIT
+---
+# TODO: make creating SBD headers idempotent
+# - name: Check SBD device headers
+#   command: "sbd -d {{ item }}  dump"
+#   run_once: true
+#   ignore_errors: true
+#   register: "sbd_dump_{{ item }}"
+#   loop: "{{ ha_cluster_sbd_devices }}"
+#   when:
+#     - ha_cluster_use_sbd
+#     - ha_cluster_sbd_devices
+#   tags:
+#     - sbd
+
+- name: Create SBD devices
+  command: "sbd -d {{ item }} {{ ha_cluster_sbd_create_params }} create"
+  run_once: true
+  loop: "{{ ha_cluster_sbd_devices }}"
+  when:
+    - ha_cluster_use_sbd
+    - ha_cluster_sbd_devices
+  tags:
+    - sbd
+
+- name: Enable softdog module
+  copy:
+    content: "softdog"
+    dest: /etc/modules-load.d/softdog.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Load softdog module
+  tags:
+    - sbd
+
+- name: Set SBD parameters
+  replace:
+    path: /etc/sysconfig/sbd
+    regexp: "{{ item.regexp }}"
+    replace: "{{ item.replace }}"
+  loop:
+    - regexp: '^(.*)SBD_DEVICE=(.*)$'
+      replace: 'SBD_DEVICE="{{ ha_cluster_sbd_devices | join(";") }}"'
+    - regexp: '^(.*)SBD_OPTS=(.*)$'
+      replace: SBD_OPTS="{{ ha_cluster_sbd_daemon_params }}"
+    - regexp: '^(.*)SBD_STARTMODE=(.*)$' 
+      replace: "SBD_STARTMODE={{ ha_cluster_sbd_startmode }}"
+  tags:
+    - sbd
+
+- name: Enable and start SBD
+  service:
+    name: sbd
+    enabled: true
+    state: started
+  tags:
+    - sbd
+
+# TODO: automatically create stonith fence resources
+#       e.g. via pcs-cib-resource-create-pcs-0.10.yml?

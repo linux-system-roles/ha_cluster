@@ -55,6 +55,11 @@
     - name: Enable or disable cluster services on boot
       include_tasks: cluster-enable-disable.yml
 
+    - name: Configure SBD
+      include_tasks: sbd.yml
+      when:
+        - ha_cluster_sbd_enable
+
     - name: Pcs auth
       # Auth is run after corosync.conf has been distributed so that pcs
       # distributes pcs tokens in the cluster automatically.
