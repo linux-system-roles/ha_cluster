@@ -8,7 +8,6 @@
 #   register: "sbd_dump_{{ item }}"
 #   loop: "{{ ha_cluster_sbd_devices }}"
 #   when:
-#     - ha_cluster_use_sbd
 #     - ha_cluster_sbd_devices
 #   tags:
 #     - sbd
@@ -18,7 +17,6 @@
   run_once: true
   loop: "{{ ha_cluster_sbd_devices }}"
   when:
-    - ha_cluster_use_sbd
     - ha_cluster_sbd_devices
   tags:
     - sbd
@@ -46,6 +44,7 @@
       replace: SBD_OPTS="{{ ha_cluster_sbd_daemon_params }}"
     - regexp: '^(.*)SBD_STARTMODE=(.*)$' 
       replace: "SBD_STARTMODE={{ ha_cluster_sbd_startmode }}"
+  when: ha_cluster_sbd_devices
   tags:
     - sbd
 
