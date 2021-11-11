@@ -26,18 +26,13 @@
     mode: '0644'
   notify: Load softdog module
 
-- name: Set SBD parameters
-  replace:
-    path: /etc/sysconfig/sbd
-    regexp: "{{ item.regexp }}"
-    replace: "{{ item.replace }}"
-  loop:
-    - regexp: '^(.*)SBD_DEVICE=(.*)$'
-      replace: 'SBD_DEVICE="{{ ha_cluster_sbd_devices | join(";") }}"'
-    - regexp: '^(.*)SBD_OPTS=(.*)$'
-      replace: SBD_OPTS="{{ ha_cluster_sbd_daemon_params }}"
-    - regexp: '^(.*)SBD_STARTMODE=(.*)$' 
-      replace: "SBD_STARTMODE={{ ha_cluster_sbd_startmode }}"
+- name: Create SBD configuration file
+  template:
+    src: templates/sbd.j2
+    dest: /etc/sysconfig/sbd
+    owner: root
+    group: root
+    mode: '0644'
   when: ha_cluster_sbd_devices
 
 - name: Enable and start SBD
