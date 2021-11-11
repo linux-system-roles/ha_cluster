@@ -11,7 +11,7 @@
 #     - ha_cluster_sbd_devices
 
 - name: Create SBD devices
-  command: "sbd -d {{ item }} {{ ha_cluster_sbd_create_params }} create"
+  command: sbd -d {{ item }} {{ ha_cluster_sbd_create_params }} create
   run_once: true
   loop: "{{ ha_cluster_sbd_devices }}"
   when:
