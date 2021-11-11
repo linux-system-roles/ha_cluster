@@ -9,8 +9,6 @@
 #   loop: "{{ ha_cluster_sbd_devices }}"
 #   when:
 #     - ha_cluster_sbd_devices
-#   tags:
-#     - sbd
 
 - name: Create SBD devices
   command: "sbd -d {{ item }} {{ ha_cluster_sbd_create_params }} create"
@@ -18,8 +16,6 @@
   loop: "{{ ha_cluster_sbd_devices }}"
   when:
     - ha_cluster_sbd_devices
-  tags:
-    - sbd
 
 - name: Enable softdog module
   copy:
@@ -29,8 +25,6 @@
     group: root
     mode: '0644'
   notify: Load softdog module
-  tags:
-    - sbd
 
 - name: Set SBD parameters
   replace:
@@ -45,16 +39,12 @@
     - regexp: '^(.*)SBD_STARTMODE=(.*)$' 
       replace: "SBD_STARTMODE={{ ha_cluster_sbd_startmode }}"
   when: ha_cluster_sbd_devices
-  tags:
-    - sbd
 
 - name: Enable and start SBD
   service:
     name: sbd
     enabled: true
     state: started
-  tags:
-    - sbd
 
 # TODO: automatically create stonith fence resources
 #       e.g. via pcs-cib-resource-create-pcs-0.10.yml?
