@@ -10,6 +10,7 @@
 #   when:
 #     - ha_cluster_sbd_devices
 
+# TODO: deadlock if SBD was working before and cluster was stopped
 - name: Create SBD devices
   command: sbd -d {{ item }} {{ ha_cluster_sbd_create_params }} create
   run_once: true
