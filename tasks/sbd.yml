@@ -1,22 +1,22 @@
 # SPDX-License-Identifier: MIT
 ---
-# TODO: make creating SBD headers idempotent
-# - name: Check SBD device headers
-#   command: "sbd -d {{ item }}  dump"
-#   run_once: true
-#   ignore_errors: true
-#   register: "sbd_dump_{{ item }}"
-#   loop: "{{ ha_cluster_sbd_devices }}"
-#   when:
-#     - ha_cluster_sbd_devices
-
-# TODO: deadlock if SBD was working before and cluster was stopped
-- name: Create SBD devices
-  command: sbd -d {{ item }} {{ ha_cluster_sbd_create_params }} create
+- name: Check SBD device headers
+  command: "sbd -d {{ item }} dump"
   run_once: true
+  ignore_errors: true
+  changed_when: false
+  register: "sbd_dump"
   loop: "{{ ha_cluster_sbd_devices }}"
   when:
     - ha_cluster_sbd_devices
+
+- name: Create SBD devices
+  command: sbd -d {{ item.item }} {{ ha_cluster_sbd_create_params }} create
+  loop: "{{ sbd_dump['results'] }}"
+  when:
+    - item.rc == 1
+    - ha_cluster_sbd_devices
+  run_once: true
 
 - name: Enable softdog module
   copy:
@@ -36,11 +36,10 @@
     mode: '0644'
   when: ha_cluster_sbd_devices
 
-- name: Enable and start SBD
+- name: Enable SBD
   service:
     name: sbd
     enabled: true
-    state: started
 
 # TODO: automatically create stonith fence resources
 #       e.g. via pcs-cib-resource-create-pcs-0.10.yml?
