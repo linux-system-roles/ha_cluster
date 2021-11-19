@@ -6,7 +6,7 @@
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
-      constraint ticket add
+      -- constraint ticket add
       {{ constraint.ticket | quote }}
       {{ constraint.resource.role | default() | quote }}
       {{ constraint.resource.id | quote }}

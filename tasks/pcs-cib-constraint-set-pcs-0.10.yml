@@ -6,7 +6,7 @@
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
-      constraint {{ constraint_type }}
+      -- constraint {{ constraint_type }}
       {% for set in constraint.resource_sets %}
         set
         {% for resource in set.resource_ids %}

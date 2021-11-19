@@ -105,7 +105,7 @@
 
 - name: Purge removed nodes from pacemaker's cache
   command:
-    cmd: pcs cluster node clear {{ item | quote }}
+    cmd: pcs -- cluster node clear {{ item | quote }}
   run_once: yes
   loop: "{{ __ha_cluster_list_pacemaker_nodes.stdout_lines }}"
   # This cannot be run in the check mode as it requires cluster to be started.

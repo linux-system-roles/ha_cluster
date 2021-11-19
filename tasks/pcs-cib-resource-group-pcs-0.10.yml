@@ -4,7 +4,7 @@
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
-      resource group add {{ resource_group.id | quote }}
+      -- resource group add {{ resource_group.id | quote }}
       {% for resource in resource_group.resource_ids %}
         {{ resource | quote }}
       {% endfor %}
@@ -19,7 +19,7 @@
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
-      resource meta {{ resource_group.id | quote }}
+      -- resource meta {{ resource_group.id | quote }}
       {% for attr in resource_group.meta_attrs[0].attrs %}
         {{ attr.name | quote }}={{ attr.value | quote }}
       {% endfor %}

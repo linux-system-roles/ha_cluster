@@ -6,7 +6,7 @@
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
-      constraint location
+      -- constraint location
       {% if constraint.rule | default() %}
         {% if constraint.resource.pattern | default() %}
           regexp%{{ constraint.resource.pattern | quote }}

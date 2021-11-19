@@ -6,7 +6,7 @@
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
-      constraint order
+      -- constraint order
       {% if constraint.resource_first.action | default() %}
         {{ constraint.resource_first.action | quote }}
       {% endif %}
