@@ -75,6 +75,7 @@
 
 # Build the new CIB
 
+## Cluster properties
 - name: Configure cluster properties
   include_tasks: pcs-cluster-properties-pcs-0.10.yml
   # pcs-0.10 supports only one set of attributes, that's the reason for
@@ -84,6 +85,7 @@
     properties_set: "{{ ha_cluster_cluster_properties[0] }}"
   when: ha_cluster_cluster_properties[0].attrs | default([])
 
+## Resources
 - name: Configure cluster resources
   include_tasks: pcs-cib-resource-create-pcs-0.10.yml
   vars:
@@ -103,6 +105,72 @@
     resource_clone: "{{ item }}"
   loop: "{{ ha_cluster_resource_clones }}"
 
+## Constraints
+
+- name: Configure resource location constraints
+  include_tasks: pcs-cib-constraint-location-pcs-0.10.yml
+  vars:
+    constraint: "{{ item }}"
+  loop: "{{ ha_cluster_constraints_location }}"
+  loop_control:
+    index_var: constraint_index
+
+- name: Configure resource colocation constraints
+  include_tasks: pcs-cib-constraint-colocation-pcs-0.10.yml
+  vars:
+    constraint: "{{ item }}"
+  when: not constraint.resource_sets | default()
+  loop: "{{ ha_cluster_constraints_colocation }}"
+  loop_control:
+    index_var: constraint_index
+
+- name: Configure resource set colocation constraints
+  include_tasks: pcs-cib-constraint-set-pcs-0.10.yml
+  vars:
+    constraint: "{{ item }}"
+    constraint_type: colocation
+  when: constraint.resource_sets | default()
+  loop: "{{ ha_cluster_constraints_colocation }}"
+  loop_control:
+    index_var: constraint_index
+
+- name: Configure resource order constraints
+  include_tasks: pcs-cib-constraint-order-pcs-0.10.yml
+  vars:
+    constraint: "{{ item }}"
+  when: not constraint.resource_sets | default()
+  loop: "{{ ha_cluster_constraints_order }}"
+  loop_control:
+    index_var: constraint_index
+
+- name: Configure resource set order constraints
+  include_tasks: pcs-cib-constraint-set-pcs-0.10.yml
+  vars:
+    constraint: "{{ item }}"
+    constraint_type: order
+  when: constraint.resource_sets | default()
+  loop: "{{ ha_cluster_constraints_order }}"
+  loop_control:
+    index_var: constraint_index
+
+- name: Configure resource ticket constraints
+  include_tasks: pcs-cib-constraint-ticket-pcs-0.10.yml
+  vars:
+    constraint: "{{ item }}"
+  when: not constraint.resource_sets | default()
+  loop: "{{ ha_cluster_constraints_ticket }}"
+  loop_control:
+    index_var: constraint_index
+
+- name: Configure resource set ticket constraints
+  include_tasks: pcs-cib-constraint-set-pcs-0.10.yml
+  vars:
+    constraint: "{{ item }}"
+    constraint_type: ticket
+  when: constraint.resource_sets | default()
+  loop: "{{ ha_cluster_constraints_ticket }}"
+  loop_control:
+    index_var: constraint_index
 
 # Push the new CIB into the cluster
 

@@ -1,0 +1,565 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Create all kinds of resource constraints in a cluster
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_resource_primitives:
+      - id: d1
+        agent: 'ocf:pacemaker:Dummy'
+      - id: d2
+        agent: 'ocf:pacemaker:Dummy'
+      - id: d3
+        agent: 'ocf:pacemaker:Dummy'
+      - id: d4
+        agent: 'ocf:pacemaker:Dummy'
+    ha_cluster_constraints_location:
+      # resource, node
+      - resource:
+          id: d1
+        node: node1
+      # resource pattern, node
+      - resource:
+          pattern: d\d+
+        node: node1
+      # resource, node, score
+      - resource:
+          id: d1
+        node: node2
+        score: -123
+      # resource pattern, node, score
+      - resource:
+          pattern: d\d+
+        node: node2
+        score: 23
+      # resource, node, id
+      - resource:
+          id: d2
+        node: node1
+        id: cl1
+      # resource pattern, node, id
+      - resource:
+          pattern: d\d+
+        node: node3
+        id: cl2
+      # resource, node, id, options
+      - resource:
+          id: d2
+        node: node2
+        id: cl3
+        options:
+          - name: resource-discovery
+            value: exclusive
+      # resource pattern, node, id, options
+      - resource:
+          pattern: d\d+
+        node: node4
+        id: cl4
+        options:
+          - name: resource-discovery
+            value: exclusive
+      # resource, node, options, id, score
+      - resource:
+          id: d2
+        node: node3
+        id: cl5
+        score: -INFINITY
+        options:
+          - name: resource-discovery
+            value: never
+      # resource pattern, node, options, id, score
+      - resource:
+          pattern: d\d+
+        node: node5
+        id: cl6
+        score: -32
+        options:
+          - name: resource-discovery
+            value: never
+      # resource, rule
+      - resource:
+          id: d3
+        rule: rule eq 1
+      # resource pattern, rule
+      - resource:
+          pattern: d\d+
+        rule: rule eq 1
+      # resource, rule, id
+      - resource:
+          id: d3
+        rule: (rule eq 2) and (date gt 2000-01-01 or date-spec weekdays=1)
+        id: cl7
+      # resource pattern, rule, id
+      - resource:
+          pattern: d\d+
+        rule: (rule eq 2) and (date gt 2000-01-01 or date-spec weekdays=1)
+        id: cl8
+      # resource, rule, role
+      - resource:
+          id: d3
+          role: Master
+        rule: 'rule eq 3 or #uname eq node2'
+      # resource pattern, rule, role
+      - resource:
+          pattern: d\d+
+          role: Master
+        rule: 'rule eq 3 or #uname eq node2'
+      # resource, rule, score
+      - resource:
+          id: d3
+        rule: rule eq 4 and value gt -10
+        score: -47
+      # resource pattern, rule, score
+      - resource:
+          pattern: d\d+
+        rule: rule eq 4 and value gt -10
+        score: -47
+      # resource, rule, score-attribute
+      - resource:
+          id: d3
+        rule: rule eq 5 or value ne string 'interesting#;string&' and x gt 0
+        score_attribute: myscore
+      # resource pattern, rule, score-attribute
+      - resource:
+          pattern: d\d+
+        rule: rule eq 5 or value ne string 'interesting#;string&' and x gt 0
+        score_attribute: myscore
+      # resource, rule, options
+      - resource:
+          id: d3
+        rule: rule eq 6
+        options:
+          - name: resource-discovery
+            value: always
+      # resource pattern, rule, options
+      - resource:
+          pattern: d\d+
+        rule: rule eq 6
+        options:
+          - name: resource-discovery
+            value: always
+      # resource, rule, all other settings
+      - resource:
+          id: d3
+          role: Master
+        rule: rule eq 7
+        id: cl9
+        score: -47
+        options:
+          - name: resource-discovery
+            value: always
+      # resource pattern, rule, all other settings
+      - resource:
+          pattern: d\d+
+          role: Master
+        rule: rule eq 7
+        id: cl10
+        score: -47
+        options:
+          - name: resource-discovery
+            value: always
+    ha_cluster_constraints_colocation:
+      # simplest constraint
+      - resource_follower:
+          id: d1
+        resource_leader:
+          id: d2
+      # score specified
+      - resource_follower:
+          id: d2
+        resource_leader:
+          id: d3
+        score: -10
+      # constraint id specified
+      - resource_follower:
+          id: d3
+        resource_leader:
+          id: d4
+        id: cc-id
+      # roles specified
+      - resource_follower:
+          id: d1
+          role: Master
+        resource_leader:
+          id: d3
+          role: Master
+      # options specified
+      - resource_follower:
+          id: d1
+        resource_leader:
+          id: d4
+        options:
+          - name: node-attribute
+            value: attribute-name
+      # everything specified
+      - resource_follower:
+          id: d2
+          role: Master
+        resource_leader:
+          id: d4
+          role: Started
+        id: cc-all
+        score: -INFINITY
+        options:
+          - name: node-attribute
+            value: attribute-name
+      # simple set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+      # complex set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+            options:
+              - name: role
+                value: Master
+          - resource_ids:
+              - d3
+              - d4
+            options:
+              - name: sequential
+                value: "false"
+        id: cc-set
+        score: 20
+    ha_cluster_constraints_order:
+      # simplest constraint
+      - resource_first:
+          id: d1
+        resource_then:
+          id: d2
+      # constraint id specified
+      - resource_first:
+          id: d2
+        resource_then:
+          id: d3
+        id: co-id
+      # actions specified
+      - resource_first:
+          id: d3
+          action: demote
+        resource_then:
+          id: d4
+          action: promote
+      # options specified
+      - resource_first:
+          id: d1
+        resource_then:
+          id: d3
+        options:
+          - name: kind
+            value: Optional
+          - name: symmetrical
+            value: "false"
+          - name: require-all
+            value: "false"
+      # score specified
+      - resource_first:
+          id: d1
+        resource_then:
+          id: d4
+        score: -15
+      # everything specified
+      - resource_first:
+          id: d2
+          action: demote
+        resource_then:
+          id: d4
+          action: stop
+        id: co-all
+        score: 10
+        options:
+          - name: symmetrical
+            value: "false"
+          - name: require-all
+            value: "false"
+      # simple set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+      # complex set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+            options:
+              - name: action
+                value: promote
+          - resource_ids:
+              - d3
+              - d4
+            options:
+              - name: sequential
+                value: "false"
+              - name: require-all
+                value: "true"
+        id: co-set
+        options:
+          - name: symmetrical
+            value: "false"
+          - name: kind
+            value: Serialize
+    ha_cluster_constraints_ticket:
+      # simplest constraint
+      - resource:
+          id: d1
+        ticket: ticket1
+      # constraint id specified
+      - resource:
+          id: d1
+        id: ct-id
+        ticket: ticket2
+      # role specified
+      - resource:
+          id: d2
+          role: Master
+        ticket: ticket1
+      # options specified
+      - resource:
+          id: d2
+        ticket: ticket2
+        options:
+          - name: loss-policy
+            value: stop
+      # everything specified
+      - resource:
+          id: d3
+          role: Master
+        id: ct-all
+        ticket: ticket3
+        options:
+          - name: loss-policy
+            value: demote
+      # simple set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+        ticket: ticket-set1
+      # complex set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+          - resource_ids:
+              - d3
+              - d4
+            options:
+              - name: sequential
+                value: "false"
+              - name: require-all
+                value: "true"
+        id: ct-set
+        ticket: ticket-set1
+        options:
+          - name: loss-policy
+            value: fence
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Fetch pcs capabilities
+          command:
+            cmd: pcs --version --full
+          register: __test_pcs_version
+
+        - name: Parse pcs capabilities
+          set_fact:
+            __test_pcs_capabilities: "{{
+                __test_pcs_version.stdout_lines[1].split()
+              }}"
+
+        - name: Fetch package facts
+          package_facts:
+
+        - name: Debug pacemaker version
+          debug:
+            var: ansible_facts.packages['pacemaker']
+
+        - name: Fetch location constraints configuration from the cluster
+          command:
+            cmd: pcs constraint location --full
+          register: __test_pcs_location_config
+
+        - name: Fetch colocation constraints configuration from the cluster
+          command:
+            cmd: pcs constraint colocation --full
+          register: __test_pcs_colocation_config
+
+        - name: Fetch order constraints configuration from the cluster
+          command:
+            cmd: pcs constraint order --full
+          register: __test_pcs_order_config
+
+        - name: Fetch ticket constraints configuration from the cluster
+          command:
+            cmd: pcs constraint ticket --full
+          register: __test_pcs_ticket_config
+
+        - name: Debug location constraints configuration
+          debug:
+            var: __test_pcs_location_config
+
+        # yamllint disable rule:line-length
+        - name: Check location constraints configuration
+          assert:
+            that:
+              - >
+                __test_pcs_location_config.stdout_lines == [
+                  'Location Constraints:',
+                  '  Resource pattern: d\\d+',
+                  '    Enabled on:',
+                  '      Node: node1 (score:INFINITY) (id:location-dd-node1-INFINITY)',
+                  '      Node: node2 (score:23) (id:location-dd-node2-23)',
+                  '      Node: node3 (score:INFINITY) (id:cl2)',
+                  '      Node: node4 (score:INFINITY) (resource-discovery=exclusive) (id:cl4)',
+                  '    Disabled on:',
+                  '      Node: node5 (score:-32) (resource-discovery=never) (id:cl6)',
+                  '    Constraint: cl10 (resource-discovery=always)',
+                  '      Rule: role=Master score=-47 (id:cl10-rule)',
+                  '        Expression: rule eq 7 (id:cl10-rule-expr)',
+                  '    Constraint: cl8',
+                  '      Rule: boolean-op=and score=INFINITY (id:cl8-rule)',
+                  '        Expression: rule eq 2 (id:cl8-rule-expr)',
+                  '        Rule: boolean-op=or score=0 (id:cl8-rule-rule)',
+                  '          Expression: date gt 2000-01-01 (id:cl8-rule-rule-expr)',
+                  '          Expression: (id:cl8-rule-rule-expr-1)',
+                  '            Date Spec: weekdays=1 (id:cl8-rule-rule-expr-1-datespec)',
+                  '    Constraint: location-dd',
+                  '      Rule: score=INFINITY (id:location-dd-rule)',
+                  '        Expression: rule eq 1 (id:location-dd-rule-expr)',
+                  '    Constraint: location-dd-1',
+                  '      Rule: boolean-op=or role=Master score=INFINITY (id:location-dd-1-rule)',
+                  '        Expression: rule eq 3 (id:location-dd-1-rule-expr)',
+                  '        Expression: #uname eq node2 (id:location-dd-1-rule-expr-1)',
+                  '    Constraint: location-dd-2',
+                  '      Rule: boolean-op=and score=-47 (id:location-dd-2-rule)',
+                  '        Expression: rule eq 4 (id:location-dd-2-rule-expr)',
+                  '        Expression: value gt -10 (id:location-dd-2-rule-expr-1)',
+                  '    Constraint: location-dd-3',
+                  '      Rule: boolean-op=and score-attribute=myscore (id:location-dd-3-rule)',
+                  '        Rule: boolean-op=or score=0 (id:location-dd-3-rule-rule)',
+                  '          Expression: rule eq 5 (id:location-dd-3-rule-rule-expr)',
+                  '          Expression: value ne string interesting#;string& (id:location-dd-3-rule-rule-expr-1)',
+                  '        Expression: x gt 0 (id:location-dd-3-rule-expr)',
+                  '    Constraint: location-dd-4 (resource-discovery=always)',
+                  '      Rule: score=INFINITY (id:location-dd-4-rule)',
+                  '        Expression: rule eq 6 (id:location-dd-4-rule-expr)',
+                  '  Resource: d1',
+                  '    Enabled on:',
+                  '      Node: node1 (score:INFINITY) (id:location-d1-node1-INFINITY)',
+                  '    Disabled on:',
+                  '      Node: node2 (score:-123) (id:location-d1-node2--123)',
+                  '  Resource: d2',
+                  '    Enabled on:',
+                  '      Node: node1 (score:INFINITY) (id:cl1)',
+                  '      Node: node2 (score:INFINITY) (resource-discovery=exclusive) (id:cl3)',
+                  '    Disabled on:',
+                  '      Node: node3 (score:-INFINITY) (resource-discovery=never) (id:cl5)',
+                  '  Resource: d3',
+                  '    Constraint: cl7',
+                  '      Rule: boolean-op=and score=INFINITY (id:cl7-rule)',
+                  '        Expression: rule eq 2 (id:cl7-rule-expr)',
+                  '        Rule: boolean-op=or score=0 (id:cl7-rule-rule)',
+                  '          Expression: date gt 2000-01-01 (id:cl7-rule-rule-expr)',
+                  '          Expression: (id:cl7-rule-rule-expr-1)',
+                  '            Date Spec: weekdays=1 (id:cl7-rule-rule-expr-1-datespec)',
+                  '    Constraint: cl9 (resource-discovery=always)',
+                  '      Rule: role=Master score=-47 (id:cl9-rule)',
+                  '        Expression: rule eq 7 (id:cl9-rule-expr)',
+                  '    Constraint: location-d3',
+                  '      Rule: score=INFINITY (id:location-d3-rule)',
+                  '        Expression: rule eq 1 (id:location-d3-rule-expr)',
+                  '    Constraint: location-d3-1',
+                  '      Rule: boolean-op=or role=Master score=INFINITY (id:location-d3-1-rule)',
+                  '        Expression: rule eq 3 (id:location-d3-1-rule-expr)',
+                  '        Expression: #uname eq node2 (id:location-d3-1-rule-expr-1)',
+                  '    Constraint: location-d3-2',
+                  '      Rule: boolean-op=and score=-47 (id:location-d3-2-rule)',
+                  '        Expression: rule eq 4 (id:location-d3-2-rule-expr)',
+                  '        Expression: value gt -10 (id:location-d3-2-rule-expr-1)',
+                  '    Constraint: location-d3-3',
+                  '      Rule: boolean-op=and score-attribute=myscore (id:location-d3-3-rule)',
+                  '        Rule: boolean-op=or score=0 (id:location-d3-3-rule-rule)',
+                  '          Expression: rule eq 5 (id:location-d3-3-rule-rule-expr)',
+                  '          Expression: value ne string interesting#;string& (id:location-d3-3-rule-rule-expr-1)',
+                  '        Expression: x gt 0 (id:location-d3-3-rule-expr)',
+                  '    Constraint: location-d3-4 (resource-discovery=always)',
+                  '      Rule: score=INFINITY (id:location-d3-4-rule)',
+                  '        Expression: rule eq 6 (id:location-d3-4-rule-expr)',
+                ]
+
+        - name: Debug colocation constraints configuration
+          debug:
+            var: __test_pcs_colocation_config
+
+        - name: Check colocation constraints configuration
+          assert:
+            that:
+              - >
+                __test_pcs_colocation_config.stdout_lines == [
+                  'Colocation Constraints:',
+                  '  d1 with d2 (score:INFINITY) (id:colocation-d1-d2-INFINITY)',
+                  '  d2 with d3 (score:-10) (id:colocation-d2-d3--10)',
+                  '  d3 with d4 (score:INFINITY) (id:cc-id)',
+                  '  d1 with d3 (score:INFINITY) (rsc-role:Master) (with-rsc-role:Master) (id:colocation-d1-d3-INFINITY)',
+                  '  d1 with d4 (score:INFINITY) (node-attribute:attribute-name) (id:colocation-d1-d4-INFINITY)',
+                  '  d2 with d4 (score:-INFINITY) (node-attribute:attribute-name) (rsc-role:Master) (with-rsc-role:Started) (id:cc-all)',
+                  '  Resource Sets:',
+                  '    set d1 d2 (id:colocation_set_d1d2_set) setoptions score=INFINITY (id:colocation_set_d1d2)',
+                  '    set d1 d2 role=Master (id:cc-set_set) set d3 d4 sequential=false (id:cc-set_set-1) setoptions score=20 (id:cc-set)'
+                ]
+
+        - name: Debug order constraints configuration
+          debug:
+            var: __test_pcs_order_config
+
+        - name: Check order constraints configuration
+          assert:
+            that:
+              - >
+                __test_pcs_order_config.stdout_lines == [
+                  'Ordering Constraints:',
+                  '  start d1 then start d2 (kind:Mandatory) (id:order-d1-d2-mandatory)',
+                  '  start d2 then start d3 (kind:Mandatory) (id:co-id)',
+                  '  demote d3 then promote d4 (kind:Mandatory) (id:order-d3-d4-mandatory)',
+                  '  start d1 then start d3 (kind:Optional) (non-symmetrical) (Options: require-all=false) (id:order-d1-d3-Optional)',
+                  '  start d1 then start d4 (score:-15) (id:order-d1-d4--15)',
+                  '  demote d2 then stop d4 (score:10) (non-symmetrical) (Options: require-all=false) (id:co-all)',
+                  '  Resource Sets:',
+                  '    set d1 d2 (id:order_set_d1d2_set) (id:order_set_d1d2)',
+                  '    set d1 d2 action=promote (id:co-set_set) set d3 d4 require-all=true sequential=false (id:co-set_set-1) setoptions kind=Serialize symmetrical=false (id:co-set)',
+                ]
+
+        - name: Debug ticket constraints configuration
+          debug:
+            var: __test_pcs_ticket_config
+
+        - name: Check ticket constraints configuration
+          assert:
+            that:
+              - >
+                __test_pcs_ticket_config.stdout_lines == [
+                  'Ticket Constraints:',
+                  '  d1 ticket=ticket1 (id:ticket-ticket1-d1)',
+                  '  d1 ticket=ticket2 (id:ct-id)',
+                  '  Master d2 ticket=ticket1 (id:ticket-ticket1-d2-Master)',
+                  '  d2 loss-policy=stop ticket=ticket2 (id:ticket-ticket2-d2)',
+                  '  Master d3 loss-policy=demote ticket=ticket3 (id:ct-all)',
+                  '  Resource Sets:',
+                  '    set d1 (id:ticket_set_d1_set) setoptions ticket=ticket-set1 (id:ticket_set_d1)',
+                  '    set d1 d2 (id:ct-set_set) set d3 d4 require-all=true sequential=false (id:ct-set_set-1) setoptions loss-policy=fence ticket=ticket-set1 (id:ct-set)',
+                ]
+
+      # yamllint enable rule:line-length
+
+      tags: tests::verify

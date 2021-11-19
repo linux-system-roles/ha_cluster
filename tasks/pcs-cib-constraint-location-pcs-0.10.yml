@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure location constraint '{{
+      constraint.id | default(constraint_index)
+    }}'
+  command:
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      constraint location
+      {% if constraint.rule | default() %}
+        {% if constraint.resource.pattern | default() %}
+          regexp%{{ constraint.resource.pattern | quote }}
+        {% else %}
+          {{ constraint.resource.id | quote }}
+        {% endif %}
+        rule
+        {% if constraint.id | default() %}
+          constraint-id={{ constraint.id | quote }}
+        {% endif %}
+        {% if constraint.resource.role | default() %}
+          role={{ constraint.resource.role | quote }}
+        {% endif %}
+        {% if constraint.score_attribute | default() %}
+          score-attribute={{ constraint.score_attribute | quote }}
+        {% else %}
+          score={{ constraint.score | default('INFINITY') | quote }}
+        {% endif %}
+        {% for option in constraint.options | default([]) %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+        {{ constraint.rule }}
+      {% elif
+        (constraint.options | default([])) or (constraint.id | default())
+      %}
+        add
+        {{ constraint.id | quote }}
+        {% if constraint.resource.pattern | default() %}
+          regexp%{{ constraint.resource.pattern | quote }}
+        {% else %}
+          {{ constraint.resource.id | quote }}
+        {% endif %}
+        {{ constraint.node | quote }}
+        {{ constraint.score | default('INFINITY') | quote }}
+        {% for option in constraint.options | default([]) %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+      {% else %}
+        {% if constraint.resource.pattern | default() %}
+          regexp%{{ constraint.resource.pattern | quote }}
+        {% else %}
+          {{ constraint.resource.id | quote }}
+        {% endif %}
+        prefers
+        {{ constraint.node | quote }}={{
+          constraint.score | default('INFINITY') | quote
+        }}
+      {% endif %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: no
+  changed_when: not ansible_check_mode
