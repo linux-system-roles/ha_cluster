@@ -18,7 +18,7 @@
           constraint-id={{ constraint.id | quote }}
         {% endif %}
         {% if constraint.resource.role | default() %}
-          role={{ constraint.resource.role | quote }}
+          role={{ constraint.resource.role | lower | quote }}
         {% endif %}
         {% if constraint.score_attribute | default() %}
           score-attribute={{ constraint.score_attribute | quote }}

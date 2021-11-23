@@ -1,0 +1,27 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Fetch pcs capabilities
+  command:
+    cmd: pcs --version --full
+  register: __test_pcs_version
+  changed_when: no
+
+- name: Parse pcs capabilities
+  set_fact:
+    __test_pcs_capabilities: "{{
+        __test_pcs_version.stdout_lines[1].split()
+      }}"
+
+- name: Fetch package facts
+  package_facts:
+
+- name: Debug pacemaker version
+  debug:
+    var: ansible_facts.packages['pacemaker']
+
+- name: Extract versions of cluster components
+  set_fact:
+    __test_pacemaker_version: "{{
+        ansible_facts.packages['pacemaker'][0]['version']
+      }}"
+    __test_pcs_version: "{{ ansible_facts.packages['pcs'][0]['version'] }}"

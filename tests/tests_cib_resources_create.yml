@@ -197,65 +197,60 @@
           include_role:
             name: linux-system-roles.ha_cluster
 
-        - name: Fetch pcs capabilities
-          command:
-            cmd: pcs --version --full
-          register: __test_pcs_version
-
-        - name: Parse pcs capabilities
-          set_fact:
-            __test_pcs_capabilities: "{{
-                __test_pcs_version.stdout_lines[1].split()
-              }}"
-
-        - name: Fetch package facts
-          package_facts:
-
-        - name: Debug pacemaker version
-          debug:
-            var: ansible_facts.packages['pacemaker']
-
-        - name: Fetch stonith configuration from the cluster
-          command:
-            cmd: pcs stonith config
-          register: __test_pcs_stonith_config
-
-        - name: Fetch resource configuration from the cluster
-          command:
-            cmd: pcs resource config
-          register: __test_pcs_resource_config
-
-        - name: Debug stonith configuration
-          debug:
-            var: __test_pcs_stonith_config
-
-        - name: Debug resource configuration
-          debug:
-            var: __test_pcs_resource_config
+        - name: Fetch cluster versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
 
         # yamllint disable rule:line-length
-        - name: Check stonith configuration
-          assert:
-            that:
-              - >
-                __test_pcs_stonith_config.stdout_lines == [
-                  ' Resource: xvm-no-attrs (class=stonith type=fence_xvm)',
-                  '  Operations: monitor interval=60s (xvm-no-attrs-monitor-interval-60s)',
-                  ' Resource: xvm-empty-attrs1 (class=stonith type=fence_xvm)',
-                  '  Operations: monitor interval=60s (xvm-empty-attrs1-monitor-interval-60s)',
-                  ' Resource: xvm-empty-attrs2 (class=stonith type=fence_xvm)',
-                  '  Operations: monitor interval=60s (xvm-empty-attrs2-monitor-interval-60s)',
-                  ' Resource: xvm-with-attrs (class=stonith type=fence_xvm)',
-                  '  Attributes: delay=1 pcmk_host_list="node1 node2"',
-                  '  Meta Attrs: an-attr="a value" target-role=Stopped',
-                  '  Operations: monitor interval=26 timeout=13 (xvm-with-attrs-monitor-interval-26)',
-                  '              monitor interval=28s timeout=14s (xvm-with-attrs-monitor-interval-28s)',
-                ]
+        - block:
+            - name: Fetch stonith configuration from the cluster
+              command:
+                cmd: pcs stonith config
+              register: __test_pcs_stonith_config
 
-        - name: Check resource configuration
-          assert:
-            that:
-              - __test_pcs_resource_config.stdout_lines == __test_expected_lines | select | list
+            - name: Print real stonith configuration
+              debug:
+                var: __test_pcs_stonith_config.stdout_lines
+
+            - name: Print expected stonith configuration
+              debug:
+                var: __test_expected_lines | select | list
+
+            - name: Check stonith configuration
+              assert:
+                that:
+                  - __test_pcs_stonith_config.stdout_lines == __test_expected_lines | select | list
+          vars:
+            __test_expected_lines:
+              - ' Resource: xvm-no-attrs (class=stonith type=fence_xvm)'
+              - '  Operations: monitor interval=60s (xvm-no-attrs-monitor-interval-60s)'
+              - ' Resource: xvm-empty-attrs1 (class=stonith type=fence_xvm)'
+              - '  Operations: monitor interval=60s (xvm-empty-attrs1-monitor-interval-60s)'
+              - ' Resource: xvm-empty-attrs2 (class=stonith type=fence_xvm)'
+              - '  Operations: monitor interval=60s (xvm-empty-attrs2-monitor-interval-60s)'
+              - ' Resource: xvm-with-attrs (class=stonith type=fence_xvm)'
+              - '  Attributes: delay=1 pcmk_host_list="node1 node2"'
+              - '  Meta Attrs: an-attr="a value" target-role=Stopped'
+              - '  Operations: monitor interval=26 timeout=13 (xvm-with-attrs-monitor-interval-26)'
+              - '              monitor interval=28s timeout=14s (xvm-with-attrs-monitor-interval-28s)'
+
+        - block:
+            - name: Fetch resource configuration from the cluster
+              command:
+                cmd: pcs resource config
+              register: __test_pcs_resource_config
+
+            - name: Print real resource configuration
+              debug:
+                var: __test_pcs_resource_config.stdout_lines
+
+            - name: Print expected resource configuration
+              debug:
+                var: __test_expected_lines | select | list
+
+            - name: Check resource configuration
+              assert:
+                that:
+                  - __test_pcs_resource_config.stdout_lines == __test_expected_lines | select | list
           vars:
             __test_expected_lines:
               - ' Resource: dummy-no-attrs (class=ocf provider=pacemaker type=Dummy)'
