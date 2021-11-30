@@ -16,9 +16,6 @@
         {{ constraint.resource_then.action | quote }}
       {% endif %}
       {{ constraint.resource_then.id | quote }}
-      {% if constraint.score | default() %}
-        score={{ constraint.score | quote }}
-      {% endif %}
       {% if constraint.id | default() %}
         id={{ constraint.id | quote }}
       {% endif %}

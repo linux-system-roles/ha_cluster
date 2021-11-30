@@ -8,7 +8,9 @@
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- constraint ticket add
       {{ constraint.ticket | quote }}
-      {{ constraint.resource.role | default() | quote }}
+      {% if constraint.resource.role | default() %}
+        {{ constraint.resource.role | quote }}
+      {% endif %}
       {{ constraint.resource.id | quote }}
       {% if constraint.id | default() %}
         id={{ constraint.id | quote }}

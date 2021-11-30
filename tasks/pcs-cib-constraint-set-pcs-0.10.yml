@@ -18,19 +18,12 @@
       {% endfor %}
       {% if
         constraint_type == 'ticket'
-        or (constraint.score | default())
         or (constraint.id | default())
         or (constraint.options | default())
       %}
         setoptions
         {% if constraint_type == 'ticket' %}
           ticket={{ constraint.ticket | quote }}
-        {% endif %}
-        {% if
-          constraint_type in ['colocation', 'order']
-          and constraint.score | default()
-        %}
-          score={{ constraint.score | quote }}
         {% endif %}
         {% if constraint.id | default() %}
           id={{ constraint.id | quote }}

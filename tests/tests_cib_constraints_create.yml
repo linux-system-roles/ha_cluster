@@ -27,12 +27,16 @@
       - resource:
           id: d1
         node: node2
-        score: -123
+        options:
+          - name: score
+            value: -123
       # resource pattern, node, score
       - resource:
           pattern: d\d+
         node: node2
-        score: 23
+        options:
+          - name: score
+            value: 23
       # resource, node, id
       - resource:
           id: d2
@@ -64,8 +68,9 @@
           id: d2
         node: node3
         id: cl5
-        score: -INFINITY
         options:
+          - name: score
+            value: -INFINITY
           - name: resource-discovery
             value: never
       # resource pattern, node, options, id, score
@@ -73,8 +78,9 @@
           pattern: d\d+
         node: node5
         id: cl6
-        score: -32
         options:
+          - name: score
+            value: -32
           - name: resource-discovery
             value: never
       # resource, rule
@@ -109,22 +115,30 @@
       - resource:
           id: d3
         rule: rule eq 4 and value gt -10
-        score: -47
+        options:
+          - name: score
+            value: -47
       # resource pattern, rule, score
       - resource:
           pattern: d\d+
         rule: rule eq 4 and value gt -10
-        score: -47
+        options:
+          - name: score
+            value: -47
       # resource, rule, score-attribute
       - resource:
           id: d3
-        rule: rule eq 5 or value ne string 'interesting#;string&' and x gt 0
-        score_attribute: myscore
+        rule: rule eq 5 or value ne string interesting;string& and x gt 0
+        options:
+          - name: score-attribute
+            value: myscore
       # resource pattern, rule, score-attribute
       - resource:
           pattern: d\d+
-        rule: rule eq 5 or value ne string 'interesting#;string&' and x gt 0
-        score_attribute: myscore
+        rule: rule eq 5 or value ne string interesting;string& and x gt 0
+        options:
+          - name: score-attribute
+            value: myscore
       # resource, rule, options
       - resource:
           id: d3
@@ -145,8 +159,9 @@
           role: Master
         rule: rule eq 7
         id: cl9
-        score: -47
         options:
+          - name: score
+            value: -47
           - name: resource-discovery
             value: always
       # resource pattern, rule, all other settings
@@ -155,8 +170,9 @@
           role: Master
         rule: rule eq 7
         id: cl10
-        score: -47
         options:
+          - name: score
+            value: -47
           - name: resource-discovery
             value: always
     ha_cluster_constraints_colocation:
@@ -170,7 +186,9 @@
           id: d2
         resource_leader:
           id: d3
-        score: -10
+        options:
+          - name: score
+            value: -10
       # constraint id specified
       - resource_follower:
           id: d3
@@ -200,8 +218,9 @@
           id: d4
           role: Started
         id: cc-all
-        score: -INFINITY
         options:
+          - name: score
+            value: -INFINITY
           - name: node-attribute
             value: attribute-name
       # simple set constraint
@@ -224,7 +243,9 @@
               - name: sequential
                 value: "false"
         id: cc-set
-        score: 20
+        options:
+          - name: score
+            value: 20
     ha_cluster_constraints_order:
       # simplest constraint
       - resource_first:
@@ -261,7 +282,9 @@
           id: d1
         resource_then:
           id: d4
-        score: -15
+        options:
+          - name: score
+            value: -15
       # everything specified
       - resource_first:
           id: d2
@@ -270,8 +293,9 @@
           id: d4
           action: stop
         id: co-all
-        score: 10
         options:
+          - name: score
+            value: 10
           - name: symmetrical
             value: "false"
           - name: require-all
@@ -434,7 +458,7 @@
               - '      Rule: boolean-op=and score-attribute=myscore (id:location-dd-3-rule)'
               - '        Rule: boolean-op=or score=0 (id:location-dd-3-rule-rule)'
               - '          Expression: rule eq 5 (id:location-dd-3-rule-rule-expr)'
-              - '          Expression: value ne string interesting#;string& (id:location-dd-3-rule-rule-expr-1)'
+              - '          Expression: value ne string interesting;string& (id:location-dd-3-rule-rule-expr-1)'
               - '        Expression: x gt 0 (id:location-dd-3-rule-expr)'
               - '    Constraint: location-dd-4 (resource-discovery=always)'
               - '      Rule: score=INFINITY (id:location-dd-4-rule)'
@@ -476,7 +500,7 @@
               - '      Rule: boolean-op=and score-attribute=myscore (id:location-d3-3-rule)'
               - '        Rule: boolean-op=or score=0 (id:location-d3-3-rule-rule)'
               - '          Expression: rule eq 5 (id:location-d3-3-rule-rule-expr)'
-              - '          Expression: value ne string interesting#;string& (id:location-d3-3-rule-rule-expr-1)'
+              - '          Expression: value ne string interesting;string& (id:location-d3-3-rule-rule-expr-1)'
               - '        Expression: x gt 0 (id:location-d3-3-rule-expr)'
               - '    Constraint: location-d3-4 (resource-discovery=always)'
               - '      Rule: score=INFINITY (id:location-d3-4-rule)'
