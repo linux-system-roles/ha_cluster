@@ -8,12 +8,20 @@
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- constraint colocation add
       {% if constraint.resource_follower.role | default() %}
-        {{ constraint.resource_follower.role | quote }}
+        {{
+          __ha_cluster_pcs_cli_role[constraint.resource_follower.role | lower]
+          | default(constraint.resource_follower.role)
+          | lower | quote
+        }}
       {% endif %}
       {{ constraint.resource_follower.id | quote }}
       with
       {% if constraint.resource_leader.role | default() %}
-        {{ constraint.resource_leader.role | quote }}
+        {{
+          __ha_cluster_pcs_cli_role[constraint.resource_leader.role | lower]
+          | default(constraint.resource_leader.role)
+          | lower | quote
+        }}
       {% endif %}
       {{ constraint.resource_leader.id | quote }}
       {%

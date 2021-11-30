@@ -104,12 +104,12 @@
       # resource, rule, role
       - resource:
           id: d3
-          role: Master
+          role: Promoted
         rule: 'rule eq 3 or #uname eq node2'
       # resource pattern, rule, role
       - resource:
           pattern: d\d+
-          role: Master
+          role: Promoted
         rule: 'rule eq 3 or #uname eq node2'
       # resource, rule, score
       - resource:
@@ -156,7 +156,7 @@
       # resource, rule, all other settings
       - resource:
           id: d3
-          role: Master
+          role: Unpromoted
         rule: rule eq 7
         id: cl9
         options:
@@ -167,7 +167,7 @@
       # resource pattern, rule, all other settings
       - resource:
           pattern: d\d+
-          role: Master
+          role: Unpromoted
         rule: rule eq 7
         id: cl10
         options:
@@ -198,10 +198,10 @@
       # roles specified
       - resource_follower:
           id: d1
-          role: Master
+          role: Promoted
         resource_leader:
           id: d3
-          role: Master
+          role: Promoted
       # options specified
       - resource_follower:
           id: d1
@@ -213,7 +213,7 @@
       # everything specified
       - resource_follower:
           id: d2
-          role: Master
+          role: Unpromoted
         resource_leader:
           id: d4
           role: Started
@@ -235,7 +235,7 @@
               - d2
             options:
               - name: role
-                value: Master
+                value: Promoted
           - resource_ids:
               - d3
               - d4
@@ -340,7 +340,7 @@
       # role specified
       - resource:
           id: d2
-          role: Master
+          role: Promoted
         ticket: ticket1
       # options specified
       - resource:
@@ -352,7 +352,7 @@
       # everything specified
       - resource:
           id: d3
-          role: Master
+          role: Unpromoted
         id: ct-all
         ticket: ticket3
         options:
@@ -416,11 +416,20 @@
           vars:
             __test_role_promoted: "{%
                 if __test_pcs_version is version('0.11', '>=')
-                %}Promoted{%
+                  %}Promoted{%
                 elif 'pcmk.cib.roles.promoted-unpromoted' in __test_pcs_capabilities
-                %}Master{%
+                  %}Master{%
                 else
-                %}master{%
+                  %}master{%
+                endif
+                %}"
+            __test_role_unpromoted: "{%
+                if __test_pcs_version is version('0.11', '>=')
+                  %}Unpromoted{%
+                elif 'pcmk.cib.roles.promoted-unpromoted' in __test_pcs_capabilities
+                  %}Slave{%
+                else
+                  %}slave{%
                 endif
                 %}"
             __test_expected_lines:
@@ -434,7 +443,7 @@
               - '    Disabled on:'
               - '      Node: node5 (score:-32) (resource-discovery=never) (id:cl6)'
               - '    Constraint: cl10 (resource-discovery=always)'
-              - '      Rule: role={{ __test_role_promoted }} score=-47 (id:cl10-rule)'
+              - '      Rule: role={{ __test_role_unpromoted }} score=-47 (id:cl10-rule)'
               - '        Expression: rule eq 7 (id:cl10-rule-expr)'
               - '    Constraint: cl8'
               - '      Rule: boolean-op=and score=INFINITY (id:cl8-rule)'
@@ -483,7 +492,7 @@
               - '          Expression: (id:cl7-rule-rule-expr-1)'
               - '            Date Spec: weekdays=1 (id:cl7-rule-rule-expr-1-datespec)'
               - '    Constraint: cl9 (resource-discovery=always)'
-              - '      Rule: role={{ __test_role_promoted }} score=-47 (id:cl9-rule)'
+              - '      Rule: role={{ __test_role_unpromoted }} score=-47 (id:cl9-rule)'
               - '        Expression: rule eq 7 (id:cl9-rule-expr)'
               - '    Constraint: location-d3'
               - '      Rule: score=INFINITY (id:location-d3-rule)'
@@ -537,7 +546,7 @@
                   }}) (id:colocation-d1-d3-INFINITY)"
               - '  d1 with d4 (score:INFINITY) (node-attribute:attribute-name) (id:colocation-d1-d4-INFINITY)'
               - "  d2 with d4 (score:-INFINITY) (node-attribute:attribute-name) (rsc-role:{{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Promoted', 'Master')
+                  __test_pcs_version is version('0.11', '>=') | ternary('Unpromoted', 'Slave')
                   }}) (with-rsc-role:Started) (id:cc-all)"
               - '  Resource Sets:'
               - '    set d1 d2 (id:colocation_set_d1d2_set) setoptions score=INFINITY (id:colocation_set_d1d2)'
@@ -606,7 +615,7 @@
                   }})"
               - '  d2 loss-policy=stop ticket=ticket2 (id:ticket-ticket2-d2)'
               - "  {{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Promoted', 'Master')
+                  __test_pcs_version is version('0.11', '>=') | ternary('Unpromoted', 'Slave')
                   }} d3 loss-policy=demote ticket=ticket3 (id:ct-all)"
               - '  Resource Sets:'
               - '    set d1 (id:ticket_set_d1_set) setoptions ticket=ticket-set1 (id:ticket_set_d1)'

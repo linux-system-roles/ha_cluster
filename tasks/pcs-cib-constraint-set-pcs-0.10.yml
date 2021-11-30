@@ -13,7 +13,15 @@
           {{ resource | quote }}
         {% endfor %}
         {% for option in set.options | default([]) %}
-          {{ option.name | quote }}={{ option.value | quote }}
+          {% if option.name == 'role' %}
+            role={{
+              __ha_cluster_pcs_cli_role[option.value | lower]
+              | default(option.value)
+              | capitalize | quote
+            }}
+          {% else %}
+            {{ option.name | quote }}={{ option.value | quote }}
+          {% endif %}
         {% endfor %}
       {% endfor %}
       {% if

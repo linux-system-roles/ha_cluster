@@ -18,7 +18,11 @@
           constraint-id={{ constraint.id | quote }}
         {% endif %}
         {% if constraint.resource.role | default() %}
-          role={{ constraint.resource.role | lower | quote }}
+          role={{
+            __ha_cluster_pcs_cli_role[constraint.resource.role | lower]
+            | default(constraint.resource.role)
+            | lower | quote
+          }}
         {% endif %}
         {% for option in constraint.options | default([]) %}
           {{ option.name | quote }}={{ option.value | quote }}

@@ -9,7 +9,11 @@
       -- constraint ticket add
       {{ constraint.ticket | quote }}
       {% if constraint.resource.role | default() %}
-        {{ constraint.resource.role | quote }}
+        {{
+          __ha_cluster_pcs_cli_role[constraint.resource.role | lower]
+          | default(constraint.resource.role)
+          | lower | quote
+        }}
       {% endif %}
       {{ constraint.resource.id | quote }}
       {% if constraint.id | default() %}
