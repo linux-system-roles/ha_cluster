@@ -49,14 +49,14 @@
         %}
           {{ option.value | quote }}
         {% else %}
-        INFINITY
+          INFINITY
         {% endfor %}
-      {%
-        for option in constraint.options | default([])
-          if option.name != 'score'
-      %}
-        {{ option.name | quote }}={{ option.value | quote }}
-      {% endfor %}
+        {%
+          for option in constraint.options | default([])
+            if option.name != 'score'
+        %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
       {% else %}
         {% if constraint.resource.pattern | default() %}
           regexp%{{ constraint.resource.pattern | quote }}
@@ -70,7 +70,7 @@
         %}
           {{ constraint.node | quote }}={{ option.value | quote }}
         {% else %}
-          {{ constraint.node | quote }}
+          {{ constraint.node | quote }}=INFINITY
         {% endfor %}
       {% endif %}
   # We always need to create CIB to see whether it's the same as what is
