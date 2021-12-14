@@ -171,18 +171,14 @@
 
   vars:
     __ha_cluster_pcs_cli_role:
-      promoted: "{%
-        if 'pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities
-          %}Promoted{%
-        else
-          %}Master{%
-        endif %}"
-      unpromoted: "{%
-        if 'pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities
-          %}Unpromoted{%
-        else
-          %}Slave{%
-        endif %}"
+      promoted: "{{
+        ('pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities)
+        | ternary('Promoted', 'Master')
+      }}"
+      unpromoted: "{{
+        ('pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities)
+        | ternary('Unpromoted', 'Slave')
+      }}"
 
 # Push the new CIB into the cluster
 
