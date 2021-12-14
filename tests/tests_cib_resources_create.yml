@@ -206,6 +206,7 @@
               command:
                 cmd: pcs stonith config
               register: __test_pcs_stonith_config
+              changed_when: no
 
             - name: Print real stonith configuration
               debug:
@@ -238,6 +239,7 @@
               command:
                 cmd: pcs resource config
               register: __test_pcs_resource_config
+              changed_when: no
 
             - name: Print real resource configuration
               debug:

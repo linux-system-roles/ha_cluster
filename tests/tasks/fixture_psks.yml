@@ -20,7 +20,7 @@
         -keyout "{{ __test_pcsd_private_key_path }}"
         -out "{{ __test_pcsd_public_key_path }}"
         -subj "/CN={{ ansible_host }}"
-      changed_when: false
+      changed_when: no
 
     - name: Generate corosync key
       copy:
