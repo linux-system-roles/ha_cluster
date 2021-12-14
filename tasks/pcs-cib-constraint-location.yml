@@ -32,7 +32,7 @@
         (constraint.id | default())
         or (
           constraint.options | default([])
-          | rejectattr('name', 'eq', 'score') | list
+          | rejectattr('name', 'match', '^score$') | list
         )
       %}
         add
