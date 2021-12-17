@@ -6,6 +6,7 @@
       pcs cluster setup
       --corosync_conf {{ __ha_cluster_tempfile_corosync_conf.path | quote }}
       --overwrite
+      --
       {{ ha_cluster_cluster_name | quote }}
       {% for node in ansible_play_hosts_all %}
         {{ hostvars[node].__ha_cluster_node_name | quote }}

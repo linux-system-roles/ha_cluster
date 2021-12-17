@@ -3,7 +3,7 @@
 - name: Check pcs auth status
   command:
     cmd: >
-      pcs status pcsd
+      pcs status pcsd --
       {% for node in ansible_play_hosts_all %}
         {{ hostvars[node].__ha_cluster_node_name | quote }}
       {% endfor %}

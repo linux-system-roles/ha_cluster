@@ -1,0 +1,48 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure {{ constraint_type }} constraint '{{
+      constraint.id | default(constraint_index)
+    }}'
+  command:
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      -- constraint {{ constraint_type }}
+      {% for set in constraint.resource_sets %}
+        set
+        {% for resource in set.resource_ids %}
+          {{ resource | quote }}
+        {% endfor %}
+        {% for option in set.options | default([]) %}
+          {% if option.name == 'role' %}
+            role={{
+              __ha_cluster_pcs_cli_role[option.value | lower]
+              | default(option.value)
+              | capitalize | quote
+            }}
+          {% else %}
+            {{ option.name | quote }}={{ option.value | quote }}
+          {% endif %}
+        {% endfor %}
+      {% endfor %}
+      {% if
+        constraint_type == 'ticket'
+        or (constraint.id | default())
+        or (constraint.options | default())
+      %}
+        setoptions
+        {% if constraint_type == 'ticket' %}
+          ticket={{ constraint.ticket | quote }}
+        {% endif %}
+        {% if constraint.id | default() %}
+          id={{ constraint.id | quote }}
+        {% endif %}
+        {% for option in constraint.options | default([]) %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+      {% endif %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: no
+  changed_when: not ansible_check_mode

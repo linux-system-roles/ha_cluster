@@ -27,7 +27,7 @@
     # *_attrs[0] instead of looping over *_attrs
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
-      resource
+      -- resource
       {% if resource_clone.promotable | default(false) %}
         promotable
       {% else %}
