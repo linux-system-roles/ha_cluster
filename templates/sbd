@@ -1,4 +1,11 @@
 # {{ ansible_managed }}
+{%- macro option(ansible_name, default_value) -%}
+  {%- for option in options if option.name == ansible_name -%}
+    {{ option.value }}
+  {%- else -%}
+    {{ default_value }}
+  {%- endfor -%}
+{%- endmacro -%}
 ## Type: string
 ## Default: ""
 #
@@ -6,7 +13,11 @@
 # and to monitor. If specifying more than one path, use ";" as
 # separator.
 #
-SBD_DEVICE="{{ ha_cluster_sbd_devices | join(';') }}"
+{% if node_devices | default([]) %}
+SBD_DEVICE="{{ node_devices | join(';') }}"
+{% else %}
+SBD_DEVICE=""
+{% endif %}
 
 ## Type: yesno
 ## Default: yes
@@ -22,7 +33,7 @@ SBD_PACEMAKER=yes
 # allow sbd to start if it was not previously fenced. See the -S option
 # in the man page.
 #
-SBD_STARTMODE={{ ha_cluster_sbd_startmode }}
+SBD_STARTMODE="{{ option('startmode', 'always') }}"
 
 ## Type: yesno / integer
 ## Default: no
@@ -46,7 +57,7 @@ SBD_STARTMODE={{ ha_cluster_sbd_startmode }}
 # This option may be ignored at a later point, once pacemaker handles
 # this case better.
 #
-SBD_DELAY_START=no
+SBD_DELAY_START="{{ option('delay-start', 'no') }}"
 
 ## Type: string
 ## Default: /dev/watchdog
@@ -54,7 +65,7 @@ SBD_DELAY_START=no
 # Watchdog device to use. If set to /dev/null, no watchdog device will
 # be used.
 #
-SBD_WATCHDOG_DEV=/dev/watchdog
+SBD_WATCHDOG_DEV="{{ node_watchdog | default('/dev/watchdog') }}"
 
 ## Type: integer
 ## Default: 5
@@ -72,7 +83,7 @@ SBD_WATCHDOG_DEV=/dev/watchdog
 # Be aware that watchdog timeout set in the on-disk metadata takes
 # precedence.
 #
-SBD_WATCHDOG_TIMEOUT=5
+SBD_WATCHDOG_TIMEOUT="{{ option('watchdog-timeout', '5') }}"
 
 ## Type: string
 ## Default: "flush,reboot"
@@ -90,7 +101,7 @@ SBD_WATCHDOG_TIMEOUT=5
 # And it does as well not configure the action a watchdog would
 # trigger should it run off (there is no generic interface).
 #
-SBD_TIMEOUT_ACTION=flush,reboot
+SBD_TIMEOUT_ACTION="{{ option('timeout-action', 'flush,reboot') }}"
 
 ## Type: yesno / auto
 ## Default: auto
@@ -131,4 +142,4 @@ SBD_SYNC_RESOURCE_STARTUP=yes
 #
 # Additional options for starting sbd
 #
-SBD_OPTS="{{ ha_cluster_sbd_daemon_params }}"
+SBD_OPTS="-n {{ node_name }}"

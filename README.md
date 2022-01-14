@@ -12,6 +12,7 @@ An Ansible role for managing High Availability Clustering.
   settings not specified in the role variables will be lost.
 * For now, the role is capable of configuring:
   * a basic corosync cluster
+  * SBD
   * pacemaker cluster properties
   * stonith and resources
   * resource constraints
@@ -177,37 +178,28 @@ string, default: `my-cluster`
 
 Name of the cluster.
 
-#### `ha_cluster_sbd_enable`
+#### `ha_cluster_sbd_enabled`
 
-bool, default: `false`
+boolean, default: `no`
 
 Defines whether to use SBD.
 
-#### `ha_cluster_sbd_devices`
+You may take a look at [an example](#configuring-cluster-to-use-sbd).
+
+#### `ha_cluster_sbd_options`
 
 list, default: `[]`
 
-List of devices (string) to use.
+List of name-value dictionaries specifying SBD options. Supported options are:
+`delay-start` (defaults to `no`), `startmode` (defaults to `always`),
+`timeout-action` (defaults to `flush,reboot`) and `watchdog-timeout` (defaults
+to `5`). See `sbd(8)` man page, section 'Configuration via environment' for
+their description.
 
-#### `ha_cluster_sbd_create_params`
+You may take a look at [an example](#configuring-cluster-to-use-sbd).
 
-str, default: `''`
-
-SBD parameters specified when creating the disks
-
-#### `ha_cluster_sbd_daemon_params`
-
-str, default: '`-W`'
-
-SBD daemon parameters used for startup
-
-#### `ha_cluster_sbd_startmode`
-
-str, default: '`always`'
-
-SBD cluster start mode. The default value will ensure that cluster nodes can re-join after being fenced. The more secure value is '`clean`'.
-
-#### `ha_cluster_`
+Watchdog and SBD devices are configured on a node to node basis in
+[inventory](#sbd-watchdog-and-devices).
 
 #### `ha_cluster_cluster_properties`
 
@@ -666,6 +658,7 @@ You may take a look at
 
 ### Inventory
 
+#### Nodes' names and addresses
 Nodes' names and addresses can be configured in inventory. This is optional. If
 no names or addresses are configured, play's targets will be used.
 
@@ -695,6 +688,35 @@ all:
 * `corosync_addresses` - list of addresses used by Corosync, all nodes must
   have the same number of addresses and the order of the addresses matters
 
+#### SBD watchdog and devices
+When using SBD, you may optionally configure watchdog and SBD devices for each
+node in inventory. Even though all SBD devices must be shared to and accesible
+from all nodes, each node may use different names for the devices. Watchdog may
+be different for each node as well. See also [SBD
+variables](#ha_cluster_sbd_enabled).
+
+Example inventory with targets `node1` and `node2`:
+```yaml
+all:
+  hosts:
+    node1:
+      ha_cluster:
+        sbd_watchdog: /dev/watchdog2
+        sbd_devices:
+          - /dev/vdx
+          - /dev/vdy
+    node2:
+      ha_cluster:
+        sbd_watchdog: /dev/watchdog1
+        sbd_devices:
+          - /dev/vdw
+          - /dev/vdz
+```
+
+* `sbd_watchdog` (optional) - Watchdog device to be used by SBD. Defaults to
+  `/dev/watchdog` if not set.
+* `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
+  monitoring. Defaults to empty list if not set.
 
 ## Example Playbooks
 
@@ -704,6 +726,27 @@ all:
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Configuring cluster to use SBD
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_sbd_enabled: yes
+    ha_cluster_sbd_options:
+      - name: delay-start
+        value: 'no'
+      - name: startmode
+        value: always
+      - name: timeout-action
+        value: 'flush,reboot'
+      - name: watchdog-timeout
+        value: 5
 
   roles:
     - linux-system-roles.ha_cluster

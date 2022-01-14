@@ -1,45 +1,88 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Check SBD device headers
-  command: "sbd -d {{ item }} dump"
-  run_once: true
-  ignore_errors: true
-  changed_when: false
-  register: "sbd_dump"
-  loop: "{{ ha_cluster_sbd_devices }}"
-  when:
-    - ha_cluster_sbd_devices
+- block:
+    - block:
+        - name: Probe SBD devices
+          command:
+            cmd: sbd -d {{ item | quote }} dump
+          loop: "{{ ha_cluster.sbd_devices | default([]) }}"
+          register: __ha_cluster_check_sbd_devices_result
+          changed_when: no
+          # return_code == 0 means the disk is initialized already
+          # return_code != 0 means the disk is not initialized yet
+          failed_when: no
+          # This command doesn't do any changes and so can safely be executed
+          # even in check_mode.
+          check_mode: no
 
-- name: Create SBD devices
-  command: sbd -d {{ item.item }} {{ ha_cluster_sbd_create_params }} create
-  loop: "{{ sbd_dump['results'] }}"
-  when:
-    - item.rc == 1
-    - ha_cluster_sbd_devices
-  run_once: true
+        - name: Initialize SBD devices
+          command:
+            # use --force to skip interactive confirmation
+            cmd: >
+              pcs --force -- stonith sbd device setup
+              device={{ item.item | quote }}
+              {% for option in ha_cluster_sbd_options | default([]) %}
+                {% if option.name == 'watchdog-timeout' %}
+                  watchdog-timeout={{ option.value | quote }}
+                  msgwait-timeout={{ option.value * 2 }}
+                {% endif %}
+              {% endfor %}
+          # The initialization is done only if a device has not been
+          # initialized already. Therefore this task always makes a change.
+          changed_when: yes
+          loop: "{{ __ha_cluster_check_sbd_devices_result.results }}"
+          when: item.rc != 0
+      # All nodes must have access to all SBD devices, otherwise SBD won't
+      # work. Therefore it is enough to run devices initialization on one node
+      # only. That way, we also avoid race conditions by initializing one
+      # device from multiple nodes at once.
+      run_once: yes
 
-- name: Enable softdog module
-  copy:
-    content: softdog
-    dest: /etc/modules-load.d/softdog.conf
-    owner: root
-    group: root
-    mode: '0644'
-  notify: Load softdog module
+    - name: Distribute SBD config
+      template:
+        src: templates/sbd
+        dest: /etc/sysconfig/sbd
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        options: "{{ ha_cluster_sbd_options | default([]) }}"
+        node_name: "{{ __ha_cluster_node_name }}"
+        node_watchdog: "{{
+            ha_cluster.sbd_watchdog | default('/dev/watchdog')
+          }}"
+        node_devices: "{{ ha_cluster.sbd_devices | default([]) }}"
+      register: __ha_cluster_distribute_sbd_config
 
-- name: Create SBD configuration file
-  template:
-    src: templates/sbd.j2
-    dest: /etc/sysconfig/sbd
-    owner: root
-    group: root
-    mode: '0644'
-  when: ha_cluster_sbd_devices
+    - name: Figure out if ATB needs to be enabled for SBD
+      set_fact:
+        # SBD needs ATB enabled if all of these are true:
+        # - sbd does not use devices (In check-and-prepare-role-variables.yml it
+        #   is verified that all nodes have the same number of devices defined.
+        #   Therefore it is enough to check devices of any single node.)
+        # - number of nodes is even
+        # - qdevice is not used
+        __ha_cluster_sbd_needs_atb: "{{
+            not ha_cluster.sbd_devices | default([])
+            and __ha_cluster_all_node_names | length is even
+            and not __ha_cluster_qdevice_in_use
+          }}"
 
-- name: Enable SBD
-  service:
-    name: sbd
-    enabled: true
+  when: ha_cluster_sbd_enabled
 
-# TODO: automatically create stonith fence resources
-#       e.g. via pcs-cib-resource-create-pcs-0.10.yml?
+- name: Get services status - detect pacemaker
+  service_facts:
+
+- name: Set stonith-watchdog-timeout cluster property
+  command:
+    cmd: >
+      pcs --force
+      {{
+        (
+          ansible_facts.services['pacemaker.service']['state'] | default()
+          == 'running'
+        ) | ternary('', '-f /var/lib/pacemaker/cib/cib.xml')
+      }}
+      -- property set
+      stonith-watchdog-timeout={{ ha_cluster_sbd_enabled | ternary('', '0') }}
+  changed_when: yes

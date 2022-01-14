@@ -16,6 +16,9 @@
           addr={{ addr | quote }}
         {% endfor %}
       {% endfor %}
+      {% if __ha_cluster_sbd_needs_atb | default(false) %}
+        quorum auto_tie_breaker=1
+      {% endif %}
   run_once: yes
   # We always need to create corosync.conf file to see whether it's the same as
   # what is already present on the cluster nodes. However, we don't want to
