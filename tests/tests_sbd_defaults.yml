@@ -1,0 +1,91 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Minimal SBD configuration
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_sbd_enabled: yes
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Set up test environment for SBD
+          include_tasks: tasks/setup_sbd.yml
+
+        - name: Ensure SBD config file is not present
+          file:
+            path: /etc/sysconfig/sbd
+            state: absent
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Slurp SBD config file
+          slurp:
+            src: /etc/sysconfig/sbd
+          register: __test_sbd_config
+
+        - name: Decode SBD config
+          set_fact:
+            __test_sbd_config_lines: "{{
+                (__test_sbd_config.content | b64decode).splitlines()
+              }}"
+
+        - name: Print SBD config lines
+          debug:
+            var: __test_sbd_config_lines
+
+        - name: Check SBD config
+          assert:
+            that:
+              - __test_sbd_config_lines[1] == "# Ansible managed"
+              - >
+                __test_sbd_config_lines[-1]
+                == 'SBD_OPTS="-n {{ __ha_cluster_node_name }}"'
+
+        - name: Fetch quorum configuration
+          command:
+            cmd: pcs quorum config
+          register: __test_quorum_config
+          changed_when: no
+
+        - name: Check auto tie breaker in quorum configuration
+          assert:
+            that:
+              - '(
+                  (
+                    ansible_play_hosts | length is even
+                    and "auto_tie_breaker: 1" in __test_quorum_lines
+                  )
+                  or
+                  (
+                    ansible_play_hosts | length is odd
+                    and "auto_tie_breaker: 1" not in __test_quorum_lines
+                  )
+                )'
+          vars:
+            __test_quorum_lines: "{{
+                __test_quorum_config.stdout_lines | map('trim') | list
+              }}"
+
+        - name: Get services status
+          service_facts:
+
+        - name: Check services status
+          assert:
+            that:
+              - ansible_facts.services["corosync.service"].status == "enabled"
+              - ansible_facts.services["pacemaker.service"].status == "enabled"
+              - ansible_facts.services["sbd.service"].status == "enabled"
+
+        - name: Check cluster status
+          include_tasks: tasks/assert_cluster_running.yml
+
+      always:
+        - name: Clean up test environment for SBD
+          include_tasks: tasks/cleanup_sbd.yml
+      tags: tests::verify

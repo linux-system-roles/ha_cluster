@@ -1,11 +1,13 @@
-# {{ ansible_managed }}
-{%- macro option(ansible_name, default_value) -%}
+{{ ansible_managed | comment }}
+
+{% macro option(ansible_name, default_value) -%}
   {%- for option in options if option.name == ansible_name -%}
     {{ option.value }}
   {%- else -%}
     {{ default_value }}
   {%- endfor -%}
-{%- endmacro -%}
+{%- endmacro %}
+
 ## Type: string
 ## Default: ""
 #

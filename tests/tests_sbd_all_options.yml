@@ -1,0 +1,75 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Maximal SBD configuration
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_sbd_enabled: yes
+    ha_cluster_sbd_options:
+      - name: delay-start
+        value: 2s
+      - name: startmode
+        value: clean
+      - name: timeout-action
+        value: reboot,flush
+      - name: watchdog-timeout
+        value: 10
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Set up test environment for SBD
+          include_tasks: tasks/setup_sbd.yml
+
+        - name: Set SBD devices and watchdogs
+          set_fact:
+            ha_cluster:
+              sbd_watchdog: /dev/null
+              sbd_devices:
+                - "{{ __test_sbd_mount.stdout }}"
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Slurp SBD config file
+          slurp:
+            src: /etc/sysconfig/sbd
+          register: __test_sbd_config
+
+        - name: Decode SBD config
+          set_fact:
+            __test_sbd_config_lines: "{{
+                (__test_sbd_config.content | b64decode).splitlines()
+              }}"
+
+        - name: Print SBD config lines
+          debug:
+            var: __test_sbd_config_lines
+
+        - name: Check SBD config
+          assert:
+            that:
+              - "'SBD_DELAY_START=\"2s\"' in __test_sbd_config_lines"
+              - "'SBD_DEVICE=\"{{ __test_sbd_mount.stdout }}\"'
+                in __test_sbd_config_lines"
+              - "'SBD_STARTMODE=\"clean\"' in __test_sbd_config_lines"
+              - "'SBD_TIMEOUT_ACTION=\"reboot,flush\"'
+                in __test_sbd_config_lines"
+              - "'SBD_WATCHDOG_DEV=\"/dev/null\"' in __test_sbd_config_lines"
+              - "'SBD_WATCHDOG_TIMEOUT=\"10\"' in __test_sbd_config_lines"
+              - >
+                __test_sbd_config_lines[-1]
+                == 'SBD_OPTS="-n {{ __ha_cluster_node_name }}"'
+
+      always:
+        - name: Unset SBD devices and watchdogs
+          set_fact:
+            ha_cluster:
+
+        - name: Clean up test environment for SBD
+          include_tasks: tasks/cleanup_sbd.yml
+      tags: tests::verify
