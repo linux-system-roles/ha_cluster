@@ -152,7 +152,7 @@ structure and default value:
 ```yaml
 ha_cluster_pcs_permission_list:
   - type: group
-    name: hacluster
+    name: haclient
     allow_list:
       - grant
       - read

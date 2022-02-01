@@ -24,7 +24,7 @@ ha_cluster_cluster_name: my-cluster
 
 ha_cluster_pcs_permission_list:
   - type: group
-    name: hacluster
+    name: haclient
     allow_list:
       - grant
       - read
