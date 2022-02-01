@@ -65,7 +65,8 @@
         @name="cluster-name" or
         @name="dc-version" or
         @name="have-watchdog" or
-        @name="last-lrm-refresh"
+        @name="last-lrm-refresh" or
+        @name="stonith-watchdog-timeout"
       )]'
   environment:
     CIB_file: "{{ __ha_cluster_tempfile_cib_xml.path }}"
