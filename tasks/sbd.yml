@@ -1,0 +1,92 @@
+# SPDX-License-Identifier: MIT
+---
+- block:
+    - block:
+        - name: Probe SBD devices
+          command:
+            cmd: sbd -d {{ item | quote }} dump
+          loop: "{{ ha_cluster.sbd_devices | default([]) }}"
+          register: __ha_cluster_check_sbd_devices_result
+          changed_when: no
+          # return_code == 0 means the disk is initialized already
+          # return_code != 0 means the disk is not initialized yet
+          failed_when: no
+          # This command doesn't do any changes and so can safely be executed
+          # even in check_mode.
+          check_mode: no
+
+        - name: Initialize SBD devices
+          command:
+            # use --force to skip interactive confirmation
+            cmd: >
+              pcs --force -- stonith sbd device setup
+              device={{ item.item | quote }}
+              {% for option in ha_cluster_sbd_options | default([]) %}
+                {% if option.name == 'watchdog-timeout' %}
+                  watchdog-timeout={{ option.value | quote }}
+                  msgwait-timeout={{ option.value * 2 }}
+                {% endif %}
+              {% endfor %}
+          # The initialization is done only if a device has not been
+          # initialized already. Therefore this task always makes a change.
+          changed_when: yes
+          loop: "{{ __ha_cluster_check_sbd_devices_result.results }}"
+          when: item.rc != 0
+      # Ideally, the block as a whole should run one node at a time. This does
+      # not seem to be posible with Ansible yet. Instead, we at least make the
+      # block's tasks run one by one. This way, we avoid possible issues caused
+      # by initializing one device from multiple host at the same time. Devices
+      # initialized before the role started will not be reinitialized. Devices
+      # not initilized before the role started will be initialized as many
+      # times as there are nodes. That, however, has no other side effect than
+      # suboptimal performance of the role.
+      throttle: 1
+
+    - name: Distribute SBD config
+      template:
+        src: templates/sbd
+        dest: /etc/sysconfig/sbd
+        owner: root
+        group: root
+        mode: 0644
+      vars:
+        options: "{{ ha_cluster_sbd_options | default([]) }}"
+        node_name: "{{ __ha_cluster_node_name }}"
+        node_watchdog: "{{
+            ha_cluster.sbd_watchdog | default('/dev/watchdog')
+          }}"
+        node_devices: "{{ ha_cluster.sbd_devices | default([]) }}"
+      register: __ha_cluster_distribute_sbd_config
+
+    - name: Figure out if ATB needs to be enabled for SBD
+      set_fact:
+        # SBD needs ATB enabled if all of these are true:
+        # - sbd does not use devices (In check-and-prepare-role-variables.yml it
+        #   is verified that all nodes have the same number of devices defined.
+        #   Therefore it is enough to check devices of any single node.)
+        # - number of nodes is even
+        # - qdevice is not used
+        __ha_cluster_sbd_needs_atb: "{{
+            not ha_cluster.sbd_devices | default([])
+            and __ha_cluster_all_node_names | length is even
+            and not __ha_cluster_qdevice_in_use
+          }}"
+
+  when: ha_cluster_sbd_enabled
+
+- name: Get services status - detect pacemaker
+  service_facts:
+
+- name: Set stonith-watchdog-timeout cluster property
+  command:
+    cmd: >
+      pcs --force
+      {{
+        (
+          ansible_facts.services['pacemaker.service']['state'] | default()
+          == 'running'
+        ) | ternary('', '-f /var/lib/pacemaker/cib/cib.xml')
+      }}
+      -- property set
+      stonith-watchdog-timeout={{ ha_cluster_sbd_enabled | ternary('', '0') }}
+  changed_when: yes

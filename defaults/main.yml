@@ -22,6 +22,9 @@ ha_cluster_pcsd_private_key_src: null
 
 ha_cluster_cluster_name: my-cluster
 
+ha_cluster_sbd_enabled: no
+ha_cluster_sbd_options: []
+
 ha_cluster_pcs_permission_list:
   - type: group
     name: haclient
@@ -31,6 +34,7 @@ ha_cluster_pcs_permission_list:
       - write
 
 ha_cluster_cluster_properties: []
+
 ha_cluster_resource_primitives: []
 ha_cluster_resource_groups: []
 ha_cluster_resource_clones: []

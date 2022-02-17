@@ -19,6 +19,9 @@ __ha_cluster_fullstack_node_packages:
   - pcs
   - openssl  # used in the role for generating preshared keys
 
+__ha_cluster_sbd_packages:
+  - sbd
+
 __ha_cluster_services:
   - corosync
   - corosync-qdevice

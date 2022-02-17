@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure all nodes have the same number of SBD devices
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_sbd_enabled: yes
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Set SBD devices variable
+          set_fact:
+            ha_cluster:
+              sbd_devices: "{{
+                  range(1, ansible_play_hosts_all.index(inventory_hostname) + 2)
+                  | product(['/tmp/dev/sdx']) | map('reverse') | map('join')
+                  | list
+                }}"
+
+        - name: Print set SBD devices
+          debug:
+            var: ha_cluster.sbd_devices
+
+        - block:
+            - name: Run the role
+              include_role:
+                name: linux-system-roles.ha_cluster
+          rescue:
+            - name: Check errors
+              assert:
+                that: "{{
+                  ansible_failed_result.msg ==
+                  'All nodes must have the same number of SBD devices specified'
+                }}"
+              run_once: yes
+
+      when: ansible_play_hosts_all | length > 1
+      always:
+        - name: Unset SBD devices variable
+          set_fact:
+            ha_cluster:
+      tags: tests::verify
+
+    - name: Message
+      debug:
+        msg: This test needs two or more nodes
+      when: ansible_play_hosts_all | length <= 1

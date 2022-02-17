@@ -394,6 +394,26 @@
         - name: Fetch cluster versions of cluster components
           include_tasks: tasks/fetch_versions.yml
 
+        - name: Dicover CIB schema version
+          command:
+            cmd: >
+              xmllint
+              --xpath 'substring-after(/cib/@validate-with, "pacemaker-")'
+              /var/lib/pacemaker/cib/cib.xml
+          register: __test_cib_validate_with
+          changed_when: no
+
+        - name: Discover role names
+          set_fact:
+            __test_new_roles_pcs: "{{
+                __test_pcs_version is version('0.11', '>=')
+              }}"
+            __test_new_roles_cib: "{{
+                __test_pcs_version is version('0.11', '>=')
+                and
+                __test_cib_validate_with.stdout is version('3.7', '>=')
+              }}"
+
         # yamllint disable rule:line-length
         - block:
             - name: Fetch location constraints configuration from the cluster
@@ -416,7 +436,7 @@
                   - __test_pcs_location_config.stdout_lines == __test_expected_lines | select | list
           vars:
             __test_role_promoted: "{%
-                if __test_pcs_version is version('0.11', '>=')
+                if __test_new_roles_pcs
                   %}Promoted{%
                 elif 'pcmk.cib.roles.promoted-unpromoted' in __test_pcs_capabilities
                   %}Master{%
@@ -425,7 +445,7 @@
                 endif
                 %}"
             __test_role_unpromoted: "{%
-                if __test_pcs_version is version('0.11', '>=')
+                if __test_new_roles_pcs
                   %}Unpromoted{%
                 elif 'pcmk.cib.roles.promoted-unpromoted' in __test_pcs_capabilities
                   %}Slave{%
@@ -542,18 +562,18 @@
               - '  d2 with d3 (score:-10) (id:colocation-d2-d3--10)'
               - '  d3 with d4 (score:INFINITY) (id:cc-id)'
               - "  d1 with d3 (score:INFINITY) (rsc-role:{{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Promoted', 'Master')
+                  __test_new_roles_pcs | ternary('Promoted', 'Master')
                   }}) (with-rsc-role:{{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Promoted', 'Master')
+                  __test_new_roles_pcs | ternary('Promoted', 'Master')
                   }}) (id:colocation-d1-d3-INFINITY)"
               - '  d1 with d4 (score:INFINITY) (node-attribute:attribute-name) (id:colocation-d1-d4-INFINITY)'
               - "  d2 with d4 (score:-INFINITY) (node-attribute:attribute-name) (rsc-role:{{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Unpromoted', 'Slave')
+                  __test_new_roles_pcs | ternary('Unpromoted', 'Slave')
                   }}) (with-rsc-role:Started) (id:cc-all)"
               - '  Resource Sets:'
               - '    set d1 d2 (id:colocation_set_d1d2_set) setoptions score=INFINITY (id:colocation_set_d1d2)'
               - "    set d1 d2 role={{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Promoted', 'Master')
+                  __test_new_roles_pcs | ternary('Promoted', 'Master')
                   }} (id:cc-set_set) set d3 d4 sequential=false (id:cc-set_set-1) setoptions score=20 (id:cc-set)"
 
         - block:
@@ -613,13 +633,13 @@
               - '  d1 ticket=ticket1 (id:ticket-ticket1-d1)'
               - '  d1 ticket=ticket2 (id:ct-id)'
               - "  {{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Promoted', 'Master')
+                  __test_new_roles_pcs | ternary('Promoted', 'Master')
                   }} d2 ticket=ticket1 (id:ticket-ticket1-d2-{{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Promoted', 'Master')
+                  __test_new_roles_cib | ternary('Promoted', 'Master')
                   }})"
               - '  d2 loss-policy=stop ticket=ticket2 (id:ticket-ticket2-d2)'
               - "  {{
-                  __test_pcs_version is version('0.11', '>=') | ternary('Unpromoted', 'Slave')
+                  __test_new_roles_pcs | ternary('Unpromoted', 'Slave')
                   }} d3 loss-policy=demote ticket=ticket3 (id:ct-all)"
               - '  Resource Sets:'
               - '    set d1 (id:ticket_set_d1_set) setoptions ticket=ticket-set1 (id:ticket_set_d1)'

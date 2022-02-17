@@ -16,10 +16,15 @@
 - name: Get services status - detect SBD
   service_facts:
 
-# The role does not support configuring SBD yet, therefore we always disable it.
-- name: Disable SBD
+- name: Enable or disable SBD
   service:
     name: sbd
-    enabled: no
+    enabled: "{{ ha_cluster_sbd_enabled and ha_cluster_start_on_boot }}"
+    # Null (i.e. nochange) is currently not supported: Either all nodes are
+    # configured to start the cluster on boot or not to start the cluster on
+    # boot. Null (nochange) could lead to situations where part of cluster
+    # nodes are configured to start the cluster on boot while other nodes in
+    # the same cluster are not.
   when:
     - '"sbd.service" in ansible_facts.services'
+  register: __ha_cluster_sbd_service_enable_disable

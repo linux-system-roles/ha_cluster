@@ -9,6 +9,18 @@
       loop:
         - ha_cluster_hacluster_password
       run_once: yes
+
+    - name: Fail if nodes do not have the same number of SBD devices specified
+      fail:
+        msg: All nodes must have the same number of SBD devices specified
+      when:
+        - ha_cluster_sbd_enabled
+        - >
+          ansible_play_hosts_all
+          | map('extract', hostvars, ['ha_cluster', 'sbd_devices'])
+          | map('default', [], true)
+          | map('length') | unique | length > 1
+      run_once: yes
   when: ha_cluster_cluster_present
 
 - name: Discover cluster node names
