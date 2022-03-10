@@ -26,3 +26,6 @@ __ha_cluster_services:
   - corosync
   - corosync-qdevice
   - pacemaker
+
+# TODO: implement qdevice detection once qdevice is supported by the role
+__ha_cluster_qdevice_in_use: no

@@ -1,0 +1,110 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Cluster with knet transport, full configuration
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_transport:
+      type: knet
+      options:
+        - name: ip_version
+          value: ipv4-6
+        - name: link_mode
+          value: active
+      links:
+        -
+          - name: transport
+            value: udp
+          - name: link_priority
+            value: 10
+        -
+          - name: linknumber
+            value: 0
+          - name: link_priority
+            value: 5
+      compression:
+        - name: level
+          value: 5
+        - name: model
+          value: zlib
+      crypto:
+        - name: cipher
+          value: none
+        - name: hash
+          value: none
+    ha_cluster_totem:
+      options:
+        - name: block_unlisted_ips
+          value: 'yes'
+        - name: send_join
+          value: 0
+    ha_cluster_quorum:
+      options:
+        - name: auto_tie_breaker
+          value: 1
+        - name: wait_for_all
+          value: 1
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Set node addresses variable
+          set_fact:
+            ha_cluster:
+              # Getent prints IP address and hostnames separated by spaces.
+              # Split the line by spaces and use only the first two items using
+              # batch, first and flatten.
+              corosync_addresses: "{{
+                lookup('pipe', 'getent hosts ' + inventory_hostname)
+                | regex_findall('\\S+') | batch(2) | first | flatten
+              }}"
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Fetch cluster versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+
+        - name: Check corosync
+          include_tasks: tasks/assert_corosync_config.yml
+          vars:
+            __test_expected_lines:
+              - 'Cluster Name: {{ ha_cluster_cluster_name }}'
+              - 'Transport: knet'
+              - 'Nodes:'
+              - 'Links:'
+              - '  Link 0:'
+              - '    link_priority: 5'
+              - '    linknumber: 0'
+              - '  Link 1:'
+              - '    link_priority: 10'
+              - '    linknumber: 1'
+              - '    transport: udp'
+              - 'Transport Options:'
+              - '  ip_version: ipv4-6'
+              - '  link_mode: active'
+              - 'Compression Options:'
+              - '  level: 5'
+              - '  model: zlib'
+              - 'Crypto Options:'
+              - '  cipher: none'
+              - '  hash: none'
+              - 'Totem Options:'
+              - '  block_unlisted_ips: yes'
+              - '  send_join: 0'
+              - 'Quorum Options:'
+              - '  auto_tie_breaker: 1'
+              - '  wait_for_all: 1'
+
+        - name: Check cluster status
+          include_tasks: tasks/assert_cluster_running.yml
+
+      always:
+        - name: Unset node addresses variable
+          set_fact:
+            ha_cluster:
+      tags: tests::verify

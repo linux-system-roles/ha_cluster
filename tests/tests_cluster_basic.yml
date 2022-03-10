@@ -70,6 +70,17 @@
               - stat_pcsd_cert.stat.exists
               - stat_pcsd_key.stat.exists
 
+        - name: Check corosync
+          include_tasks: tasks/assert_corosync_config.yml
+          vars:
+            __test_expected_lines:
+              - 'Cluster Name: {{ ha_cluster_cluster_name }}'
+              - 'Transport: knet'
+              - 'Nodes:'
+              - 'Crypto Options:'
+              - '  cipher: aes256'
+              - '  hash: sha256'
+
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml
 

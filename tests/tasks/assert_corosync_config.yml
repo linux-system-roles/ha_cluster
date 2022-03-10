@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Fetch corosync configuration from the cluster
+  # Remove the contents of 'Nodes:' section as it depends on
+  # testing environment
+  shell:
+    cmd: pcs cluster config | sed -e '/^Nodes:$/,/^[^ ]/ { /^ /d }'
+  register: __test_pcs_corosync_config
+  changed_when: no
+
+- name: Print real corosync configuration
+  debug:
+    var: __test_pcs_corosync_config.stdout_lines
+
+- name: Print expected corosync configuration
+  debug:
+    var: __test_expected_lines | select | list
+
+- name: Check corosync configuration
+  assert:
+    that:
+      - >
+        __test_pcs_corosync_config.stdout_lines
+        == __test_expected_lines | select | list

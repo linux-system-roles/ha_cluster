@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure disabled ATB doesn't conflict with SBD
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_sbd_enabled: yes
+    ha_cluster_quorum:
+      options:
+        - name: auto_tie_breaker
+          value: 0
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Set up test environment for SBD
+          include_tasks: tasks/setup_sbd.yml
+
+        - name: Set SBD devices variable
+          set_fact:
+            ha_cluster:
+              sbd_devices: []
+
+        - block:
+            - name: Run the role
+              include_role:
+                name: linux-system-roles.ha_cluster
+          rescue:
+            - name: Check errors
+              assert:
+                that: "{{
+                  ansible_failed_result.msg ==
+                  'Cannot set auto_tie_breaker to disabled when SBD needs it '
+                  'to be enabled'
+                }}"
+              run_once: yes
+
+      when: ansible_play_hosts_all | length is even
+      always:
+        - name: Unset SBD devices variable
+          set_fact:
+            ha_cluster:
+
+        - name: Clean up test environment for SBD
+          include_tasks: tasks/cleanup_sbd.yml
+      tags: tests::verify
+
+    - name: Message
+      debug:
+        msg: This test needs even number of nodes
+      when: ansible_play_hosts_all | length is odd

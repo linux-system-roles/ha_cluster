@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure enabled ATB doesn't conflict with SBD
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_sbd_enabled: yes
+    ha_cluster_quorum:
+      options:
+        - name: auto_tie_breaker
+          value: 1
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_tasks: tasks/setup_test.yml
+
+        - name: Set up test environment for SBD
+          include_tasks: tasks/setup_sbd.yml
+
+        - name: Set SBD devices variable
+          set_fact:
+            ha_cluster:
+              sbd_devices: []
+
+        - name: Run the role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        - name: Fetch quorum configuration
+          command:
+            cmd: pcs quorum config
+          register: __test_quorum_config
+          changed_when: no
+
+        - name: Check auto tie breaker in quorum configuration
+          assert:
+            that:
+              - "'auto_tie_breaker: 1' in __test_quorum_lines"
+          vars:
+            __test_quorum_lines: "{{
+                __test_quorum_config.stdout_lines | map('trim') | list
+              }}"
+
+      when: ansible_play_hosts_all | length is even
+      always:
+        - name: Unset SBD devices variable
+          set_fact:
+            ha_cluster:
+
+        - name: Clean up test environment for SBD
+          include_tasks: tasks/cleanup_sbd.yml
+      tags: tests::verify
+
+    - name: Message
+      debug:
+        msg: This test needs even number of nodes
+      when: ansible_play_hosts_all | length is odd

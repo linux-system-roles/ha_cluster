@@ -22,6 +22,10 @@ ha_cluster_pcsd_private_key_src: null
 
 ha_cluster_cluster_name: my-cluster
 
+ha_cluster_transport: {}
+ha_cluster_totem: {}
+ha_cluster_quorum: {}
+
 ha_cluster_sbd_enabled: no
 ha_cluster_sbd_options: []
 

@@ -16,8 +16,55 @@
           addr={{ addr | quote }}
         {% endfor %}
       {% endfor %}
-      {% if __ha_cluster_sbd_needs_atb | default(false) %}
-        quorum auto_tie_breaker=1
+
+      {% if ha_cluster_transport | default({}) %}
+        transport {{ ha_cluster_transport.type | default('knet') | quote }}
+        {% for option in ha_cluster_transport.options | default([]) %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+        {% for link in ha_cluster_transport.links | default([]) %}
+          link
+          {% for option in link %}
+            {{ option.name | quote }}={{ option.value | quote }}
+          {% endfor %}
+        {% endfor %}
+        {% if ha_cluster_transport.compression | default([]) %}
+          compression
+          {% for option in ha_cluster_transport.compression %}
+            {{ option.name | quote }}={{ option.value | quote }}
+          {% endfor %}
+        {% endif %}
+        {% if ha_cluster_transport.crypto | default([]) %}
+          crypto
+          {% for option in ha_cluster_transport.crypto %}
+            {{ option.name | quote }}={{ option.value | quote }}
+          {% endfor %}
+        {% endif %}
+      {% endif %}
+
+      {% if ha_cluster_totem.options | default([]) %}
+        totem
+        {% for option in ha_cluster_totem.options %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+      {% endif %}
+
+      {%
+        if __ha_cluster_sbd_needs_atb | default(false)
+          or ha_cluster_quorum.options | default([])
+      %}
+        quorum
+        {% for option in ha_cluster_quorum.options | default([]) %}
+          {% if
+            not __ha_cluster_sbd_needs_atb | default(false)
+            or option.name != 'auto_tie_breaker'
+          %}
+            {{ option.name | quote }}={{ option.value | quote }}
+          {% endif %}
+        {% endfor %}
+        {% if __ha_cluster_sbd_needs_atb | default(false) %}
+          auto_tie_breaker=1
+        {% endif %}
       {% endif %}
   run_once: yes
   # We always need to create corosync.conf file to see whether it's the same as
