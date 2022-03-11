@@ -14,7 +14,7 @@
           value: 1024
       links:
         -
-          - name: broadcast
+          - name: broadcast  # yamllint disable-line rule:hyphens
             value: 1
           - name: ttl
             value: 64

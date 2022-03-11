@@ -30,11 +30,10 @@
           rescue:
             - name: Check errors
               assert:
-                that: "{{
-                  ansible_failed_result.msg ==
-                  'Cannot set auto_tie_breaker to disabled when SBD needs it '
-                  'to be enabled'
-                }}"
+                that:
+                  - ansible_failed_result.msg ==
+                    'Cannot set auto_tie_breaker to disabled when SBD needs it '
+                    ~ 'to be enabled'
               run_once: yes
 
       when: ansible_play_hosts_all | length is even

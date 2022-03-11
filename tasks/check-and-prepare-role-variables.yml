@@ -56,8 +56,7 @@
   fail:
     msg: Cannot set auto_tie_breaker to disabled when SBD needs it to be enabled
   when:
-    - __ha_cluster_sbd_needs_atb
-    - >
-        ha_cluster_quorum.options | default([])
-        | selectattr('name', 'match', '^auto_tie_breaker$')
-        | map(attribute='value') | select('in', ['0', 0]) | list | length > 0
+    - __ha_cluster_sbd_needs_atb | bool
+    - ha_cluster_quorum.options | default([])
+      | selectattr('name', 'match', '^auto_tie_breaker$')
+      | map(attribute='value') | select('in', ['0', 0]) | list | length > 0

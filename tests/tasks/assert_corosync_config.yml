@@ -21,6 +21,5 @@
 - name: Check corosync configuration
   assert:
     that:
-      - >
-        __test_pcs_corosync_config.stdout_lines
+      - __test_pcs_corosync_config.stdout_lines
         == __test_expected_lines | select | list

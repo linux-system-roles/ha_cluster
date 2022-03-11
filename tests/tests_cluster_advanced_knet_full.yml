@@ -14,12 +14,12 @@
           value: active
       links:
         -
-          - name: transport
+          - name: transport  # yamllint disable-line rule:hyphens
             value: udp
           - name: link_priority
             value: 10
         -
-          - name: linknumber
+          - name: linknumber  # yamllint disable-line rule:hyphens
             value: 0
           - name: link_priority
             value: 5
