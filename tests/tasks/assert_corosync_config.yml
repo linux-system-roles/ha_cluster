@@ -4,7 +4,9 @@
   # Remove the contents of 'Nodes:' section as it depends on
   # testing environment
   shell:
-    cmd: pcs cluster config | sed -e '/^Nodes:$/,/^[^ ]/ { /^ /d }'
+    cmd: |
+      set -euo pipefail
+      pcs cluster config | sed -e '/^Nodes:$/,/^[^ ]/ { /^ /d }'
   register: __test_pcs_corosync_config
   changed_when: no
 
