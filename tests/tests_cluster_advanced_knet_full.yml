@@ -35,10 +35,10 @@
           value: none
     ha_cluster_totem:
       options:
-        - name: block_unlisted_ips
-          value: 'yes'
         - name: send_join
           value: 0
+        - name: token_retransmits_before_loss_const
+          value: 5
     ha_cluster_quorum:
       options:
         - name: auto_tie_breaker
@@ -94,8 +94,8 @@
               - '  cipher: none'
               - '  hash: none'
               - 'Totem Options:'
-              - '  block_unlisted_ips: yes'
               - '  send_join: 0'
+              - '  token_retransmits_before_loss_const: 5'
               - 'Quorum Options:'
               - '  auto_tie_breaker: 1'
               - '  wait_for_all: 1'
