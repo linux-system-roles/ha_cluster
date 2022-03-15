@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - advanced Corosync configuration
+  hosts: all
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_transport:
+      type: knet
+      options:
+        - name: ip_version
+          value: ipv4-6
+        - name: link_mode
+          value: active
+      links:
+        -
+          - name: linknumber  # yamllint disable-line rule:hyphens
+            value: 1
+          - name: link_priority
+            value: 5
+        -
+          - name: linknumber  # yamllint disable-line rule:hyphens
+            value: 0
+          - name: link_priority
+            value: 10
+      compression:
+        - name: level
+          value: 5
+        - name: model
+          value: zlib
+      crypto:
+        - name: cipher
+          value: none
+        - name: hash
+          value: none
+    ha_cluster_totem:
+      options:
+        - name: block_unlisted_ips
+          value: 'yes'
+        - name: send_join
+          value: 0
+    ha_cluster_quorum:
+      options:
+        - name: auto_tie_breaker
+          value: 1
+        - name: wait_for_all
+          value: 1
+
+  roles:
+    - linux-system-roles.ha_cluster

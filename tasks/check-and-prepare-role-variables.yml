@@ -36,3 +36,27 @@
         | map('extract', hostvars, '__ha_cluster_node_name')
         | list
       }}"
+
+- name: Figure out if ATB needs to be enabled for SBD
+  set_fact:
+    # SBD needs ATB enabled if all of these are true:
+    # - sbd does not use devices (In check-and-prepare-role-variables.yml it
+    #   is verified that all nodes have the same number of devices defined.
+    #   Therefore it is enough to check devices of any single node.)
+    # - number of nodes is even
+    # - qdevice is not used
+    __ha_cluster_sbd_needs_atb: "{{
+        ha_cluster_sbd_enabled
+        and not ha_cluster.sbd_devices | default([])
+        and __ha_cluster_all_node_names | length is even
+        and not __ha_cluster_qdevice_in_use
+      }}"
+
+- name: Fail if SBD needs ATB enabled and the user configured ATB to be disabled
+  fail:
+    msg: Cannot set auto_tie_breaker to disabled when SBD needs it to be enabled
+  when:
+    - __ha_cluster_sbd_needs_atb | bool
+    - ha_cluster_quorum.options | default([])
+      | selectattr('name', 'match', '^auto_tie_breaker$')
+      | map(attribute='value') | select('in', ['0', 0]) | list | length > 0

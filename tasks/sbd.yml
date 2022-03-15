@@ -58,20 +58,6 @@
         node_devices: "{{ ha_cluster.sbd_devices | default([]) }}"
       register: __ha_cluster_distribute_sbd_config
 
-    - name: Figure out if ATB needs to be enabled for SBD
-      set_fact:
-        # SBD needs ATB enabled if all of these are true:
-        # - sbd does not use devices (In check-and-prepare-role-variables.yml it
-        #   is verified that all nodes have the same number of devices defined.
-        #   Therefore it is enough to check devices of any single node.)
-        # - number of nodes is even
-        # - qdevice is not used
-        __ha_cluster_sbd_needs_atb: "{{
-            not ha_cluster.sbd_devices | default([])
-            and __ha_cluster_all_node_names | length is even
-            and not __ha_cluster_qdevice_in_use
-          }}"
-
   when: ha_cluster_sbd_enabled
 
 - name: Get services status - detect pacemaker

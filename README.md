@@ -10,10 +10,13 @@ An Ansible role for managing High Availability Clustering.
   repositories accessible.
 * The role replaces the configuration of HA Cluster on specified nodes. Any
   settings not specified in the role variables will be lost.
-* For now, the role is capable of configuring:
-  * a basic corosync cluster
+* The role is capable of configuring:
+  * single-link or multi-link cluster
+  * Corosync transport options including compression and encryption
+  * Corosync totem options
+  * Corosync quorum options
   * SBD
-  * pacemaker cluster properties
+  * Pacemaker cluster properties
   * stonith and resources
   * resource constraints
 
@@ -67,7 +70,7 @@ https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 
 #### `ha_cluster_corosync_key_src`
 
-path to corosync authkey file, default: `null`
+path to Corosync authkey file, default: `null`
 
 Authentication and encryption key for Corosync communication. It is highly
 recommended to have a unique value for each cluster. The key should be 256
@@ -85,7 +88,7 @@ If this variable is set, `ha_cluster_regenerate_keys` is ignored for this key.
 
 #### `ha_cluster_pacemaker_key_src`
 
-path to pacemaker authkey file, default: `null`
+path to Pacemaker authkey file, default: `null`
 
 Authentication and encryption key for Pacemaker communication. It is highly
 recommended to have a unique value for each cluster. The key should be 256
@@ -178,6 +181,98 @@ string, default: `my-cluster`
 
 Name of the cluster.
 
+#### `ha_cluster_transport`
+
+structure, default: no settings
+
+```yaml
+ha_cluster_transport:
+  type: knet
+  options:
+    - name: option1_name
+      value: option1_value
+    - name: option2_name
+      value: option2_value
+  links:
+    -
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
+    -
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
+  compression:
+    - name: option1_name
+      value: option1_value
+    - name: option2_name
+      value: option2_value
+  crypto:
+    - name: option1_name
+      value: option1_value
+    - name: option2_name
+      value: option2_value
+```
+
+* `type` (optional) - Transport type: `knet`, `udp` or `udpu`. Defaults to
+  `knet` if not specified.
+* `options` (optional) - List of name-value dictionaries with transport options.
+* `links` (optional) - List of lists of name-value dictionaries. Each list of
+  name-value dictionaries holds options for one Corosync link. It is
+  recommended to set `linknumber` value for each link. Otherwise, the first
+  list of dictionaries is assigned to the first link, the second one to the
+  second link and so on.
+* `compression` (optional) - List of name-value dictionaries configuring
+  transport compression.
+* `crypto` (optional) - List of name-value dictionaries configuring transport
+  encryption. By default, encryption is enabled.
+
+For a list of allowed options, see `pcs -h cluster setup` or `pcs(8)` man page,
+section 'cluster', command 'setup'. For a detailed description, see
+`corosync.conf(5)` man page.
+
+You may take a look at [an example](#advanced-corosync-configuration).
+
+#### `ha_cluster_totem`
+
+structure, default: no totem settings
+
+```yaml
+ha_cluster_totem:
+  options:
+    - name: option1_name
+      value: option1_value
+    - name: option2_name
+      value: option2_value
+```
+
+Corosync totem configuration. For a list of allowed options, see `pcs -h
+cluster setup` or `pcs(8)` man page, section 'cluster', command 'setup'. For a
+detailed description, see `corosync.conf(5)` man page.
+
+You may take a look at [an example](#advanced-corosync-configuration).
+
+#### `ha_cluster_quorum`
+
+structure, default: no quorum settings
+
+```yaml
+ha_cluster_quorum:
+  options:
+    - name: option1_name
+      value: option1_value
+    - name: option2_name
+      value: option2_value
+```
+
+Cluster quorum configuration. For now, it is possible to configure quorum
+options: `auto_tie_breaker`, `last_man_standing`, `last_man_standing_window`,
+`wait_for_all`. Quorum options are documented in `votequorum(5)` man page.
+
+You may take a look at [an example](#advanced-corosync-configuration).
+
 #### `ha_cluster_sbd_enabled`
 
 boolean, default: `no`
@@ -214,7 +309,7 @@ ha_cluster_cluster_properties:
         value: property2_value
 ```
 
-List of sets of cluster properties - pacemaker cluster-wide configuration.
+List of sets of cluster properties - Pacemaker cluster-wide configuration.
 Currently, only one set is supported.
 
 You may take a look at [an example](#configuring-cluster-properties).
@@ -254,7 +349,7 @@ ha_cluster_resource_primitives:
             value: operation2_attribute2_value
 ```
 
-This variable defines pacemaker resources (including stonith) configured by the
+This variable defines Pacemaker resources (including stonith) configured by the
 role. The items are as follows:
 
 * `id` (mandatory) - ID of a resource.
@@ -272,7 +367,7 @@ role. The items are as follows:
 * `meta_attrs` (optional) - List of sets of the resource's meta attributes.
   Currently, only one set is supported.
 * `operations` (optional) - List of the resource's operations.
-  * `action` (mandatory) - Operation action as defined by pacemaker and the
+  * `action` (mandatory) - Operation action as defined by Pacemaker and the
     resource or stonith agent.
   * `attrs` (mandatory) - Operation options, at least one option must be
     specified.
@@ -720,12 +815,66 @@ all:
 
 ## Example Playbooks
 
+Following examples show what the structure of the role variables looks like.
+They are not guides or best practices for configuring a cluster.
+
 ### Creating a cluster running no resources
 ```yaml
 - hosts: node1 node2
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Advanced Corosync configuration
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_transport:
+      type: knet
+      options:
+        - name: ip_version
+          value: ipv4-6
+        - name: link_mode
+          value: active
+      links:
+        -
+          - name: linknumber
+            value: 1
+          - name: link_priority
+            value: 5
+        -
+          - name: linknumber
+            value: 0
+          - name: link_priority
+            value: 10
+      compression:
+        - name: level
+          value: 5
+        - name: model
+          value: zlib
+      crypto:
+        - name: cipher
+          value: none
+        - name: hash
+          value: none
+    ha_cluster_totem:
+      options:
+        - name: block_unlisted_ips
+          value: 'yes'
+        - name: send_join
+          value: 0
+    ha_cluster_quorum:
+      options:
+        - name: auto_tie_breaker
+          value: 1
+        - name: wait_for_all
+          value: 1
 
   roles:
     - linux-system-roles.ha_cluster
