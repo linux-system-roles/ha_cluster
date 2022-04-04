@@ -4,9 +4,13 @@
   # Remove the contents of 'Nodes:' section as it depends on
   # testing environment
   shell:
+    # Delete all empty lines. Delete all indented lines in 'nodelist' section;
+    # this keeps 'nodelist {\n}\n' in place. Since empty lines in between
+    # 'node' section are also removed, number of nodes in the cluster doesn't
+    # matter.
     cmd: |
       set -euo pipefail
-      pcs cluster config | sed -e '/^Nodes:$/,/^[^ ]/ { /^ /d }'
+      pcs cluster corosync | sed -e '/^nodelist {$/,/^}$/ { /^\s/d } ; /^$/d'
   register: __test_pcs_corosync_config
   changed_when: no
 
