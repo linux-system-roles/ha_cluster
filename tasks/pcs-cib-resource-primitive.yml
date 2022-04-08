@@ -41,6 +41,10 @@
           {% endif %}
         {% endfor %}
       {% endif %}
+
+      {% if __ha_cluster_primitive_bundle_map[resource.id] | default %}
+        bundle {{ __ha_cluster_primitive_bundle_map[resource.id] | quote }}
+      {% endif %}
   # We always need to create CIB to see whether it's the same as what is
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to

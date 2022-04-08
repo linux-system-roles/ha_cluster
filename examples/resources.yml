@@ -49,6 +49,8 @@
         agent: 'ocf:pacemaker:Dummy'
       - id: clone-with-options
         agent: 'ocf:pacemaker:Dummy'
+      - id: bundled-resource
+        agent: 'ocf:pacemaker:Dummy'
     ha_cluster_resource_groups:
       - id: simple-group
         resource_ids:
@@ -76,6 +78,43 @@
                 value: '1'
       - resource_id: cloned-group
         promotable: yes
+    ha_cluster_resource_bundles:
+      - id: bundle-with-resource
+        resource-id: bundled-resource
+        container:
+          type: podman
+          options:
+            - name: image
+              value: my:image
+        network_options:
+          - name: control-port
+            value: 3121
+        port_map:
+          -
+            - name: port  # yamllint disable-line rule:hyphens
+              value: 10001
+          -
+            - name: port  # yamllint disable-line rule:hyphens
+              value: 10002
+            - name: internal-port
+              value: 10003
+        storage_map:
+          -
+            - name: source-dir  # yamllint disable-line rule:hyphens
+              value: /srv/daemon-data
+            - name: target-dir
+              value: /var/daemon/data
+          -
+            - name: source-dir-root  # yamllint disable-line rule:hyphens
+              value: /var/log/pacemaker/bundles
+            - name: target-dir
+              value: /var/log/daemon
+        meta_attrs:
+          - attrs:
+              - name: target-role
+                value: Started
+              - name: is-managed
+                value: 'true'
 
   roles:
     - linux-system-roles.ha_cluster
