@@ -7,6 +7,17 @@
     ha_cluster_cluster_name: test-cluster
     ha_cluster_fence_agent_packages:
       - fence-virt
+    # Make cluster not try starting any resources. Due to missing resource
+    # daemons, container services and images, the cluster would get stuck
+    # otherwise.
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: maintenance-mode
+            value: "true"
+          - name: stonith-enabled
+            value: "false"
+          - name: stop-all-resources
+            value: "true"
     ha_cluster_resource_primitives:
       - id: xvm-no-attrs
         agent: stonith:fence_xvm
@@ -137,6 +148,9 @@
       - id: dummy-clone-with-attrs2
         agent: 'ocf:pacemaker:Dummy'
 
+      - id: dummy-bundle
+        agent: 'ocf:pacemaker:Dummy'
+
     ha_cluster_resource_groups:
       - id: group1
         resource_ids:
@@ -187,6 +201,63 @@
               - name: an-attr
                 value: a value
       - resource_id: group3
+
+    ha_cluster_resource_bundles:
+      - id: bundle-minimal
+        container:
+          type: docker
+          options:
+            - name: image
+              value: my:image1
+      - id: bundle-minimal-with-resource
+        resource_id: dummy-bundle
+        container:
+          type: docker
+          options:
+            - name: image
+              value: my:image1
+        network_options:
+          - name: control-port
+            value: 3121
+      - id: bundle-all-options
+        container:
+          type: docker
+          options:
+            - name: image
+              value: my:image1
+            - name: replicas
+              value: 2
+        network_options:
+          - name: control-port
+            value: 3121
+          - name: host-netmask
+            value: 32
+        port_map:
+          -
+            - name: port  # yamllint disable-line rule:hyphens
+              value: 23456
+          -
+            - name: port  # yamllint disable-line rule:hyphens
+              value: 34567
+            - name: internal-port
+              value: 45678
+        storage_map:
+          -
+            - name: source-dir  # yamllint disable-line rule:hyphens
+              value: /tmp/source1
+            - name: target-dir
+              value: /tmp/target1
+          -
+            - name: source-dir  # yamllint disable-line rule:hyphens
+              value: /tmp/source2
+            - name: target-dir
+              value: /tmp/target2
+        meta_attrs:
+          - attrs:
+              - name: target-role
+                value: Stopped
+              - name: an-attr
+                value: a value
 
   tasks:
     - block:
@@ -255,6 +326,31 @@
                   - __test_pcs_resource_config.stdout_lines == __test_expected_lines | select | list
           vars:
             __test_expected_lines:
+              - ' Bundle: bundle-minimal'
+              - '  Docker: image=my:image1'
+              - ' Bundle: bundle-minimal-with-resource'
+              - '  Docker: image=my:image1'
+              - '  Network: control-port=3121'
+              - '  Resource: dummy-bundle (class=ocf provider=pacemaker type=Dummy)'
+              - '   Operations: migrate_from interval=0s timeout=20s (dummy-bundle-migrate_from-interval-0s)'
+              - '               migrate_to interval=0s timeout=20s (dummy-bundle-migrate_to-interval-0s)'
+              - '               monitor interval=10s timeout=20s (dummy-bundle-monitor-interval-10s)'
+              - '               reload interval=0s timeout=20s (dummy-bundle-reload-interval-0s)'
+              - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
+                '               reload-agent interval=0s timeout=20s (dummy-bundle-reload-agent-interval-0s)',
+                '') }}"
+              - '               start interval=0s timeout=20s (dummy-bundle-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (dummy-bundle-stop-interval-0s)'
+              - ' Bundle: bundle-all-options'
+              - '  Docker: image=my:image1 replicas=2'
+              - '  Network: control-port=3121 host-netmask=32'
+              - '  Port Mapping:'
+              - '   port=23456 (bundle-all-options-port-map-23456)'
+              - '   internal-port=45678 port=34567 (bundle-all-options-port-map-34567)'
+              - '  Storage Mapping:'
+              - '   source-dir=/tmp/source1 target-dir=/tmp/target1 (bundle-all-options-storage-map)'
+              - '   source-dir=/tmp/source2 target-dir=/tmp/target2 (bundle-all-options-storage-map-1)'
+              - '  Meta Attrs: an-attr="a value" target-role=Stopped'
               - ' Resource: dummy-no-attrs (class=ocf provider=pacemaker type=Dummy)'
               - '  Operations: migrate_from interval=0s timeout=20s (dummy-no-attrs-migrate_from-interval-0s)'
               - '              migrate_to interval=0s timeout=20s (dummy-no-attrs-migrate_to-interval-0s)'

@@ -439,6 +439,89 @@ This variable defines resource clones. The items are as follows:
 You may take a look at
 [an example](#creating-a-cluster-with-fencing-and-several-resources).
 
+#### `ha_cluster_resource_bundles`
+
+structure, default: no bundle resources
+
+```yaml
+- id: bundle-id
+  resource_id: resource-id
+  container:
+    type: container-type
+    options:
+      - name: container_option1_name
+        value: container_option1_value
+      - name: container_option2_name
+        value: container_option2_value
+  network_options:
+      - name: network_option1_name
+        value: network_option1_value
+      - name: network_option2_name
+        value: network_option2_value
+  port_map:
+    -
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
+    -
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
+  storage_map:
+    -
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
+    -
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
+    meta_attrs:
+      - attrs:
+          - name: bundle_meta_attribute1_name
+            value: bundle_meta_attribute1_value
+          - name: bundle_meta_attribute2_name
+            value: bundle_meta_attribute2_value
+```
+
+This variable defines resource bundles. The items are as follows:
+
+* `id` (mandatory) - ID of a bundle.
+* `resource_id` (optional) - Resource to be placed into the bundle. The
+  resource must be defined in
+  [`ha_cluster_resource_primitives`](#ha_cluster_resource_primitives).
+* `container.type` (mandatory) - Container technology, such as `docker`,
+  `podman` or `rkt`.
+* `container.options` (optional) - List of name-value dictionaries. Depending
+  on the selected `container.type`, certain options may be required to be
+  specified, such as `image`.
+* `network_options` (optional) - List of name-value dictionaries. When a
+  resource is placed into a bundle, some `network_options` may be required to
+  be specified, such as `control-port` or `ip-range-start`.
+* `port_map` (optional) - List of lists of name-value dictionaries defining
+  port forwarding from the host network to the container network. Each list of
+  name-value dictionaries holds options for one port forwarding.
+* `storage_map` (optional) - List of lists of name-value dictionaries mapping
+  directories on the host's filesystem into the container. Each list of
+  name-value dictionaries holds options for one directory mapping.
+* `meta_attrs` (optional) - List of sets of the bundle's meta attributes.
+  Currently, only one set is supported.
+
+Note, that the role does not install container launch technology automatically.
+However, you can install it by listing appropriate packages in
+[`ha_cluster_extra_packages`](#ha_cluster_extra_packages) variable.
+
+Note, that the role does not build and distribute container images. Please, use
+other means to supply a fully configured container image to every node allowed
+to run a bundle depending on it.
+
+You may take a look at
+[an example](#creating-a-cluster-with-fencing-and-several-resources).
+
 #### `ha_cluster_constraints_location`
 
 structure, default: no constraints
@@ -968,6 +1051,8 @@ They are not guides or best practices for configuring a cluster.
         agent: 'ocf:pacemaker:Dummy'
       - id: clone-with-options
         agent: 'ocf:pacemaker:Dummy'
+      - id: bundled-resource
+        agent: 'ocf:pacemaker:Dummy'
     ha_cluster_resource_groups:
       - id: simple-group
         resource_ids:
@@ -995,6 +1080,43 @@ They are not guides or best practices for configuring a cluster.
                 value: '1'
       - resource_id: cloned-group
         promotable: yes
+    ha_cluster_resource_bundles:
+      - id: bundle-with-resource
+        resource-id: bundled-resource
+        container:
+          type: podman
+          options:
+            - name: image
+              value: my:image
+        network_options:
+          - name: control-port
+            value: 3121
+        port_map:
+          -
+            - name: port
+              value: 10001
+          -
+            - name: port
+              value: 10002
+            - name: internal-port
+              value: 10003
+        storage_map:
+          -
+            - name: source-dir
+              value: /srv/daemon-data
+            - name: target-dir
+              value: /var/daemon/data
+          -
+            - name: source-dir-root
+              value: /var/log/pacemaker/bundles
+            - name: target-dir
+              value: /var/log/daemon
+        meta_attrs:
+          - attrs:
+              - name: target-role
+                value: Started
+              - name: is-managed
+                value: 'true'
 
   roles:
     - linux-system-roles.ha_cluster

@@ -42,6 +42,7 @@ ha_cluster_cluster_properties: []
 ha_cluster_resource_primitives: []
 ha_cluster_resource_groups: []
 ha_cluster_resource_clones: []
+ha_cluster_resource_bundles: []
 
 ha_cluster_constraints_location: []
 ha_cluster_constraints_colocation: []

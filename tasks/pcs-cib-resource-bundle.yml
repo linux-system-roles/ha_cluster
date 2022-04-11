@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure '{{ resource_bundle.id }}' resource bundle
+  command:
+    # pcs-0.10 supports only one set of attributes, that's the reason for
+    # *_attrs[0] instead of looping over *_attrs
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      -- resource bundle create {{ resource_bundle.id | quote }}
+      container {{ resource_bundle.container.type | quote }}
+      {% for option in resource_bundle.container.options | default([]) %}
+        {{ option.name | quote }}={{ option.value | quote }}
+      {% endfor %}
+
+      {% if resource_bundle.network_options | default([]) %}
+        network
+        {% for option in resource_bundle.network_options | default([]) %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+      {% endif %}
+
+      {% for map in resource_bundle.port_map | default([]) %}
+        port-map
+        {% for option in map | default([]) %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+      {% endfor %}
+
+      {% for map in resource_bundle.storage_map | default([]) %}
+        storage-map
+        {% for option in map | default([]) %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+      {% endfor %}
+
+      {% if resource_bundle.meta_attrs[0].attrs | default([]) %}
+        meta
+        {% for attr in resource_bundle.meta_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: no
+  changed_when: not ansible_check_mode

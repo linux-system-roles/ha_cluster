@@ -88,8 +88,21 @@
 
 - block:
     ## Resources
+    - name: Extract primitive to bundle mapping
+      set_fact:
+        __ha_cluster_primitive_bundle_map: "{{
+            ha_cluster_resource_bundles | selectattr('resource_id', 'defined')
+            | list | items2dict(key_name='resource_id', value_name='id')
+          }}"
+
+    - name: Configure cluster bundle resources
+      include_tasks: pcs-cib-resource-bundle.yml
+      vars:
+        resource_bundle: "{{ item }}"
+      loop: "{{ ha_cluster_resource_bundles }}"
+
     - name: Configure cluster resources
-      include_tasks: pcs-cib-resource-create.yml
+      include_tasks: pcs-cib-resource-primitive.yml
       vars:
         resource: "{{ item }}"
         resource_is_stonith: "{{ item.agent.startswith('stonith:') }}"
