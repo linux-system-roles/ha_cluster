@@ -29,3 +29,11 @@ __ha_cluster_services:
 
 # TODO: implement qdevice detection once qdevice is supported by the role
 __ha_cluster_qdevice_in_use: no
+
+# ansible_facts required by the role
+__ha_cluster_required_facts:
+  - architecture
+  - distribution
+  - distribution_major_version
+  - distribution_version
+  - os_family
