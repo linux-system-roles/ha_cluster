@@ -1,0 +1,20 @@
+- hosts: all
+  tasks:
+    - name: Set platform/version specific variables
+      include_role:
+        name: linux-system-roles.ha_cluster
+        tasks_from: set_vars.yml
+        public: true
+
+    - name: Install cluster packages
+      package:
+        name: "{{
+          __ha_cluster_fullstack_node_packages
+          +
+          ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
+          +
+          ha_cluster_fence_agent_packages
+          +
+          ha_cluster_extra_packages
+        }}"
+        state: present

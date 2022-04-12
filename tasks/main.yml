@@ -1,19 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Set platform/version specific variables
-  include_vars: "{{ __ha_cluster_vars_file }}"
-  loop:
-    - "{{ ansible_facts['os_family'] }}.yml"
-    - "{{ ansible_facts['distribution'] }}.yml"
-    - >-
-      {{ ansible_facts['distribution'] ~ '_' ~
-      ansible_facts['distribution_major_version'] }}.yml
-    - >-
-      {{ ansible_facts['distribution'] ~ '_' ~
-      ansible_facts['distribution_version'] }}.yml
-  vars:
-    __ha_cluster_vars_file: "{{ role_path }}/vars/{{ item }}"
-  when: __ha_cluster_vars_file is file
+  include_tasks: set_vars.yml
 
 - name: Check and prepare role variables
   include_tasks: check-and-prepare-role-variables.yml
