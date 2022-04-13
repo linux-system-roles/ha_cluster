@@ -291,6 +291,8 @@
               assert:
                 that:
                   - __test_pcs_stonith_config.stdout_lines == __test_expected_lines | select | list
+          when:
+            - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_expected_lines:
               - ' Resource: xvm-no-attrs (class=stonith type=fence_xvm)'
@@ -304,6 +306,204 @@
               - '  Meta Attrs: an-attr="a value" target-role=Stopped'
               - '  Operations: monitor interval=26 timeout=13 (xvm-with-attrs-monitor-interval-26)'
               - '              monitor interval=28s timeout=14s (xvm-with-attrs-monitor-interval-28s)'
+
+        - block:
+            - name: Fetch stonith configuration from the cluster
+              command:
+                cmd: pcs --output-format=json stonith config
+              register: __test_pcs_stonith_config
+              changed_when: no
+
+            - name: Print real stonith configuration
+              debug:
+                var: __test_pcs_stonith_config.stdout | from_json
+
+            - name: Print expected stonith configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check stonith configuration
+              assert:
+                that:
+                  - __test_pcs_stonith_config.stdout | from_json == __test_expected_lines | from_json
+          when:
+            - "'pcmk.resource.config.output-formats' in __test_pcs_capabilities"
+          vars:
+            __test_expected_lines: >
+                {
+                    "primitives": [
+                        {
+                            "id": "xvm-no-attrs",
+                            "agent_name": {
+                                "standard": "stonith",
+                                "provider": null,
+                                "type": "fence_xvm"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "xvm-no-attrs-monitor-interval-60s",
+                                    "name": "monitor",
+                                    "interval": "60s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": null,
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "xvm-empty-attrs1",
+                            "agent_name": {
+                                "standard": "stonith",
+                                "provider": null,
+                                "type": "fence_xvm"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "xvm-empty-attrs1-monitor-interval-60s",
+                                    "name": "monitor",
+                                    "interval": "60s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": null,
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "xvm-empty-attrs2",
+                            "agent_name": {
+                                "standard": "stonith",
+                                "provider": null,
+                                "type": "fence_xvm"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "xvm-empty-attrs2-monitor-interval-60s",
+                                    "name": "monitor",
+                                    "interval": "60s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": null,
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "xvm-with-attrs",
+                            "agent_name": {
+                                "standard": "stonith",
+                                "provider": null,
+                                "type": "fence_xvm"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "xvm-with-attrs-monitor-interval-26",
+                                    "name": "monitor",
+                                    "interval": "26",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "13",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "xvm-with-attrs-monitor-interval-28s",
+                                    "name": "monitor",
+                                    "interval": "28s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "14s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [
+                                {
+                                    "id": "xvm-with-attrs-meta_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "xvm-with-attrs-meta_attributes-an-attr",
+                                            "name": "an-attr",
+                                            "value": "a value"
+                                        },
+                                        {
+                                            "id": "xvm-with-attrs-meta_attributes-target-role",
+                                            "name": "target-role",
+                                            "value": "Stopped"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "instance_attributes": [
+                                {
+                                    "id": "xvm-with-attrs-instance_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "xvm-with-attrs-instance_attributes-delay",
+                                            "name": "delay",
+                                            "value": "1"
+                                        },
+                                        {
+                                            "id": "xvm-with-attrs-instance_attributes-pcmk_host_list",
+                                            "name": "pcmk_host_list",
+                                            "value": "node1 node2"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "utilization": []
+                        }
+                    ],
+                    "clones": [],
+                    "groups": [],
+                    "bundles": []
+                }
 
         - block:
             - name: Fetch resource configuration from the cluster
@@ -324,6 +524,8 @@
               assert:
                 that:
                   - __test_pcs_resource_config.stdout_lines == __test_expected_lines | select | list
+          when:
+            - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_expected_lines:
               - ' Bundle: bundle-minimal'
@@ -546,6 +748,2574 @@
                 '') }}"
               - '                start interval=0s timeout=20s (dummy-3a-start-interval-0s)'
               - '                stop interval=0s timeout=20s (dummy-3a-stop-interval-0s)'
+
+        - block:
+            - name: Fetch resource configuration from the cluster
+              command:
+                cmd: pcs --output-format=json resource config
+              register: __test_pcs_resource_config
+              changed_when: no
+
+            - name: Print real resource configuration
+              debug:
+                var: __test_pcs_resource_config.stdout | from_json
+
+            - name: Print expected resource configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check resource configuration
+              assert:
+                that:
+                  - __test_pcs_resource_config.stdout | from_json == __test_expected_lines | from_json
+          when:
+            - "'pcmk.resource.config.output-formats' in __test_pcs_capabilities"
+          vars:
+            __test_expected_lines: '
+                {
+                    "primitives": [
+                        {
+                            "agent_name": {
+                                "provider": "pacemaker",
+                                "standard": "ocf",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "id": "dummy-bundle",
+                            "instance_attributes": [],
+                            "meta_attributes": [],
+                            "operations": [
+                                {
+                                    "description": null,
+                                    "enabled": null,
+                                    "id": "dummy-bundle-migrate_from-interval-0s",
+                                    "instance_attributes": [],
+                                    "interval": "0s",
+                                    "interval_origin": null,
+                                    "meta_attributes": [],
+                                    "name": "migrate_from",
+                                    "on_fail": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "start_delay": null,
+                                    "timeout": "20s"
+                                },
+                                {
+                                    "description": null,
+                                    "enabled": null,
+                                    "id": "dummy-bundle-migrate_to-interval-0s",
+                                    "instance_attributes": [],
+                                    "interval": "0s",
+                                    "interval_origin": null,
+                                    "meta_attributes": [],
+                                    "name": "migrate_to",
+                                    "on_fail": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "start_delay": null,
+                                    "timeout": "20s"
+                                },
+                                {
+                                    "description": null,
+                                    "enabled": null,
+                                    "id": "dummy-bundle-monitor-interval-10s",
+                                    "instance_attributes": [],
+                                    "interval": "10s",
+                                    "interval_origin": null,
+                                    "meta_attributes": [],
+                                    "name": "monitor",
+                                    "on_fail": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "start_delay": null,
+                                    "timeout": "20s"
+                                },
+                                {
+                                    "description": null,
+                                    "enabled": null,
+                                    "id": "dummy-bundle-reload-interval-0s",
+                                    "instance_attributes": [],
+                                    "interval": "0s",
+                                    "interval_origin": null,
+                                    "meta_attributes": [],
+                                    "name": "reload",
+                                    "on_fail": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "start_delay": null,
+                                    "timeout": "20s"
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "description": null,
+                                    "enabled": null,
+                                    "id": "dummy-bundle-reload-agent-interval-0s",
+                                    "instance_attributes": [],
+                                    "interval": "0s",
+                                    "interval_origin": null,
+                                    "meta_attributes": [],
+                                    "name": "reload-agent",
+                                    "on_fail": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "start_delay": null,
+                                    "timeout": "20s"
+                                },
+                            {% endif %}
+                                {
+                                    "description": null,
+                                    "enabled": null,
+                                    "id": "dummy-bundle-start-interval-0s",
+                                    "instance_attributes": [],
+                                    "interval": "0s",
+                                    "interval_origin": null,
+                                    "meta_attributes": [],
+                                    "name": "start",
+                                    "on_fail": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "start_delay": null,
+                                    "timeout": "20s"
+                                },
+                                {
+                                    "description": null,
+                                    "enabled": null,
+                                    "id": "dummy-bundle-stop-interval-0s",
+                                    "instance_attributes": [],
+                                    "interval": "0s",
+                                    "interval_origin": null,
+                                    "meta_attributes": [],
+                                    "name": "stop",
+                                    "on_fail": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "start_delay": null,
+                                    "timeout": "20s"
+                                }
+                            ],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-no-attrs",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-no-attrs-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-no-attrs-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-no-attrs-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-no-attrs-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-no-attrs-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-no-attrs-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-no-attrs-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-empty-attrs1",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-empty-attrs1-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-empty-attrs1-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-empty-attrs1-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-empty-attrs1-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-empty-attrs1-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-empty-attrs1-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-empty-attrs1-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-empty-attrs2",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-empty-attrs2-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-empty-attrs2-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-empty-attrs2-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-empty-attrs2-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-empty-attrs2-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-empty-attrs2-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-empty-attrs2-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-with-attrs1",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-with-attrs1-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs1-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs1-monitor-interval-60s",
+                                    "name": "monitor",
+                                    "interval": "60s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "1min",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs1-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-with-attrs1-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-with-attrs1-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs1-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [
+                                {
+                                    "id": "dummy-with-attrs1-meta_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "dummy-with-attrs1-meta_attributes-target-role",
+                                            "name": "target-role",
+                                            "value": "Stopped"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "instance_attributes": [
+                                {
+                                    "id": "dummy-with-attrs1-instance_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "dummy-with-attrs1-instance_attributes-fake",
+                                            "name": "fake",
+                                            "value": "fake value"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-with-attrs2",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-with-attrs2-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs2-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs2-monitor-interval-26",
+                                    "name": "monitor",
+                                    "interval": "26",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "13",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs2-monitor-interval-28",
+                                    "name": "monitor",
+                                    "interval": "28",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "14",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs2-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-with-attrs2-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-with-attrs2-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-with-attrs2-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [
+                                {
+                                    "id": "dummy-with-attrs2-meta_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "dummy-with-attrs2-meta_attributes-an-attr",
+                                            "name": "an-attr",
+                                            "value": "a value"
+                                        },
+                                        {
+                                            "id": "dummy-with-attrs2-meta_attributes-target-role",
+                                            "name": "target-role",
+                                            "value": "Stopped"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "instance_attributes": [
+                                {
+                                    "id": "dummy-with-attrs2-instance_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "dummy-with-attrs2-instance_attributes-fake",
+                                            "name": "fake",
+                                            "value": "fake value"
+                                        },
+                                        {
+                                            "id": "dummy-with-attrs2-instance_attributes-passwd",
+                                            "name": "passwd",
+                                            "value": "passwd value1"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-1a",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-1a-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-1a-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-1a-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-1a-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-1a-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-1a-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-1a-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-1b",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-1b-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-1b-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-1b-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-1b-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-1b-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-1b-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-1b-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-2a",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-2a-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-2a-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-2a-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-2a-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-2a-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-2a-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-2a-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-4a",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-4a-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-4a-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-4a-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-4a-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-4a-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-4a-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-4a-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-clone-no-options",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-clone-no-options-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-no-options-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-no-options-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-no-options-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-clone-no-options-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-clone-no-options-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-no-options-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-clone-promotable",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-clone-promotable-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-promotable-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-promotable-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-promotable-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-clone-promotable-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-clone-promotable-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-promotable-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-clone-id",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-clone-id-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-id-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-id-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-id-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-clone-id-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-clone-id-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-id-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-clone-empty-attrs1",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-clone-empty-attrs1-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-empty-attrs1-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-empty-attrs1-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-empty-attrs1-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-clone-empty-attrs1-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-clone-empty-attrs1-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-empty-attrs1-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-clone-empty-attrs2",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-clone-empty-attrs2-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-empty-attrs2-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-empty-attrs2-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-empty-attrs2-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-clone-empty-attrs2-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-clone-empty-attrs2-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-empty-attrs2-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-clone-with-attrs1",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-clone-with-attrs1-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-with-attrs1-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-with-attrs1-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-with-attrs1-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-clone-with-attrs1-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-clone-with-attrs1-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-with-attrs1-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-clone-with-attrs2",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-clone-with-attrs2-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-with-attrs2-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-with-attrs2-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-with-attrs2-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-clone-with-attrs2-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-clone-with-attrs2-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-clone-with-attrs2-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        },
+                        {
+                            "id": "dummy-3a",
+                            "agent_name": {
+                                "standard": "ocf",
+                                "provider": "pacemaker",
+                                "type": "Dummy"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "dummy-3a-migrate_from-interval-0s",
+                                    "name": "migrate_from",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-3a-migrate_to-interval-0s",
+                                    "name": "migrate_to",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-3a-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-3a-reload-interval-0s",
+                                    "name": "reload",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
+                                {
+                                    "id": "dummy-3a-reload-agent-interval-0s",
+                                    "name": "reload-agent",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                            {% endif %}
+                                {
+                                    "id": "dummy-3a-start-interval-0s",
+                                    "name": "start",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "dummy-3a-stop-interval-0s",
+                                    "name": "stop",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
+                            "utilization": []
+                        }
+                    ],
+                    "clones": [
+                        {
+                            "id": "dummy-clone-no-options-clone",
+                            "description": null,
+                            "member_id": "dummy-clone-no-options",
+                            "meta_attributes": [],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "dummy-clone-promotable-clone",
+                            "description": null,
+                            "member_id": "dummy-clone-promotable",
+                            "meta_attributes": [
+                                {
+                                    "id": "dummy-clone-promotable-clone-meta_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "dummy-clone-promotable-clone-meta_attributes-promotable",
+                                            "name": "promotable",
+                                            "value": "true"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "custom-clone-id1",
+                            "description": null,
+                            "member_id": "dummy-clone-id",
+                            "meta_attributes": [],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "dummy-clone-empty-attrs1-clone",
+                            "description": null,
+                            "member_id": "dummy-clone-empty-attrs1",
+                            "meta_attributes": [],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "dummy-clone-empty-attrs2-clone",
+                            "description": null,
+                            "member_id": "dummy-clone-empty-attrs2",
+                            "meta_attributes": [],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "dummy-clone-with-attrs1-clone",
+                            "description": null,
+                            "member_id": "dummy-clone-with-attrs1",
+                            "meta_attributes": [
+                                {
+                                    "id": "dummy-clone-with-attrs1-clone-meta_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "dummy-clone-with-attrs1-clone-meta_attributes-target-role",
+                                            "name": "target-role",
+                                            "value": "Stopped"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "custom-clone-id2",
+                            "description": null,
+                            "member_id": "dummy-clone-with-attrs2",
+                            "meta_attributes": [
+                                {
+                                    "id": "custom-clone-id2-meta_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "custom-clone-id2-meta_attributes-an-attr",
+                                            "name": "an-attr",
+                                            "value": "a value"
+                                        },
+                                        {
+                                            "id": "custom-clone-id2-meta_attributes-promotable",
+                                            "name": "promotable",
+                                            "value": "true"
+                                        },
+                                        {
+                                            "id": "custom-clone-id2-meta_attributes-target-role",
+                                            "name": "target-role",
+                                            "value": "Stopped"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "group3-clone",
+                            "description": null,
+                            "member_id": "group3",
+                            "meta_attributes": [],
+                            "instance_attributes": []
+                        }
+                    ],
+                    "groups": [
+                        {
+                            "id": "group1",
+                            "description": null,
+                            "member_ids": [
+                                "dummy-1a",
+                                "dummy-1b"
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "group2",
+                            "description": null,
+                            "member_ids": [
+                                "dummy-2a"
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "group4",
+                            "description": null,
+                            "member_ids": [
+                                "dummy-4a"
+                            ],
+                            "meta_attributes": [
+                                {
+                                    "id": "group4-meta_attributes",
+                                    "options": {},
+                                    "rule": null,
+                                    "nvpairs": [
+                                        {
+                                            "id": "group4-meta_attributes-an-attr",
+                                            "name": "an-attr",
+                                            "value": "a value"
+                                        },
+                                        {
+                                            "id": "group4-meta_attributes-target-role",
+                                            "name": "target-role",
+                                            "value": "Stopped"
+                                        }
+                                    ]
+                                }
+                            ],
+                            "instance_attributes": []
+                        },
+                        {
+                            "id": "group3",
+                            "description": null,
+                            "member_ids": [
+                                "dummy-3a"
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": []
+                        }
+                    ],
+                    "bundles": [
+                        {
+                            "container_options": {
+                                "image": "my:image1",
+                                "network": null,
+                                "options": null,
+                                "promoted_max": null,
+                                "replicas": null,
+                                "replicas_per_host": null,
+                                "run_command": null
+                            },
+                            "container_type": "docker",
+                            "description": null,
+                            "id": "bundle-minimal",
+                            "instance_attributes": [],
+                            "member_id": null,
+                            "meta_attributes": [],
+                            "network": null,
+                            "port_mappings": [],
+                            "storage_mappings": []
+                        },
+                        {
+                            "container_options": {
+                                "image": "my:image1",
+                                "network": null,
+                                "options": null,
+                                "promoted_max": null,
+                                "replicas": null,
+                                "replicas_per_host": null,
+                                "run_command": null
+                            },
+                            "container_type": "docker",
+                            "description": null,
+                            "id": "bundle-minimal-with-resource",
+                            "instance_attributes": [],
+                            "member_id": "dummy-bundle",
+                            "meta_attributes": [],
+                            "network": {
+                                "add_host": null,
+                                "control_port": 3121,
+                                "host_interface": null,
+                                "host_netmask": null,
+                                "ip_range_start": null
+                            },
+                            "port_mappings": [],
+                            "storage_mappings": []
+                        },
+                        {
+                            "container_options": {
+                                "image": "my:image1",
+                                "network": null,
+                                "options": null,
+                                "promoted_max": null,
+                                "replicas": 2,
+                                "replicas_per_host": null,
+                                "run_command": null
+                            },
+                            "container_type": "docker",
+                            "description": null,
+                            "id": "bundle-all-options",
+                            "instance_attributes": [],
+                            "member_id": null,
+                            "meta_attributes": [
+                                {
+                                    "id": "bundle-all-options-meta_attributes",
+                                    "nvpairs": [
+                                        {
+                                            "id": "bundle-all-options-meta_attributes-an-attr",
+                                            "name": "an-attr",
+                                            "value": "a value"
+                                        },
+                                        {
+                                            "id": "bundle-all-options-meta_attributes-target-role",
+                                            "name": "target-role",
+                                            "value": "Stopped"
+                                        }
+                                    ],
+                                    "options": {},
+                                    "rule": null
+                                }
+                            ],
+                            "network": {
+                                "add_host": null,
+                                "control_port": 3121,
+                                "host_interface": null,
+                                "host_netmask": 32,
+                                "ip_range_start": null
+                            },
+                            "port_mappings": [
+                                {
+                                    "id": "bundle-all-options-port-map-23456",
+                                    "internal_port": null,
+                                    "port": 23456,
+                                    "range": null
+                                },
+                                {
+                                    "id": "bundle-all-options-port-map-34567",
+                                    "internal_port": 45678,
+                                    "port": 34567,
+                                    "range": null
+                                }
+                            ],
+                            "storage_mappings": [
+                                {
+                                    "id": "bundle-all-options-storage-map",
+                                    "options": null,
+                                    "source_dir": "/tmp/source1",
+                                    "source_dir_root": null,
+                                    "target_dir": "/tmp/target1"
+                                },
+                                {
+                                    "id": "bundle-all-options-storage-map-1",
+                                    "options": null,
+                                    "source_dir": "/tmp/source2",
+                                    "source_dir_root": null,
+                                    "target_dir": "/tmp/target2"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            '
       # yamllint enable rule:line-length
 
       tags: tests::verify

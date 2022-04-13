@@ -74,12 +74,27 @@
           include_tasks: tasks/assert_corosync_config.yml
           vars:
             __test_expected_lines:
-              - 'Cluster Name: {{ ha_cluster_cluster_name }}'
-              - 'Transport: knet'
-              - 'Nodes:'
-              - 'Crypto Options:'
-              - '  cipher: aes256'
-              - '  hash: sha256'
+              - 'totem {'
+              - '    version: 2'
+              - '    cluster_name: {{ ha_cluster_cluster_name }}'
+              - '    transport: knet'
+              - '    crypto_cipher: aes256'
+              - '    crypto_hash: sha256'
+              - '}'
+              - 'nodelist {'
+              - '}'
+              - 'quorum {'
+              - '    provider: corosync_votequorum'
+              - "{{ (ansible_play_hosts_all | length == 2) | ternary(
+                '    two_node: 1',
+                '') }}"
+              - '}'
+              - 'logging {'
+              - '    to_logfile: yes'
+              - '    logfile: /var/log/cluster/corosync.log'
+              - '    to_syslog: yes'
+              - '    timestamp: on'
+              - '}'
 
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml
