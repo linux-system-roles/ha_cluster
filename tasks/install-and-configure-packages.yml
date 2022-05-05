@@ -48,7 +48,6 @@
     password: "{{
       ha_cluster_hacluster_password
       | password_hash(
-          'sha512',
-          ansible_hostname|replace('-','x')|truncate(16, True, '')
+          'sha512',  ansible_hostname.replace('-','x')[:16]
         )
     }}"
