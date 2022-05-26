@@ -10,10 +10,14 @@
   tasks:
     - block:
         - name: Set up test environment
-          include_tasks: tasks/setup_test.yml
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
 
         - name: Set up test environment for SBD
-          include_tasks: tasks/setup_sbd.yml
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup_sbd.yml
 
         - name: Ensure SBD config file is not present
           file:
@@ -87,5 +91,7 @@
 
       always:
         - name: Clean up test environment for SBD
-          include_tasks: tasks/cleanup_sbd.yml
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_cleanup_sbd.yml
       tags: tests::verify

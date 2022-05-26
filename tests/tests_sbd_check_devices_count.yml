@@ -9,7 +9,9 @@
   tasks:
     - block:
         - name: Set up test environment
-          include_tasks: tasks/setup_test.yml
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
 
         - name: Set SBD devices variable
           set_fact:
