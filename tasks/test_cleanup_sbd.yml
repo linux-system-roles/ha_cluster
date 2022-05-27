@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: MIT
+# This task configures test systems for testing in the CI environment.
+# Only use this task for testing.
+# This task file resides in `tasks/` so that it can be used from other roles
+# with `include_role` with `tasks_from: filename` directly without the need to
+# provide a relative path. Providing relative path is problematic with
+# collections.
+---
+- name: Unmount SBD devices
+  command:
+    cmd: losetup -d {{ __test_sbd_mount.stdout }}
+  changed_when: yes
+
+- name: Delete backing files for SBD devices
+  file:
+    path: "{{ __test_sbd_tmpfile }}"
+    state: absent
