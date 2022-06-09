@@ -4,7 +4,7 @@
   command:
     cmd: >
       pcs status pcsd --
-      {% for node in ansible_play_hosts_all %}
+      {% for node in ansible_play_hosts %}
         {{ hostvars[node].__ha_cluster_node_name | quote }}
       {% endfor %}
   register: __ha_cluster_pcs_auth_status
