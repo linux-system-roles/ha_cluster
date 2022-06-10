@@ -16,7 +16,7 @@
       when:
         - ha_cluster_sbd_enabled
         - >
-          ansible_play_hosts_all
+          ansible_play_hosts
           | map('extract', hostvars, ['ha_cluster', 'sbd_devices'])
           | map('default', [], true)
           | map('length') | unique | length > 1
@@ -32,7 +32,7 @@
 - name: Collect cluster node names
   set_fact:
     __ha_cluster_all_node_names: "{{
-        ansible_play_hosts_all
+        ansible_play_hosts
         | map('extract', hostvars, '__ha_cluster_node_name')
         | list
       }}"

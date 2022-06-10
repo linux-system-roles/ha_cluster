@@ -6,7 +6,7 @@
     # pcs auth tokens in the cluster when not all nodes are auth-ed.
     cmd: >
       pcs host auth -u hacluster --
-      {% for node in ansible_play_hosts_all %}
+      {% for node in ansible_play_hosts %}
         {{ hostvars[node].__ha_cluster_node_name | quote }}
         {% if hostvars[node].ha_cluster.pcs_address | default("") %}
           addr={{ hostvars[node].ha_cluster.pcs_address | quote }}
