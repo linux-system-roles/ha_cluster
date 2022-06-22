@@ -11,6 +11,11 @@
     inventory_hostname: localhost
   when: ansible_play_hosts_all | length == 1
 
+- name: Ensure facts used by tests
+  setup:
+    gather_subset: min
+  when: "'distribution' not in ansible_facts"
+
 # Test systems may not have repositories available through subscriptions
 - name: Do not try to enable RHEL repositories
   set_fact:
