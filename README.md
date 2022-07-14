@@ -223,11 +223,13 @@ ha_cluster_transport:
   name-value dictionaries holds options for one Corosync link. It is
   recommended to set `linknumber` value for each link. Otherwise, the first
   list of dictionaries is assigned to the first link, the second one to the
-  second link and so on.
+  second link and so on. Only one link is supported with `udp` and `udpu`
+  transports.
 * `compression` (optional) - List of name-value dictionaries configuring
-  transport compression.
+  transport compression. Only available for `knet` transport.
 * `crypto` (optional) - List of name-value dictionaries configuring transport
-  encryption. By default, encryption is enabled.
+  encryption. Only available for `knet` transport, where encryption is enabled
+  by default. Encryption is always disabled with `udp` and `udpu` transports.
 
 For a list of allowed options, see `pcs -h cluster setup` or `pcs(8)` man page,
 section 'cluster', command 'setup'. For a detailed description, see
