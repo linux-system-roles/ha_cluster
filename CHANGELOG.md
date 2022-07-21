@@ -1,6 +1,30 @@
 Changelog
 =========
 
+[1.7.4] - 2022-07-19
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- readme: describe limitations of udp transports (#56)
+
+### Other Changes
+
+- make all tests work with gather_facts: false (#52)
+
+Ensure tests work when using ANSIBLE_GATHERING=explicit
+
+- make min_ansible_version a string in meta/main.yml (#53)
+
+The Ansible developers say that `min_ansible_version` in meta/main.yml
+must be a `string` value like `"2.9"`, not a `float` value like `2.9`.
+
+- Add CHANGELOG.md (#54)
+
 [1.7.3] - 2022-06-10
 --------------------
 
