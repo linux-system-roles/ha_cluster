@@ -4,7 +4,7 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_sbd_enabled: yes
+    ha_cluster_sbd_enabled: true
     ha_cluster_quorum:
       options:
         - name: auto_tie_breaker
@@ -38,7 +38,7 @@
                   - ansible_failed_result.msg ==
                     'Cannot set auto_tie_breaker to disabled when SBD needs it '
                     ~ 'to be enabled'
-              run_once: yes
+              run_once: true
 
       when: ansible_play_hosts_all | length is even
       always:

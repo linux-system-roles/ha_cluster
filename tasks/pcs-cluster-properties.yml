@@ -10,5 +10,5 @@
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to
   # the cluster.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

@@ -178,7 +178,7 @@
     ha_cluster_resource_clones:
       - resource_id: dummy-clone-no-options
       - resource_id: dummy-clone-promotable
-        promotable: yes
+        promotable: true
       - resource_id: dummy-clone-id
         id: custom-clone-id1
       - resource_id: dummy-clone-empty-attrs1
@@ -192,7 +192,7 @@
               - name: target-role
                 value: Stopped
       - resource_id: dummy-clone-with-attrs2
-        promotable: yes
+        promotable: true
         id: custom-clone-id2
         meta_attrs:
           - attrs:
@@ -279,7 +279,7 @@
               command:
                 cmd: pcs stonith config
               register: __test_pcs_stonith_config
-              changed_when: no
+              changed_when: false
 
             - name: Print real stonith configuration
               debug:
@@ -314,7 +314,7 @@
               command:
                 cmd: pcs --output-format=json stonith config
               register: __test_pcs_stonith_config
-              changed_when: no
+              changed_when: false
 
             - name: Print real stonith configuration
               debug:
@@ -512,7 +512,7 @@
               command:
                 cmd: pcs resource config
               register: __test_pcs_resource_config
-              changed_when: no
+              changed_when: false
 
             - name: Print real resource configuration
               debug:
@@ -756,7 +756,7 @@
               command:
                 cmd: pcs --output-format=json resource config
               register: __test_pcs_resource_config
-              changed_when: no
+              changed_when: false
 
             - name: Print real resource configuration
               debug:

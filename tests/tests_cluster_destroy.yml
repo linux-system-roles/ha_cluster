@@ -3,7 +3,7 @@
 - name: Deconfigure cluster
   hosts: all
   vars:
-    ha_cluster_cluster_present: no
+    ha_cluster_cluster_present: false
 
   tasks:
     - block:

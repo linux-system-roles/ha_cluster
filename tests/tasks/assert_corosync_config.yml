@@ -12,7 +12,7 @@
       set -euo pipefail
       pcs cluster corosync | sed -e '/^nodelist {$/,/^}$/ { /^\s/d } ; /^$/d'
   register: __test_pcs_corosync_config
-  changed_when: no
+  changed_when: false
 
 - name: Print real corosync configuration
   debug:

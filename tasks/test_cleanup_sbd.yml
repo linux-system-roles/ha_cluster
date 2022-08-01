@@ -9,7 +9,7 @@
 - name: Unmount SBD devices
   command:
     cmd: losetup -d {{ __test_sbd_mount.stdout }}
-  changed_when: yes
+  changed_when: true
 
 - name: Delete backing files for SBD devices
   file:

@@ -3,10 +3,10 @@
 - name: List active RHEL repositories
   command:
     cmd: dnf repolist
-    warn: no
+    warn: false
   register: __ha_cluster_repolist
-  changed_when: no
-  check_mode: no
+  changed_when: false
+  check_mode: false
 
 - name: Enable RHEL repositories
   command: subscription-manager repos --enable {{ item.id | quote }}

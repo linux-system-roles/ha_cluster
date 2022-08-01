@@ -4,7 +4,7 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_sbd_enabled: yes
+    ha_cluster_sbd_enabled: true
     ha_cluster_quorum:
       options:
         - name: auto_tie_breaker
@@ -35,7 +35,7 @@
           command:
             cmd: pcs quorum config
           register: __test_quorum_config
-          changed_when: no
+          changed_when: false
 
         - name: Check auto tie breaker in quorum configuration
           assert:

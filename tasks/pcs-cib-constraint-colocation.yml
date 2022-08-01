@@ -1,49 +1,43 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure colocation constraint '{{
-      constraint.id | default(constraint_index)
+      constraint.id | d(constraint_index)
     }}'
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- constraint colocation add
-      {% if constraint.resource_follower.role | default() %}
+      {% if constraint.resource_follower.role | d() %}
         {{
           __ha_cluster_pcs_cli_role[constraint.resource_follower.role | lower]
-          | default(constraint.resource_follower.role)
+          | d(constraint.resource_follower.role)
           | lower | quote
         }}
       {% endif %}
       {{ constraint.resource_follower.id | quote }}
       with
-      {% if constraint.resource_leader.role | default() %}
+      {% if constraint.resource_leader.role | d() %}
         {{
           __ha_cluster_pcs_cli_role[constraint.resource_leader.role | lower]
-          | default(constraint.resource_leader.role)
+          | d(constraint.resource_leader.role)
           | lower | quote
         }}
       {% endif %}
       {{ constraint.resource_leader.id | quote }}
-      {%
-        for option in constraint.options | default([])
-          if option.name == 'score'
-      %}
+      {% for option in constraint.options | d([]) if option.name == 'score' %}
         {{ option.value | quote }}
       {% else %}
         INFINITY
       {% endfor %}
-      {% if constraint.id | default() %}
+      {% if constraint.id | d() %}
         id={{ constraint.id | quote }}
       {% endif %}
-      {%
-        for option in constraint.options | default([])
-          if option.name != 'score'
-      %}
+      {% for option in constraint.options | d([]) if option.name != 'score' %}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}
   # We always need to create CIB to see whether it's the same as what is
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to
   # the cluster.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

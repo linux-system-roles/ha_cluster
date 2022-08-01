@@ -15,26 +15,26 @@
         {{ resource.agent | quote }}
       {% endif %}
 
-      {% if resource.instance_attrs[0].attrs | default([]) %}
+      {% if resource.instance_attrs[0].attrs | d([]) %}
         {% for attr in resource.instance_attrs[0].attrs %}
           {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
 
-      {% if resource.meta_attrs[0].attrs | default([]) %}
+      {% if resource.meta_attrs[0].attrs | d([]) %}
         meta
         {% for attr in resource.meta_attrs[0].attrs %}
           {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
 
-      {% if resource.operations | default([]) %}
+      {% if resource.operations | d([]) %}
         {% for operation in resource.operations %}
           op
           {% if operation.action is defined %}
             {{ operation.action | quote }}
           {% endif %}
-          {% if operation.attrs | default([]) %}
+          {% if operation.attrs | d([]) %}
             {% for attr in operation.attrs %}
               {{ attr.name | quote }}={{ attr.value | quote }}
             {% endfor %}
@@ -42,12 +42,12 @@
         {% endfor %}
       {% endif %}
 
-      {% if __ha_cluster_primitive_bundle_map[resource.id] | default %}
+      {% if __ha_cluster_primitive_bundle_map[resource.id] | d() %}
         bundle {{ __ha_cluster_primitive_bundle_map[resource.id] | quote }}
       {% endif %}
   # We always need to create CIB to see whether it's the same as what is
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to
   # the cluster.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

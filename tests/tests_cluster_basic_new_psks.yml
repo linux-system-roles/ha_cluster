@@ -10,7 +10,7 @@
     # generate a new key for fence_xvm as there is no key present
     # generate a new TLS certificate - key pair for pcsd, even if there already
     #   is one
-    ha_cluster_regenerate_keys: yes
+    ha_cluster_regenerate_keys: true
     ha_cluster_corosync_key_src: "{{ playbook_dir }}/tmp/corosync-authkey"
     __test_pacemaker_key_content: key content to be replaced
     __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"

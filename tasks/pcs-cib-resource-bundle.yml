@@ -8,32 +8,32 @@
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- resource bundle create {{ resource_bundle.id | quote }}
       container {{ resource_bundle.container.type | quote }}
-      {% for option in resource_bundle.container.options | default([]) %}
+      {% for option in resource_bundle.container.options | d([]) %}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}
 
-      {% if resource_bundle.network_options | default([]) %}
+      {% if resource_bundle.network_options | d([]) %}
         network
-        {% for option in resource_bundle.network_options | default([]) %}
+        {% for option in resource_bundle.network_options | d([]) %}
           {{ option.name | quote }}={{ option.value | quote }}
         {% endfor %}
       {% endif %}
 
-      {% for map in resource_bundle.port_map | default([]) %}
+      {% for map in resource_bundle.port_map | d([]) %}
         port-map
-        {% for option in map | default([]) %}
+        {% for option in map | d([]) %}
           {{ option.name | quote }}={{ option.value | quote }}
         {% endfor %}
       {% endfor %}
 
-      {% for map in resource_bundle.storage_map | default([]) %}
+      {% for map in resource_bundle.storage_map | d([]) %}
         storage-map
-        {% for option in map | default([]) %}
+        {% for option in map | d([]) %}
           {{ option.name | quote }}={{ option.value | quote }}
         {% endfor %}
       {% endfor %}
 
-      {% if resource_bundle.meta_attrs[0].attrs | default([]) %}
+      {% if resource_bundle.meta_attrs[0].attrs | d([]) %}
         meta
         {% for attr in resource_bundle.meta_attrs[0].attrs %}
           {{ attr.name | quote }}={{ attr.value | quote }}
@@ -43,5 +43,5 @@
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to
   # the cluster.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

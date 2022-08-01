@@ -4,7 +4,7 @@
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
-    ha_cluster_sbd_enabled: yes
+    ha_cluster_sbd_enabled: true
     ha_cluster_sbd_options:
       - name: delay-start
         value: 'no'

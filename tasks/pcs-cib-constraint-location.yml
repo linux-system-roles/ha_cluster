@@ -1,73 +1,64 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure location constraint '{{
-      constraint.id | default(constraint_index)
+      constraint.id | d(constraint_index)
     }}'
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- constraint location
-      {% if constraint.rule | default() %}
-        {% if constraint.resource.pattern | default() %}
+      {% if constraint.rule | d() %}
+        {% if constraint.resource.pattern | d() %}
           regexp%{{ constraint.resource.pattern | quote }}
         {% else %}
           {{ constraint.resource.id | quote }}
         {% endif %}
         rule
-        {% if constraint.id | default() %}
+        {% if constraint.id | d() %}
           constraint-id={{ constraint.id | quote }}
         {% endif %}
-        {% if constraint.resource.role | default() %}
+        {% if constraint.resource.role | d() %}
           role={{
             __ha_cluster_pcs_cli_role[constraint.resource.role | lower]
-            | default(constraint.resource.role)
+            | d(constraint.resource.role)
             | lower | quote
           }}
         {% endif %}
-        {% for option in constraint.options | default([]) %}
+        {% for option in constraint.options | d([]) %}
           {{ option.name | quote }}={{ option.value | quote }}
         {% endfor %}
         {{ constraint.rule }}
       {% elif
-        (constraint.id | default())
+        (constraint.id | d())
         or (
-          constraint.options | default([])
+          constraint.options | d([])
           | rejectattr('name', 'match', '^score$') | list
         )
       %}
         add
         {{ constraint.id | quote }}
-        {% if constraint.resource.pattern | default() %}
+        {% if constraint.resource.pattern | d() %}
           regexp%{{ constraint.resource.pattern | quote }}
         {% else %}
           {{ constraint.resource.id | quote }}
         {% endif %}
         {{ constraint.node | quote }}
-        {%
-          for option in constraint.options | default([])
-            if option.name == 'score'
-        %}
+        {% for option in constraint.options | d([]) if option.name == 'score' %}
           {{ option.value | quote }}
         {% else %}
           INFINITY
         {% endfor %}
-        {%
-          for option in constraint.options | default([])
-            if option.name != 'score'
-        %}
+        {% for option in constraint.options | d([]) if option.name != 'score' %}
           {{ option.name | quote }}={{ option.value | quote }}
         {% endfor %}
       {% else %}
-        {% if constraint.resource.pattern | default() %}
+        {% if constraint.resource.pattern | d() %}
           regexp%{{ constraint.resource.pattern | quote }}
         {% else %}
           {{ constraint.resource.id | quote }}
         {% endif %}
         prefers
-        {%
-          for option in constraint.options | default([])
-            if option.name == 'score'
-        %}
+        {% for option in constraint.options | d([]) if option.name == 'score' %}
           {{ constraint.node | quote }}={{ option.value | quote }}
         {% else %}
           {{ constraint.node | quote }}=INFINITY
@@ -77,5 +68,5 @@
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to
   # the cluster.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

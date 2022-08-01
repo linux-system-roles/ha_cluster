@@ -1,30 +1,28 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Configure order constraint '{{
-      constraint.id | default(constraint_index)
-    }}'
+- name: Configure order constraint '{{ constraint.id | d(constraint_index) }}'
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- constraint order
-      {% if constraint.resource_first.action | default() %}
+      {% if constraint.resource_first.action | d() %}
         {{ constraint.resource_first.action | quote }}
       {% endif %}
       {{ constraint.resource_first.id | quote }}
       then
-      {% if constraint.resource_then.action | default() %}
+      {% if constraint.resource_then.action | d() %}
         {{ constraint.resource_then.action | quote }}
       {% endif %}
       {{ constraint.resource_then.id | quote }}
-      {% if constraint.id | default() %}
+      {% if constraint.id | d() %}
         id={{ constraint.id | quote }}
       {% endif %}
-      {% for option in constraint.options | default([]) %}
+      {% for option in constraint.options | d([]) %}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}
   # We always need to create CIB to see whether it's the same as what is
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to
   # the cluster.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

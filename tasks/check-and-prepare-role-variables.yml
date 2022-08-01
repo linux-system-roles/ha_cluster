@@ -8,7 +8,7 @@
       when: lookup("vars", item, default="") | length < 1
       loop:
         - ha_cluster_hacluster_password
-      run_once: yes
+      run_once: true
 
     - name: Fail if nodes do not have the same number of SBD devices specified
       fail:
@@ -20,14 +20,12 @@
           | map('extract', hostvars, ['ha_cluster', 'sbd_devices'])
           | map('default', [], true)
           | map('length') | unique | length > 1
-      run_once: yes
+      run_once: true
   when: ha_cluster_cluster_present
 
 - name: Discover cluster node names
   set_fact:
-    __ha_cluster_node_name: "{{
-        ha_cluster.node_name | default(inventory_hostname)
-      }}"
+    __ha_cluster_node_name: "{{ ha_cluster.node_name | d(inventory_hostname) }}"
 
 - name: Collect cluster node names
   set_fact:
@@ -47,7 +45,7 @@
     # - qdevice is not used
     __ha_cluster_sbd_needs_atb: "{{
         ha_cluster_sbd_enabled
-        and not ha_cluster.sbd_devices | default([])
+        and not ha_cluster.sbd_devices | d([])
         and __ha_cluster_all_node_names | length is even
         and not __ha_cluster_qdevice_in_use
       }}"
@@ -57,6 +55,6 @@
     msg: Cannot set auto_tie_breaker to disabled when SBD needs it to be enabled
   when:
     - __ha_cluster_sbd_needs_atb | bool
-    - ha_cluster_quorum.options | default([])
+    - ha_cluster_quorum.options | d([])
       | selectattr('name', 'match', '^auto_tie_breaker$')
       | map(attribute='value') | select('in', ['0', 0]) | list | length > 0

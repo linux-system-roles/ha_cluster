@@ -8,7 +8,7 @@
         {{ hostvars[node].__ha_cluster_node_name | quote }}
       {% endfor %}
   register: __ha_cluster_pcs_auth_status
-  check_mode: no
+  check_mode: false
   # rc == 0 means all nodes are authenticated
   # rc == 2 means not all nodes are authenticated
   # any other rc means an error
@@ -20,7 +20,7 @@
 - name: Run pcs auth
   include_tasks: pcs-auth-{{ __ha_cluster_pcs_provider }}.yml
   # Include the tasks for nodes which can not talk to other nodes due to
-  # missing pcs auth tokens. The pcs-auth-*.yml contains "run_once: yes" as
+  # missing pcs auth tokens. The pcs-auth-*.yml contains "run_once: true" as
   # running the auth on one node is sufficient (auth tokens are distributed by
   # pcs automatically). By appling "when" here and "run_once" in the included
   # task, it is achieved that the pcs auth command is run once on one of the

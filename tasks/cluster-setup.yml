@@ -5,12 +5,12 @@
     state: file
     suffix: _ha_cluster_corosync_conf
   register: __ha_cluster_tempfile_corosync_conf
-  run_once: yes
+  run_once: true
   # We always need to create corosync.conf file to see whether it's the same as
   # what is already present on the cluster nodes. However, we don't want to
   # report it as a change since the only thing which matters is copying the
   # resulting corosync.conf to cluster nodes.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
 
 - name: Create a corosync.conf file content
@@ -20,7 +20,7 @@
   slurp:
     src: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
   register: __ha_cluster_data_corosync_conf
-  run_once: yes
+  run_once: true
   when: __ha_cluster_tempfile_corosync_conf.path is defined
 
 - name: Distribute corosync.conf file
@@ -38,12 +38,12 @@
     path: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
     state: absent
   when: __ha_cluster_tempfile_corosync_conf.path is defined
-  run_once: yes
+  run_once: true
   # We always need to create corosync.conf file to see whether it's the same as
   # what is already present on the cluster nodes. However, we don't want to
   # report it as a change since the only thing which matters is copying the
   # resulting corosync.conf to cluster nodes.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
 
 - name: Get corosync authkey

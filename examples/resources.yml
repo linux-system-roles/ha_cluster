@@ -68,7 +68,7 @@
     ha_cluster_resource_clones:
       - resource_id: simple-clone
       - resource_id: clone-with-options
-        promotable: yes
+        promotable: true
         id: custom-clone-id
         meta_attrs:
           - attrs:
@@ -77,7 +77,7 @@
               - name: clone-node-max
                 value: '1'
       - resource_id: cloned-group
-        promotable: yes
+        promotable: true
     ha_cluster_resource_bundles:
       - id: bundle-with-resource
         resource-id: bundled-resource

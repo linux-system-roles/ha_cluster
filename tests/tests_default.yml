@@ -14,7 +14,7 @@
             error_list: "{{
               ansible_failed_result.results | map(attribute='msg') | list
             }}"
-          run_once: yes
+          run_once: true
 
         - name: Check errors
           assert:

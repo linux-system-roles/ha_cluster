@@ -24,7 +24,7 @@
         -keyout "{{ __test_pcsd_private_key_path }}"
         -out "{{ __test_pcsd_public_key_path }}"
         -subj "/CN={{ ansible_host }}"
-      changed_when: no
+      changed_when: false
 
     - name: Generate corosync key
       copy:
@@ -45,7 +45,7 @@
         mode: 0400
 
   delegate_to: localhost
-  run_once: yes
+  run_once: true
   vars:
     __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
     __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"

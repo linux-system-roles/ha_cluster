@@ -26,7 +26,7 @@
           command:
             cmd: pcs property
           register: __test_pcs_property_config
-          changed_when: no
+          changed_when: false
 
         - name: Debug cluster properties configuration
           debug:

@@ -31,7 +31,7 @@
       no_log: true
   when:
     - preshared_key_src is string and preshared_key_src | length > 1
-  run_once: yes
+  run_once: true
   delegate_to: localhost
 
 - name: Generate random {{ preshared_key_label }}
@@ -40,7 +40,7 @@
       command:
         cmd: openssl rand -base64 {{ preshared_key_length | quote }}
       register: __ha_cluster_openssl_rand
-      changed_when: no
+      changed_when: false
 
     - name: Fetch generated {{ preshared_key_label }}
       set_fact:
@@ -48,7 +48,7 @@
           "{{ __ha_cluster_openssl_rand.stdout }}"
   when:
     - not (preshared_key_src is string and preshared_key_src | length > 1)
-  run_once: yes
+  run_once: true
   # Prevent key contents to be printed to the output
   no_log: true
 
@@ -75,7 +75,7 @@
       # Prevent key contents to be printed to the output
       no_log: true
       # Following variables set the fact for all nodes
-      delegate_facts: yes
+      delegate_facts: true
       delegate_to: "{{ item }}"
       with_items: "{{ ansible_play_hosts }}"
   when:

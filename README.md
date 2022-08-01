@@ -26,24 +26,24 @@ An Ansible role for managing High Availability Clustering.
 
 #### `ha_cluster_enable_repos`
 
-boolean, default: `yes`
+boolean, default: `true`
 
 RHEL and CentOS only, enable repositories contaning needed packages
 
 #### `ha_cluster_cluster_present`
 
-boolean, default: `yes`
+boolean, default: `true`
 
-If set to `yes`, HA cluster will be configured on the hosts according to other
-variables. If set to `no`, all HA Cluster configuration will be purged from
+If set to `true`, HA cluster will be configured on the hosts according to other
+variables. If set to `false`, all HA Cluster configuration will be purged from
 target hosts.
 
 #### `ha_cluster_start_on_boot`
 
-boolean, default: `yes`
+boolean, default: `true`
 
-If set to `yes`, cluster services will be configured to start on boot. If set
-to `no`, cluster services will be configured not to start on boot.
+If set to `true`, cluster services will be configured to start on boot. If set
+to `false`, cluster services will be configured not to start on boot.
 
 #### `ha_cluster_fence_agent_packages`
 
@@ -139,9 +139,9 @@ certificate - key pair.
 
 #### `ha_cluster_regenerate_keys`
 
-boolean, default: `no`
+boolean, default: `false`
 
-If this is set to `yes`, pre-shared keys and TLS certificates will be
+If this is set to `true`, pre-shared keys and TLS certificates will be
 regenerated.
 See also:
 [`ha_cluster_corosync_key_src`](#ha_cluster_corosync_key_src),
@@ -277,7 +277,7 @@ You may take a look at [an example](#advanced-corosync-configuration).
 
 #### `ha_cluster_sbd_enabled`
 
-boolean, default: `no`
+boolean, default: `false`
 
 Defines whether to use SBD.
 
@@ -288,7 +288,7 @@ You may take a look at [an example](#configuring-cluster-to-use-sbd).
 list, default: `[]`
 
 List of name-value dictionaries specifying SBD options. Supported options are:
-`delay-start` (defaults to `no`), `startmode` (defaults to `always`),
+`delay-start` (defaults to `false`), `startmode` (defaults to `always`),
 `timeout-action` (defaults to `flush,reboot`) and `watchdog-timeout` (defaults
 to `5`). See `sbd(8)` man page, section 'Configuration via environment' for
 their description.
@@ -415,7 +415,7 @@ structure, default: no resource clones
 ```yaml
 ha_cluster_resource_clones:
   - resource_id: resource-to-be-cloned
-    promotable: yes
+    promotable: true
     id: custom-clone-id
     meta_attrs:
       - attrs:
@@ -431,7 +431,7 @@ This variable defines resource clones. The items are as follows:
   defined in
   [`ha_cluster_resource_primitives`](#ha_cluster_resource_primitives) or
   [`ha_cluster_resource_groups`](#ha_cluster_resource_groups).
-* `promotable` (optional) - Create a promotable clone, yes or no.
+* `promotable` (optional) - Create a promotable clone, `true` or `false`.
 * `id` (optional) - Custom ID of the clone. If no ID is specified, it will be
   generated. Warning will be emitted if this option is not supported by the
   cluster.
@@ -971,7 +971,7 @@ They are not guides or best practices for configuring a cluster.
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
-    ha_cluster_sbd_enabled: yes
+    ha_cluster_sbd_enabled: true
     ha_cluster_sbd_options:
       - name: delay-start
         value: 'no'
@@ -1072,7 +1072,7 @@ They are not guides or best practices for configuring a cluster.
     ha_cluster_resource_clones:
       - resource_id: simple-clone
       - resource_id: clone-with-options
-        promotable: yes
+        promotable: true
         id: custom-clone-id
         meta_attrs:
           - attrs:
@@ -1081,7 +1081,7 @@ They are not guides or best practices for configuring a cluster.
               - name: clone-node-max
                 value: '1'
       - resource_id: cloned-group
-        promotable: yes
+        promotable: true
     ha_cluster_resource_bundles:
       - id: bundle-with-resource
         resource-id: bundled-resource
@@ -1255,7 +1255,7 @@ They are not guides or best practices for configuring a cluster.
 ```yaml
 - hosts: node1 node2
   vars:
-    ha_cluster_cluster_present: no
+    ha_cluster_cluster_present: false
 
   roles:
     - linux-system-roles.ha_cluster

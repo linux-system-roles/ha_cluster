@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure {{ constraint_type }} constraint '{{
-      constraint.id | default(constraint_index)
+      constraint.id | d(constraint_index)
     }}'
   command:
     cmd: >
@@ -12,11 +12,11 @@
         {% for resource in set.resource_ids %}
           {{ resource | quote }}
         {% endfor %}
-        {% for option in set.options | default([]) %}
+        {% for option in set.options | d([]) %}
           {% if option.name == 'role' %}
             role={{
               __ha_cluster_pcs_cli_role[option.value | lower]
-              | default(option.value)
+              | d(option.value)
               | capitalize | quote
             }}
           {% else %}
@@ -26,17 +26,17 @@
       {% endfor %}
       {% if
         constraint_type == 'ticket'
-        or (constraint.id | default())
-        or (constraint.options | default())
+        or (constraint.id | d())
+        or (constraint.options | d())
       %}
         setoptions
         {% if constraint_type == 'ticket' %}
           ticket={{ constraint.ticket | quote }}
         {% endif %}
-        {% if constraint.id | default() %}
+        {% if constraint.id | d() %}
           id={{ constraint.id | quote }}
         {% endif %}
-        {% for option in constraint.options | default([]) %}
+        {% for option in constraint.options | d([]) %}
           {{ option.name | quote }}={{ option.value | quote }}
         {% endfor %}
       {% endif %}
@@ -44,5 +44,5 @@
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to
   # the cluster.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

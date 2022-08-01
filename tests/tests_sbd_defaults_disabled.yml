@@ -5,8 +5,8 @@
   vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: test-cluster
-    ha_cluster_start_on_boot: no
-    ha_cluster_sbd_enabled: yes
+    ha_cluster_start_on_boot: false
+    ha_cluster_sbd_enabled: true
 
   tasks:
     - block:

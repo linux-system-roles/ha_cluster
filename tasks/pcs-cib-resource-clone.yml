@@ -5,17 +5,17 @@
     msg: >
       Custom clone id '{{ resource_clone.id }}' is ignored
       for resource clone '{{ resource_clone.resource_id }}', please upgrade pcs
-  ignore_errors: yes  # noqa ignore-errors
+  ignore_errors: true  # noqa ignore-errors
   when:
     - resource_clone.id is defined
     - not (
         (
-          resource_clone.promotable | default(false)
+          resource_clone.promotable | d(false)
           and
           'pcmk.resource.promotable.custom-id' in __ha_cluster_pcs_capabilities
         )
         or (
-          not resource_clone.promotable | default(false)
+          not resource_clone.promotable | d(false)
           and
           'pcmk.resource.clone.custom-id' in __ha_cluster_pcs_capabilities
         )
@@ -28,7 +28,7 @@
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- resource
-      {% if resource_clone.promotable | default(false) %}
+      {% if resource_clone.promotable | d(false) %}
         promotable
       {% else %}
         clone
@@ -39,12 +39,12 @@
         resource_clone.id is defined
         and (
         (
-          resource_clone.promotable | default(false)
+          resource_clone.promotable | d(false)
           and
           'pcmk.resource.promotable.custom-id' in __ha_cluster_pcs_capabilities
         )
         or (
-          not resource_clone.promotable | default(false)
+          not resource_clone.promotable | d(false)
           and
           'pcmk.resource.clone.custom-id' in __ha_cluster_pcs_capabilities
         )
@@ -52,7 +52,7 @@
       %}
         {{ resource_clone.id | quote }}
       {% endif %}
-      {% if resource_clone.meta_attrs[0].attrs | default([]) %}
+      {% if resource_clone.meta_attrs[0].attrs | d([]) %}
         {% for attr in resource_clone.meta_attrs[0].attrs %}
           {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
@@ -61,5 +61,5 @@
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to
   # the cluster.
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

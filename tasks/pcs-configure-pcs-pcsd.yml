@@ -48,19 +48,19 @@
     owner: root
     group: root
     mode: 0644
-    trim_blocks: no
+    trim_blocks: false
 
 - name: Start pcsd with updated config files and configure it to start on boot
   service:
     name: pcsd
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Fetch pcs capabilities
   command:
     cmd: pcs --version --full
-  check_mode: no
-  changed_when: no  # this is a read-only command
+  check_mode: false
+  changed_when: false  # this is a read-only command
   register: __ha_cluster_pcs_version
 
 - name: Parse pcs capabilities

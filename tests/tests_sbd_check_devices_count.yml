@@ -4,7 +4,7 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_sbd_enabled: yes
+    ha_cluster_sbd_enabled: true
 
   tasks:
     - block:
@@ -37,7 +37,7 @@
                   ansible_failed_result.msg ==
                   'All nodes must have the same number of SBD devices specified'
                 }}"
-              run_once: yes
+              run_once: true
 
       when: ansible_play_hosts_all | length > 1
       always:

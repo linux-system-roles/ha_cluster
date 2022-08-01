@@ -19,6 +19,6 @@
 # Test systems may not have repositories available through subscriptions
 - name: Do not try to enable RHEL repositories
   set_fact:
-    ha_cluster_enable_repos: no
+    ha_cluster_enable_repos: false
   when:
     - ansible_distribution == 'RedHat'

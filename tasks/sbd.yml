@@ -5,15 +5,15 @@
         - name: Probe SBD devices
           command:
             cmd: sbd -d {{ item | quote }} dump
-          loop: "{{ ha_cluster.sbd_devices | default([]) }}"
+          loop: "{{ ha_cluster.sbd_devices | d([]) }}"
           register: __ha_cluster_check_sbd_devices_result
-          changed_when: no
+          changed_when: false
           # return_code == 0 means the disk is initialized already
           # return_code != 0 means the disk is not initialized yet
-          failed_when: no
+          failed_when: false
           # This command doesn't do any changes and so can safely be executed
           # even in check_mode.
-          check_mode: no
+          check_mode: false
 
         - name: Initialize SBD devices
           command:
@@ -21,7 +21,7 @@
             cmd: >
               pcs --force -- stonith sbd device setup
               device={{ item.item | quote }}
-              {% for option in ha_cluster_sbd_options | default([]) %}
+              {% for option in ha_cluster_sbd_options | d([]) %}
                 {% if option.name == 'watchdog-timeout' %}
                   watchdog-timeout={{ option.value | quote }}
                   msgwait-timeout={{ option.value * 2 }}
@@ -29,7 +29,7 @@
               {% endfor %}
           # The initialization is done only if a device has not been
           # initialized already. Therefore this task always makes a change.
-          changed_when: yes
+          changed_when: true
           loop: "{{ __ha_cluster_check_sbd_devices_result.results }}"
           when: item.rc != 0
       # Ideally, the block as a whole should run one node at a time. This does
@@ -50,12 +50,10 @@
         group: root
         mode: 0644
       vars:
-        options: "{{ ha_cluster_sbd_options | default([]) }}"
+        options: "{{ ha_cluster_sbd_options | d([]) }}"
         node_name: "{{ __ha_cluster_node_name }}"
-        node_watchdog: "{{
-            ha_cluster.sbd_watchdog | default('/dev/watchdog')
-          }}"
-        node_devices: "{{ ha_cluster.sbd_devices | default([]) }}"
+        node_watchdog: "{{ ha_cluster.sbd_watchdog | d('/dev/watchdog') }}"
+        node_devices: "{{ ha_cluster.sbd_devices | d([]) }}"
       register: __ha_cluster_distribute_sbd_config
 
   when: ha_cluster_sbd_enabled
@@ -69,10 +67,10 @@
       pcs --force
       {{
         (
-          ansible_facts.services['pacemaker.service']['state'] | default()
+          ansible_facts.services['pacemaker.service']['state'] | d()
           == 'running'
         ) | ternary('', '-f /var/lib/pacemaker/cib/cib.xml')
       }}
       -- property set
       stonith-watchdog-timeout={{ ha_cluster_sbd_enabled | ternary('', '0') }}
-  changed_when: yes
+  changed_when: true

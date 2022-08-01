@@ -403,7 +403,7 @@
               --xpath 'substring-after(/cib/@validate-with, "pacemaker-")'
               /var/lib/pacemaker/cib/cib.xml
           register: __test_cib_validate_with
-          changed_when: no
+          changed_when: false
 
         - name: Discover role names
           set_fact:
@@ -422,7 +422,7 @@
               command:
                 cmd: pcs constraint location --full
               register: __test_pcs_location_config
-              changed_when: no
+              changed_when: false
 
             - name: Print real location constraints configuration
               debug:
@@ -543,7 +543,7 @@
               command:
                 cmd: pcs constraint colocation --full
               register: __test_pcs_colocation_config
-              changed_when: no
+              changed_when: false
 
             - name: Print real colocation constraints configuration
               debug:
@@ -583,7 +583,7 @@
               command:
                 cmd: pcs constraint order --full
               register: __test_pcs_order_config
-              changed_when: no
+              changed_when: false
 
             - name: Print real order constraints configuration
               debug:
@@ -615,7 +615,7 @@
               command:
                 cmd: pcs constraint ticket --full
               register: __test_pcs_ticket_config
-              changed_when: no
+              changed_when: false
 
             - name: Print real ticket constraints configuration
               debug:

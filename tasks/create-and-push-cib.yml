@@ -12,7 +12,7 @@
     state: file
     suffix: _ha_cluster_original_cib_xml
   register: __ha_cluster_tempfile_original_cib_xml
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
 
 - name: Create a tempfile for new CIB
@@ -20,15 +20,15 @@
     state: file
     suffix: _ha_cluster_cib_xml
   register: __ha_cluster_tempfile_cib_xml
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
 
 - name: Fetch CIB configuration
   command:
     cmd: cibadmin --query
   register: __ha_cluster_fetch_cib
-  check_mode: no
-  changed_when: no  # this is a read-only command
+  check_mode: false
+  changed_when: false  # this is a read-only command
 
 - name: Write CIB configuration
   copy:
@@ -40,7 +40,7 @@
   loop:
     - "{{ __ha_cluster_tempfile_cib_xml.path }}"
     - "{{ __ha_cluster_tempfile_original_cib_xml.path }}"
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
 
 # Starting with an empty CIB would remove all nodes and other parts of CIB
@@ -70,7 +70,7 @@
       )]'
   environment:
     CIB_file: "{{ __ha_cluster_tempfile_cib_xml.path }}"
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
 
 
@@ -84,7 +84,7 @@
   # ha_cluster_cluster_properties
   vars:
     properties_set: "{{ ha_cluster_cluster_properties[0] }}"
-  when: ha_cluster_cluster_properties[0].attrs | default([])
+  when: ha_cluster_cluster_properties[0].attrs | d([])
 
 - block:
     ## Resources
@@ -131,7 +131,7 @@
 
     - name: Configure resource colocation constraints
       include_tasks: pcs-cib-constraint-colocation.yml
-      when: not constraint.resource_sets | default()
+      when: not constraint.resource_sets | d()
       loop: "{{ ha_cluster_constraints_colocation }}"
       loop_control:
         index_var: constraint_index
@@ -141,7 +141,7 @@
       include_tasks: pcs-cib-constraint-set.yml
       vars:
         constraint_type: colocation
-      when: constraint.resource_sets | default()
+      when: constraint.resource_sets | d()
       loop: "{{ ha_cluster_constraints_colocation }}"
       loop_control:
         index_var: constraint_index
@@ -149,7 +149,7 @@
 
     - name: Configure resource order constraints
       include_tasks: pcs-cib-constraint-order.yml
-      when: not constraint.resource_sets | default()
+      when: not constraint.resource_sets | d()
       loop: "{{ ha_cluster_constraints_order }}"
       loop_control:
         index_var: constraint_index
@@ -159,7 +159,7 @@
       include_tasks: pcs-cib-constraint-set.yml
       vars:
         constraint_type: order
-      when: constraint.resource_sets | default()
+      when: constraint.resource_sets | d()
       loop: "{{ ha_cluster_constraints_order }}"
       loop_control:
         index_var: constraint_index
@@ -167,7 +167,7 @@
 
     - name: Configure resource ticket constraints
       include_tasks: pcs-cib-constraint-ticket.yml
-      when: not constraint.resource_sets | default()
+      when: not constraint.resource_sets | d()
       loop: "{{ ha_cluster_constraints_ticket }}"
       loop_control:
         index_var: constraint_index
@@ -177,7 +177,7 @@
       include_tasks: pcs-cib-constraint-set.yml
       vars:
         constraint_type: ticket
-      when: constraint.resource_sets | default()
+      when: constraint.resource_sets | d()
       loop: "{{ ha_cluster_constraints_ticket }}"
       loop_control:
         index_var: constraint_index
@@ -201,7 +201,7 @@
     state: file
     suffix: _ha_cluster_cib_diff
   register: __ha_cluster_tempfile_cib_diff
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
 
 - name: Compare new and original CIB
@@ -211,7 +211,7 @@
       --original {{ __ha_cluster_tempfile_original_cib_xml.path }}
       --new {{ __ha_cluster_tempfile_cib_xml.path }}
   register: __ha_cluster_cib_diff
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
   failed_when:
     - __ha_cluster_cib_diff.rc != 0  # success, CIBs are the same
@@ -224,7 +224,7 @@
     owner: root
     group: root
     mode: 0600
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode
   when: __ha_cluster_cib_diff.rc == 1
 
@@ -233,7 +233,7 @@
     cmd: >
       cibadmin --verbose --patch
       --xml-file {{ __ha_cluster_tempfile_cib_diff.path | quote }}
-  run_once: yes
+  run_once: true
   when: __ha_cluster_cib_diff.rc == 1
 
 - name: Remove CIB tempfiles
@@ -244,5 +244,5 @@
     - "{{ __ha_cluster_tempfile_cib_xml }}"
     - "{{ __ha_cluster_tempfile_original_cib_xml }}"
     - "{{ __ha_cluster_tempfile_cib_diff }}"
-  check_mode: no
+  check_mode: false
   changed_when: not ansible_check_mode

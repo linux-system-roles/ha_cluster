@@ -11,6 +11,6 @@ rules:
     max-spaces-inside: 1
     level: error
   truthy:
-    allowed-values: ["yes", "no", "true", "false"]
+    allowed-values: ["true", "false"]
     level: error
   document-start: disable

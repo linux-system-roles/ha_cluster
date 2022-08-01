@@ -4,10 +4,10 @@
   command:
     cmd: dnf repolist
     # See the comment bellow.
-    warn: no
+    warn: false
   register: __ha_cluster_repolist
-  changed_when: no
-  check_mode: no
+  changed_when: false
+  check_mode: false
 
 - name: Enable CentOS repositories
   command:
@@ -23,6 +23,6 @@
     #
     # Using dnf, similar differences must also be handled. But at least the
     # approach and __ha_cluster_repos structure is the same as for RHEL.
-    warn: no
+    warn: false
   loop: "{{ __ha_cluster_repos }}"
   when: item.name not in __ha_cluster_repolist.stdout

@@ -8,7 +8,7 @@
 ---
 - name: Load softdog module for SBD to have at least one watchdog
   command: modprobe softdog
-  changed_when: yes
+  changed_when: true
 
 - name: Create backing files for SBD devices
   tempfile:
@@ -19,10 +19,10 @@
 - name: Initialize backing files for SBD devices
   command:
     cmd: dd if=/dev/zero of={{ __test_sbd_tmpfile.path | quote }} bs=1M count=10
-  changed_when: yes
+  changed_when: true
 
 - name: Mount SBD devices
   command:
     cmd: losetup --show --find {{ __test_sbd_tmpfile.path | quote }}
   register: __test_sbd_mount
-  changed_when: yes
+  changed_when: true

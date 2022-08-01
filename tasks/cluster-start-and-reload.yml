@@ -34,8 +34,8 @@
         __ha_cluster_distribute_corosync_conf.changed
         or __ha_cluster_distribute_corosync_authkey.changed
         or __ha_cluster_distribute_pacemaker_authkey.changed
-        or (__ha_cluster_sbd_service_enable_disable.changed | default(false))
-        or (__ha_cluster_distribute_sbd_config.changed | default(false))
+        or (__ha_cluster_sbd_service_enable_disable.changed | d(false))
+        or (__ha_cluster_distribute_sbd_config.changed | d(false))
     - >
         item != 'corosync-qdevice'
         or 'corosync-qdevice.service' in ansible_facts.services
@@ -55,7 +55,7 @@
 - name: Reload corosync configuration
   command:
     cmd: corosync-cfgtool -R
-  run_once: yes
+  run_once: true
   when: not ansible_check_mode
 
 - name: Start corosync-qdevice
@@ -73,13 +73,13 @@
 - name: Wait for the cluster to fully start and form membership
   command:
     cmd: pcs cluster start --all --wait
-  run_once: yes
+  run_once: true
   # There is no point in waiting in check mode as there is nothing to wait for,
   # no daemons are actually starting.
   when: not ansible_check_mode
   # This is just waiting for cluster to finish starting, no change in
   # configuration / state occurs as the services were started by tasks above.
-  changed_when: no
+  changed_when: false
 
 
 # Purge removed nodes from Pacemaker's caches
@@ -96,19 +96,19 @@
     # removed from a cluster after corosync / pacemaker restart. Therefore,
     # crm_node is no help when we want to list such nodes.
   register: __ha_cluster_list_pacemaker_nodes
-  run_once: yes
+  run_once: true
   # This cannot be run in the check mode as it requires cluster to be started
   # and its configuration reloaded. Check mode does not start the cluster nor
   # does it reload its configuration, it only shows the cluster would be
   # started.
   when: not ansible_check_mode
   # This only lists a part of cluster configuration.
-  changed_when: no
+  changed_when: false
 
 - name: Purge removed nodes from pacemaker's cache
   command:
     cmd: pcs -- cluster node clear {{ item | quote }}
-  run_once: yes
+  run_once: true
   loop: "{{ __ha_cluster_list_pacemaker_nodes.stdout_lines }}"
   # This cannot be run in the check mode as it requires cluster to be started.
   # Check mode does not start the cluster, it only shows the cluster would be

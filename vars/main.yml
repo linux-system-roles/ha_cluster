@@ -29,7 +29,7 @@ __ha_cluster_services:
   - pacemaker
 
 # TODO: implement qdevice detection once qdevice is supported by the role
-__ha_cluster_qdevice_in_use: no
+__ha_cluster_qdevice_in_use: false
 
 # ansible_facts required by the role
 __ha_cluster_required_facts:
