@@ -981,6 +981,11 @@ They are not guides or best practices for configuring a cluster.
         value: 'flush,reboot'
       - name: watchdog-timeout
         value: 5
+    #  if you need to set stonith-watchdog-timeout property as well:
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: stonith-watchdog-timeout
+            value: 10
 
   roles:
     - linux-system-roles.ha_cluster
