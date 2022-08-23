@@ -381,6 +381,8 @@
         options:
           - name: loss-policy
             value: fence
+    # test to set true to manage selinux to see it's ignored.
+    ha_cluster_manage_selinux: true
 
   tasks:
     - block:
@@ -392,6 +394,7 @@
         - name: Run HA Cluster role
           include_role:
             name: linux-system-roles.ha_cluster
+            public: true
 
         - name: Fetch cluster versions of cluster components
           include_tasks: tasks/fetch_versions.yml
@@ -646,6 +649,9 @@
               - '  Resource Sets:'
               - '    set d1 (id:ticket_set_d1_set) setoptions ticket=ticket-set1 (id:ticket_set_d1)'
               - '    set d1 d2 (id:ct-set_set) set d3 d4 require-all=true sequential=false (id:ct-set_set-1) setoptions loss-policy=fence ticket=ticket-set1 (id:ct-set)'
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
 
       # yamllint enable rule:line-length
 

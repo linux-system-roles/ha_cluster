@@ -41,6 +41,7 @@
         - name: Run HA Cluster role
           include_role:
             name: linux-system-roles.ha_cluster
+            public: true
 
         - name: Fetch cluster versions of cluster components
           include_tasks: tasks/fetch_versions.yml
@@ -79,5 +80,8 @@
 
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
 
       tags: tests::verify

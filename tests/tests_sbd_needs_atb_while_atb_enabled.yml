@@ -30,6 +30,7 @@
         - name: Run the role
           include_role:
             name: linux-system-roles.ha_cluster
+            public: true
 
         - name: Fetch quorum configuration
           command:
@@ -45,6 +46,9 @@
             __test_quorum_lines: "{{
                 __test_quorum_config.stdout_lines | map('trim') | list
               }}"
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
 
       when: ansible_play_hosts_all | length is even
       always:

@@ -7,6 +7,8 @@
     ha_cluster_cluster_name: test-cluster
     ha_cluster_cluster_properties:
       - attrs:
+    # test to set true to manage firewall only
+    ha_cluster_manage_firewall: true
 
   tasks:
     - block:
@@ -18,6 +20,7 @@
         - name: Run HA Cluster role
           include_role:
             name: linux-system-roles.ha_cluster
+            public: true
 
         - name: Fetch cluster properties configuration from the cluster
           command:
@@ -28,5 +31,8 @@
         - name: Debug cluster properties configuration
           debug:
             var: __test_pcs_property_config
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
 
       tags: tests::verify

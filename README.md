@@ -28,7 +28,42 @@ An Ansible role for managing High Availability Clustering.
 
 boolean, default: `true`
 
-RHEL and CentOS only, enable repositories contaning needed packages
+RHEL and CentOS only, enable repositories containing needed packages
+
+#### `ha_cluster_manage_firewall`
+
+boolean, default: false
+
+Manage the `firewall high-availability service` as well as the `fence-virt port`.
+When `ha_cluster_manage_firewall` is `true`, the `firewall high-availability
+service` and `fence-virt port` are enabled.
+When `ha_cluster_manage_firewall` is `false`, the `ha_cluster role` does not
+manage the firewall.
+
+NOTE: `ha_cluster_manage_firewall` is limited to *adding* ports.
+It cannot be used for *removing* ports.
+If you want to remove ports, you will need to use the firewall system
+role directly.
+
+#### `ha_cluster_manage_selinux`
+
+boolean, default: false
+
+Manage the ports belonging to the `firewall high-availability service` using
+the selinux role.
+When `ha_cluster_manage_selinux` is `true`, the ports belonging to the
+`firewall high-availability service` are associated with the selinux port type
+`cluster_port_t`.
+When `ha_cluster_manage_selinux` is `false`, the `ha_cluster role` does not
+manage the selinux.
+
+NOTE: The firewall configuration is prerequisite for managing selinux. If the
+firewall is not installed, managing selinux policy is skipped.
+
+NOTE: `ha_cluster_manage_selinux` is limited to *adding* policy.
+It cannot be used for *removing* policy.
+If you want to remove policy, you will need to use the selinux system
+role directly.
 
 #### `ha_cluster_cluster_present`
 
@@ -58,7 +93,7 @@ automatically by the role, for example custom resource agents.
 
 It is possible to specify fence agents here as well. However,
 `ha_cluster_fence_agent_packages` is preferred for that, so that its default
-value is overriden.
+value is overridden.
 
 #### `ha_cluster_hacluster_password`
 
@@ -870,7 +905,7 @@ all:
 
 #### SBD watchdog and devices
 When using SBD, you may optionally configure watchdog and SBD devices for each
-node in inventory. Even though all SBD devices must be shared to and accesible
+node in inventory. Even though all SBD devices must be shared to and accessible
 from all nodes, each node may use different names for the devices. Watchdog may
 be different for each node as well. See also [SBD
 variables](#ha_cluster_sbd_enabled).
