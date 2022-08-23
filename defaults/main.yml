@@ -50,3 +50,11 @@ ha_cluster_constraints_location: []
 ha_cluster_constraints_colocation: []
 ha_cluster_constraints_order: []
 ha_cluster_constraints_ticket: []
+
+# If true, manage the high-availability service and the fence-virt port
+# using the firewall role.
+ha_cluster_manage_firewall: false
+
+# If true, manage the ports belonging to the high-availability service
+# and the fence-virt using the selinux role.
+ha_cluster_manage_selinux: false
