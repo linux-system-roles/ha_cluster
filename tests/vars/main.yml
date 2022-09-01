@@ -1,2 +1,1 @@
-ha_cluster_hacluster_password: "1asfbJHV53vJH"
 __test_fence_virt_supported: "{{ ansible_architecture == 'x86_64' }}"
