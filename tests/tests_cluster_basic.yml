@@ -52,6 +52,7 @@
           stat:
             path: /etc/cluster/fence_xvm.key
           register: stat_fence_xvm_key
+          when: __test_fence_virt_supported
 
         - name: Stat pcsd TLS certificate
           stat:
@@ -68,7 +69,10 @@
             that:
               - stat_corosync_key.stat.exists
               - stat_pacemaker_key.stat.exists
-              - stat_fence_xvm_key.stat.exists
+              - (
+                  not __test_fence_virt_supported
+                  or stat_fence_xvm_key.stat.exists
+                )
               - stat_pcsd_cert.stat.exists
               - stat_pcsd_key.stat.exists
 
