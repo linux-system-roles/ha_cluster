@@ -31,6 +31,7 @@
 
     - name: Enable fence-virt port in firewalld - all options
       when:
+        - ansible_architecture == 'x86_64'
         - (
             'fence-virt' in ha_cluster_fence_agent_packages
             or

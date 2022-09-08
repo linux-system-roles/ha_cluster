@@ -5,8 +5,6 @@
   vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: test-cluster
-    ha_cluster_fence_agent_packages:
-      - fence-virt
     # Make cluster not try starting any resources. Due to missing resource
     # daemons, container services and images, the cluster would get stuck
     # otherwise.
@@ -19,15 +17,15 @@
           - name: stop-all-resources
             value: "true"
     ha_cluster_resource_primitives:
-      - id: xvm-no-attrs
-        agent: stonith:fence_xvm
-      - id: xvm-empty-attrs1
-        agent: 'stonith:fence_xvm'
+      - id: fence-no-attrs
+        agent: 'stonith:fence_ipmilan'
+      - id: fence-empty-attrs1
+        agent: 'stonith:fence_ipmilan'
         instance_attrs:
         meta_attrs:
         operations:
-      - id: xvm-empty-attrs2
-        agent: 'stonith:fence_xvm'
+      - id: fence-empty-attrs2
+        agent: 'stonith:fence_ipmilan'
         instance_attrs:
           - attrs:
         meta_attrs:
@@ -35,14 +33,14 @@
           # Pcs requires action and at least one option to be defined for an
           # operation. Therefore, there are no tests for partially defined
           # operations.
-      - id: xvm-with-attrs
-        agent: 'stonith:fence_xvm'
+      - id: fence-with-attrs
+        agent: 'stonith:fence_ipmilan'
         instance_attrs:
           - attrs:
               - name: pcmk_host_list
                 value: node1 node2
-              - name: delay
-                value: 1
+              - name: username
+                value: login
         meta_attrs:
           - attrs:
               - name: target-role
@@ -297,17 +295,17 @@
             - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_expected_lines:
-              - ' Resource: xvm-no-attrs (class=stonith type=fence_xvm)'
-              - '  Operations: monitor interval=60s (xvm-no-attrs-monitor-interval-60s)'
-              - ' Resource: xvm-empty-attrs1 (class=stonith type=fence_xvm)'
-              - '  Operations: monitor interval=60s (xvm-empty-attrs1-monitor-interval-60s)'
-              - ' Resource: xvm-empty-attrs2 (class=stonith type=fence_xvm)'
-              - '  Operations: monitor interval=60s (xvm-empty-attrs2-monitor-interval-60s)'
-              - ' Resource: xvm-with-attrs (class=stonith type=fence_xvm)'
-              - '  Attributes: delay=1 pcmk_host_list="node1 node2"'
+              - ' Resource: fence-no-attrs (class=stonith type=fence_ipmilan)'
+              - '  Operations: monitor interval=60s (fence-no-attrs-monitor-interval-60s)'
+              - ' Resource: fence-empty-attrs1 (class=stonith type=fence_ipmilan)'
+              - '  Operations: monitor interval=60s (fence-empty-attrs1-monitor-interval-60s)'
+              - ' Resource: fence-empty-attrs2 (class=stonith type=fence_ipmilan)'
+              - '  Operations: monitor interval=60s (fence-empty-attrs2-monitor-interval-60s)'
+              - ' Resource: fence-with-attrs (class=stonith type=fence_ipmilan)'
+              - '  Attributes: pcmk_host_list="node1 node2" username=login'
               - '  Meta Attrs: an-attr="a value" target-role=Stopped'
-              - '  Operations: monitor interval=26 timeout=13 (xvm-with-attrs-monitor-interval-26)'
-              - '              monitor interval=28s timeout=14s (xvm-with-attrs-monitor-interval-28s)'
+              - '  Operations: monitor interval=26 timeout=13 (fence-with-attrs-monitor-interval-26)'
+              - '              monitor interval=28s timeout=14s (fence-with-attrs-monitor-interval-28s)'
 
         - block:
             - name: Fetch stonith configuration from the cluster
@@ -335,16 +333,16 @@
                 {
                     "primitives": [
                         {
-                            "id": "xvm-no-attrs",
+                            "id": "fence-no-attrs",
                             "agent_name": {
                                 "standard": "stonith",
                                 "provider": null,
-                                "type": "fence_xvm"
+                                "type": "fence_ipmilan"
                             },
                             "description": null,
                             "operations": [
                                 {
-                                    "id": "xvm-no-attrs-monitor-interval-60s",
+                                    "id": "fence-no-attrs-monitor-interval-60s",
                                     "name": "monitor",
                                     "interval": "60s",
                                     "description": null,
@@ -364,16 +362,16 @@
                             "utilization": []
                         },
                         {
-                            "id": "xvm-empty-attrs1",
+                            "id": "fence-empty-attrs1",
                             "agent_name": {
                                 "standard": "stonith",
                                 "provider": null,
-                                "type": "fence_xvm"
+                                "type": "fence_ipmilan"
                             },
                             "description": null,
                             "operations": [
                                 {
-                                    "id": "xvm-empty-attrs1-monitor-interval-60s",
+                                    "id": "fence-empty-attrs1-monitor-interval-60s",
                                     "name": "monitor",
                                     "interval": "60s",
                                     "description": null,
@@ -393,16 +391,16 @@
                             "utilization": []
                         },
                         {
-                            "id": "xvm-empty-attrs2",
+                            "id": "fence-empty-attrs2",
                             "agent_name": {
                                 "standard": "stonith",
                                 "provider": null,
-                                "type": "fence_xvm"
+                                "type": "fence_ipmilan"
                             },
                             "description": null,
                             "operations": [
                                 {
-                                    "id": "xvm-empty-attrs2-monitor-interval-60s",
+                                    "id": "fence-empty-attrs2-monitor-interval-60s",
                                     "name": "monitor",
                                     "interval": "60s",
                                     "description": null,
@@ -422,16 +420,16 @@
                             "utilization": []
                         },
                         {
-                            "id": "xvm-with-attrs",
+                            "id": "fence-with-attrs",
                             "agent_name": {
                                 "standard": "stonith",
                                 "provider": null,
-                                "type": "fence_xvm"
+                                "type": "fence_ipmilan"
                             },
                             "description": null,
                             "operations": [
                                 {
-                                    "id": "xvm-with-attrs-monitor-interval-26",
+                                    "id": "fence-with-attrs-monitor-interval-26",
                                     "name": "monitor",
                                     "interval": "26",
                                     "description": null,
@@ -446,7 +444,7 @@
                                     "instance_attributes": []
                                 },
                                 {
-                                    "id": "xvm-with-attrs-monitor-interval-28s",
+                                    "id": "fence-with-attrs-monitor-interval-28s",
                                     "name": "monitor",
                                     "interval": "28s",
                                     "description": null,
@@ -463,17 +461,17 @@
                             ],
                             "meta_attributes": [
                                 {
-                                    "id": "xvm-with-attrs-meta_attributes",
+                                    "id": "fence-with-attrs-meta_attributes",
                                     "options": {},
                                     "rule": null,
                                     "nvpairs": [
                                         {
-                                            "id": "xvm-with-attrs-meta_attributes-an-attr",
+                                            "id": "fence-with-attrs-meta_attributes-an-attr",
                                             "name": "an-attr",
                                             "value": "a value"
                                         },
                                         {
-                                            "id": "xvm-with-attrs-meta_attributes-target-role",
+                                            "id": "fence-with-attrs-meta_attributes-target-role",
                                             "name": "target-role",
                                             "value": "Stopped"
                                         }
@@ -482,19 +480,19 @@
                             ],
                             "instance_attributes": [
                                 {
-                                    "id": "xvm-with-attrs-instance_attributes",
+                                    "id": "fence-with-attrs-instance_attributes",
                                     "options": {},
                                     "rule": null,
                                     "nvpairs": [
                                         {
-                                            "id": "xvm-with-attrs-instance_attributes-delay",
-                                            "name": "delay",
-                                            "value": "1"
-                                        },
-                                        {
-                                            "id": "xvm-with-attrs-instance_attributes-pcmk_host_list",
+                                            "id": "fence-with-attrs-instance_attributes-pcmk_host_list",
                                             "name": "pcmk_host_list",
                                             "value": "node1 node2"
+                                        },
+                                        {
+                                            "id": "fence-with-attrs-instance_attributes-username",
+                                            "name": "username",
+                                            "value": "login"
                                         }
                                     ]
                                 }

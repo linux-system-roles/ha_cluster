@@ -57,6 +57,7 @@
             owner: root
             group: root
             mode: 0400
+          when: __test_fence_virt_supported
 
         - name: Ensure pcsd TLS certificate and key exist
           block:
@@ -96,6 +97,7 @@
             checksum_algorithm: sha1
           register: stat_fence_xvm_key_expected
           delegate_to: localhost
+          when: __test_fence_virt_supported
 
         - name: Get pcsd TLS private key hash
           stat:
@@ -132,6 +134,7 @@
             path: /etc/cluster/fence_xvm.key
             checksum_algorithm: sha1
           register: stat_fence_xvm_key
+          when: __test_fence_virt_supported
 
         - name: Stat pcsd TLS certificate
           stat:
@@ -150,7 +153,10 @@
             that:
               - stat_corosync_key.stat.exists
               - stat_pacemaker_key.stat.exists
-              - stat_fence_xvm_key.stat.exists
+              - (
+                  not __test_fence_virt_supported
+                  or stat_fence_xvm_key.stat.exists
+                )
               - stat_pcsd_cert.stat.exists
               - stat_pcsd_key.stat.exists
 
@@ -174,6 +180,7 @@
               - >
                 stat_fence_xvm_key.stat.checksum
                 == stat_fence_xvm_key_expected.stat.checksum
+          when: __test_fence_virt_supported
 
         - name: Check pcsd TLS certificate content
           assert:
