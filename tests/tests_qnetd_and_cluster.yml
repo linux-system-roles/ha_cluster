@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure a cluster and a qnetd cannot be configured on the same host
+  hosts: all
+  gather_facts: false
+  vars:
+    ha_cluster_qnetd:
+      present: true
+  tasks:
+    - block:
+        - name: Run the role
+          include_role:
+            name: linux-system-roles.ha_cluster
+      rescue:
+        - name: Check errors
+          assert:
+            that:
+              - "{{
+                  'Qnetd cannot be configured on a cluster node'
+                  in ansible_failed_result.msg
+                }}"
+
+      tags: tests::verify

@@ -21,6 +21,15 @@
           | map('default', [], true)
           | map('length') | unique | length > 1
       run_once: true
+
+    - name: Fail if configuring qnetd on a cluster node
+      fail:
+        msg: >
+          Qnetd cannot be configured on a cluster node -
+          'ha_cluster_cluster_present' and 'ha_cluster_qnetd.present' cannot
+          be both set to true
+      when: ha_cluster_qnetd.present | d(false)
+
   when: ha_cluster_cluster_present
 
 - name: Discover cluster node names

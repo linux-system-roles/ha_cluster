@@ -89,3 +89,6 @@
         path: /etc/cluster/fence_xvm.key
         state: absent
   when: not ha_cluster_cluster_present
+
+- name: Configure qnetd
+  include_tasks: pcs-qnetd.yml
