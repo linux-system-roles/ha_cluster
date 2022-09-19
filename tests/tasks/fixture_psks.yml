@@ -42,6 +42,8 @@
   vars:
     __test_pcsd_private_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.key"
     __test_pcsd_public_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.crt"
-    __test_corosync_key_path: "{{ __ha_cluster_work_dir.path }}/corosync-authkey"
-    __test_pacemaker_key_path: "{{ __ha_cluster_work_dir.path }}/pacemaker-authkey"
+    __test_corosync_key_path: >-
+      {{ __ha_cluster_work_dir.path }}/corosync-authkey
+    __test_pacemaker_key_path: >-
+      {{ __ha_cluster_work_dir.path }}/pacemaker-authkey
     __test_fence_xvm_key_path: "{{ __ha_cluster_work_dir.path }}/fence_xvm.key"
