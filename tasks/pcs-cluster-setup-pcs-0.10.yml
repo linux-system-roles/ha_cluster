@@ -76,3 +76,35 @@
   # resulting corosync.conf to cluster nodes.
   check_mode: false
   changed_when: not ansible_check_mode
+
+- name: Add qdevice configuration to corosync.conf
+  command:
+    cmd: >
+      pcs quorum device add
+      --corosync_conf {{ __ha_cluster_tempfile_corosync_conf.path | quote }}
+      --
+      {% for option in ha_cluster_quorum.device.generic_options | d([]) %}
+        {{ option.name | quote }}={{ option.value | quote }}
+      {% endfor %}
+      model
+      {{ ha_cluster_quorum.device.model | d() | quote }}
+      {% for option in ha_cluster_quorum.device.model_options | d([]) %}
+        {% if option.name != 'pcs-address' %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endif %}
+      {% endfor %}
+      {% if ha_cluster_quorum.device.heuristics_options | d([]) %}
+        heuristics
+        {% for option in ha_cluster_quorum.device.heuristics_options %}
+          {{ option.name | quote }}={{ option.value | quote }}
+        {% endfor %}
+      {% endif %}
+  run_once: true
+  when:
+    - __ha_cluster_qdevice_in_use
+  # We always need to create corosync.conf file to see whether it's the same as
+  # what is already present on the cluster nodes. However, we don't want to
+  # report it as a change since the only thing which matters is copying the
+  # resulting corosync.conf to cluster nodes.
+  check_mode: false
+  changed_when: not ansible_check_mode

@@ -40,6 +40,10 @@
         name: "{{
           __ha_cluster_fullstack_node_packages
           +
+          __ha_cluster_qdevice_in_use | ternary(
+            __ha_cluster_qdevice_node_packages, []
+          )
+          +
           ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
           +
           ha_cluster_fence_agent_packages
@@ -60,16 +64,22 @@
     - name: Configure SBD
       include_tasks: sbd.yml
 
-    - name: Configure cluster nodes
-      include_tasks: cluster-setup.yml
-
-    - name: Enable or disable cluster services on boot
-      include_tasks: cluster-enable-disable.yml
+    - name: Configure corosync
+      include_tasks: cluster-setup-corosync.yml
 
     - name: Pcs auth
       # Auth is run after corosync.conf has been distributed so that pcs
       # distributes pcs tokens in the cluster automatically.
       include_tasks: pcs-auth.yml
+
+    - name: Distribute cluster shared keys
+      # This is run after pcs auth, so that the nodes are authenticated against
+      # a qnetd host, if configured, and can connect to the qnetd host's pcsd
+      # to get qnetd certificates.
+      include_tasks: cluster-setup-keys.yml
+
+    - name: Enable or disable cluster services on boot
+      include_tasks: cluster-enable-disable.yml
 
     - name: Start the cluster and reload corosync.conf
       include_tasks: cluster-start-and-reload.yml

@@ -7,6 +7,9 @@
       {% for node in ansible_play_hosts %}
         {{ hostvars[node].__ha_cluster_node_name | quote }}
       {% endfor %}
+      {% if __ha_cluster_qdevice_model == "net" and __ha_cluster_qdevice_host %}
+        {{ __ha_cluster_qdevice_host | quote }}
+      {% endif %}
   register: __ha_cluster_pcs_auth_status
   check_mode: false
   # rc == 0 means all nodes are authenticated

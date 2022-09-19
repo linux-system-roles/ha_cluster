@@ -1,0 +1,91 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Test qdevice - minimal configuration
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_quorum:
+      device:
+        model: net
+        model_options:
+          - name: host
+            value: "{{ ansible_play_hosts[0] }}"
+          - name: algorithm
+            value: lms
+
+  tasks:
+    - block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Set up test environment for qnetd / qdevice
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup_qnetd.yml
+
+        - name: Back up qnetd
+          include_tasks: tasks/qnetd_backup_restore.yml
+          vars:
+            action: backup
+
+        - name: Run the role
+          include_role:
+            name: linux-system-roles.ha_cluster
+
+        # The role removed qnetd configuration
+        - name: Restore qnetd
+          include_tasks: tasks/qnetd_backup_restore.yml
+          vars:
+            action: restore
+
+        - name: Get services status
+          service_facts:
+
+        - name: Check qdevice status
+          assert:
+            that:
+              - ansible_facts.services["corosync-qdevice.service"].status
+                  == "enabled"
+              - ansible_facts.services["corosync-qdevice.service"].state
+                  == "running"
+
+        - name: Check corosync
+          include_tasks: tasks/assert_corosync_config.yml
+          vars:
+            __test_expected_lines:
+              - 'totem {'
+              - '    version: 2'
+              - '    cluster_name: {{ ha_cluster_cluster_name }}'
+              - '    transport: knet'
+              - '    crypto_cipher: aes256'
+              - '    crypto_hash: sha256'
+              - '}'
+              - 'nodelist {'
+              - '}'
+              - "quorum {"
+              - "    provider: corosync_votequorum"
+              - "    device {"
+              - "        model: net"
+              - "        net {"
+              - "            algorithm: lms"
+              - "            host: {{ ansible_play_hosts[0] }}"
+              - "        }"
+              - "    }"
+              - "}"
+              - 'logging {'
+              - '    to_logfile: yes'
+              - '    logfile: /var/log/cluster/corosync.log'
+              - '    to_syslog: yes'
+              - '    timestamp: on'
+              - '}'
+
+        - name: Check cluster status
+          include_tasks: tasks/assert_cluster_running.yml
+
+        - name: Check qdevice status
+          include_tasks: tasks/assert_qdevice_in_cluster.yml
+
+      tags: tests::verify

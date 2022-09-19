@@ -36,6 +36,7 @@
         or __ha_cluster_distribute_pacemaker_authkey.changed
         or (__ha_cluster_sbd_service_enable_disable.changed | d(false))
         or (__ha_cluster_distribute_sbd_config.changed | d(false))
+        or (__ha_cluster_qdevice_certs.changed | d(false))
     - >
         item != 'corosync-qdevice'
         or 'corosync-qdevice.service' in ansible_facts.services

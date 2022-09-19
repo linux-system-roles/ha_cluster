@@ -1,0 +1,25 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Get quorum status
+  command:
+    cmd: pcs -- quorum status
+  register: __test_quorum_status
+  changed_when: false
+
+- name: Assert qdevice in quorum status
+  assert:
+    that:
+      - "'Qdevice' in __test_quorum_status.stdout"
+
+- name: Get quorum device status
+  command:
+    cmd: pcs -- quorum device status
+  register: __test_quorum_device_status
+  changed_when: false
+
+# yamllint disable rule:line-length
+- name: Assert qdevice connected
+  assert:
+    that:
+      - "'State:\t\t\tConnected' in __test_quorum_device_status.stdout"  # noqa no-tabs
+# yamllint enable rule:line-length

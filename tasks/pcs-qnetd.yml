@@ -19,8 +19,7 @@
 
     - name: Setup qnetd
       command:
-        cmd: >
-          pcs --start -- qdevice setup model net
+        cmd: pcs --start -- qdevice setup model net
       register: __ha_cluster_pcs_qnetd_setup
       check_mode: false
       changed_when: __ha_cluster_pcs_qnetd_setup.rc == 0
