@@ -11,13 +11,6 @@
         state: present
       when: "'openssl' not in ansible_facts.packages"
 
-    - name: Ensure a directory for temporary files exists
-      file:
-        path: "{{ playbook_dir }}/tmp"
-        state: directory
-        mode: 0700
-
-
     - name: Generate a self signed pcsd cert and the pcsd key
       command: >-
         openssl req -x509 -newkey rsa:2048 -nodes
@@ -47,8 +40,8 @@
   delegate_to: localhost
   run_once: true
   vars:
-    __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
-    __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
-    __test_corosync_key_path: "{{ playbook_dir }}/tmp/corosync-authkey"
-    __test_pacemaker_key_path: "{{ playbook_dir }}/tmp/pacemaker-authkey"
-    __test_fence_xvm_key_path: "{{ playbook_dir }}/tmp/fence_xvm.key"
+    __test_pcsd_private_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.key"
+    __test_pcsd_public_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.crt"
+    __test_corosync_key_path: "{{ __ha_cluster_work_dir.path }}/corosync-authkey"
+    __test_pacemaker_key_path: "{{ __ha_cluster_work_dir.path }}/pacemaker-authkey"
+    __test_fence_xvm_key_path: "{{ __ha_cluster_work_dir.path }}/fence_xvm.key"

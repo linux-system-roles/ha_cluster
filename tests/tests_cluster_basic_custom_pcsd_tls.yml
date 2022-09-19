@@ -5,11 +5,18 @@
   vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: test-cluster
-    ha_cluster_pcsd_public_key_src: "{{ playbook_dir }}/tmp/pcsd.crt"
-    ha_cluster_pcsd_private_key_src: "{{ playbook_dir }}/tmp/pcsd.key"
+    ha_cluster_pcsd_public_key_src: "{{ __ha_cluster_work_dir.path }}/pcsd.crt"
+    ha_cluster_pcsd_private_key_src: "{{ __ha_cluster_work_dir.path }}/pcsd.key"
 
   tasks:
     - block:
+        - name: Create temp directory for secrets
+          tempfile:
+            state: directory
+            prefix: lsr_ha_cluster_
+          register: __ha_cluster_work_dir
+          delegate_to: localhost
+
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -69,3 +76,9 @@
                 == stat_pcsd_key_expected.stat.checksum
 
       tags: tests::verify
+
+      always:
+        - name: Clean up work directory
+          file:
+            path: "{{ __ha_cluster_work_dir.path }}"
+            state: absent
