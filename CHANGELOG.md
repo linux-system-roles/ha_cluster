@@ -1,6 +1,27 @@
 Changelog
 =========
 
+[1.7.5] - 2022-09-19
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- only install and setup fence-virt on x86_64 hosts (#64)
+
+fence-virt is not available for any architecture other than x86_64
+
+### Other Changes
+
+- replace yes, no, default with true, false, d
+
+Use `true`, `false`, and `d` instead of `yes`, `no`, and `default`
+
+- readme: update SBD example (#61)
+
 [1.7.4] - 2022-07-19
 --------------------
 
