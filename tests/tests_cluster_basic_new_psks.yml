@@ -11,13 +11,20 @@
     # generate a new TLS certificate - key pair for pcsd, even if there already
     #   is one
     ha_cluster_regenerate_keys: true
-    ha_cluster_corosync_key_src: "{{ playbook_dir }}/tmp/corosync-authkey"
+    ha_cluster_corosync_key_src: "{{ __ha_cluster_work_dir.path }}/corosync-authkey"
     __test_pacemaker_key_content: key content to be replaced
-    __test_pcsd_private_key_path: "{{ playbook_dir }}/tmp/pcsd.key"
-    __test_pcsd_public_key_path: "{{ playbook_dir }}/tmp/pcsd.crt"
+    __test_pcsd_private_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.key"
+    __test_pcsd_public_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.crt"
 
   tasks:
     - block:
+        - name: Create temp directory for secrets
+          tempfile:
+            state: directory
+            prefix: lsr_ha_cluster_
+          register: __ha_cluster_work_dir
+          delegate_to: localhost
+
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -51,23 +58,21 @@
             state: absent
           when: __test_fence_virt_supported
 
-        - name: Ensure pcsd TLS certificate and key exist
-          block:
-            - name: Distribute pcsd TLS private key
-              copy:
-                src: "{{ __test_pcsd_private_key_path }}"
-                dest: /var/lib/pcsd/pcsd.key
-                owner: root
-                group: root
-                mode: 0600
+        - name: Distribute pcsd TLS private key
+          copy:
+            src: "{{ __test_pcsd_private_key_path }}"
+            dest: /var/lib/pcsd/pcsd.key
+            owner: root
+            group: root
+            mode: 0600
 
-            - name: Distribute pcsd TLS certificate
-              copy:
-                src: "{{ __test_pcsd_public_key_path }}"
-                dest: /var/lib/pcsd/pcsd.crt
-                owner: root
-                group: root
-                mode: 0600
+        - name: Distribute pcsd TLS certificate
+          copy:
+            src: "{{ __test_pcsd_public_key_path }}"
+            dest: /var/lib/pcsd/pcsd.crt
+            owner: root
+            group: root
+            mode: 0600
 
         - name: Get corosync key hash
           stat:
@@ -169,3 +174,9 @@
           include_tasks: tasks/assert_cluster_running.yml
 
       tags: tests::verify
+
+      always:
+        - name: Clean up work directory
+          file:
+            path: "{{ __ha_cluster_work_dir.path }}"
+            state: absent
