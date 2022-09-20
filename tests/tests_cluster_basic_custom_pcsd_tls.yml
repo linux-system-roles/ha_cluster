@@ -16,6 +16,7 @@
             prefix: lsr_ha_cluster_
           register: __ha_cluster_work_dir
           delegate_to: localhost
+          run_once: true
 
         - name: Set up test environment
           include_role:
@@ -82,3 +83,5 @@
           file:
             path: "{{ __ha_cluster_work_dir.path }}"
             state: absent
+          delegate_to: localhost
+          run_once: true
