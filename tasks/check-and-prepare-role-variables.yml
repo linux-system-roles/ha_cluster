@@ -14,6 +14,7 @@
       fail:
         msg: All nodes must have the same number of SBD devices specified
       when:
+        - ha_cluster_cluster_present
         - ha_cluster_sbd_enabled
         - >
           ansible_play_hosts
@@ -30,9 +31,9 @@
           Qnetd cannot be configured on a cluster node -
           'ha_cluster_cluster_present' and 'ha_cluster_qnetd.present' cannot
           be both set to true
-      when: ha_cluster_qnetd.present | d(false)
-
-  when: ha_cluster_cluster_present
+      when:
+        - ha_cluster_cluster_present
+        - ha_cluster_qnetd.present | d(false)
 
 - name: Discover cluster node names
   set_fact:
