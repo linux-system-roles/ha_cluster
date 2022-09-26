@@ -20,6 +20,23 @@ An Ansible role for managing High Availability Clustering.
   * stonith and resources
   * resource constraints
 
+## Requirements
+
+The role requires the `firewall` role and the `selinux` role from the
+`fedora.linux_system_roles` collection, if `ha_cluster_manage_firewall`
+and `ha_cluster_manage_selinux` is set to true, respectively.
+(Please see also [`ha_cluster_manage_firewall`](#ha_cluster_manage_firewall)
+ and [`ha_cluster_manage_selinux`](#ha_cluster_manage_selinux))
+
+If the `ha_cluster` is a role from the `fedora.linux_system_roles`
+collection or from the Fedora RPM package, the requirement is already
+satisfied.
+
+Otherwise, please run the following command line to install the collection.
+```
+ansible-galaxy collection install -r meta/collection-requirements.yml
+```
+
 ## Role Variables
 
 ### Defined in `defaults/main.yml`
@@ -44,6 +61,11 @@ NOTE: `ha_cluster_manage_firewall` is limited to *adding* ports.
 It cannot be used for *removing* ports.
 If you want to remove ports, you will need to use the firewall system
 role directly.
+
+NOTE: The version of the `ha_cluster` role is 1.7.5 or older,
+the firewall was configured by default if the firewalld was available
+when the `ha_cluster` role was executed. In the newer version,
+it does not happen unless `ha_cluster_manage_firewall` is set to `true`.
 
 #### `ha_cluster_manage_selinux`
 
@@ -1286,6 +1308,17 @@ They are not guides or best practices for configuring a cluster.
         options:
           - name: loss-policy
             value: fence
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Configuring firewall and selinux using each role
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
 
   roles:
     - linux-system-roles.ha_cluster
