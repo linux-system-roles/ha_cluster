@@ -960,6 +960,23 @@ all:
 Following examples show what the structure of the role variables looks like.
 They are not guides or best practices for configuring a cluster.
 
+### Configuring firewall and selinux using each role
+
+To run `ha_cluster` properly, the `ha_cluster` ports need to be configured
+for `firewalld` and the `SELinux` policy as shown in this example. Although
+they are omitted in each example playbook, we highly recommend to set them 
+to `true` in your playbooks using the `ha_cluster` role.
+
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
 ### Creating a cluster running no resources
 ```yaml
 - hosts: node1 node2
@@ -1308,17 +1325,6 @@ They are not guides or best practices for configuring a cluster.
         options:
           - name: loss-policy
             value: fence
-
-  roles:
-    - linux-system-roles.ha_cluster
-```
-
-### Configuring firewall and selinux using each role
-```yaml
-- hosts: node1 node2
-  vars:
-    ha_cluster_manage_firewall: true
-    ha_cluster_manage_selinux: true
 
   roles:
     - linux-system-roles.ha_cluster
