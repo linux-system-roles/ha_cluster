@@ -3,6 +3,8 @@
 - name: Example ha_cluster role invocation - advanced Corosync configuration
   hosts: all
   vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
     ha_cluster_transport:
