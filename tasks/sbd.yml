@@ -33,11 +33,11 @@
           loop: "{{ __ha_cluster_check_sbd_devices_result.results }}"
           when: item.rc != 0
       # Ideally, the block as a whole should run one node at a time. This does
-      # not seem to be posible with Ansible yet. Instead, we at least make the
+      # not seem to be possible with Ansible yet. Instead, we at least make the
       # block's tasks run one by one. This way, we avoid possible issues caused
       # by initializing one device from multiple host at the same time. Devices
       # initialized before the role started will not be reinitialized. Devices
-      # not initilized before the role started will be initialized as many
+      # not initialized before the role started will be initialized as many
       # times as there are nodes. That, however, has no other side effect than
       # suboptimal performance of the role.
       throttle: 1

@@ -399,7 +399,7 @@
         - name: Fetch cluster versions of cluster components
           include_tasks: tasks/fetch_versions.yml
 
-        - name: Dicover CIB schema version
+        - name: Discover CIB schema version
           command:
             cmd: >
               xmllint
