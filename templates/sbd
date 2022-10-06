@@ -91,8 +91,8 @@ SBD_WATCHDOG_TIMEOUT="{{ option('watchdog-timeout', '5') }}"
 ## Default: "flush,reboot"
 #
 # Actions to be executed when the watchers don't timely report to the sbd
-# master process or one of the watchers detects that the master process
-# has died.
+# main process or one of the watchers detects that the main process has
+# died.
 #
 # Set timeout-action to comma-separated combination of
 # noflush|flush plus reboot|crashdump|off.
