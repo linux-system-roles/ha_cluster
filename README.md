@@ -26,8 +26,8 @@ An Ansible role for managing High Availability Clustering.
 The role requires the `firewall` role and the `selinux` role from the
 `fedora.linux_system_roles` collection, if `ha_cluster_manage_firewall`
 and `ha_cluster_manage_selinux` is set to true, respectively.
-(Please see also [`ha_cluster_manage_firewall`](#ha_cluster_manage_firewall)
- and [`ha_cluster_manage_selinux`](#ha_cluster_manage_selinux))
+Please see also [`ha_cluster_manage_firewall`](#ha_cluster_manage_firewall)
+ and [`ha_cluster_manage_selinux`](#ha_cluster_manage_selinux).
 
 If the `ha_cluster` is a role from the `fedora.linux_system_roles`
 collection or from the Fedora RPM package, the requirement is already
@@ -195,6 +195,32 @@ https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 If these variables are set, `ha_cluster_regenerate_keys` is ignored for this
 certificate - key pair.
 
+#### `ha_cluster_pcsd_certificates`
+
+If there is no pcsd private key and certificate, there are two ways to create them.
+
+One way is by setting `ha_cluster_pcsd_certificates` variable.
+Another way is by setting none of
+[`ha_cluster_pcsd_public_key_src` and `ha_cluster_pcsd_private_key_src`](#ha_cluster_pcsd_public_key_src-ha_cluster_pcsd_private_key_src) and `ha_cluster_pcsd_certificates`.
+
+If `ha_cluster_pcsd_certificates` is provided, the `certificate` role is internally
+used and it creates the private key and certificate for pcsd as defined.
+If none of the variables are provided, the `ha_cluster` role will create pcsd
+certificates via pcsd itself. 
+
+The value of `ha_cluster_pcsd_certificates` is set to the variable `certificate_requests`
+in the `certificate` role.
+For more information, see the `certificate_requests` section in the `certificate`
+role documentation.
+
+The default value is `[]`.
+
+Note: when you set this variable, you must not set `ha_cluster_pcsd_public_key_src`
+and `ha_cluster_pcsd_private_key_src` variables.
+
+If this variable is set, `ha_cluster_regenerate_keys` is ignored for this
+certificate - key pair.
+
 #### `ha_cluster_regenerate_keys`
 
 boolean, default: `false`
@@ -207,6 +233,7 @@ See also:
 [`ha_cluster_fence_virt_key_src`](#ha_cluster_fence_virt_key_src),
 [`ha_cluster_pcsd_public_key_src`](#ha_cluster_pcsd_public_key_src-ha_cluster_pcsd_private_key_src),
 [`ha_cluster_pcsd_private_key_src`](#ha_cluster_pcsd_public_key_src-ha_cluster_pcsd_private_key_src)
+[`ha_cluster_pcsd_certificates`](#ha_cluster_pcsd_certificates)
 
 #### `ha_cluster_pcs_permission_list`
 
@@ -1047,6 +1074,22 @@ to `true` in your playbooks using the `ha_cluster` role.
     ha_cluster_manage_firewall: true
     ha_cluster_manage_selinux: true
 
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Creating pcsd certificate and private key files using the `certificate` role
+
+This example creates self-signed pcsd certificate and private key files
+in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
+
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_pcsd_certificates:
+      - name: FILENAME
+        common_name: "{{ ansible_hostname }}"
+        ca: self-sign
   roles:
     - linux-system-roles.ha_cluster
 ```

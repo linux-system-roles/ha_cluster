@@ -21,6 +21,7 @@ ha_cluster_pacemaker_key_src: null
 ha_cluster_fence_virt_key_src: null
 ha_cluster_pcsd_public_key_src: null
 ha_cluster_pcsd_private_key_src: null
+ha_cluster_pcsd_certificates: []
 
 ha_cluster_cluster_name: my-cluster
 

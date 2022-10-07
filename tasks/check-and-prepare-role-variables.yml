@@ -87,3 +87,17 @@
     - ha_cluster_quorum.options | d([])
       | selectattr('name', 'match', '^auto_tie_breaker$')
       | map(attribute='value') | select('in', ['0', 0]) | list | length > 0
+
+- name: >-
+    Fail if ha_cluster_pcsd_public_key_src and ha_cluster_pcsd_private_key_src
+    are set along with ha_cluster_pcsd_certificates
+  fail:
+    msg: >-
+      Cannot set ha_cluster_pcsd_public_key_src and
+      ha_cluster_pcsd_private_key_src along with ha_cluster_pcsd_certificates.
+      Remove ha_cluster_pcsd_public_key_src and ha_cluster_pcsd_private_key_src
+      or ha_cluster_pcsd_certificates.
+  when:
+    - ha_cluster_pcsd_public_key_src is not none
+    - ha_cluster_pcsd_private_key_src is not none
+    - ha_cluster_pcsd_certificates | d([])

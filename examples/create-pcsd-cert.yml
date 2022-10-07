@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: MIT
+---
+- name: >-
+    Example ha_cluster role invocation with the pcsd cert
+    and key generation by the certificate role
+  hosts: all
+  vars:
+    ha_cluster_pcsd_certificates:
+      - name: pcsd_cert
+        common_name: "{{ ansible_hostname }}"
+        ca: self-sign
+  roles:
+    - linux-system-roles.ha_cluster

@@ -19,6 +19,40 @@
   when:
     - ha_cluster_regenerate_keys
 
+- name: Create pcsd certificate and private_key files
+  when: ha_cluster_pcsd_certificates | length > 0
+  block:
+    - name: Get the stat of /var/lib/pcsd
+      stat:
+        path: /var/lib/pcsd
+      register: __pcsd_stat
+
+    - name: Allow certmonger to write into pcsd's certificate directory
+      file:
+        path: /var/lib/pcsd
+        state: directory
+        setype: cert_t
+        mode: "{{ __pcsd_stat.stat.mode }}"
+
+    - name: >-
+       Ensure the name of ha_cluster_pcsd_certificates is /var/lib/pcsd/pcsd;
+       Create certificates using the certificate role
+      include_role:
+        name: fedora.linux_system_roles.certificate
+      vars:
+        certificate_requests: |
+          {% for _cert in ha_cluster_pcsd_certificates %}
+          {%   set _ = _cert.__setitem__('name', '/var/lib/pcsd/pcsd') %}
+          {% endfor %}
+          {{ ha_cluster_pcsd_certificates }}
+  always:
+    - name: Set pcsd's certificate directory back to cluster_var_lib_t
+      file:
+        path: /var/lib/pcsd
+        state: directory
+        setype: cluster_var_lib_t
+        mode: "{{ __pcsd_stat.stat.mode }}"
+
 - name: Distribute pcsd TLS certificate and key
   block:
     - name: Distribute pcsd TLS private key
@@ -36,6 +70,7 @@
         group: root
         mode: 0600
   when:
+    - ha_cluster_pcsd_certificates | length == 0
     - ha_cluster_pcsd_public_key_src is string
     - ha_cluster_pcsd_public_key_src | length > 0
     - ha_cluster_pcsd_private_key_src is string
