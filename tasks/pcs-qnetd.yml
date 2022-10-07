@@ -12,11 +12,6 @@
   check_mode: false
 
 - block:
-    - name: Install qnetd packages
-      package:
-        name: corosync-qnetd
-        state: present
-
     - name: Setup qnetd
       command:
         cmd: pcs --start -- qdevice setup model net

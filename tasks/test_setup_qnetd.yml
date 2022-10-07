@@ -8,7 +8,9 @@
 ---
 - name: Install qnetd packages
   package:
-    name: corosync-qnetd
+    name:
+      - corosync-qnetd
+      - pcs
     state: present
 
 - name: Set up qnetd

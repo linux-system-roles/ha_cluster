@@ -14,6 +14,9 @@ __ha_cluster_repos: []
 
 __ha_cluster_role_essential_packages:
   - pcs
+  # even if qnetd is not being configured, it is needed for removing qnetd
+  # configuration
+  - corosync-qnetd
 
 __ha_cluster_fullstack_node_packages:
   - corosync
