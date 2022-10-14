@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: MIT
+# This task configures test systems for testing in the CI environment.
+# Only use this task for testing.
+# This task file resides in `tasks/` so that it can be used from other roles
+# with `include_role` with `tasks_from: filename` directly without the need to
+# provide a relative path. Providing relative path is problematic with
+# collections.
+---
+- name: Install qnetd packages
+  package:
+    name:
+      - corosync-qnetd
+      - pcs
+    state: present
+
+- name: Set up qnetd
+  command:
+    cmd: pcs --start -- qdevice setup model net
+  register: __test_pcs_qnetd_setup
+  changed_when: __test_pcs_qnetd_setup.rc == 0
+  failed_when:
+    - not (
+        __test_pcs_qnetd_setup.rc == 0
+        or (
+          __test_pcs_qnetd_setup.rc == 1
+          and
+          "Quorum device 'net' has been already initialized"
+          in __test_pcs_qnetd_setup.stderr
+        )
+      )

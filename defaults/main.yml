@@ -58,3 +58,8 @@ ha_cluster_manage_firewall: false
 # If true, manage the ports belonging to the high-availability service
 # and the fence-virt using the selinux role.
 ha_cluster_manage_selinux: false
+
+ha_cluster_qnetd:
+  present: false
+  regenerate_keys: false
+  start_on_boot: true

@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Remove qnetd configuration
+  # This pcs command doesn't provide means to detect whether it did any changes
+  command:
+    cmd: pcs --force -- qdevice destroy net
+  when:
+    - (
+        not ha_cluster_qnetd.present | d(false)
+        or ha_cluster_qnetd.regenerate_keys | d(false)
+      )
+  check_mode: false
+
+- block:
+    - name: Setup qnetd
+      command:
+        cmd: pcs --start -- qdevice setup model net
+      register: __ha_cluster_pcs_qnetd_setup
+      check_mode: false
+      changed_when: __ha_cluster_pcs_qnetd_setup.rc == 0
+      failed_when:
+        - not (
+            __ha_cluster_pcs_qnetd_setup.rc == 0
+            or (
+              __ha_cluster_pcs_qnetd_setup.rc == 1
+              and
+              "Quorum device 'net' has been already initialized"
+              in __ha_cluster_pcs_qnetd_setup.stderr
+            )
+          )
+
+    - name: Enable or disable qnetd service on boot
+      service:
+        name: corosync-qnetd
+        enabled: "{{ ha_cluster_qnetd.start_on_boot | d(true) }}"
+
+  when:
+    - ha_cluster_qnetd.present | d(false)

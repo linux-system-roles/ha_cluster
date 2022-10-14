@@ -14,6 +14,7 @@
       fail:
         msg: All nodes must have the same number of SBD devices specified
       when:
+        - ha_cluster_cluster_present
         - ha_cluster_sbd_enabled
         - >
           ansible_play_hosts
@@ -21,7 +22,18 @@
           | map('default', [], true)
           | map('length') | unique | length > 1
       run_once: true
-  when: ha_cluster_cluster_present
+
+    # Running a qnetd on a cluster node does't make sense, fencing would make
+    # the qnetd unavailable, even if temporarily.
+    - name: Fail if configuring qnetd on a cluster node
+      fail:
+        msg: >
+          Qnetd cannot be configured on a cluster node -
+          'ha_cluster_cluster_present' and 'ha_cluster_qnetd.present' cannot
+          be both set to true
+      when:
+        - ha_cluster_cluster_present
+        - ha_cluster_qnetd.present | d(false)
 
 - name: Discover cluster node names
   set_fact:
@@ -33,6 +45,23 @@
         ansible_play_hosts
         | map('extract', hostvars, '__ha_cluster_node_name')
         | list
+      }}"
+
+- name: Extract qdevice settings
+  set_fact:
+    __ha_cluster_qdevice_in_use: "{{ 'device' in ha_cluster_quorum }}"
+    __ha_cluster_qdevice_model: "{{ ha_cluster_quorum.device.model | d('') }}"
+    # This may set empty value, if it is not defined. Such value is not valid.
+    # It will be caught by pcs validation before we try using it in the role.
+    __ha_cluster_qdevice_host: "{{
+        ha_cluster_quorum.device.model_options | d([])
+        | selectattr('name', 'match', '^host$')
+        | map(attribute='value') | list | last | d('')
+      }}"
+    __ha_cluster_qdevice_pcs_address: "{{
+        ha_cluster_quorum.device.model_options | d([])
+        | selectattr('name', 'match', '^pcs-address$')
+        | map(attribute='value') | list | last | d('')
       }}"
 
 - name: Figure out if ATB needs to be enabled for SBD

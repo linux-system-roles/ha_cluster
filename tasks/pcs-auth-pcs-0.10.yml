@@ -12,6 +12,15 @@
           addr={{ hostvars[node].ha_cluster.pcs_address | quote }}
         {% endif %}
       {% endfor %}
+      {% if __ha_cluster_qdevice_model == "net" and __ha_cluster_qdevice_host %}
+        {# prevent pcs error: Host name defined multiple times #}
+        {% if  __ha_cluster_qdevice_host not in __ha_cluster_all_node_names %}
+          {{ __ha_cluster_qdevice_host | quote }}
+          {% if __ha_cluster_qdevice_pcs_address %}
+            addr={{ __ha_cluster_qdevice_pcs_address | quote }}
+          {% endif %}
+        {% endif %}
+      {% endif %}
     stdin: "{{ ha_cluster_hacluster_password }}"
   run_once: true
   changed_when: true

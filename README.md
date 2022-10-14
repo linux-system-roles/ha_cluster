@@ -15,6 +15,7 @@ An Ansible role for managing High Availability Clustering.
   * Corosync transport options including compression and encryption
   * Corosync totem options
   * Corosync quorum options
+  * Corosync quorum device (both qnetd and qdevice)
   * SBD
   * Pacemaker cluster properties
   * stonith and resources
@@ -324,13 +325,56 @@ ha_cluster_quorum:
       value: option1_value
     - name: option2_name
       value: option2_value
+  device:
+    model: string
+    model_options:
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
+    generic_options:
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
+    heuristics_options:
+      - name: option1_name
+        value: option1_value
+      - name: option2_name
+        value: option2_value
 ```
 
-Cluster quorum configuration. For now, it is possible to configure quorum
-options: `auto_tie_breaker`, `last_man_standing`, `last_man_standing_window`,
-`wait_for_all`. Quorum options are documented in `votequorum(5)` man page.
+Cluster quorum configuration. The items are as follows:
 
-You may take a look at [an example](#advanced-corosync-configuration).
+* `options` (optional) - List of name-value dictionaries configuring quorum.
+  Allowed options are: `auto_tie_breaker`, `last_man_standing`,
+  `last_man_standing_window`, `wait_for_all`. They are documented in
+  `votequorum(5)` man page.
+* `device` (optional) - Configures the cluster to use a quorum device. By
+  default, no quorum device is used.
+  * `model` (mandatory) - Specifies a type of the quorum device. Currently, only
+    `net` is supported.
+  * `model_options` (optional) - List of name-value dictionaries configuring
+    the specified quorum device model. For model `net`, options `host` and
+    `algorithm` must be specified.
+    * You may use the `pcs-address` option to set a custom pcsd address and
+      port to connect to the qnetd host. Otherwise, the role connects to
+      default pcsd port on the value of `host`.
+  * `generic_options` (optional) - List of name-value dictionaries setting
+    quorum device options which are not model specific.
+  * `heuristics_options` (optional) - List of name-value dictionaries
+    configuring quorum device heuristics.
+
+Quorum device options are documented in `corosync-qdevice(8)` man page; generic
+options are `sync_timeout` and `timeout`, for model net options check the
+`quorum.device.net` section, for heuristics options see the
+`quorum.device.heuristics` section.
+
+To regenerate quorum device TLS certificate, set the
+[`ha_cluster_regenerate_keys`](#ha_cluster_regenerate_keys) variable to `true`.
+
+You may take a look at [a quorum example](#advanced-corosync-configuration) and
+[a quorum device example](#configuring-a-cluster-using-a-quorum-device).
 
 #### `ha_cluster_sbd_enabled`
 
@@ -893,6 +937,36 @@ ha_cluster_constraints_ticket:
 You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
 
+#### `ha_cluster_qnetd`
+
+structure and default value:
+```yaml
+ha_cluster_qnetd:
+  present: boolean
+  start_on_boot: boolean
+  regenerate_keys: boolean
+```
+
+This configures a qnetd host which can then serve as an external quorum device
+for clusters. The items are as follows:
+
+* `present` (optional) - If `true`, configure a qnetd instance on the host. If
+  `false`, remove qnetd configuration from the host. Defaults to `false`. If
+  you set this to `true`, you must set
+  [`ha_cluster_cluster_present`](#ha_cluster_cluster_present) to `false`.
+* `start_on_boot` (optional) - Configures whether the qnetd should start
+  automatically on boot. Defaults to `true`.
+* `regenerate_keys` (optional) - Set this variable to `true` to regenerate
+  qnetd TLS certificate. If you regenerate the certificate, you will need to
+  re-run the role for each cluster to connect it to the qnetd again or run pcs
+  manually to do that.
+
+Note that you cannot run qnetd on a cluster node as fencing would disrupt qnetd
+operation.
+
+You may take a look at [an
+example](#configuring-a-cluster-using-a-quorum-device).
+
 ### Inventory
 
 #### Nodes' names and addresses
@@ -964,7 +1038,7 @@ They are not guides or best practices for configuring a cluster.
 
 To run `ha_cluster` properly, the `ha_cluster` ports need to be configured
 for `firewalld` and the `SELinux` policy as shown in this example. Although
-they are omitted in each example playbook, we highly recommend to set them 
+they are omitted in each example playbook, we highly recommend to set them
 to `true` in your playbooks using the `ha_cluster` role.
 
 ```yaml
@@ -1325,6 +1399,46 @@ to `true` in your playbooks using the `ha_cluster` role.
         options:
           - name: loss-policy
             value: fence
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Configuring a cluster using a quorum device
+
+#### Configuring a quorum device
+Before you can add a quorum device to a cluster, you need to set the device up.
+This is only needed to be done once for each quorum device. Once it has been
+set up, you can use a quorom device in any number of clusters.
+
+Note that you cannot run a quorum device on a cluster node.
+
+```yaml
+- hosts: nodeQ
+  vars:
+    ha_cluster_cluster_present: false
+    ha_cluster_hacluster_password: password
+    ha_cluster_qnetd:
+      present: true
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+#### Configuring a cluster to use a quorum device
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_quorum:
+      device:
+        model: net
+        model_options:
+          - name: host
+            value: nodeQ
+          - name: algorithm
+            value: lms
 
   roles:
     - linux-system-roles.ha_cluster

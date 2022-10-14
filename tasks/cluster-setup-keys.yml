@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Get corosync authkey
+  include_tasks: presharedkey.yml
+  vars:
+    preshared_key_label: corosync authkey
+    preshared_key_src: "{{ ha_cluster_corosync_key_src }}"
+    preshared_key_dest: /etc/corosync/authkey
+    preshared_key_length: 256
+
+- name: Distribute corosync authkey
+  copy:
+    content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
+    dest: /etc/corosync/authkey
+    owner: root
+    group: root
+    mode: 0400
+  register: __ha_cluster_distribute_corosync_authkey
+
+- name: Get pacemaker authkey
+  include_tasks: presharedkey.yml
+  vars:
+    preshared_key_label: pacemaker authkey
+    preshared_key_src: "{{ ha_cluster_pacemaker_key_src }}"
+    preshared_key_dest: /etc/pacemaker/authkey
+    preshared_key_length: 256
+
+- name: Distribute pacemaker authkey
+  copy:
+    content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
+    dest: /etc/pacemaker/authkey
+    owner: hacluster
+    group: haclient
+    mode: 0400
+  register: __ha_cluster_distribute_pacemaker_authkey
+
+
+- name: Remove qdevice certificates
+  command:
+    cmd: pcs -- qdevice net-client destroy
+  when:
+    - not ansible_check_mode
+    - __ha_cluster_qdevice_model != "net" or ha_cluster_regenerate_keys
+
+- name: Obtain and distribute qdevice certificates
+  script:
+    cmd: >
+      files/qdevice-certs.sh check-and-setup
+      {{ ha_cluster_cluster_name | quote }}
+      {{ __ha_cluster_qdevice_host | quote }}
+  register: __ha_cluster_qdevice_certs
+  changed_when:
+    - __ha_cluster_qdevice_certs.rc == 0
+    - __ha_cluster_qdevice_certs.stdout_lines[-1] == "** certificate set up **"
+  when:
+    - not ansible_check_mode
+    - __ha_cluster_qdevice_in_use
+    - __ha_cluster_qdevice_model == "net"
+
+- name: Obtain and distribute qdevice certificates [check mode]
+  script:
+    cmd: >
+      files/qdevice-certs.sh check
+      {{ ha_cluster_cluster_name | quote }}
+      {{ __ha_cluster_qdevice_host | quote }}
+  register: __ha_cluster_qdevice_certs
+  changed_when:
+    - __ha_cluster_qdevice_certs.rc == 0
+    - __ha_cluster_qdevice_certs.stdout_lines[-1] == "** certificate missing **"
+  when:
+    - ansible_check_mode
+    - __ha_cluster_qdevice_in_use
+    - __ha_cluster_qdevice_model == "net"

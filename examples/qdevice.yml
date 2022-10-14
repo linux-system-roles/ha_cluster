@@ -1,0 +1,21 @@
+# SPDX-License-Identifier: MIT
+---
+# See also qnetd.yml
+- name: Example ha_cluster role invocation - cluster with a quorum device
+  hosts: node1 node2
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_quorum:
+      device:
+        model: net
+        model_options:
+          - name: host
+            value: nodeQ
+          - name: algorithm
+            value: lms
+
+  roles:
+    - linux-system-roles.ha_cluster

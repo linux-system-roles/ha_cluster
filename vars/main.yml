@@ -12,13 +12,29 @@ __ha_cluster_pcs_provider: pcs-0.10
 
 __ha_cluster_repos: []
 
+__ha_cluster_role_essential_packages:
+  - pcs
+  # even if qnetd is not being configured, it is needed for removing qnetd
+  # configuration
+  - corosync-qnetd
+
 __ha_cluster_fullstack_node_packages:
   - corosync
   - libknet1-plugins-all
   - resource-agents
   - pacemaker
-  - pcs
   - openssl  # used in the role for generating preshared keys
+
+__ha_cluster_qdevice_node_packages:
+  - corosync-qdevice
+  # dependencies of a script to set up qdevice certificates
+  - bash
+  - coreutils
+  - curl
+  - grep
+  - nss-tools
+  - openssl
+  - sed
 
 __ha_cluster_sbd_packages:
   - sbd
@@ -27,9 +43,6 @@ __ha_cluster_services:
   - corosync
   - corosync-qdevice
   - pacemaker
-
-# TODO: implement qdevice detection once qdevice is supported by the role
-__ha_cluster_qdevice_in_use: false
 
 # ansible_facts required by the role
 __ha_cluster_required_facts:

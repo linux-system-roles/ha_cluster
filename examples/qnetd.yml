@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MIT
+---
+# See also qdevice.yml
+- name: Example ha_cluster role invocation - qnetd setup
+  hosts: nodeQ
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_present: false
+    ha_cluster_hacluster_password: password
+    ha_cluster_qnetd:
+      present: true
+
+  roles:
+    - linux-system-roles.ha_cluster
