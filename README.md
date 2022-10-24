@@ -215,11 +215,15 @@ role documentation.
 
 The default value is `[]`.
 
-Note: when you set this variable, you must not set `ha_cluster_pcsd_public_key_src`
-and `ha_cluster_pcsd_private_key_src` variables.
+NOTE: The `certificate` role, unless using IPA and joining the systems to an IPA domain,
+creates self-signed certificates, so you will need to explicitly configure trust,
+which is not currently supported by the system roles.
 
-If this variable is set, `ha_cluster_regenerate_keys` is ignored for this
-certificate - key pair.
+NOTE: When you set `ha_cluster_pcsd_certificates`, you must not set
+`ha_cluster_pcsd_public_key_src` and `ha_cluster_pcsd_private_key_src` variables.
+
+NOTE: When you set `ha_cluster_pcsd_certificates`, `ha_cluster_regenerate_keys` is
+ignored for this certificate - key pair.
 
 #### `ha_cluster_regenerate_keys`
 
