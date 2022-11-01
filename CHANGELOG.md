@@ -1,6 +1,80 @@
 Changelog
 =========
 
+[1.8.0] - 2022-11-01
+--------------------
+
+### New Features
+
+- Use the firewall role and the selinux role from the ha_cluster role
+
+- Introduce ha_cluster_manage_firewall to use the firewall role to
+  manage the high-availability service and the fence-virt port.
+  Default to false - means the firewall role is not used.
+
+- Introduce ha_cluster_manage_selinux to use the selinux role to
+  manage the ports in the high-availability service.
+  Assign cluster_port_t to the high-availability service ports.
+  Default to false - means the selinux role is not used.
+
+- Add the test check task tasks/check_firewall_selinux.yml for
+  verify the ports status.
+
+Note: This pr changes the ha_cluster role's behavior slightly.
+It used to configure firewall without any settings if the firewall
+service is enabled. With this change made by this pr, unless
+ha_cluster_manage_firewall is set to true, the firewall is not
+configured.
+
+- Use the certificate role to create the cert and the key
+
+- Introduce a variable ha_cluster_pcsd_certificates to set the certificate_requests.
+
+Note: Get mode of /var/lib/pcsd using the stat module and reset it
+in the following file for fixing the issue "risky-file-permissions
+File permissions unset or incorrect".
+
+- add support for configuring qnetd
+
+- add support for configuring qdevice
+
+- qdevice and qnetd documentation
+
+### Bug Fixes
+
+- fix decoding variables from an Ansible vault
+
+Workaround Ansible issue https://github.com/ansible/ansible/issues/24425
+Before fix, the role was failing with the following message:
+object of type 'AnsibleVaultEncryptedUnicode' has no len()
+
+- add a test for vault-encrypted variables
+
+- adapt tests with vault-encrypted variables for CI
+
+- use a real temporary directory for test secrets
+
+The tests were writing generated secrets to the directory tests/tmp
+which is shared by all tests when running tests in parallel.
+Instead, create a real temporary directory for these secrets for the
+tests that use generated secrets.
+
+- fix checking hacluster password
+
+- update sbd config file template
+
+- fix installing qnetd and pcs packages
+
+- fix auth for qnetd host
+
+### Other Changes
+
+- fix linter issues
+
+- fix qnetd setup in tests
+
+- fix typos
+
 [1.7.5] - 2022-09-19
 --------------------
 
