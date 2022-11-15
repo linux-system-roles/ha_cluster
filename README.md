@@ -1082,7 +1082,7 @@ to `true` in your playbooks using the `ha_cluster` role.
     - linux-system-roles.ha_cluster
 ```
 
-### Creating pcsd certificate and private key files using the `certificate` role
+### Creating pcsd TLS cert and key files using the `certificate` role
 
 This example creates self-signed pcsd certificate and private key files
 in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
