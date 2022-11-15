@@ -1,6 +1,24 @@
 Changelog
 =========
 
+[1.8.1] - 2022-11-14
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- none
+
+### Other Changes
+
+- long heading causes problems with md to adoc conversion
+
+The long heading causes problems with md to adoc conversion.  Shorten
+the length by using abbreviations.
+
 [1.8.0] - 2022-11-01
 --------------------
 
