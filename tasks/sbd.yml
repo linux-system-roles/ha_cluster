@@ -74,3 +74,16 @@
       -- property set
       stonith-watchdog-timeout={{ ha_cluster_sbd_enabled | ternary('', '0') }}
   changed_when: true
+
+# In case cib.xml just got created by the task above, fix its permissions. If
+# the permissions are not correct, pacemaker refuses to start.
+# At this stage, we are sure the cib.xml file exists: either it just got
+# created by the task above, or it was created by running pacemaker in the
+# past.
+- name: Correct cib.xml ownership
+  file:
+    path: /var/lib/pacemaker/cib/cib.xml
+    state: file
+    owner: hacluster
+    group: haclient
+    mode: 0600
