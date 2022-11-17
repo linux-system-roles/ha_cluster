@@ -1110,9 +1110,9 @@ all:
 #### SBD watchdog and devices
 When using SBD, you may optionally configure watchdog and SBD devices for each
 node in inventory. Even though all SBD devices must be shared to and accessible
-from all nodes, each node may use different names for the devices. Watchdog may
-be different for each node as well. See also [SBD
-variables](#ha_cluster_sbd_enabled).
+from all nodes, each node may use different names for the devices. The loaded
+watchdog modules and used devices may also be different for each node. See also
+[SBD variables](#ha_cluster_sbd_enabled).
 
 Example inventory with targets `node1` and `node2`:
 ```yaml
@@ -1120,18 +1120,29 @@ all:
   hosts:
     node1:
       ha_cluster:
+        sbd_watchdog_modules:
+          - module1
+          - module2
         sbd_watchdog: /dev/watchdog2
         sbd_devices:
           - /dev/vdx
           - /dev/vdy
     node2:
       ha_cluster:
+        sbd_watchdog_modules:
+          - module1
+        sbd_watchdog_modules_blocklist:
+          - module2
         sbd_watchdog: /dev/watchdog1
         sbd_devices:
           - /dev/vdw
           - /dev/vdz
 ```
 
+* `sbd_watchdog_modules` (optional) - Watchdog kernel modules to be loaded
+  (creates `/dev/watchdog*` devices). Defaults to empty list if not set.
+* `sbd_watchdog_modules_blocklist` (optional) - Watchdog kernel modules to be
+  unloaded and blocked. Defaults to empty list if not set.
 * `sbd_watchdog` (optional) - Watchdog device to be used by SBD. Defaults to
   `/dev/watchdog` if not set.
 * `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
@@ -1238,6 +1249,45 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 ```
 
 ### Configuring cluster to use SBD
+
+#### inventory
+
+These variables need to be set in inventory or via `host_vars`. Of course
+the SBD kernel modules and device path might differ depending on your setup.
+
+```yaml
+all:
+  hosts:
+    node1:
+      ha_cluster:
+        sbd_watchdog_modules:
+          - iTCO_wdt
+        sbd_watchdog_modules_blocklist:
+          - ipmi_watchdog
+        sbd_watchdog: /dev/watchdog1
+        sbd_devices:
+          - /dev/vdx
+          - /dev/vdy
+          - /dev/vdz
+    node2:
+      ha_cluster:
+        sbd_watchdog_modules:
+          - iTCO_wdt
+        sbd_watchdog_modules_blocklist:
+          - ipmi_watchdog
+        sbd_watchdog: /dev/watchdog1
+        sbd_devices:
+          - /dev/vdx
+          - /dev/vdy
+          - /dev/vdz
+```
+
+#### playbook
+
+After setting the inventory correctly, use this playbook to configure a
+complete SBD setup including loading watchdog modules and creating the
+SBD stonith resource.
+
 ```yaml
 - hosts: node1 node2
   vars:
@@ -1252,12 +1302,24 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
       - name: timeout-action
         value: 'flush,reboot'
       - name: watchdog-timeout
-        value: 5
-    #  if you need to set stonith-watchdog-timeout property as well:
+        value: 30
+    # Best practice for setting SBD timeouts:
+    # watchdog-timeout * 2 = msgwait-timeout (set automatically)
+    # msgwait-timeout * 1.2 = stonith-timeout
     ha_cluster_cluster_properties:
       - attrs:
-          - name: stonith-watchdog-timeout
-            value: 10
+          - name: stonith-timeout
+            value: 72
+    ha_cluster_resource_primitives:
+      - id: fence_sbd
+        agent: 'stonith:fence_sbd'
+        instance_attrs:
+          - attrs:
+              # taken from host_vars
+              - name: devices
+                value: "{{ ha_cluster.sbd_devices | join(',') }}"
+              - name: pcmk_delay_base
+                value: 30
 
   roles:
     - linux-system-roles.ha_cluster

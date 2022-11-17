@@ -2,6 +2,7 @@
 ---
 - name: Example ha_cluster role invocation - cluster with SBD
   hosts: node1 node2
+  # do not forget to also set variables via inventory or host_vars.
   vars:
     ha_cluster_manage_firewall: true
     ha_cluster_manage_selinux: true
@@ -16,12 +17,24 @@
       - name: timeout-action
         value: 'flush,reboot'
       - name: watchdog-timeout
-        value: 5
-    #  if you need to set stonith-watchdog-timeout property as well:
+        value: 30
+    # Best practice for setting SBD timeouts:
+    # watchdog-timeout * 2 = msgwait-timeout (set automatically)
+    # msgwait-timeout * 1.2 = stonith-timeout
     ha_cluster_cluster_properties:
       - attrs:
-          - name: stonith-watchdog-timeout
-            value: 10
+          - name: stonith-timeout
+            value: 72
+    ha_cluster_resource_primitives:
+      - id: fence_sbd
+        agent: 'stonith:fence_sbd'
+        instance_attrs:
+          - attrs:
+              # taken from host_vars
+              - name: devices
+                value: "{{ ha_cluster.sbd_devices | join(',') }}"
+              - name: pcmk_delay_base
+                value: 30
 
   roles:
     - linux-system-roles.ha_cluster
