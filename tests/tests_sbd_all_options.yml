@@ -31,6 +31,10 @@
         - name: Set SBD devices and watchdogs
           set_fact:
             ha_cluster:
+              sbd_watchdog_modules:
+                - softdog
+              sbd_watchdog_modules_blocklist:
+                - iTCO_wdt
               sbd_watchdog: /dev/null
               sbd_devices:
                 - "{{ __test_sbd_mount.stdout }}"
@@ -39,6 +43,74 @@
           include_role:
             name: linux-system-roles.ha_cluster
             public: true
+
+
+        - name: Slurp generated SBD watchdog blocklist file
+          slurp:
+            src: /etc/modprobe.d/iTCO_wdt.conf
+          register: __test_sbd_watchdog_blocklist_file
+
+        - name: Decode SBD watchdog blocklist file
+          set_fact:
+            __test_sbd_watchdog_blocklist_file_lines: "{{
+                (__test_sbd_watchdog_blocklist_file.content |
+                b64decode).splitlines()
+              }}"
+
+        - name: Print SBD watchdog blocklist file lines
+          debug:
+            var: __test_sbd_watchdog_blocklist_file_lines
+
+        - name: Check SBD watchdog blocklist file
+          assert:
+            that:
+              - "__blockstr in __test_sbd_watchdog_blocklist_file_lines"
+            vars:
+              __blockstr: blacklist iTCO_wdt
+
+
+        - name: Slurp generated SBD watchdog modprobe file
+          slurp:
+            src: /etc/modules-load.d/softdog.conf
+          register: __test_sbd_watchdog_modprobe_file
+
+        - name: Decode SBD watchdog modprobe file
+          set_fact:
+            __test_sbd_watchdog_modprobe_file_lines: "{{
+                (__test_sbd_watchdog_modprobe_file.content |
+                b64decode).splitlines()
+              }}"
+
+        - name: Print SBD watchdog modprobe file lines
+          debug:
+            var: __test_sbd_watchdog_modprobe_file_lines
+
+        - name: Check SBD watchdog modprobe file
+          assert:
+            that:
+              - "__modulestr in __test_sbd_watchdog_modprobe_file_lines"
+            vars:
+              __modulestr: softdog
+
+
+        - name: Run lsmod for SBD watchdog module
+          command: lsmod
+          register: __test_sbd_watchdog_sbd_lsmod
+
+        - name: Print lsmod
+          debug:
+            var: __test_sbd_watchdog_sbd_lsmod
+
+        - name: Check lsmod output for absence of SBD watchdog module blocklist
+          assert:
+            that:
+              - "'iTCO_wdt' not in __test_sbd_watchdog_sbd_lsmod.stdout"
+
+        - name: Check lsmod output for SBD watchdog module
+          assert:
+            that:
+              - "'softdog' in __test_sbd_watchdog_sbd_lsmod.stdout"
+
 
         - name: Slurp SBD config file
           slurp:

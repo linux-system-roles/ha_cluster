@@ -61,6 +61,9 @@
       when:
         - ansible_architecture == "x86_64"
 
+    - name: Configure SBD watchdog
+      include_tasks: sbd_watchdog.yml
+
     - name: Configure SBD
       include_tasks: sbd.yml
 

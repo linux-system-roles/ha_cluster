@@ -1,0 +1,46 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure SBD watchdog
+  block:
+    - name: SBD - Configure and unload watchdog kernel modules from blocklist
+      block:
+        - name: "SBD - Configure watchdog kernel module blocklist"
+          ansible.builtin.lineinfile:
+            path: "/etc/modprobe.d/{{ item }}.conf"
+            create: yes
+            mode: 0644
+            regexp: "^(options|blacklist) {{ item }}"
+            line: "blacklist {{ item }}"
+            state: present
+          loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
+          register: __ha_cluster_sbd_watchdog_modules_blocklist_config
+
+        - name: "SBD - Unload watchdog kernel modules from blocklist"
+          community.general.modprobe:
+            name: "{{ item }}"
+            state: absent
+          loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
+          register: __ha_cluster_sbd_watchdog_blocklist_unload_output
+
+    - name: SBD - Configure and load watchdog kernel module
+      block:
+        - name: "SBD - Configure watchdog kernel modules"
+          ansible.builtin.lineinfile:
+            path: "/etc/modules-load.d/{{ item }}.conf"
+            create: yes
+            mode: 0644
+            regexp: "^{{ item }}"
+            line: "{{ item }}"
+            state: present
+          loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
+          register: __ha_cluster_sbd_watchdog_modules_load_config
+
+        - name: "SBD - Load watchdog kernel modules"
+          community.general.modprobe:
+            name: "{{ item }}"
+            state: present
+          loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
+          register: __ha_cluster_sbd_watchdog_modules_load_output
+
+  when:
+    - ha_cluster_sbd_enabled

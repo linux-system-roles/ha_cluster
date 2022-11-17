@@ -1033,9 +1033,9 @@ all:
 #### SBD watchdog and devices
 When using SBD, you may optionally configure watchdog and SBD devices for each
 node in inventory. Even though all SBD devices must be shared to and accessible
-from all nodes, each node may use different names for the devices. Watchdog may
-be different for each node as well. See also [SBD
-variables](#ha_cluster_sbd_enabled).
+from all nodes, each node may use different names for the devices. The loaded
+watchdog modules and used devices may also be different for each node. See also
+[SBD variables](#ha_cluster_sbd_enabled).
 
 Example inventory with targets `node1` and `node2`:
 ```yaml
@@ -1043,18 +1043,30 @@ all:
   hosts:
     node1:
       ha_cluster:
+        sbd_watchdog_modules:
+          - softdog
+          - iTCO_wdt
         sbd_watchdog: /dev/watchdog2
         sbd_devices:
           - /dev/vdx
           - /dev/vdy
     node2:
       ha_cluster:
+        sbd_watchdog_modules:
+          - softdog
+        sbd_watchdog_modules_blocklist:
+          - iTCO_wdt
         sbd_watchdog: /dev/watchdog1
         sbd_devices:
           - /dev/vdw
           - /dev/vdz
 ```
 
+* `sbd_watchdog_modules` (optional) - Watchdog kernel modules to be loaded
+  (creates `/dev/watchdog*` devices). Defaults to empty list if not set.
+* `sbd_watchdog_modules_blocklist` (optional) - Watchdog kernel modules to be
+  unloaded and blocked. Defaults to empty list if not set.
+  `/dev/watchdog` if not set.
 * `sbd_watchdog` (optional) - Watchdog device to be used by SBD. Defaults to
   `/dev/watchdog` if not set.
 * `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
