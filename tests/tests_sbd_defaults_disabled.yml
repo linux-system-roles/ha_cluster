@@ -28,7 +28,7 @@
             that:
               - ansible_facts.services["corosync.service"].status == "disabled"
               - ansible_facts.services["pacemaker.service"].status == "disabled"
-              - ansible_facts.services["sbd.service"].status == "disabled"
+              - ansible_facts.services["sbd.service"].status == "enabled"
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
