@@ -18,14 +18,14 @@
             value: "true"
     ha_cluster_resource_primitives:
       - id: fence-no-attrs
-        agent: 'stonith:fence_ipmilan'
+        agent: 'stonith:fence_kdump'
       - id: fence-empty-attrs1
-        agent: 'stonith:fence_ipmilan'
+        agent: 'stonith:fence_kdump'
         instance_attrs:
         meta_attrs:
         operations:
       - id: fence-empty-attrs2
-        agent: 'stonith:fence_ipmilan'
+        agent: 'stonith:fence_kdump'
         instance_attrs:
           - attrs:
         meta_attrs:
@@ -34,13 +34,13 @@
           # operation. Therefore, there are no tests for partially defined
           # operations.
       - id: fence-with-attrs
-        agent: 'stonith:fence_ipmilan'
+        agent: 'stonith:fence_kdump'
         instance_attrs:
           - attrs:
               - name: pcmk_host_list
                 value: node1 node2
-              - name: username
-                value: login
+              - name: timeout
+                value: 30
         meta_attrs:
           - attrs:
               - name: target-role
@@ -133,8 +133,8 @@
 
       - id: dummy-clone-no-options
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-clone-promotable
-        agent: 'ocf:pacemaker:Dummy'
+      - id: stateful-clone-promotable
+        agent: 'ocf:pacemaker:Stateful'
       - id: dummy-clone-id
         agent: 'ocf:pacemaker:Dummy'
       - id: dummy-clone-empty-attrs1
@@ -143,8 +143,8 @@
         agent: 'ocf:pacemaker:Dummy'
       - id: dummy-clone-with-attrs1
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-clone-with-attrs2
-        agent: 'ocf:pacemaker:Dummy'
+      - id: stateful-clone-with-attrs2
+        agent: 'ocf:pacemaker:Stateful'
 
       - id: dummy-bundle
         agent: 'ocf:pacemaker:Dummy'
@@ -175,7 +175,7 @@
 
     ha_cluster_resource_clones:
       - resource_id: dummy-clone-no-options
-      - resource_id: dummy-clone-promotable
+      - resource_id: stateful-clone-promotable
         promotable: true
       - resource_id: dummy-clone-id
         id: custom-clone-id1
@@ -189,7 +189,7 @@
           - attrs:
               - name: target-role
                 value: Stopped
-      - resource_id: dummy-clone-with-attrs2
+      - resource_id: stateful-clone-with-attrs2
         promotable: true
         id: custom-clone-id2
         meta_attrs:
@@ -296,14 +296,14 @@
             - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_expected_lines:
-              - ' Resource: fence-no-attrs (class=stonith type=fence_ipmilan)'
+              - ' Resource: fence-no-attrs (class=stonith type=fence_kdump)'
               - '  Operations: monitor interval=60s (fence-no-attrs-monitor-interval-60s)'
-              - ' Resource: fence-empty-attrs1 (class=stonith type=fence_ipmilan)'
+              - ' Resource: fence-empty-attrs1 (class=stonith type=fence_kdump)'
               - '  Operations: monitor interval=60s (fence-empty-attrs1-monitor-interval-60s)'
-              - ' Resource: fence-empty-attrs2 (class=stonith type=fence_ipmilan)'
+              - ' Resource: fence-empty-attrs2 (class=stonith type=fence_kdump)'
               - '  Operations: monitor interval=60s (fence-empty-attrs2-monitor-interval-60s)'
-              - ' Resource: fence-with-attrs (class=stonith type=fence_ipmilan)'
-              - '  Attributes: pcmk_host_list="node1 node2" username=login'
+              - ' Resource: fence-with-attrs (class=stonith type=fence_kdump)'
+              - '  Attributes: pcmk_host_list="node1 node2" timeout=30'
               - '  Meta Attrs: an-attr="a value" target-role=Stopped'
               - '  Operations: monitor interval=26 timeout=13 (fence-with-attrs-monitor-interval-26)'
               - '              monitor interval=28s timeout=14s (fence-with-attrs-monitor-interval-28s)'
@@ -338,7 +338,7 @@
                             "agent_name": {
                                 "standard": "stonith",
                                 "provider": null,
-                                "type": "fence_ipmilan"
+                                "type": "fence_kdump"
                             },
                             "description": null,
                             "operations": [
@@ -367,7 +367,7 @@
                             "agent_name": {
                                 "standard": "stonith",
                                 "provider": null,
-                                "type": "fence_ipmilan"
+                                "type": "fence_kdump"
                             },
                             "description": null,
                             "operations": [
@@ -396,7 +396,7 @@
                             "agent_name": {
                                 "standard": "stonith",
                                 "provider": null,
-                                "type": "fence_ipmilan"
+                                "type": "fence_kdump"
                             },
                             "description": null,
                             "operations": [
@@ -425,7 +425,7 @@
                             "agent_name": {
                                 "standard": "stonith",
                                 "provider": null,
-                                "type": "fence_ipmilan"
+                                "type": "fence_kdump"
                             },
                             "description": null,
                             "operations": [
@@ -491,9 +491,9 @@
                                             "value": "node1 node2"
                                         },
                                         {
-                                            "id": "fence-with-attrs-instance_attributes-username",
-                                            "name": "username",
-                                            "value": "login"
+                                            "id": "fence-with-attrs-instance_attributes-timeout",
+                                            "name": "timeout",
+                                            "value": "30"
                                         }
                                     ]
                                 }
@@ -664,18 +664,19 @@
                 '') }}"
               - '               start interval=0s timeout=20s (dummy-clone-no-options-start-interval-0s)'
               - '               stop interval=0s timeout=20s (dummy-clone-no-options-stop-interval-0s)'
-              - ' Clone: dummy-clone-promotable-clone'
+              - ' Clone: stateful-clone-promotable-clone'
               - '  Meta Attrs: promotable=true'
-              - '  Resource: dummy-clone-promotable (class=ocf provider=pacemaker type=Dummy)'
-              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-promotable-migrate_from-interval-0s)'
-              - '               migrate_to interval=0s timeout=20s (dummy-clone-promotable-migrate_to-interval-0s)'
-              - '               monitor interval=10s timeout=20s (dummy-clone-promotable-monitor-interval-10s)'
-              - '               reload interval=0s timeout=20s (dummy-clone-promotable-reload-interval-0s)'
+              - '  Resource: stateful-clone-promotable (class=ocf provider=pacemaker type=Stateful)'
+              - '   Operations: demote interval=0s timeout=10s (stateful-clone-promotable-demote-interval-0s)'
+              - '               monitor interval=10s role=Master timeout=20s (stateful-clone-promotable-monitor-interval-10s)'
+              - '               monitor interval=11s role=Slave timeout=20s (stateful-clone-promotable-monitor-interval-11s)'
+              - '               notify interval=0s timeout=5s (stateful-clone-promotable-notify-interval-0s)'
+              - '               promote interval=0s timeout=10s (stateful-clone-promotable-promote-interval-0s)'
               - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
-                '               reload-agent interval=0s timeout=20s (dummy-clone-promotable-reload-agent-interval-0s)',
+                '               reload-agent interval=0s timeout=10s (stateful-clone-promotable-reload-agent-interval-0s)',
                 '') }}"
-              - '               start interval=0s timeout=20s (dummy-clone-promotable-start-interval-0s)'
-              - '               stop interval=0s timeout=20s (dummy-clone-promotable-stop-interval-0s)'
+              - '               start interval=0s timeout=20s (stateful-clone-promotable-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (stateful-clone-promotable-stop-interval-0s)'
               - ' Clone: {{
                     ("pcmk.resource.clone.custom-id" in __test_pcs_capabilities)
                     | ternary("custom-clone-id1", "dummy-clone-id-clone") }}'
@@ -725,18 +726,19 @@
               - '               stop interval=0s timeout=20s (dummy-clone-with-attrs1-stop-interval-0s)'
               - ' Clone: {{
                     ("pcmk.resource.promotable.custom-id" in __test_pcs_capabilities)
-                    | ternary("custom-clone-id2", "dummy-clone-with-attrs2-clone") }}'
+                    | ternary("custom-clone-id2", "stateful-clone-with-attrs2-clone") }}'
               - '  Meta Attrs: an-attr="a value" promotable=true target-role=Stopped'
-              - '  Resource: dummy-clone-with-attrs2 (class=ocf provider=pacemaker type=Dummy)'
-              - '   Operations: migrate_from interval=0s timeout=20s (dummy-clone-with-attrs2-migrate_from-interval-0s)'
-              - '               migrate_to interval=0s timeout=20s (dummy-clone-with-attrs2-migrate_to-interval-0s)'
-              - '               monitor interval=10s timeout=20s (dummy-clone-with-attrs2-monitor-interval-10s)'
-              - '               reload interval=0s timeout=20s (dummy-clone-with-attrs2-reload-interval-0s)'
+              - '  Resource: stateful-clone-with-attrs2 (class=ocf provider=pacemaker type=Stateful)'
+              - '   Operations: demote interval=0s timeout=10s (stateful-clone-with-attrs2-demote-interval-0s)'
+              - '               monitor interval=10s role=Master timeout=20s (stateful-clone-with-attrs2-monitor-interval-10s)'
+              - '               monitor interval=11s role=Slave timeout=20s (stateful-clone-with-attrs2-monitor-interval-11s)'
+              - '               notify interval=0s timeout=5s (stateful-clone-with-attrs2-notify-interval-0s)'
+              - '               promote interval=0s timeout=10s (stateful-clone-with-attrs2-promote-interval-0s)'
               - "{{ ansible_facts.packages['pacemaker'][0]['version'] is version('2.1', '>=') | ternary(
-                '               reload-agent interval=0s timeout=20s (dummy-clone-with-attrs2-reload-agent-interval-0s)',
+                '               reload-agent interval=0s timeout=10s (stateful-clone-with-attrs2-reload-agent-interval-0s)',
                 '') }}"
-              - '               start interval=0s timeout=20s (dummy-clone-with-attrs2-start-interval-0s)'
-              - '               stop interval=0s timeout=20s (dummy-clone-with-attrs2-stop-interval-0s)'
+              - '               start interval=0s timeout=20s (stateful-clone-with-attrs2-start-interval-0s)'
+              - '               stop interval=0s timeout=20s (stateful-clone-with-attrs2-stop-interval-0s)'
               - ' Clone: group3-clone'
               - '  Group: group3'
               - '   Resource: dummy-3a (class=ocf provider=pacemaker type=Dummy)'
@@ -772,6 +774,15 @@
           when:
             - "'pcmk.resource.config.output-formats' in __test_pcs_capabilities"
           vars:
+            __old_roles: "{{
+              (
+                ansible_facts['distribution'] in ['RedHat', 'CentOS']
+                and
+                ansible_facts['distribution_major_version'] == '8'
+              ) | bool
+              }}"
+            __promoted: "{{ __old_roles | ternary('Master', 'Promoted') }}"
+            __unpromoted: "{{ __old_roles | ternary('Slave', 'Unpromoted') }}"
             __test_expected_lines: '
                 {
                     "primitives": [
@@ -2184,22 +2195,22 @@
                             "utilization": []
                         },
                         {
-                            "id": "dummy-clone-promotable",
+                            "id": "stateful-clone-promotable",
                             "agent_name": {
                                 "standard": "ocf",
                                 "provider": "pacemaker",
-                                "type": "Dummy"
+                                "type": "Stateful"
                             },
                             "description": null,
                             "operations": [
                                 {
-                                    "id": "dummy-clone-promotable-migrate_from-interval-0s",
-                                    "name": "migrate_from",
+                                    "id": "stateful-clone-promotable-demote-interval-0s",
+                                    "name": "demote",
                                     "interval": "0s",
                                     "description": null,
                                     "start_delay": null,
                                     "interval_origin": null,
-                                    "timeout": "20s",
+                                    "timeout": "10s",
                                     "enabled": null,
                                     "record_pending": null,
                                     "role": null,
@@ -2208,22 +2219,7 @@
                                     "instance_attributes": []
                                 },
                                 {
-                                    "id": "dummy-clone-promotable-migrate_to-interval-0s",
-                                    "name": "migrate_to",
-                                    "interval": "0s",
-                                    "description": null,
-                                    "start_delay": null,
-                                    "interval_origin": null,
-                                    "timeout": "20s",
-                                    "enabled": null,
-                                    "record_pending": null,
-                                    "role": null,
-                                    "on_fail": null,
-                                    "meta_attributes": [],
-                                    "instance_attributes": []
-                                },
-                                {
-                                    "id": "dummy-clone-promotable-monitor-interval-10s",
+                                    "id": "stateful-clone-promotable-monitor-interval-10s",
                                     "name": "monitor",
                                     "interval": "10s",
                                     "description": null,
@@ -2232,19 +2228,49 @@
                                     "timeout": "20s",
                                     "enabled": null,
                                     "record_pending": null,
+                                    "role": "{{ __promoted }}",
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "stateful-clone-promotable-monitor-interval-11s",
+                                    "name": "monitor",
+                                    "interval": "11s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": "{{ __unpromoted }}",
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "stateful-clone-promotable-notify-interval-0s",
+                                    "name": "notify",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "5s",
+                                    "enabled": null,
+                                    "record_pending": null,
                                     "role": null,
                                     "on_fail": null,
                                     "meta_attributes": [],
                                     "instance_attributes": []
                                 },
                                 {
-                                    "id": "dummy-clone-promotable-reload-interval-0s",
-                                    "name": "reload",
+                                    "id": "stateful-clone-promotable-promote-interval-0s",
+                                    "name": "promote",
                                     "interval": "0s",
                                     "description": null,
                                     "start_delay": null,
                                     "interval_origin": null,
-                                    "timeout": "20s",
+                                    "timeout": "10s",
                                     "enabled": null,
                                     "record_pending": null,
                                     "role": null,
@@ -2254,13 +2280,13 @@
                                 },
                             {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
                                 {
-                                    "id": "dummy-clone-promotable-reload-agent-interval-0s",
+                                    "id": "stateful-clone-promotable-reload-agent-interval-0s",
                                     "name": "reload-agent",
                                     "interval": "0s",
                                     "description": null,
                                     "start_delay": null,
                                     "interval_origin": null,
-                                    "timeout": "20s",
+                                    "timeout": "10s",
                                     "enabled": null,
                                     "record_pending": null,
                                     "role": null,
@@ -2270,7 +2296,7 @@
                                 },
                             {% endif %}
                                 {
-                                    "id": "dummy-clone-promotable-start-interval-0s",
+                                    "id": "stateful-clone-promotable-start-interval-0s",
                                     "name": "start",
                                     "interval": "0s",
                                     "description": null,
@@ -2285,7 +2311,7 @@
                                     "instance_attributes": []
                                 },
                                 {
-                                    "id": "dummy-clone-promotable-stop-interval-0s",
+                                    "id": "stateful-clone-promotable-stop-interval-0s",
                                     "name": "stop",
                                     "interval": "0s",
                                     "description": null,
@@ -2789,22 +2815,22 @@
                             "utilization": []
                         },
                         {
-                            "id": "dummy-clone-with-attrs2",
+                            "id": "stateful-clone-with-attrs2",
                             "agent_name": {
                                 "standard": "ocf",
                                 "provider": "pacemaker",
-                                "type": "Dummy"
+                                "type": "Stateful"
                             },
                             "description": null,
                             "operations": [
                                 {
-                                    "id": "dummy-clone-with-attrs2-migrate_from-interval-0s",
-                                    "name": "migrate_from",
+                                    "id": "stateful-clone-with-attrs2-demote-interval-0s",
+                                    "name": "demote",
                                     "interval": "0s",
                                     "description": null,
                                     "start_delay": null,
                                     "interval_origin": null,
-                                    "timeout": "20s",
+                                    "timeout": "10s",
                                     "enabled": null,
                                     "record_pending": null,
                                     "role": null,
@@ -2813,22 +2839,7 @@
                                     "instance_attributes": []
                                 },
                                 {
-                                    "id": "dummy-clone-with-attrs2-migrate_to-interval-0s",
-                                    "name": "migrate_to",
-                                    "interval": "0s",
-                                    "description": null,
-                                    "start_delay": null,
-                                    "interval_origin": null,
-                                    "timeout": "20s",
-                                    "enabled": null,
-                                    "record_pending": null,
-                                    "role": null,
-                                    "on_fail": null,
-                                    "meta_attributes": [],
-                                    "instance_attributes": []
-                                },
-                                {
-                                    "id": "dummy-clone-with-attrs2-monitor-interval-10s",
+                                    "id": "stateful-clone-with-attrs2-monitor-interval-10s",
                                     "name": "monitor",
                                     "interval": "10s",
                                     "description": null,
@@ -2837,19 +2848,49 @@
                                     "timeout": "20s",
                                     "enabled": null,
                                     "record_pending": null,
+                                    "role": "{{ __promoted }}",
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "stateful-clone-with-attrs2-monitor-interval-11s",
+                                    "name": "monitor",
+                                    "interval": "11s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": "{{ __unpromoted }}",
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                },
+                                {
+                                    "id": "stateful-clone-with-attrs2-notify-interval-0s",
+                                    "name": "notify",
+                                    "interval": "0s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "5s",
+                                    "enabled": null,
+                                    "record_pending": null,
                                     "role": null,
                                     "on_fail": null,
                                     "meta_attributes": [],
                                     "instance_attributes": []
                                 },
                                 {
-                                    "id": "dummy-clone-with-attrs2-reload-interval-0s",
-                                    "name": "reload",
+                                    "id": "stateful-clone-with-attrs2-promote-interval-0s",
+                                    "name": "promote",
                                     "interval": "0s",
                                     "description": null,
                                     "start_delay": null,
                                     "interval_origin": null,
-                                    "timeout": "20s",
+                                    "timeout": "10s",
                                     "enabled": null,
                                     "record_pending": null,
                                     "role": null,
@@ -2859,13 +2900,13 @@
                                 },
                             {% if ansible_facts.packages["pacemaker"][0]["version"] is version("2.1", ">=") %}
                                 {
-                                    "id": "dummy-clone-with-attrs2-reload-agent-interval-0s",
+                                    "id": "stateful-clone-with-attrs2-reload-agent-interval-0s",
                                     "name": "reload-agent",
                                     "interval": "0s",
                                     "description": null,
                                     "start_delay": null,
                                     "interval_origin": null,
-                                    "timeout": "20s",
+                                    "timeout": "10s",
                                     "enabled": null,
                                     "record_pending": null,
                                     "role": null,
@@ -2875,7 +2916,7 @@
                                 },
                             {% endif %}
                                 {
-                                    "id": "dummy-clone-with-attrs2-start-interval-0s",
+                                    "id": "stateful-clone-with-attrs2-start-interval-0s",
                                     "name": "start",
                                     "interval": "0s",
                                     "description": null,
@@ -2890,7 +2931,7 @@
                                     "instance_attributes": []
                                 },
                                 {
-                                    "id": "dummy-clone-with-attrs2-stop-interval-0s",
+                                    "id": "stateful-clone-with-attrs2-stop-interval-0s",
                                     "name": "stop",
                                     "interval": "0s",
                                     "description": null,
@@ -3040,17 +3081,17 @@
                             "instance_attributes": []
                         },
                         {
-                            "id": "dummy-clone-promotable-clone",
+                            "id": "stateful-clone-promotable-clone",
                             "description": null,
-                            "member_id": "dummy-clone-promotable",
+                            "member_id": "stateful-clone-promotable",
                             "meta_attributes": [
                                 {
-                                    "id": "dummy-clone-promotable-clone-meta_attributes",
+                                    "id": "stateful-clone-promotable-clone-meta_attributes",
                                     "options": {},
                                     "rule": null,
                                     "nvpairs": [
                                         {
-                                            "id": "dummy-clone-promotable-clone-meta_attributes-promotable",
+                                            "id": "stateful-clone-promotable-clone-meta_attributes-promotable",
                                             "name": "promotable",
                                             "value": "true"
                                         }
@@ -3103,7 +3144,7 @@
                         {
                             "id": "custom-clone-id2",
                             "description": null,
-                            "member_id": "dummy-clone-with-attrs2",
+                            "member_id": "stateful-clone-with-attrs2",
                             "meta_attributes": [
                                 {
                                     "id": "custom-clone-id2-meta_attributes",
