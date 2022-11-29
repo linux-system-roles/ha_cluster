@@ -15,10 +15,18 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
+        - name: Set up test environment for SBD
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup_sbd.yml
+
         - name: Run HA Cluster role
           include_role:
             name: linux-system-roles.ha_cluster
             public: true
+
+        # Checking SBD config file content and Auto Tie Breaker configuration
+        # is done in tests_sbd_defaults.yml
 
         - name: Get services status
           service_facts:
@@ -30,7 +38,15 @@
               - ansible_facts.services["pacemaker.service"].status == "disabled"
               - ansible_facts.services["sbd.service"].status == "enabled"
 
+        - name: Check cluster status
+          include_tasks: tasks/assert_cluster_running.yml
+
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
 
+      always:
+        - name: Clean up test environment for SBD
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_cleanup_sbd.yml
       tags: tests::verify
