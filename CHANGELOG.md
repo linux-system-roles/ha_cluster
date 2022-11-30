@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.8.2] - 2022-11-30
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- fix qnetd check mode
+
+### Other Changes
+
+- none
+
 [1.8.1] - 2022-11-14
 --------------------
 
