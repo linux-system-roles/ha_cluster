@@ -5,18 +5,19 @@
   command:
     cmd: pcs --force -- qdevice destroy net
   when:
+    - not ansible_check_mode
     - (
         not ha_cluster_qnetd.present | d(false)
         or ha_cluster_qnetd.regenerate_keys | d(false)
       )
-  check_mode: false
 
 - block:
     - name: Setup qnetd
       command:
         cmd: pcs --start -- qdevice setup model net
+      when:
+        - not ansible_check_mode
       register: __ha_cluster_pcs_qnetd_setup
-      check_mode: false
       changed_when: __ha_cluster_pcs_qnetd_setup.rc == 0
       failed_when:
         - not (
