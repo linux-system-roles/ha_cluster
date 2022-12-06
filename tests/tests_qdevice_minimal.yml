@@ -13,7 +13,12 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
-        - name: Set up test environment for qnetd / qdevice
+        - name: Clean up test environment for qnetd
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_cleanup_qnetd.yml
+
+        - name: Set up test environment for qnetd
           include_role:
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup_qnetd.yml
@@ -99,4 +104,9 @@
         - name: Check qdevice status
           include_tasks: tasks/assert_qdevice_in_cluster.yml
 
+      always:
+        - name: Clean up test environment for qnetd
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_cleanup_qnetd.yml
       tags: tests::verify
