@@ -3,7 +3,6 @@
 - name: List active RHEL repositories
   command:
     cmd: dnf repolist
-    warn: false
   register: __ha_cluster_repolist
   changed_when: false
   check_mode: false
