@@ -1,6 +1,33 @@
 Changelog
 =========
 
+[1.8.3] - 2022-12-12
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- command warn is not supported in ansible-core 2.14
+
+If users want to suppress the warning, users will need to configure
+ansible.cfg.
+
+- fix ownership of cib.xml
+
+- update for upcoming pcs release
+
+The upcoming pcs brings stricter validation for resource
+configuration to prevent certain types of misconfiguration.
+
+- tests: add qnetd cleanup
+
+### Other Changes
+
+- none
+
 [1.8.2] - 2022-11-30
 --------------------
 
