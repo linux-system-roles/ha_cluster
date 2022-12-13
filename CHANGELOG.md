@@ -1,6 +1,29 @@
 Changelog
 =========
 
+[1.8.4] - 2022-12-13
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- Allow enabled SBD on disabled cluster (#81)
+
+Currently the sbd.service will not be enabled if the cluster autostart
+is disabled. This is not intended behavior as is will effectively break
+the feature. We can simply remove the condition to depend on
+ha_cluster_start_on_boot as on a RHEL8 system the sbd.service has a
+dependencies (Before/After/PartOf/RequiredBy) to cluster related
+services which make sure it is only ever started by the cluster (a
+manual start is not possible).
+
+### Other Changes
+
+- none
+
 [1.8.3] - 2022-12-12
 --------------------
 
