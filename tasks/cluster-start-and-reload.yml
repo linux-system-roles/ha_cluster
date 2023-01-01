@@ -24,7 +24,7 @@
 - name: Stop cluster daemons to reload configuration
   service:
     name: "{{ item }}"
-    state: stopped  # noqa no-handler 503
+    state: stopped  # noqa no-handler
   loop:
     - pacemaker
     - corosync-qdevice

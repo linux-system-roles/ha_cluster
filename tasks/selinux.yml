@@ -3,7 +3,12 @@
 - name: Populate service facts
   service_facts:
 
-- block:
+- name: Manage SELinux
+  when:
+    - '"firewalld.service" in ansible_facts.services'
+    - ansible_facts.services["firewalld.service"]["state"] == "running"
+    - ha_cluster_manage_selinux | bool
+  block:
     - name: Set the fence-virt/fence-agents port to _ha_cluster_selinux
       set_fact:
         _ha_cluster_selinux:
@@ -42,7 +47,3 @@
         name: fedora.linux_system_roles.selinux
       vars:
         selinux_ports: "{{ _ha_cluster_selinux }}"
-  when:
-    - '"firewalld.service" in ansible_facts.services'
-    - ansible_facts.services["firewalld.service"]["state"] == "running"
-    - ha_cluster_manage_selinux | bool

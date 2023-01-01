@@ -11,7 +11,10 @@
         or ha_cluster_qnetd.regenerate_keys | d(false)
       )
 
-- block:
+- name: Manage qnetd
+  when:
+    - ha_cluster_qnetd.present | d(false)
+  block:
     - name: Setup qnetd
       command:
         cmd: pcs --start -- qdevice setup model net
@@ -34,6 +37,3 @@
       service:
         name: corosync-qnetd
         enabled: "{{ ha_cluster_qnetd.start_on_boot | d(true) }}"
-
-  when:
-    - ha_cluster_qnetd.present | d(false)

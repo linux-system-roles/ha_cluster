@@ -54,6 +54,12 @@
         mode: "{{ __pcsd_stat.stat.mode }}"
 
 - name: Distribute pcsd TLS certificate and key
+  when:
+    - ha_cluster_pcsd_certificates | length == 0
+    - ha_cluster_pcsd_public_key_src is string
+    - ha_cluster_pcsd_public_key_src | length > 0
+    - ha_cluster_pcsd_private_key_src is string
+    - ha_cluster_pcsd_private_key_src | length > 0
   block:
     - name: Distribute pcsd TLS private key
       copy:
@@ -69,12 +75,6 @@
         owner: root
         group: root
         mode: 0600
-  when:
-    - ha_cluster_pcsd_certificates | length == 0
-    - ha_cluster_pcsd_public_key_src is string
-    - ha_cluster_pcsd_public_key_src | length > 0
-    - ha_cluster_pcsd_private_key_src is string
-    - ha_cluster_pcsd_private_key_src | length > 0
 
 - name: Distribute pcs_settings.conf
   template:

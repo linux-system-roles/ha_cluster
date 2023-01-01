@@ -27,22 +27,22 @@
     name: hacluster
     password: "{{
       ha_cluster_hacluster_password | string
-      | password_hash('sha512', ansible_hostname.replace('-','x')[:16])
+      | password_hash('sha512', ansible_hostname.replace('-', 'x')[:16])
     }}"
 
 - name: Configure pcs / pcsd
   include_tasks: pcs-configure-pcs-pcsd.yml
 
 - name: Install and configure HA cluster
+  when: ha_cluster_cluster_present | bool
   block:
     - name: Install cluster packages
       package:
         name: "{{
           __ha_cluster_fullstack_node_packages
           +
-          __ha_cluster_qdevice_in_use | ternary(
-            __ha_cluster_qdevice_node_packages, []
-          )
+          __ha_cluster_qdevice_in_use |
+            ternary(__ha_cluster_qdevice_node_packages, [])
           +
           ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
           +
@@ -87,9 +87,8 @@
     - name: Create and push CIB
       include_tasks: create-and-push-cib.yml
 
-  when: ha_cluster_cluster_present
-
 - name: Remove cluster configuration
+  when: not ha_cluster_cluster_present
   block:
     - name: Remove cluster configuration
       include_tasks: cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml
@@ -98,7 +97,6 @@
       file:
         path: /etc/cluster/fence_xvm.key
         state: absent
-  when: not ha_cluster_cluster_present
 
 - name: Configure qnetd
   include_tasks: pcs-qnetd.yml

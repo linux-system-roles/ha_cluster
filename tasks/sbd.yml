@@ -1,7 +1,19 @@
 # SPDX-License-Identifier: MIT
 ---
-- block:
-    - block:
+- name: Manage SBD
+  when: ha_cluster_sbd_enabled
+  block:
+    - name: Manage SBD
+      # Ideally, the block as a whole should run one node at a time. This does
+      # not seem to be possible with Ansible yet. Instead, we at least make the
+      # block's tasks run one by one. This way, we avoid possible issues caused
+      # by initializing one device from multiple host at the same time. Devices
+      # initialized before the role started will not be reinitialized. Devices
+      # not initialized before the role started will be initialized as many
+      # times as there are nodes. That, however, has no other side effect than
+      # suboptimal performance of the role.
+      throttle: 1
+      block:
         - name: Probe SBD devices
           command:
             cmd: sbd -d {{ item | quote }} dump
@@ -32,15 +44,6 @@
           changed_when: true
           loop: "{{ __ha_cluster_check_sbd_devices_result.results }}"
           when: item.rc != 0
-      # Ideally, the block as a whole should run one node at a time. This does
-      # not seem to be possible with Ansible yet. Instead, we at least make the
-      # block's tasks run one by one. This way, we avoid possible issues caused
-      # by initializing one device from multiple host at the same time. Devices
-      # initialized before the role started will not be reinitialized. Devices
-      # not initialized before the role started will be initialized as many
-      # times as there are nodes. That, however, has no other side effect than
-      # suboptimal performance of the role.
-      throttle: 1
 
     - name: Distribute SBD config
       template:
@@ -55,8 +58,6 @@
         node_watchdog: "{{ ha_cluster.sbd_watchdog | d('/dev/watchdog') }}"
         node_devices: "{{ ha_cluster.sbd_devices | d([]) }}"
       register: __ha_cluster_distribute_sbd_config
-
-  when: ha_cluster_sbd_enabled
 
 - name: Get services status - detect pacemaker
   service_facts:

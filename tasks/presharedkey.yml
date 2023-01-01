@@ -7,14 +7,18 @@
 # key from cluster nodes. If no node has a key, a random key generated in step
 # 2 is going to be used.
 
-- name: Retrieve {{ preshared_key_label }} from the controller
+- name: Retrieve from the controller key {{ preshared_key_label }}
+  when:
+    - preshared_key_src is string and preshared_key_src | length > 1
+  run_once: true
+  delegate_to: localhost
   block:
-    - name: Check if {{ preshared_key_label }} exists on the controller
+    - name: Check if key exists on the controller {{ preshared_key_label }}
       stat:
         path: "{{ preshared_key_src }}"
       register: __ha_cluster_preshared_key_stat_controller
 
-    - name: Slurp existing {{ preshared_key_label }} from the controller
+    - name: Slurp existing key from the controller {{ preshared_key_label }}
       slurp:
         src: "{{ preshared_key_src }}"
       register: __ha_cluster_preshared_key_slurp_controller
@@ -22,21 +26,22 @@
       # Prevent key contents to be printed to the output
       no_log: true
 
-    - name: Use the slurped {{ preshared_key_label }} from the controller
+    - name: Use the slurped key from the controller {{ preshared_key_label }}
       set_fact:
         __ha_cluster_some_preshared_key: >
           "{{ __ha_cluster_preshared_key_slurp_controller.content }}"
       when: __ha_cluster_preshared_key_stat_controller.stat.exists
       # Prevent key contents to be printed to the output
       no_log: true
-  when:
-    - preshared_key_src is string and preshared_key_src | length > 1
-  run_once: true
-  delegate_to: localhost
 
-- name: Generate random {{ preshared_key_label }}
+- name: Generate random key {{ preshared_key_label }}
+  when:
+    - not (preshared_key_src is string and preshared_key_src | length > 1)
+  run_once: true
+  # Prevent key contents to be printed to the output
+  no_log: true
   block:
-    - name: Generate {{ preshared_key_label }} using OpenSSL
+    - name: Generate key using OpenSSL {{ preshared_key_label }}
       command:
         cmd: openssl rand -base64 {{ preshared_key_length | quote }}
       register: __ha_cluster_openssl_rand
@@ -46,20 +51,18 @@
       set_fact:
         __ha_cluster_some_preshared_key: >
           "{{ __ha_cluster_openssl_rand.stdout }}"
+
+- name: Retrieve key from cluster nodes {{ preshared_key_label }}
   when:
     - not (preshared_key_src is string and preshared_key_src | length > 1)
-  run_once: true
-  # Prevent key contents to be printed to the output
-  no_log: true
-
-- name: Retrieve {{ preshared_key_label }} from cluster nodes
+    - not ha_cluster_regenerate_keys
   block:
-    - name: Check if {{ preshared_key_label }} exists on cluster nodes
+    - name: Check if key exists on cluster nodes {{ preshared_key_label }}
       stat:
         path: "{{ preshared_key_dest }}"
       register: __ha_cluster_preshared_key_stat
 
-    - name: Slurp existing {{ preshared_key_label }} from cluster nodes
+    - name: Slurp existing key from cluster nodes {{ preshared_key_label }}
       slurp:
         src: "{{ preshared_key_dest }}"
       register: __ha_cluster_preshared_key_slurp
@@ -67,7 +70,7 @@
       # Prevent key contents to be printed to the output
       no_log: true
 
-    - name: Use the slurped {{ preshared_key_label }} from cluster nodes
+    - name: Use the slurped key from cluster nodes {{ preshared_key_label }}
       set_fact:
         __ha_cluster_some_preshared_key: >
           "{{ __ha_cluster_preshared_key_slurp.content }}"
@@ -78,6 +81,3 @@
       delegate_facts: true
       delegate_to: "{{ item }}"
       with_items: "{{ ansible_play_hosts }}"
-  when:
-    - not (preshared_key_src is string and preshared_key_src | length > 1)
-    - not ha_cluster_regenerate_keys

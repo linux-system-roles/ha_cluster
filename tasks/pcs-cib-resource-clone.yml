@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Check '{{ resource_clone.resource_id }}' resource clone options
+- name: Check options for resource clone {{ resource_clone.resource_id }}
   fail:
     msg: >
       Custom clone id '{{ resource_clone.id }}' is ignored
@@ -21,7 +21,7 @@
         )
       )
 
-- name: Configure '{{ resource_clone.resource_id }}' resource clone
+- name: Configure resource clone {{ resource_clone.resource_id }}
   command:
     # pcs-0.10 supports only one set of attributes, that's the reason for
     # *_attrs[0] instead of looping over *_attrs
