@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Configure order constraint '{{ constraint.id | d(constraint_index) }}'
+- name: Configure order constraint {{ constraint.id | d(constraint_index) }}
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}

@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 ---
-- block:
+- name: Check firewall
+  when: ha_cluster_manage_firewall | bool
+  block:
     - name: Check firewall service status
       command: firewall-cmd --list-services
       register: _result
@@ -12,9 +14,13 @@
       register: _result
       failed_when: "'1229/tcp' not in _result.stdout"
       changed_when: false
-  when: ha_cluster_manage_firewall | bool
 
-- block:
+- name: Check SELinux
+  when:
+    - '"firewalld.service" in ansible_facts.services'
+    - ansible_facts.services["firewalld.service"]["state"] == "running"
+    - ha_cluster_manage_selinux | bool
+  block:
     - name: Get associated selinux ports
       shell: |-
         set -euo pipefail
@@ -32,7 +38,3 @@
         _pair: "{{ item.split('/') }}"
       loop: "{{ __ports.stdout.split(' ') }}"
       changed_when: false
-  when:
-    - '"firewalld.service" in ansible_facts.services'
-    - ansible_facts.services["firewalld.service"]["state"] == "running"
-    - ha_cluster_manage_selinux | bool

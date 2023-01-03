@@ -1,6 +1,8 @@
 # SPDX-License-Identifier: MIT
 ---
-- block:
+- name: Manage qnetd backup
+  when: action == "backup"
+  block:
     - name: Create /etc/corosync/qnetd_backup directory
       file:
         path: /etc/corosync/qnetd_backup
@@ -14,11 +16,10 @@
           cp --preserve=all --recursive
           /etc/corosync/qnetd /etc/corosync/qnetd_backup
       changed_when: true
-  when:
-    - action == "backup"
 
-
-- block:
+- name: Manage qnetd restore
+  when: action == "restore"
+  block:
     - name: Restore qnetd settings
       command:
         cmd: >
@@ -30,5 +31,3 @@
       service:
         name: corosync-qnetd
         state: started
-  when:
-    - action == "restore"

@@ -1,6 +1,16 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Generate pre-shared keys and certificates on the controller
+  delegate_to: localhost
+  run_once: true
+  vars:
+    __test_pcsd_private_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.key"
+    __test_pcsd_public_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.crt"
+    __test_corosync_key_path: >-
+      {{ __ha_cluster_work_dir.path }}/corosync-authkey
+    __test_pacemaker_key_path: >-
+      {{ __ha_cluster_work_dir.path }}/pacemaker-authkey
+    __test_fence_xvm_key_path: "{{ __ha_cluster_work_dir.path }}/fence_xvm.key"
   block:
     - name: List packages on the controller to see if OpenSSL is installed
       package_facts:
@@ -36,14 +46,3 @@
         content: "{{ lookup('pipe', 'openssl rand -base64 512') | b64decode }}"
         dest: "{{ __test_fence_xvm_key_path }}"
         mode: 0400
-
-  delegate_to: localhost
-  run_once: true
-  vars:
-    __test_pcsd_private_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.key"
-    __test_pcsd_public_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.crt"
-    __test_corosync_key_path: >-
-      {{ __ha_cluster_work_dir.path }}/corosync-authkey
-    __test_pacemaker_key_path: >-
-      {{ __ha_cluster_work_dir.path }}/pacemaker-authkey
-    __test_fence_xvm_key_path: "{{ __ha_cluster_work_dir.path }}/fence_xvm.key"

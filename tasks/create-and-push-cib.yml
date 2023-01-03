@@ -75,18 +75,26 @@
 
 
 # Build the new CIB
-
-## Cluster properties
-- name: Configure cluster properties
-  include_tasks: pcs-cluster-properties.yml
-  # pcs-0.10 supports only one set of attributes, that's the reason for
-  # 'ha_cluster_cluster_properties[0]' and 'when' instead of looping over
-  # ha_cluster_cluster_properties
+- name: Build the new CIB
   vars:
-    properties_set: "{{ ha_cluster_cluster_properties[0] }}"
-  when: ha_cluster_cluster_properties[0].attrs | d([])
+    __ha_cluster_pcs_cli_role:
+      promoted: "{{
+        ('pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities)
+        | ternary('Promoted', 'Master') }}"
+      unpromoted: "{{
+        ('pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities)
+        | ternary('Unpromoted', 'Slave') }}"
+  block:
+    ## Cluster properties
+    - name: Configure cluster properties
+      include_tasks: pcs-cluster-properties.yml
+      # pcs-0.10 supports only one set of attributes, that's the reason for
+      # 'ha_cluster_cluster_properties[0]' and 'when' instead of looping over
+      # ha_cluster_cluster_properties
+      vars:
+        properties_set: "{{ ha_cluster_cluster_properties[0] }}"
+      when: ha_cluster_cluster_properties[0].attrs | d([])
 
-- block:
     ## Resources
     - name: Extract primitive to bundle mapping
       set_fact:
@@ -182,17 +190,6 @@
       loop_control:
         index_var: constraint_index
         loop_var: constraint
-
-  vars:
-    __ha_cluster_pcs_cli_role:
-      promoted: "{{
-        ('pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities)
-        | ternary('Promoted', 'Master')
-      }}"
-      unpromoted: "{{
-        ('pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities)
-        | ternary('Unpromoted', 'Slave')
-      }}"
 
 # Push the new CIB into the cluster
 
