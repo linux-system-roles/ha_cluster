@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Configure colocation constraint '{{
+- name: Configure colocation constraint {{
       constraint.id | d(constraint_index)
-    }}'  # noqa name[template]
+    }}
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
