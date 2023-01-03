@@ -29,6 +29,8 @@
       ha_cluster_hacluster_password | string
       | password_hash('sha512', ansible_hostname.replace('-', 'x')[:16])
     }}"
+  when:
+    - ha_cluster_hacluster_password | string | length > 0
 
 - name: Configure pcs / pcsd
   include_tasks: pcs-configure-pcs-pcsd.yml
