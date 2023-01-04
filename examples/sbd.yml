@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
-- hosts: node1 node2
+- name: Manage SBD options
+  hosts: node1 node2
   vars:
     ha_cluster_manage_firewall: true
     ha_cluster_manage_selinux: true

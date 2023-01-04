@@ -10,7 +10,7 @@
 - name: Retrieve from the controller key {{ preshared_key_label }}
   when:
     - preshared_key_src is string and preshared_key_src | length > 1
-  run_once: true
+  run_once: true  # noqa: run_once[task]
   delegate_to: localhost
   block:
     - name: Check if key exists on the controller {{ preshared_key_label }}
@@ -37,7 +37,7 @@
 - name: Generate random key {{ preshared_key_label }}
   when:
     - not (preshared_key_src is string and preshared_key_src | length > 1)
-  run_once: true
+  run_once: true  # noqa: run_once[task]
   # Prevent key contents to be printed to the output
   no_log: true
   block:

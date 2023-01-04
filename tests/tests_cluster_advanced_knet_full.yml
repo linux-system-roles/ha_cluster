@@ -47,7 +47,9 @@
           value: 1
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -61,8 +63,7 @@
               # batch, first and flatten.
               corosync_addresses: "{{
                 lookup('pipe', 'getent hosts ' + inventory_hostname)
-                | regex_findall('\\S+') | batch(2) | first | flatten
-              }}"
+                | regex_findall('\\S+') | batch(2) | first | flatten }}"
 
         - name: Run HA Cluster role
           include_role:
@@ -122,4 +123,3 @@
         - name: Unset node addresses variable
           set_fact:
             ha_cluster:
-      tags: tests::verify

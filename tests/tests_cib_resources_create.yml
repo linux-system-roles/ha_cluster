@@ -258,7 +258,9 @@
                 value: a value
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -273,7 +275,23 @@
           include_tasks: tasks/fetch_versions.yml
 
         # yamllint disable rule:line-length
-        - block:
+        - name: Get stonith configuration
+          when:
+            - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
+          vars:
+            __test_expected_lines:
+              - ' Resource: fence-no-attrs (class=stonith type=fence_kdump)'
+              - '  Operations: monitor interval=60s (fence-no-attrs-monitor-interval-60s)'
+              - ' Resource: fence-empty-attrs1 (class=stonith type=fence_kdump)'
+              - '  Operations: monitor interval=60s (fence-empty-attrs1-monitor-interval-60s)'
+              - ' Resource: fence-empty-attrs2 (class=stonith type=fence_kdump)'
+              - '  Operations: monitor interval=60s (fence-empty-attrs2-monitor-interval-60s)'
+              - ' Resource: fence-with-attrs (class=stonith type=fence_kdump)'
+              - '  Attributes: pcmk_host_list="node1 node2" timeout=30'
+              - '  Meta Attrs: an-attr="a value" target-role=Stopped'
+              - '  Operations: monitor interval=26 timeout=13 (fence-with-attrs-monitor-interval-26)'
+              - '              monitor interval=28s timeout=14s (fence-with-attrs-monitor-interval-28s)'
+          block:
             - name: Fetch stonith configuration from the cluster
               command:
                 cmd: pcs stonith config
@@ -292,41 +310,8 @@
               assert:
                 that:
                   - __test_pcs_stonith_config.stdout_lines == __test_expected_lines | select | list
-          when:
-            - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
-          vars:
-            __test_expected_lines:
-              - ' Resource: fence-no-attrs (class=stonith type=fence_kdump)'
-              - '  Operations: monitor interval=60s (fence-no-attrs-monitor-interval-60s)'
-              - ' Resource: fence-empty-attrs1 (class=stonith type=fence_kdump)'
-              - '  Operations: monitor interval=60s (fence-empty-attrs1-monitor-interval-60s)'
-              - ' Resource: fence-empty-attrs2 (class=stonith type=fence_kdump)'
-              - '  Operations: monitor interval=60s (fence-empty-attrs2-monitor-interval-60s)'
-              - ' Resource: fence-with-attrs (class=stonith type=fence_kdump)'
-              - '  Attributes: pcmk_host_list="node1 node2" timeout=30'
-              - '  Meta Attrs: an-attr="a value" target-role=Stopped'
-              - '  Operations: monitor interval=26 timeout=13 (fence-with-attrs-monitor-interval-26)'
-              - '              monitor interval=28s timeout=14s (fence-with-attrs-monitor-interval-28s)'
 
-        - block:
-            - name: Fetch stonith configuration from the cluster
-              command:
-                cmd: pcs --output-format=json stonith config
-              register: __test_pcs_stonith_config
-              changed_when: false
-
-            - name: Print real stonith configuration
-              debug:
-                var: __test_pcs_stonith_config.stdout | from_json
-
-            - name: Print expected stonith configuration
-              debug:
-                var: __test_expected_lines | from_json
-
-            - name: Check stonith configuration
-              assert:
-                that:
-                  - __test_pcs_stonith_config.stdout | from_json == __test_expected_lines | from_json
+        - name: Get stonith configuration
           when:
             - "'pcmk.resource.config.output-formats' in __test_pcs_capabilities"
           vars:
@@ -505,29 +490,31 @@
                     "groups": [],
                     "bundles": []
                 }
-
-        - block:
-            - name: Fetch resource configuration from the cluster
+          block:
+            - name: Fetch stonith configuration from the cluster
               command:
-                cmd: pcs resource config
-              register: __test_pcs_resource_config
+                cmd: pcs --output-format=json stonith config
+              register: __test_pcs_stonith_config
               changed_when: false
 
-            - name: Print real resource configuration
+            - name: Print real stonith configuration
               debug:
-                var: __test_pcs_resource_config.stdout_lines
+                var: __test_pcs_stonith_config.stdout | from_json
 
-            - name: Print expected resource configuration
+            - name: Print expected stonith configuration
               debug:
-                var: __test_expected_lines | select | list
+                var: __test_expected_lines | from_json
 
-            - name: Check resource configuration
+            - name: Check stonith configuration
               assert:
                 that:
-                  - __test_pcs_resource_config.stdout_lines == __test_expected_lines | select | list
+                  - __test_pcs_stonith_config.stdout | from_json == __test_expected_lines | from_json
+
+        - name: Get resource configuration
           when:
             - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
           vars:
+            # noqa jinja[spacing]
             __test_expected_lines:
               - ' Bundle: bundle-minimal'
               - '  Docker: image=my:image1'
@@ -751,36 +738,35 @@
                 '') }}"
               - '                start interval=0s timeout=20s (dummy-3a-start-interval-0s)'
               - '                stop interval=0s timeout=20s (dummy-3a-stop-interval-0s)'
-
-        - block:
+          block:
             - name: Fetch resource configuration from the cluster
               command:
-                cmd: pcs --output-format=json resource config
+                cmd: pcs resource config
               register: __test_pcs_resource_config
               changed_when: false
 
             - name: Print real resource configuration
               debug:
-                var: __test_pcs_resource_config.stdout | from_json
+                var: __test_pcs_resource_config.stdout_lines
 
             - name: Print expected resource configuration
               debug:
-                var: __test_expected_lines | from_json
+                var: __test_expected_lines | select | list
 
             - name: Check resource configuration
               assert:
                 that:
-                  - __test_pcs_resource_config.stdout | from_json == __test_expected_lines | from_json
+                  - __test_pcs_resource_config.stdout_lines == __test_expected_lines | select | list
+
+        - name: Get resource configuration
           when:
             - "'pcmk.resource.config.output-formats' in __test_pcs_capabilities"
           vars:
             __old_roles: "{{
-              (
-                ansible_facts['distribution'] in ['RedHat', 'CentOS']
-                and
-                ansible_facts['distribution_major_version'] == '8'
-              ) | bool
-              }}"
+              (ansible_facts['distribution'] in ['RedHat', 'CentOS']
+               and
+               ansible_facts['distribution_major_version'] == '8') |
+               bool }}"
             __promoted: "{{ __old_roles | ternary('Master', 'Promoted') }}"
             __unpromoted: "{{ __old_roles | ternary('Slave', 'Unpromoted') }}"
             __test_expected_lines: '
@@ -3356,11 +3342,25 @@
                             ]
                         }
                     ]
-                }
-            '
+                }'
+          block:
+            - name: Fetch resource configuration from the cluster
+              command:
+                cmd: pcs --output-format=json resource config
+              register: __test_pcs_resource_config
+              changed_when: false
+
+            - name: Print real resource configuration
+              debug:
+                var: __test_pcs_resource_config.stdout | from_json
+
+            - name: Print expected resource configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check resource configuration
+              assert:
+                that:
+                  - __test_pcs_resource_config.stdout | from_json == __test_expected_lines | from_json
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
-
-      # yamllint enable rule:line-length
-
-      tags: tests::verify

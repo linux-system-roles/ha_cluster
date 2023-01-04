@@ -385,7 +385,9 @@
     ha_cluster_manage_selinux: true
 
   tasks:
-    - block:
+    - name: Run tests
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -420,25 +422,7 @@
               }}"
 
         # yamllint disable rule:line-length
-        - block:
-            - name: Fetch location constraints configuration from the cluster
-              command:
-                cmd: pcs constraint location --full
-              register: __test_pcs_location_config
-              changed_when: false
-
-            - name: Print real location constraints configuration
-              debug:
-                var: __test_pcs_location_config.stdout_lines
-
-            - name: Print expected location constraints configuration
-              debug:
-                var: __test_expected_lines | select | list
-
-            - name: Check location constraints configuration
-              assert:
-                that:
-                  - __test_pcs_location_config.stdout_lines == __test_expected_lines | select | list
+        - name: Get location constraints
           vars:
             __test_role_promoted: "{%
                 if __test_new_roles_pcs
@@ -540,26 +524,27 @@
               - '    Constraint: location-d3-4 (resource-discovery=always)'
               - '      Rule: score=INFINITY (id:location-d3-4-rule)'
               - '        Expression: rule eq 6 (id:location-d3-4-rule-expr)'
-
-        - block:
-            - name: Fetch colocation constraints configuration from the cluster
+          block:
+            - name: Fetch location constraints configuration from the cluster
               command:
-                cmd: pcs constraint colocation --full
-              register: __test_pcs_colocation_config
+                cmd: pcs constraint location --full
+              register: __test_pcs_location_config
               changed_when: false
 
-            - name: Print real colocation constraints configuration
+            - name: Print real location constraints configuration
               debug:
-                var: __test_pcs_colocation_config.stdout_lines
+                var: __test_pcs_location_config.stdout_lines
 
-            - name: Print expected colocation constraints configuration
+            - name: Print expected location constraints configuration
               debug:
                 var: __test_expected_lines | select | list
 
-            - name: Check colocation constraints configuration
+            - name: Check location constraints configuration
               assert:
                 that:
-                  - __test_pcs_colocation_config.stdout_lines == __test_expected_lines | select | list
+                  - __test_pcs_location_config.stdout_lines == __test_expected_lines | select | list
+
+        - name: Get colocation constraints
           vars:
             __test_expected_lines:
               - 'Colocation Constraints:'
@@ -580,8 +565,40 @@
               - "    set d1 d2 role={{
                   __test_new_roles_pcs | ternary('Promoted', 'Master')
                   }} (id:cc-set_set) set d3 d4 sequential=false (id:cc-set_set-1) setoptions score=20 (id:cc-set)"
+          block:
+            - name: Fetch colocation constraints configuration from the cluster
+              command:
+                cmd: pcs constraint colocation --full
+              register: __test_pcs_colocation_config
+              changed_when: false
 
-        - block:
+            - name: Print real colocation constraints configuration
+              debug:
+                var: __test_pcs_colocation_config.stdout_lines
+
+            - name: Print expected colocation constraints configuration
+              debug:
+                var: __test_expected_lines | select | list
+
+            - name: Check colocation constraints configuration
+              assert:
+                that:
+                  - __test_pcs_colocation_config.stdout_lines == __test_expected_lines | select | list
+
+        - name: Get order constraints
+          vars:
+            __test_expected_lines:
+              - 'Ordering Constraints:'
+              - '  start d1 then start d2 (kind:Mandatory) (id:order-d1-d2-mandatory)'
+              - '  start d2 then start d3 (kind:Mandatory) (id:co-id)'
+              - '  demote d3 then promote d4 (kind:Mandatory) (id:order-d3-d4-mandatory)'
+              - '  start d1 then start d3 (kind:Optional) (non-symmetrical) (Options: require-all=false) (id:order-d1-d3-Optional)'
+              - '  start d1 then start d4 (score:-15) (id:order-d1-d4--15)'
+              - '  demote d2 then stop d4 (score:10) (non-symmetrical) (Options: require-all=false) (id:co-all)'
+              - '  Resource Sets:'
+              - '    set d1 d2 (id:order_set_d1d2_set) (id:order_set_d1d2)'
+              - '    set d1 d2 action=promote (id:co-set_set) set d3 d4 require-all=true sequential=false (id:co-set_set-1) setoptions kind=Serialize symmetrical=false (id:co-set)'
+          block:
             - name: Fetch order constraints configuration from the cluster
               command:
                 cmd: pcs constraint order --full
@@ -600,20 +617,26 @@
               assert:
                 that:
                   - __test_pcs_order_config.stdout_lines == __test_expected_lines | select | list
+
+        - name: Get ticket constraints
           vars:
             __test_expected_lines:
-              - 'Ordering Constraints:'
-              - '  start d1 then start d2 (kind:Mandatory) (id:order-d1-d2-mandatory)'
-              - '  start d2 then start d3 (kind:Mandatory) (id:co-id)'
-              - '  demote d3 then promote d4 (kind:Mandatory) (id:order-d3-d4-mandatory)'
-              - '  start d1 then start d3 (kind:Optional) (non-symmetrical) (Options: require-all=false) (id:order-d1-d3-Optional)'
-              - '  start d1 then start d4 (score:-15) (id:order-d1-d4--15)'
-              - '  demote d2 then stop d4 (score:10) (non-symmetrical) (Options: require-all=false) (id:co-all)'
+              - 'Ticket Constraints:'
+              - '  d1 ticket=ticket1 (id:ticket-ticket1-d1)'
+              - '  d1 ticket=ticket2 (id:ct-id)'
+              - "  {{
+                  __test_new_roles_pcs | ternary('Promoted', 'Master')
+                  }} d2 ticket=ticket1 (id:ticket-ticket1-d2-{{
+                  __test_new_roles_cib | ternary('Promoted', 'Master')
+                  }})"
+              - '  d2 loss-policy=stop ticket=ticket2 (id:ticket-ticket2-d2)'
+              - "  {{
+                  __test_new_roles_pcs | ternary('Unpromoted', 'Slave')
+                  }} d3 loss-policy=demote ticket=ticket3 (id:ct-all)"
               - '  Resource Sets:'
-              - '    set d1 d2 (id:order_set_d1d2_set) (id:order_set_d1d2)'
-              - '    set d1 d2 action=promote (id:co-set_set) set d3 d4 require-all=true sequential=false (id:co-set_set-1) setoptions kind=Serialize symmetrical=false (id:co-set)'
-
-        - block:
+              - '    set d1 (id:ticket_set_d1_set) setoptions ticket=ticket-set1 (id:ticket_set_d1)'
+              - '    set d1 d2 (id:ct-set_set) set d3 d4 require-all=true sequential=false (id:ct-set_set-1) setoptions loss-policy=fence ticket=ticket-set1 (id:ct-set)'
+          block:
             - name: Fetch ticket constraints configuration from the cluster
               command:
                 cmd: pcs constraint ticket --full
@@ -632,27 +655,6 @@
               assert:
                 that:
                   - __test_pcs_ticket_config.stdout_lines == __test_expected_lines | select | list
-          vars:
-            __test_expected_lines:
-              - 'Ticket Constraints:'
-              - '  d1 ticket=ticket1 (id:ticket-ticket1-d1)'
-              - '  d1 ticket=ticket2 (id:ct-id)'
-              - "  {{
-                  __test_new_roles_pcs | ternary('Promoted', 'Master')
-                  }} d2 ticket=ticket1 (id:ticket-ticket1-d2-{{
-                  __test_new_roles_cib | ternary('Promoted', 'Master')
-                  }})"
-              - '  d2 loss-policy=stop ticket=ticket2 (id:ticket-ticket2-d2)'
-              - "  {{
-                  __test_new_roles_pcs | ternary('Unpromoted', 'Slave')
-                  }} d3 loss-policy=demote ticket=ticket3 (id:ct-all)"
-              - '  Resource Sets:'
-              - '    set d1 (id:ticket_set_d1_set) setoptions ticket=ticket-set1 (id:ticket_set_d1)'
-              - '    set d1 d2 (id:ct-set_set) set d3 d4 require-all=true sequential=false (id:ct-set_set-1) setoptions loss-policy=fence ticket=ticket-set1 (id:ct-set)'
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
-
-      # yamllint enable rule:line-length
-
-      tags: tests::verify

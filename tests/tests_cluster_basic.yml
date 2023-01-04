@@ -7,7 +7,9 @@
     ha_cluster_cluster_name: test-cluster
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -80,6 +82,7 @@
         - name: Check corosync
           include_tasks: tasks/assert_corosync_config.yml
           vars:
+            # noqa jinja[spacing]
             __test_expected_lines:
               - 'totem {'
               - '    version: 2'
@@ -108,5 +111,3 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
-
-      tags: tests::verify

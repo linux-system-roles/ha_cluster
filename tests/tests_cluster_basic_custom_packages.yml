@@ -10,7 +10,9 @@
       - "{{ __test_extra_package }}"
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -33,5 +35,3 @@
           assert:
             that:
               - "'{{ __test_extra_package }}' in ansible_facts.packages"
-
-      tags: tests::verify

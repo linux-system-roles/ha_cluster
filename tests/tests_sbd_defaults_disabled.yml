@@ -9,7 +9,9 @@
     ha_cluster_sbd_enabled: true
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -49,4 +51,3 @@
           include_role:
             name: linux-system-roles.ha_cluster
             tasks_from: test_cleanup_sbd.yml
-      tags: tests::verify

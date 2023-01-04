@@ -2,7 +2,7 @@
 ---
 - name: Generate pre-shared keys and certificates on the controller
   delegate_to: localhost
-  run_once: true
+  run_once: true  # noqa: run_once[task]
   vars:
     __test_pcsd_private_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.key"
     __test_pcsd_public_key_path: "{{ __ha_cluster_work_dir.path }}/pcsd.crt"

@@ -11,7 +11,10 @@
           value: 0
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      when: ansible_play_hosts_all | length is even
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -27,7 +30,8 @@
             ha_cluster:
               sbd_devices: []
 
-        - block:
+        - name: Run the role and check errors
+          block:
             - name: Run the role
               include_role:
                 name: linux-system-roles.ha_cluster
@@ -38,9 +42,7 @@
                   - ansible_failed_result.msg ==
                     'Cannot set auto_tie_breaker to disabled when SBD needs it '
                     ~ 'to be enabled'
-              run_once: true
-
-      when: ansible_play_hosts_all | length is even
+              run_once: true  # noqa: run_once[task]
       always:
         - name: Unset SBD devices variable
           set_fact:
@@ -50,7 +52,6 @@
           include_role:
             name: linux-system-roles.ha_cluster
             tasks_from: test_cleanup_sbd.yml
-      tags: tests::verify
 
     - name: Message
       debug:

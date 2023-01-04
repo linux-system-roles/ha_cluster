@@ -22,5 +22,5 @@
         {% endif %}
       {% endif %}
     stdin: "{{ ha_cluster_hacluster_password }}"
-  run_once: true
+  run_once: true  # noqa: run_once[task]
   changed_when: true

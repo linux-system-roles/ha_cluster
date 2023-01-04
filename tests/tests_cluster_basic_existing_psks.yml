@@ -14,14 +14,16 @@
     __test_fence_xvm_key_path: "{{ __ha_cluster_work_dir.path }}/fence_xvm.key"
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Create temp directory for secrets
           tempfile:
             state: directory
             prefix: lsr_ha_cluster_
           register: __ha_cluster_work_dir
           delegate_to: localhost
-          run_once: true
+          run_once: true  # noqa: run_once[task]
 
         - name: Set up test environment
           include_role:
@@ -210,13 +212,10 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
-
-      tags: tests::verify
-
       always:
         - name: Clean up work directory
           file:
             path: "{{ __ha_cluster_work_dir.path }}"
             state: absent
           delegate_to: localhost
-          run_once: true
+          run_once: true  # noqa: run_once[task]

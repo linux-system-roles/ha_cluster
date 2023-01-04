@@ -5,9 +5,10 @@
   vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: test-cluster
-
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -17,20 +18,19 @@
           include_role:
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup_qnetd.yml
-          run_once: true
+          run_once: true  # noqa: run_once[task]
 
         - name: Back up qnetd
           include_tasks: tasks/qnetd_backup_restore.yml
           vars:
             action: backup
-          run_once: true
+          run_once: true  # noqa: run_once[task]
 
         - name: Set qnetd address
           set_fact:
             __test_qnetd_address: "{{
                 (ansible_play_hosts_all | length == 1)
-                | ternary('localhost', ansible_play_hosts[0])
-              }}"
+                | ternary('localhost', ansible_play_hosts[0]) }}"
 
         - name: Run HA Cluster role
           include_role:
@@ -60,7 +60,7 @@
           include_tasks: tasks/qnetd_backup_restore.yml
           vars:
             action: restore
-          run_once: true
+          run_once: true  # noqa: run_once[task]
 
         - name: Get services status
           service_facts:
@@ -114,5 +114,3 @@
 
         - name: Check qdevice status
           include_tasks: tasks/assert_qdevice_in_cluster.yml
-
-      tags: tests::verify
