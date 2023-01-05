@@ -275,7 +275,7 @@
           include_tasks: tasks/fetch_versions.yml
 
         # yamllint disable rule:line-length
-        - name: Get stonith configuration
+        - name: Verify stonith configuration
           when:
             - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
           vars:
@@ -311,7 +311,7 @@
                 that:
                   - __test_pcs_stonith_config.stdout_lines == __test_expected_lines | select | list
 
-        - name: Get stonith configuration
+        - name: Verify stonith configuration
           when:
             - "'pcmk.resource.config.output-formats' in __test_pcs_capabilities"
           vars:
@@ -510,7 +510,7 @@
                 that:
                   - __test_pcs_stonith_config.stdout | from_json == __test_expected_lines | from_json
 
-        - name: Get resource configuration
+        - name: Verify resource configuration
           when:
             - '"pcmk.resource.config.output-formats" not in __test_pcs_capabilities'
           vars:
@@ -758,7 +758,7 @@
                 that:
                   - __test_pcs_resource_config.stdout_lines == __test_expected_lines | select | list
 
-        - name: Get resource configuration
+        - name: Verify resource configuration
           when:
             - "'pcmk.resource.config.output-formats' in __test_pcs_capabilities"
           vars:
@@ -3362,5 +3362,6 @@
               assert:
                 that:
                   - __test_pcs_resource_config.stdout | from_json == __test_expected_lines | from_json
+
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml

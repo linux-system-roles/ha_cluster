@@ -422,7 +422,7 @@
               }}"
 
         # yamllint disable rule:line-length
-        - name: Get location constraints
+        - name: Verify location constraints
           vars:
             __test_role_promoted: "{%
                 if __test_new_roles_pcs
@@ -544,7 +544,7 @@
                 that:
                   - __test_pcs_location_config.stdout_lines == __test_expected_lines | select | list
 
-        - name: Get colocation constraints
+        - name: Verify colocation constraints
           vars:
             __test_expected_lines:
               - 'Colocation Constraints:'
@@ -585,7 +585,7 @@
                 that:
                   - __test_pcs_colocation_config.stdout_lines == __test_expected_lines | select | list
 
-        - name: Get order constraints
+        - name: Verify order constraints
           vars:
             __test_expected_lines:
               - 'Ordering Constraints:'
@@ -618,7 +618,7 @@
                 that:
                   - __test_pcs_order_config.stdout_lines == __test_expected_lines | select | list
 
-        - name: Get ticket constraints
+        - name: Verify ticket constraints
           vars:
             __test_expected_lines:
               - 'Ticket Constraints:'
