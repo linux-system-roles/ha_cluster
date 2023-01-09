@@ -3,7 +3,7 @@
   gather_facts: true
   hosts: all
   tasks:
-    - name: create var file in caller that can override the one in called role
+    - name: Create var file in caller that can override the one in called role
       delegate_to: localhost
       copy:
         # usually the fake file will cause the called role to crash of
@@ -44,7 +44,8 @@
         name: linux-system-roles.ha_cluster
         tasks_from: test_setup.yml
 
-    - import_role:
+    - name: Import role
+      import_role:
         name: caller
       vars:
         roletoinclude: linux-system-roles.ha_cluster

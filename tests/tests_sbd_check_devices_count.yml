@@ -7,7 +7,10 @@
     ha_cluster_sbd_enabled: true
 
   tasks:
-    - block:
+    - name: Run test
+      when: ansible_play_hosts_all | length > 1
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -19,32 +22,29 @@
               sbd_devices: "{{
                   range(1, ansible_play_hosts_all.index(inventory_hostname) + 2)
                   | product(['/tmp/dev/sdx']) | map('reverse') | map('join')
-                  | list
-                }}"
+                  | list }}"
 
         - name: Print set SBD devices
           debug:
             var: ha_cluster.sbd_devices
 
-        - block:
+        - name: Run the role and check for errors
+          block:
             - name: Run the role
               include_role:
                 name: linux-system-roles.ha_cluster
           rescue:
             - name: Check errors
               assert:
-                that: "{{
-                  ansible_failed_result.msg ==
-                  'All nodes must have the same number of SBD devices specified'
-                }}"
-              run_once: true
-
-      when: ansible_play_hosts_all | length > 1
+                that: ansible_failed_result.msg == expected_msg
+              run_once: true  # noqa: run_once[task]
+              vars:
+                expected_msg: >-
+                  All nodes must have the same number of SBD devices specified
       always:
         - name: Unset SBD devices variable
           set_fact:
             ha_cluster:
-      tags: tests::verify
 
     - name: Message
       debug:

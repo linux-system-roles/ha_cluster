@@ -32,7 +32,9 @@
           value: 1
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -83,5 +85,3 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
-
-      tags: tests::verify

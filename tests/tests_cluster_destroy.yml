@@ -6,7 +6,9 @@
     ha_cluster_cluster_present: false
 
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -38,5 +40,3 @@
               - not stat_corosync_conf.stat.exists
               - not stat_cib_xml.stat.exists
               - not stat_fence_xvm_key.stat.exists
-
-      tags: tests::verify

@@ -56,7 +56,7 @@
 - name: Reload corosync configuration
   command:
     cmd: corosync-cfgtool -R
-  run_once: true
+  run_once: true  # noqa: run_once[task]
   when: not ansible_check_mode
 
 - name: Start corosync-qdevice
@@ -74,7 +74,7 @@
 - name: Wait for the cluster to fully start and form membership
   command:
     cmd: pcs cluster start --all --wait
-  run_once: true
+  run_once: true  # noqa: run_once[task]
   # There is no point in waiting in check mode as there is nothing to wait for,
   # no daemons are actually starting.
   when: not ansible_check_mode
@@ -97,7 +97,7 @@
     # removed from a cluster after corosync / pacemaker restart. Therefore,
     # crm_node is no help when we want to list such nodes.
   register: __ha_cluster_list_pacemaker_nodes
-  run_once: true
+  run_once: true  # noqa: run_once[task]
   # This cannot be run in the check mode as it requires cluster to be started
   # and its configuration reloaded. Check mode does not start the cluster nor
   # does it reload its configuration, it only shows the cluster would be
@@ -109,7 +109,7 @@
 - name: Purge removed nodes from pacemaker's cache
   command:
     cmd: pcs -- cluster node clear {{ item | quote }}
-  run_once: true
+  run_once: true  # noqa: run_once[task]
   loop: "{{ __ha_cluster_list_pacemaker_nodes.stdout_lines }}"
   # This cannot be run in the check mode as it requires cluster to be started.
   # Check mode does not start the cluster, it only shows the cluster would be

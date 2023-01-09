@@ -9,7 +9,9 @@
       present: true
       start_on_boot: false
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
@@ -34,5 +36,3 @@
                 == "disabled"
               - ansible_facts.services["corosync-qnetd.service"].state
                  == "running"
-
-      tags: tests::verify

@@ -4,7 +4,9 @@
   hosts: all
   gather_facts: false
   tasks:
-    - block:
+    - name: Run test
+      tags: tests::verify
+      block:
         - name: Run the role
           include_role:
             name: linux-system-roles.ha_cluster
@@ -12,16 +14,12 @@
         - name: Extract errors
           set_fact:
             error_list: "{{
-              ansible_failed_result.results | map(attribute='msg') | list
-            }}"
-          run_once: true
+              ansible_failed_result.results | map(attribute='msg') |
+              list }}"
+          run_once: true  # noqa: run_once[task]
 
         - name: Check errors
           assert:
             that:
-              - "{{
-                  'ha_cluster_hacluster_password must be specified'
-                  in error_list
-                }}"
-
-      tags: tests::verify
+              - "'ha_cluster_hacluster_password must be specified'
+                  in error_list"
