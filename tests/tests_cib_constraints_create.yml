@@ -560,9 +560,9 @@
         - name: Verify colocation constraints
           vars:
             # wokeignore:rule=master
-            __mstr: 'Master'
+            __mstr: Master
             # wokeignore:rule=slave
-            __slv: 'Slave'
+            __slv: Slave
             __test_expected_lines:
               - 'Colocation Constraints:'
               - '  d1 with d2 (score:INFINITY) (id:colocation-d1-d2-INFINITY)'
@@ -638,9 +638,9 @@
         - name: Verify ticket constraints
           vars:
             # wokeignore:rule=master
-            __mstr: 'Master'
+            __mstr: Master
             # wokeignore:rule=slave
-            __slv: 'Slave'
+            __slv: Slave
             __test_expected_lines:
               - 'Ticket Constraints:'
               - '  d1 ticket=ticket1 (id:ticket-ticket1-d1)'

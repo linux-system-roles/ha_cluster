@@ -43,16 +43,13 @@
                 value: '5'
               - name: interval
                 value: '1min'
-      # wokeignore:rule=dummy
-      - id: dmy-1
+      - id: example-1
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      # wokeignore:rule=dummy
-      - id: dmy-2
+      - id: example-2
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      # wokeignore:rule=dummy
-      - id: dmy-3
+      - id: example-3
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: simple-clone
@@ -67,10 +64,8 @@
     ha_cluster_resource_groups:
       - id: simple-group
         resource_ids:
-          # wokeignore:rule=dummy
-          - dmy-1
-          # wokeignore:rule=dummy
-          - dmy-2
+          - example-1
+          - example-2
         meta_attrs:
           - attrs:
               - name: target-role
@@ -79,8 +74,7 @@
                 value: 'true'
       - id: cloned-group
         resource_ids:
-          # wokeignore:rule=dummy
-          - dmy-3
+          - example-3
     ha_cluster_resource_clones:
       - resource_id: simple-clone
       - resource_id: clone-with-options

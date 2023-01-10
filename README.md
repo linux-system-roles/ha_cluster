@@ -1247,13 +1247,13 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
                 value: '5'
               - name: interval
                 value: '1min'
-      - id: dmy-1
+      - id: example-1
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dmy-2
+      - id: example-2
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dmy-3
+      - id: example-3
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: simple-clone
@@ -1268,8 +1268,8 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
     ha_cluster_resource_groups:
       - id: simple-group
         resource_ids:
-          - dmy-1
-          - dmy-2
+          - example-1
+          - example-2
         meta_attrs:
           - attrs:
               - name: target-role
@@ -1278,7 +1278,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
                 value: 'true'
       - id: cloned-group
         resource_ids:
-          - dmy-3
+          - example-3
     ha_cluster_resource_clones:
       - resource_id: simple-clone
       - resource_id: clone-with-options
@@ -1349,66 +1349,66 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
           - attrs:
               - name: pcmk_host_list
                 value: node1 node2
-      - id: dmy-1
+      - id: example-1
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dmy-2
+      - id: example-2
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dmy-3
+      - id: example-3
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dmy-4
+      - id: example-4
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dmy-5
+      - id: example-5
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dmy-6
+      - id: example-6
         # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
     # location constraints
     ha_cluster_constraints_location:
       # resource ID and node name
       - resource:
-          id: dmy-1
+          id: example-1
         node: node1
         options:
           - name: score
             value: 20
       # resource pattern and node name
       - resource:
-          pattern: dmy-\d+
+          pattern: example-\d+
         node: node1
         options:
           - name: score
             value: 10
       # resource ID and rule
       - resource:
-          id: dmy-2
+          id: example-2
         rule: '#uname eq node2 and date in_range 2022-01-01 to 2022-02-28'
       # resource pattern and rule
       - resource:
-          pattern: dmy-\d+
+          pattern: example-\d+
         rule: node-type eq weekend and date-spec weekdays=6-7
     # colocation constraints
     ha_cluster_constraints_colocation:
       # simple constraint
       - resource_leader:
-          id: dmy-3
+          id: example-3
         resource_follower:
-          id: dmy-4
+          id: example-4
         options:
           - name: score
             value: -5
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dmy-1
-              - dmy-2
+              - example-1
+              - example-2
           - resource_ids:
-              - dmy-5
-              - dmy-6
+              - example-5
+              - example-6
             options:
               - name: sequential
                 value: "false"
@@ -1419,27 +1419,27 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
     ha_cluster_constraints_order:
       # simple constraint
       - resource_first:
-          id: dmy-1
+          id: example-1
         resource_then:
-          id: dmy-6
+          id: example-6
         options:
           - name: symmetrical
             value: "false"
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dmy-1
-              - dmy-2
+              - example-1
+              - example-2
             options:
               - name: require-all
                 value: "false"
               - name: sequential
                 value: "false"
           - resource_ids:
-              - dmy-3
+              - example-3
           - resource_ids:
-              - dmy-4
-              - dmy-5
+              - example-4
+              - example-5
             options:
               - name: sequential
                 value: "false"
@@ -1447,7 +1447,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
     ha_cluster_constraints_ticket:
       # simple constraint
       - resource:
-          id: dmy-1
+          id: example-1
         ticket: ticket1
         options:
           - name: loss-policy
@@ -1455,9 +1455,9 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dmy-3
-              - dmy-4
-              - dmy-5
+              - example-3
+              - example-4
+              - example-5
         ticket: ticket2
         options:
           - name: loss-policy
