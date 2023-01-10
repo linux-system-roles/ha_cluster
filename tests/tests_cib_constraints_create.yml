@@ -7,12 +7,17 @@
     ha_cluster_cluster_name: test-cluster
     ha_cluster_resource_primitives:
       - id: d1
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: d2
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
+        # wokeignore:rule=dummy
       - id: d3
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: d4
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
     ha_cluster_constraints_location:
       # resource, node
@@ -424,22 +429,30 @@
         # yamllint disable rule:line-length
         - name: Verify location constraints
           vars:
+            # wokeignore:rule=master
+            __um: Master
+            # wokeignore:rule=master
+            __lm: master
+            # wokeignore:rule=slave
+            __us: Slave
+            # wokeignore:rule=slave
+            __ls: slave
             __test_role_promoted: "{%
                 if __test_new_roles_pcs
                   %}Promoted{%
                 elif 'pcmk.cib.roles.promoted-unpromoted' in __test_pcs_capabilities
-                  %}Master{%
+                  %}{{ __um }}{%
                 else
-                  %}master{%
+                  %}{{ __lm }}{%
                 endif
                 %}"
             __test_role_unpromoted: "{%
                 if __test_new_roles_pcs
                   %}Unpromoted{%
                 elif 'pcmk.cib.roles.promoted-unpromoted' in __test_pcs_capabilities
-                  %}Slave{%
+                  %}{{ __us }}{%
                 else
-                  %}slave{%
+                  %}{{ __ls }}{%
                 endif
                 %}"
             __test_expected_lines:
@@ -546,24 +559,28 @@
 
         - name: Verify colocation constraints
           vars:
+            # wokeignore:rule=master
+            __mstr: 'Master'
+            # wokeignore:rule=slave
+            __slv: 'Slave'
             __test_expected_lines:
               - 'Colocation Constraints:'
               - '  d1 with d2 (score:INFINITY) (id:colocation-d1-d2-INFINITY)'
               - '  d2 with d3 (score:-10) (id:colocation-d2-d3--10)'
               - '  d3 with d4 (score:INFINITY) (id:cc-id)'
               - "  d1 with d3 (score:INFINITY) (rsc-role:{{
-                  __test_new_roles_pcs | ternary('Promoted', 'Master')
+                  __test_new_roles_pcs | ternary('Promoted', __mstr)
                   }}) (with-rsc-role:{{
-                  __test_new_roles_pcs | ternary('Promoted', 'Master')
+                  __test_new_roles_pcs | ternary('Promoted', __mstr)
                   }}) (id:colocation-d1-d3-INFINITY)"
               - '  d1 with d4 (score:INFINITY) (node-attribute:attribute-name) (id:colocation-d1-d4-INFINITY)'
               - "  d2 with d4 (score:-INFINITY) (node-attribute:attribute-name) (rsc-role:{{
-                  __test_new_roles_pcs | ternary('Unpromoted', 'Slave')
+                  __test_new_roles_pcs | ternary('Unpromoted', __slv)
                   }}) (with-rsc-role:Started) (id:cc-all)"
               - '  Resource Sets:'
               - '    set d1 d2 (id:colocation_set_d1d2_set) setoptions score=INFINITY (id:colocation_set_d1d2)'
               - "    set d1 d2 role={{
-                  __test_new_roles_pcs | ternary('Promoted', 'Master')
+                  __test_new_roles_pcs | ternary('Promoted', __mstr)
                   }} (id:cc-set_set) set d3 d4 sequential=false (id:cc-set_set-1) setoptions score=20 (id:cc-set)"
           block:
             - name: Fetch colocation constraints configuration from the cluster
@@ -620,18 +637,22 @@
 
         - name: Verify ticket constraints
           vars:
+            # wokeignore:rule=master
+            __mstr: 'Master'
+            # wokeignore:rule=slave
+            __slv: 'Slave'
             __test_expected_lines:
               - 'Ticket Constraints:'
               - '  d1 ticket=ticket1 (id:ticket-ticket1-d1)'
               - '  d1 ticket=ticket2 (id:ct-id)'
               - "  {{
-                  __test_new_roles_pcs | ternary('Promoted', 'Master')
+                  __test_new_roles_pcs | ternary('Promoted', __mstr)
                   }} d2 ticket=ticket1 (id:ticket-ticket1-d2-{{
-                  __test_new_roles_cib | ternary('Promoted', 'Master')
+                  __test_new_roles_cib | ternary('Promoted', __mstr)
                   }})"
               - '  d2 loss-policy=stop ticket=ticket2 (id:ticket-ticket2-d2)'
               - "  {{
-                  __test_new_roles_pcs | ternary('Unpromoted', 'Slave')
+                  __test_new_roles_pcs | ternary('Unpromoted', __slv)
                   }} d3 loss-policy=demote ticket=ticket3 (id:ct-all)"
               - '  Resource Sets:'
               - '    set d1 (id:ticket_set_d1_set) setoptions ticket=ticket-set1 (id:ticket_set_d1)'

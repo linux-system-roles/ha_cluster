@@ -80,10 +80,10 @@
     __ha_cluster_pcs_cli_role:
       promoted: "{{
         ('pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities)
-        | ternary('Promoted', 'Master') }}"
+        | ternary('Promoted', 'Master') }}"  # wokeignore:rule=master
       unpromoted: "{{
         ('pcmk.cib.roles.promoted-unpromoted' in __ha_cluster_pcs_capabilities)
-        | ternary('Unpromoted', 'Slave') }}"
+        | ternary('Unpromoted', 'Slave') }}"  # wokeignore:rule=slave
   block:
     ## Cluster properties
     - name: Configure cluster properties
