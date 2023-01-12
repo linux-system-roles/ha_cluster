@@ -16,60 +16,66 @@
           - attrs:
               - name: pcmk_host_list
                 value: node1 node2
-      - id: dummy-1
+      - id: example-1
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-2
+      - id: example-2
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-3
+      - id: example-3
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-4
+      - id: example-4
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-5
+      - id: example-5
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-6
+      - id: example-6
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
     # location constraints
     ha_cluster_constraints_location:
       # resource ID and node name
       - resource:
-          id: dummy-1
+          id: example-1
         node: node1
         options:
           - name: score
             value: 20
       # resource pattern and node name
       - resource:
-          pattern: dummy-\d+
+          pattern: example-\d+
         node: node1
         options:
           - name: score
             value: 10
       # resource ID and rule
       - resource:
-          id: dummy-2
+          id: example-2
         rule: '#uname eq node2 and date in_range 2022-01-01 to 2022-02-28'
       # resource pattern and rule
       - resource:
-          pattern: dummy-\d+
+          pattern: example-\d+
         rule: node-type eq weekend and date-spec weekdays=6-7
     # colocation constraints
     ha_cluster_constraints_colocation:
       # simple constraint
       - resource_leader:
-          id: dummy-3
+          id: example-3
         resource_follower:
-          id: dummy-4
+          id: example-4
         options:
           - name: score
             value: -5
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dummy-1
-              - dummy-2
+              - example-1
+              - example-2
           - resource_ids:
-              - dummy-5
-              - dummy-6
+              - example-5
+              - example-6
             options:
               - name: sequential
                 value: "false"
@@ -80,27 +86,27 @@
     ha_cluster_constraints_order:
       # simple constraint
       - resource_first:
-          id: dummy-1
+          id: example-1
         resource_then:
-          id: dummy-6
+          id: example-6
         options:
           - name: symmetrical
             value: "false"
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dummy-1
-              - dummy-2
+              - example-1
+              - example-2
             options:
               - name: require-all
                 value: "false"
               - name: sequential
                 value: "false"
           - resource_ids:
-              - dummy-3
+              - example-3
           - resource_ids:
-              - dummy-4
-              - dummy-5
+              - example-4
+              - example-5
             options:
               - name: sequential
                 value: "false"
@@ -108,7 +114,7 @@
     ha_cluster_constraints_ticket:
       # simple constraint
       - resource:
-          id: dummy-1
+          id: example-1
         ticket: ticket1
         options:
           - name: loss-policy
@@ -116,9 +122,9 @@
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dummy-3
-              - dummy-4
-              - dummy-5
+              - example-3
+              - example-4
+              - example-5
         ticket: ticket2
         options:
           - name: loss-policy

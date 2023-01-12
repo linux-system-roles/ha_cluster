@@ -488,8 +488,10 @@ role. The items are as follows:
 
 * `id` (mandatory) - ID of a resource.
 * `agent` (mandatory) - Name of a resource or stonith agent, for example
+  <!--- wokeignore:rule=dummy -->
   `ocf:pacemaker:Dummy` or `stonith:fence_xvm`. It is mandatory to use
   `stonith:` for stonith agents. For resource agents, it is possible to use a
+  <!--- wokeignore:rule=dummy -->
   short name, such as `Dummy` instead of `ocf:pacemaker:Dummy`. However, if
   several agents with the same short name are installed, the role will fail as
   it will be unable to decide which agent should be used. Therefore, it is
@@ -1217,8 +1219,10 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
               - name: pcmk_host_list
                 value: node1 node2
       - id: simple-resource
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: resource-with-options
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
@@ -1243,23 +1247,29 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
                 value: '5'
               - name: interval
                 value: '1min'
-      - id: dummy-1
+      - id: example-1
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-2
+      - id: example-2
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-3
+      - id: example-3
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: simple-clone
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: clone-with-options
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: bundled-resource
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
     ha_cluster_resource_groups:
       - id: simple-group
         resource_ids:
-          - dummy-1
-          - dummy-2
+          - example-1
+          - example-2
         meta_attrs:
           - attrs:
               - name: target-role
@@ -1268,7 +1278,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
                 value: 'true'
       - id: cloned-group
         resource_ids:
-          - dummy-3
+          - example-3
     ha_cluster_resource_clones:
       - resource_id: simple-clone
       - resource_id: clone-with-options
@@ -1339,60 +1349,66 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
           - attrs:
               - name: pcmk_host_list
                 value: node1 node2
-      - id: dummy-1
+      - id: example-1
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-2
+      - id: example-2
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-3
+      - id: example-3
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-4
+      - id: example-4
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-5
+      - id: example-5
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-6
+      - id: example-6
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
     # location constraints
     ha_cluster_constraints_location:
       # resource ID and node name
       - resource:
-          id: dummy-1
+          id: example-1
         node: node1
         options:
           - name: score
             value: 20
       # resource pattern and node name
       - resource:
-          pattern: dummy-\d+
+          pattern: example-\d+
         node: node1
         options:
           - name: score
             value: 10
       # resource ID and rule
       - resource:
-          id: dummy-2
+          id: example-2
         rule: '#uname eq node2 and date in_range 2022-01-01 to 2022-02-28'
       # resource pattern and rule
       - resource:
-          pattern: dummy-\d+
+          pattern: example-\d+
         rule: node-type eq weekend and date-spec weekdays=6-7
     # colocation constraints
     ha_cluster_constraints_colocation:
       # simple constraint
       - resource_leader:
-          id: dummy-3
+          id: example-3
         resource_follower:
-          id: dummy-4
+          id: example-4
         options:
           - name: score
             value: -5
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dummy-1
-              - dummy-2
+              - example-1
+              - example-2
           - resource_ids:
-              - dummy-5
-              - dummy-6
+              - example-5
+              - example-6
             options:
               - name: sequential
                 value: "false"
@@ -1403,27 +1419,27 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
     ha_cluster_constraints_order:
       # simple constraint
       - resource_first:
-          id: dummy-1
+          id: example-1
         resource_then:
-          id: dummy-6
+          id: example-6
         options:
           - name: symmetrical
             value: "false"
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dummy-1
-              - dummy-2
+              - example-1
+              - example-2
             options:
               - name: require-all
                 value: "false"
               - name: sequential
                 value: "false"
           - resource_ids:
-              - dummy-3
+              - example-3
           - resource_ids:
-              - dummy-4
-              - dummy-5
+              - example-4
+              - example-5
             options:
               - name: sequential
                 value: "false"
@@ -1431,7 +1447,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
     ha_cluster_constraints_ticket:
       # simple constraint
       - resource:
-          id: dummy-1
+          id: example-1
         ticket: ticket1
         options:
           - name: loss-policy
@@ -1439,9 +1455,9 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
       # set constraint
       - resource_sets:
           - resource_ids:
-              - dummy-3
-              - dummy-4
-              - dummy-5
+              - example-3
+              - example-4
+              - example-5
         ticket: ticket2
         options:
           - name: loss-policy

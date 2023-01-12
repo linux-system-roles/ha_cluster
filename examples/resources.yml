@@ -15,8 +15,10 @@
               - name: pcmk_host_list
                 value: node1 node2
       - id: simple-resource
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: resource-with-options
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
         instance_attrs:
           - attrs:
@@ -41,23 +43,29 @@
                 value: '5'
               - name: interval
                 value: '1min'
-      - id: dummy-1
+      - id: example-1
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-2
+      - id: example-2
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
-      - id: dummy-3
+      - id: example-3
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: simple-clone
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: clone-with-options
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
       - id: bundled-resource
+        # wokeignore:rule=dummy
         agent: 'ocf:pacemaker:Dummy'
     ha_cluster_resource_groups:
       - id: simple-group
         resource_ids:
-          - dummy-1
-          - dummy-2
+          - example-1
+          - example-2
         meta_attrs:
           - attrs:
               - name: target-role
@@ -66,7 +74,7 @@
                 value: 'true'
       - id: cloned-group
         resource_ids:
-          - dummy-3
+          - example-3
     ha_cluster_resource_clones:
       - resource_id: simple-clone
       - resource_id: clone-with-options
