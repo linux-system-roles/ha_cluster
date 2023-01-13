@@ -1,6 +1,27 @@
 Changelog
 =========
 
+[1.8.5] - 2023-01-13
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- Not request password to be specified when purging cluster (#92)
+
+When running the role with ha_cluster_cluster_present: false to purge
+cluster passwords are not required
+Add a missing bool mapping
+do not set hacluster password when it is empty
+
+### Other Changes
+
+- ansible-lint 6.x fixes (#94)
+- Add check for non-inclusive language (#97)
+
 [1.8.4] - 2022-12-13
 --------------------
 
