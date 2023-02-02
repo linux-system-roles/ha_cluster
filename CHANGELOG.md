@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.8.6] - 2023-02-02
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- Fence agent firewall port is restricted to x86_64 architecture. (#106)
+
+### Other Changes
+
+- none
+
 [1.8.5] - 2023-01-13
 --------------------
 
