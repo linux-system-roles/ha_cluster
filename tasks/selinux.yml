@@ -15,6 +15,7 @@
           - {'ports': '1229', 'proto': 'tcp', 'setype': 'cluster_port_t',
              'state': 'present', 'local': true}
       when:
+        - ansible_facts['architecture'] == 'x86_64'
         - (
             'fence-virt' in ha_cluster_fence_agent_packages
             or

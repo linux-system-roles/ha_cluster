@@ -10,6 +10,7 @@
       changed_when: false
 
     - name: Check firewall port status
+      when: ansible_facts['architecture'] == 'x86_64'
       command: firewall-cmd --list-ports
       register: _result
       failed_when: "'1229/tcp' not in _result.stdout"
