@@ -63,28 +63,39 @@
   service_facts:
 
 - name: Set stonith-watchdog-timeout cluster property
-  command:
-    cmd: >
-      pcs --force
-      {{
-        (
-          ansible_facts.services['pacemaker.service']['state'] | d()
-          == 'running'
-        ) | ternary('', '-f /var/lib/pacemaker/cib/cib.xml')
-      }}
-      -- property set
-      stonith-watchdog-timeout={{ ha_cluster_sbd_enabled | ternary('', '0') }}
-  changed_when: true
+  vars:
+    pacemaker_running: "{{
+          ansible_facts.services['pacemaker.service']['state'] | d('')
+          == 'running' }}"
+  block:
+    - name: Set stonith-watchdog-timeout cluster property in CIB
+      command:
+        cmd: >
+          pcs --force
+          {{
+            pacemaker_running | ternary('', '-f /var/lib/pacemaker/cib/cib.xml')
+          }}
+          -- property set
+          stonith-watchdog-timeout={{
+            ha_cluster_sbd_enabled | ternary('', '0') }}
+      changed_when: true
 
-# In case cib.xml just got created by the task above, fix its permissions. If
-# the permissions are not correct, pacemaker refuses to start.
-# At this stage, we are sure the cib.xml file exists: either it just got
-# created by the task above, or it was created by running pacemaker in the
-# past.
-- name: Correct cib.xml ownership
-  file:
-    path: /var/lib/pacemaker/cib/cib.xml
-    state: file
-    owner: hacluster
-    group: haclient
-    mode: 0600
+    # In case cib.xml just got created by the task above, fix its permissions.
+    - name: Correct cib.xml ownership
+      file:
+        path: /var/lib/pacemaker/cib/cib.xml
+        state: file
+        owner: hacluster
+        group: haclient
+        mode: 0600
+      when:
+        - not pacemaker_running
+
+    # In case of modifying cib.xml file, delete its (now unmatching) signature
+    # so that pacemaker accepts the new cib.xml content.
+    - name: Clean cib.xml.sig
+      file:
+        path: /var/lib/pacemaker/cib/cib.xml.sig
+        state: absent
+      when:
+        - not pacemaker_running

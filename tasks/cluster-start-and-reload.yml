@@ -116,4 +116,5 @@
   # started.
   when:
     - not ansible_check_mode
+    - (item | length) > 0
     - item not in __ha_cluster_all_node_names
