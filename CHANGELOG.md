@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.8.7] - 2023-02-08
+--------------------
+
+### New Features
+
+- none
+
+### Bug Fixes
+
+- Fix stonith watchdog timeout; fix purging nodes from pacemaker (#105)
+
+### Other Changes
+
+- none
+
 [1.8.6] - 2023-02-02
 --------------------
 
