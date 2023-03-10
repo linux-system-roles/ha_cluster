@@ -34,7 +34,6 @@
     mode: 0400
   register: __ha_cluster_distribute_pacemaker_authkey
 
-
 - name: Remove qdevice certificates
   command:
     cmd: pcs -- qdevice net-client destroy
@@ -45,29 +44,19 @@
 - name: Obtain and distribute qdevice certificates
   script:
     cmd: >
-      files/qdevice-certs.sh check-and-setup
+      files/qdevice-certs{{ use_pcs | ternary('-pcs', '') }}.sh
+      {{ ansible_check_mode | ternary('check', 'check-and-setup') }}
       {{ ha_cluster_cluster_name | quote }}
       {{ __ha_cluster_qdevice_host | quote }}
+  check_mode: false
   register: __ha_cluster_qdevice_certs
   changed_when:
     - __ha_cluster_qdevice_certs.rc == 0
-    - __ha_cluster_qdevice_certs.stdout_lines[-1] == "** certificate set up **"
+    - __ha_cluster_qdevice_certs.stdout_lines[-1]
+      != "** certificate already present **"
+  vars:
+    use_pcs: "{{ 'corosync.quorum.device.client.model.net.certificates.local'
+        in __ha_cluster_pcs_capabilities }}"
   when:
-    - not ansible_check_mode
-    - __ha_cluster_qdevice_in_use
-    - __ha_cluster_qdevice_model == "net"
-
-- name: Obtain and distribute qdevice certificates [check mode]
-  script:
-    cmd: >
-      files/qdevice-certs.sh check
-      {{ ha_cluster_cluster_name | quote }}
-      {{ __ha_cluster_qdevice_host | quote }}
-  register: __ha_cluster_qdevice_certs
-  changed_when:
-    - __ha_cluster_qdevice_certs.rc == 0
-    - __ha_cluster_qdevice_certs.stdout_lines[-1] == "** certificate missing **"
-  when:
-    - ansible_check_mode
     - __ha_cluster_qdevice_in_use
     - __ha_cluster_qdevice_model == "net"
