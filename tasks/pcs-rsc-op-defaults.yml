@@ -1,0 +1,29 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure resource / operation defaults set {{
+    defaults_set.id | d(defaults_set_index) }}
+  command:
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      -- resource {% if operations %} op {% endif %} defaults set create
+      {% if defaults_set.id | d() %}
+        id={{ defaults_set.id | quote }}
+      {% endif %}
+      {% if defaults_set.score | d() %}
+        score={{ defaults_set.score | quote }}
+      {% endif %}
+      {% if defaults_set.attrs | d([]) %}
+        meta
+        {% for attr in defaults_set.attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+      {% if defaults_set.rule | d() %}
+        rule {{ defaults_set.rule | quote }}
+      {% endif %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: false
+  changed_when: not ansible_check_mode

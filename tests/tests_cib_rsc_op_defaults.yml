@@ -1,0 +1,167 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure resource and resource operation defaults
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_resource_defaults:
+      meta_attrs:
+        - attrs:
+            - name: rsc-key-1
+              value: rsc-val-1
+        - attrs:
+            - name: rsc-key-2
+              value: rsc-val-2
+          id: custom_id_rsc
+        - attrs:
+            - name: rsc-key-3
+              value: rsc-val-3
+          score: 10
+        - attrs:
+            - name: rsc-key-4
+              value: rsc-val-4
+          rule: "resource ocf:pacemaker:"
+        - id: without_attrs_rsc
+          score: 20
+          rule: "resource :pacemaker: or resource :heartbeat:"
+        - id: all_options_rsc
+          rule: resource ocf:pacemaker:test
+          score: INFINITY
+          attrs:
+            - name: rsc-key-5
+              value: rsc-val-5
+            - name: rsc-key-6
+              value: rsc-val-6
+    ha_cluster_resource_operation_defaults:
+      meta_attrs:
+        - attrs:
+            - name: op-key-1
+              value: op-val-1
+        - attrs:
+            - name: op-key-2
+              value: op-val-2
+          id: custom_id_op
+        - attrs:
+            - name: op-key-3
+              value: op-val-3
+          score: 10
+        - attrs:
+            - name: op-key-4
+              value: op-val-4
+          rule: "resource ocf:pacemaker:"
+        - id: without_attrs_op
+          score: 20
+          rule: "resource :pacemaker: or op monitor"
+        - id: all_options_op
+          rule: resource ocf:pacemaker:test
+          score: INFINITY
+          attrs:
+            - name: op-key-5
+              value: op-val-5
+            - name: op-key-6
+              value: op-val-6
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Verify resource defaults
+          vars:
+            __test_expected_lines:
+              - "Meta Attrs: rsc_defaults-meta_attributes"
+              - "  rsc-key-1=rsc-val-1"
+              - "Meta Attrs: custom_id_rsc"
+              - "  rsc-key-2=rsc-val-2"
+              - "Meta Attrs: rsc_defaults-meta_attributes-1 score=10"
+              - "  rsc-key-3=rsc-val-3"
+              - "Meta Attrs: rsc_defaults-meta_attributes-2"
+              - "  rsc-key-4=rsc-val-4"
+              - "  Rule: boolean-op=and score=INFINITY"
+              - "    Expression: resource ocf:pacemaker:"
+              - "Meta Attrs: without_attrs_rsc score=20"
+              - "  Rule: boolean-op=or score=INFINITY"
+              - "    Expression: resource :pacemaker:"
+              - "    Expression: resource :heartbeat:"
+              - "Meta Attrs: all_options_rsc score=INFINITY"
+              - "  rsc-key-5=rsc-val-5"
+              - "  rsc-key-6=rsc-val-6"
+              - "  Rule: boolean-op=and score=INFINITY"
+              - "    Expression: resource ocf:pacemaker:test"
+          block:
+            - name: Fetch resource defaults configuration from the cluster
+              command:
+                cmd: pcs resource defaults
+              register: __test_pcs_rsc_defaults_config
+              changed_when: false
+
+            - name: Print real resource defaults configuration
+              debug:
+                var: __test_pcs_rsc_defaults_config
+
+            - name: Print expected resource defaults configuration
+              debug:
+                var: __test_expected_lines | list
+
+            - name: Check resource defaults configuration
+              assert:
+                that:
+                  - __test_pcs_rsc_defaults_config.stdout_lines
+                    == __test_expected_lines | list
+
+        - name: Verify operation defaults
+          vars:
+            __test_expected_lines:
+              - "Meta Attrs: op_defaults-meta_attributes"
+              - "  op-key-1=op-val-1"
+              - "Meta Attrs: custom_id_op"
+              - "  op-key-2=op-val-2"
+              - "Meta Attrs: op_defaults-meta_attributes-1 score=10"
+              - "  op-key-3=op-val-3"
+              - "Meta Attrs: op_defaults-meta_attributes-2"
+              - "  op-key-4=op-val-4"
+              - "  Rule: boolean-op=and score=INFINITY"
+              - "    Expression: resource ocf:pacemaker:"
+              - "Meta Attrs: without_attrs_op score=20"
+              - "  Rule: boolean-op=or score=INFINITY"
+              - "    Expression: resource :pacemaker:"
+              - "    Expression: op monitor"
+              - "Meta Attrs: all_options_op score=INFINITY"
+              - "  op-key-5=op-val-5"
+              - "  op-key-6=op-val-6"
+              - "  Rule: boolean-op=and score=INFINITY"
+              - "    Expression: resource ocf:pacemaker:test"
+          block:
+            - name: Fetch operation defaults configuration from the cluster
+              command:
+                cmd: pcs resource op defaults
+              register: __test_pcs_op_defaults_config
+              changed_when: false
+
+            - name: Print real operation defaults configuration
+              debug:
+                var: __test_pcs_op_defaults_config
+
+            - name: Print expected operation defaults configuration
+              debug:
+                var: __test_expected_lines | list
+
+            - name: Check operation defaults configuration
+              assert:
+                that:
+                  - __test_pcs_op_defaults_config.stdout_lines
+                    == __test_expected_lines | list
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml

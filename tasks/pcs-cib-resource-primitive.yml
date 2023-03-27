@@ -6,6 +6,12 @@
     # *_attrs[0] instead of looping over *_attrs
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      {%
+        if not resource_is_stonith
+        and not resource.copy_operations_from_agent | d(true)
+      %}
+        --no-default-ops
+      {% endif %}
       --
       {% if resource_is_stonith %} stonith {% else %} resource {% endif %}
       create {{ resource.id | quote }}

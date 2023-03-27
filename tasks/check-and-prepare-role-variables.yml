@@ -103,3 +103,37 @@
     - ha_cluster_pcsd_public_key_src is not none
     - ha_cluster_pcsd_private_key_src is not none
     - ha_cluster_pcsd_certificates | d([])
+
+- name: Fetch pcs capabilities
+  command:
+    cmd: pcs --version --full
+  check_mode: false
+  changed_when: false  # this is a read-only command
+  register: __ha_cluster_pcs_version
+
+- name: Parse pcs capabilities
+  set_fact:
+    __ha_cluster_pcs_capabilities: "{{
+        __ha_cluster_pcs_version.stdout_lines[1].split()
+      }}"
+
+# The capability got released in RHEL 8.3, which is currently the oldest
+# release supported by the role. Therefore, support for pcs without the
+# capability is not implemented. If there is a requirement to do so, implement
+# the support for old implementation of resource and operation defaults and
+# change or remove this check.
+- name: Fail if pcs is to old to configure resources and operations defaults
+  fail:
+    msg: >
+      Installed pcs doesn't support configuring resources and operations
+      defaults. Please, upgrade pcs.
+  when:
+    - (
+        ha_cluster_resource_defaults
+        and not 'pcmk.properties.resource-defaults.multiple'
+        in __ha_cluster_pcs_capabilities
+      ) or (
+        ha_cluster_resource_operation_defaults
+        and not 'pcmk.properties.operation-defaults.multiple'
+        in __ha_cluster_pcs_capabilities
+      )

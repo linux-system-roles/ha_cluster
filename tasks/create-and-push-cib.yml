@@ -95,6 +95,31 @@
         properties_set: "{{ ha_cluster_cluster_properties[0] }}"
       when: ha_cluster_cluster_properties[0].attrs | d([])
 
+    # RHEL 8.3, which is the oldest version supported by the role, supports
+    # multiple sets of resources and resources operations defaults. Therefore,
+    # we don't need any checks for pcs capabilities.
+    - name: Configure resource defaults
+      include_tasks: pcs-rsc-op-defaults.yml
+      vars:
+        operations: false
+      loop: "{{ ha_cluster_resource_defaults.meta_attrs | default([]) }}"
+      loop_control:
+        index_var: defaults_set_index
+        loop_var: defaults_set
+
+    # RHEL 8.3, which is the oldest version supported by the role, supports
+    # multiple sets of resources and resources operations defaults. Therefore,
+    # we don't need any checks for pcs capabilities.
+    - name: Configure resource operation defaults
+      include_tasks: pcs-rsc-op-defaults.yml
+      vars:
+        operations: true
+      loop: "{{
+        ha_cluster_resource_operation_defaults.meta_attrs | default([]) }}"
+      loop_control:
+        index_var: defaults_set_index
+        loop_var: defaults_set
+
     ## Resources
     - name: Extract primitive to bundle mapping
       set_fact:

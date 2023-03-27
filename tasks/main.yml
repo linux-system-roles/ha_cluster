@@ -3,9 +3,6 @@
 - name: Set platform/version specific variables
   include_tasks: set_vars.yml
 
-- name: Check and prepare role variables
-  include_tasks: check-and-prepare-role-variables.yml
-
 - name: Enable package repositories
   include_tasks: enable-package-repositories.yml
   when:
@@ -19,6 +16,9 @@
       ha_cluster_extra_packages
     }}"
     state: present
+
+- name: Check and prepare role variables
+  include_tasks: check-and-prepare-role-variables.yml
 
 # The user is created by installing pacemaker packages. We just need to set the
 # password.

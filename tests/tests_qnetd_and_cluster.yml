@@ -10,6 +10,11 @@
     - name: Run test
       tags: tests::verify
       block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
         - name: Run HA Cluster role
           include_role:
             name: linux-system-roles.ha_cluster

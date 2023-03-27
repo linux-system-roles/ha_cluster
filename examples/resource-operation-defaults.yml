@@ -1,0 +1,38 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - resource and operation defaults
+  hosts: all
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    # Set a different `resource-stickiness` value during and outside work
+    # hours. This allows resources to automatically move back to their most
+    # preferred hosts, but at a time that (in theory) does not interfere with
+    # business activities.
+    ha_cluster_resource_defaults:
+      meta_attrs:
+        - id: core-hours
+          rule: date-spec hours=9-16 weekdays=1-5
+          score: 2
+          attrs:
+            - name: resource-stickiness
+              value: INFINITY
+        - id: after-hours
+          score: 1
+          attrs:
+            - name: resource-stickiness
+              value: 0
+    # Default the timeout on all 10-second-interval monitor actions on IPaddr2
+    # resources to 8 seconds.
+    ha_cluster_resource_operation_defaults:
+      meta_attrs:
+        - rule: resource ::IPaddr2 and op monitor interval=10s
+          score: INFINITY
+          attrs:
+            - name: timeout
+              value: 8s
+
+  roles:
+    - linux-system-roles.ha_cluster

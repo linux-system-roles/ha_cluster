@@ -30,9 +30,10 @@
           - attrs:
         meta_attrs:
           - attrs:
-          # Pcs requires action and at least one option to be defined for an
-          # operation. Therefore, there are no tests for partially defined
-          # operations.
+        copy_operations_from_agent: false  # this should be ignored for stonith
+        # Pcs requires action and at least one option to be defined for an
+        # operation. Therefore, there are no tests for partially defined
+        # operations.
       - id: fence-with-attrs
         agent: 'stonith:fence_kdump'
         instance_attrs:
@@ -124,6 +125,10 @@
                 value: 14
               - name: interval
                 value: 28
+      - id: test-no-default-ops
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+        copy_operations_from_agent: false
 
       - id: test-1a
         # wokeignore:rule=dummy
@@ -618,6 +623,8 @@
                 '') }}"
               - '              start interval=0s timeout=20s (test-with-attrs2-start-interval-0s)'
               - '              stop interval=0s timeout=20s (test-with-attrs2-stop-interval-0s)'
+              - ' Resource: test-no-default-ops (class=ocf provider=pacemaker type={{ __dmy }})'
+              - '  Operations: monitor interval=10s timeout=20s (test-no-default-ops-monitor-interval-10s)'
               - ' Group: group1'
               - '  Resource: test-1a (class=ocf provider=pacemaker type={{ __dmy }})'
               - '   Operations: migrate_from interval=0s timeout=20s (test-1a-migrate_from-interval-0s)'
@@ -1601,6 +1608,35 @@
                                     ]
                                 }
                             ],
+                            "utilization": []
+                        },
+                        {
+                            "id": "test-no-default-ops",
+                            "agent_name": {
+                                "provider": "pacemaker",
+                                "standard": "ocf",
+                                "type": "{{ __dmy }}"
+                            },
+                            "description": null,
+                            "operations": [
+                                {
+                                    "id": "test-no-default-ops-monitor-interval-10s",
+                                    "name": "monitor",
+                                    "interval": "10s",
+                                    "description": null,
+                                    "start_delay": null,
+                                    "interval_origin": null,
+                                    "timeout": "20s",
+                                    "enabled": null,
+                                    "record_pending": null,
+                                    "role": null,
+                                    "on_fail": null,
+                                    "meta_attributes": [],
+                                    "instance_attributes": []
+                                }
+                            ],
+                            "meta_attributes": [],
+                            "instance_attributes": [],
                             "utilization": []
                         },
                         {
