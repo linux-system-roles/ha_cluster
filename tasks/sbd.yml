@@ -3,7 +3,45 @@
 - name: Manage SBD
   when: ha_cluster_sbd_enabled
   block:
-    - name: Manage SBD
+    - name: Configure SBD watchdog
+      block:
+        - name: Configure and unload watchdog kernel modules from blocklist
+          block:
+            - name: Configure watchdog kernel module blocklist
+              lineinfile:
+                path: "/etc/modprobe.d/{{ item }}.conf"
+                create: true
+                mode: 0644
+                regexp: "^(options|blacklist) {{ item }}"
+                line: "blacklist {{ item }}"
+                state: present
+              loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
+
+            - name: Unload watchdog kernel modules from blocklist
+              modprobe:
+                name: "{{ item }}"
+                state: absent
+              loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
+
+        - name: Configure and load watchdog kernel module
+          block:
+            - name: Configure watchdog kernel modules
+              lineinfile:
+                path: "/etc/modules-load.d/{{ item }}.conf"
+                create: true
+                mode: 0644
+                regexp: "^{{ item }}"
+                line: "{{ item }}"
+                state: present
+              loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
+
+            - name: Load watchdog kernel modules
+              modprobe:
+                name: "{{ item }}"
+                state: present
+              loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
+
+    - name: Manage SBD devices
       # Ideally, the block as a whole should run one node at a time. This does
       # not seem to be possible with Ansible yet. Instead, we at least make the
       # block's tasks run one by one. This way, we avoid possible issues caused
