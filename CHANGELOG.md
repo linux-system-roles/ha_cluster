@@ -1,6 +1,23 @@
 Changelog
 =========
 
+[1.9.0] - 2023-04-06
+--------------------
+
+### New Features
+
+- add support for resource and operation defaults
+- Add possibility to load SBD watchdog kernel modules (#82)
+
+### Bug Fixes
+
+- use pcs to setup qdevice certificates if available
+
+### Other Changes
+
+- Add README-ansible.md to refer Ansible intro page on linux-system-roles.github.io (#115)
+- Fingerprint RHEL System Role managed config files (#116)
+
 [1.8.7] - 2023-02-08
 --------------------
 
