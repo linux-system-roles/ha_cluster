@@ -10,8 +10,7 @@
   command: modprobe softdog
   changed_when: true
   # do not load if sbd tests are run (loads module instead)
-  when:
-  - not (__test_disable_modprobe | d(false))
+  when: not (__test_disable_modprobe | d(false))
 
 - name: Create backing files for SBD devices
   tempfile:

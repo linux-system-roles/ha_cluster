@@ -12,3 +12,4 @@
     cmd: dnf config-manager --set-enabled {{ item.id | quote }}
   loop: "{{ __ha_cluster_repos }}"
   when: item.name not in __ha_cluster_repolist.stdout
+  changed_when: item.name not in __ha_cluster_repolist.stdout

@@ -58,6 +58,7 @@
     cmd: corosync-cfgtool -R
   run_once: true  # noqa: run_once[task]
   when: not ansible_check_mode
+  changed_when: false
 
 - name: Start corosync-qdevice
   service:
@@ -88,6 +89,7 @@
 - name: List pacemaker nodes
   shell:
     cmd: >
+      set -euo pipefail;
       crm_mon -X
       | xmllint --xpath '/crm_mon/nodes/node/@name' -
       | sed -E 's/\s*name="([^"]+)"\s*/\1\n/g'
@@ -115,6 +117,10 @@
   # Check mode does not start the cluster, it only shows the cluster would be
   # started.
   when:
+    - not ansible_check_mode
+    - (item | length) > 0
+    - item not in __ha_cluster_all_node_names
+  changed_when:
     - not ansible_check_mode
     - (item | length) > 0
     - item not in __ha_cluster_all_node_names

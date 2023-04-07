@@ -10,6 +10,7 @@
         not ha_cluster_qnetd.present | d(false)
         or ha_cluster_qnetd.regenerate_keys | d(false)
       )
+  changed_when: true
 
 - name: Manage qnetd
   when:

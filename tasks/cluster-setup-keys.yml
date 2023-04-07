@@ -40,6 +40,7 @@
   when:
     - not ansible_check_mode
     - __ha_cluster_qdevice_model != "net" or ha_cluster_regenerate_keys
+  changed_when: true
 
 - name: Obtain and distribute qdevice certificates
   script:
