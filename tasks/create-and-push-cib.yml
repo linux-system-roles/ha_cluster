@@ -256,6 +256,7 @@
       cibadmin --verbose --patch
       --xml-file {{ __ha_cluster_tempfile_cib_diff.path | quote }}
   run_once: true  # noqa: run_once[task]
+  changed_when: not ansible_check_mode
   when: __ha_cluster_cib_diff.rc == 1
 
 - name: Remove CIB tempfiles
