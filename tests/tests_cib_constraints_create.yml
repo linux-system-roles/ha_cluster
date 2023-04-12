@@ -428,6 +428,8 @@
 
         # yamllint disable rule:line-length
         - name: Verify location constraints
+          when:
+            - '"pcmk.constraint.config.output-formats" not in __test_pcs_capabilities'
           vars:
             # wokeignore:rule=master
             __um: Master
@@ -540,7 +542,7 @@
           block:
             - name: Fetch location constraints configuration from the cluster
               command:
-                cmd: pcs constraint location --full
+                cmd: pcs --full -- constraint location
               register: __test_pcs_location_config
               changed_when: false
 
@@ -557,7 +559,991 @@
                 that:
                   - __test_pcs_location_config.stdout_lines == __test_expected_lines | select | list
 
+        - name: Verify location constraints
+          when:
+            - '"pcmk.constraint.config.output-formats" in __test_pcs_capabilities'
+          vars:
+            __test_expected_lines: >
+                {
+                    "colocation": [],
+                    "colocation_set": [],
+                    "location": [
+                        {
+                            "attributes": {
+                                "constraint_id": "location-d1-node1-INFINITY",
+                                "lifetime": [],
+                                "node": "node1",
+                                "resource_discovery": null,
+                                "rules": [],
+                                "score": "INFINITY"
+                            },
+                            "resource_id": "d1",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-dd-node1-INFINITY",
+                                "lifetime": [],
+                                "node": "node1",
+                                "resource_discovery": null,
+                                "rules": [],
+                                "score": "INFINITY"
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-d1-node2--123",
+                                "lifetime": [],
+                                "node": "node2",
+                                "resource_discovery": null,
+                                "rules": [],
+                                "score": "-123"
+                            },
+                            "resource_id": "d1",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-dd-node2-23",
+                                "lifetime": [],
+                                "node": "node2",
+                                "resource_discovery": null,
+                                "rules": [],
+                                "score": "23"
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl1",
+                                "lifetime": [],
+                                "node": "node1",
+                                "resource_discovery": null,
+                                "rules": [],
+                                "score": "INFINITY"
+                            },
+                            "resource_id": "d2",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl2",
+                                "lifetime": [],
+                                "node": "node3",
+                                "resource_discovery": null,
+                                "rules": [],
+                                "score": "INFINITY"
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl3",
+                                "lifetime": [],
+                                "node": "node2",
+                                "resource_discovery": "exclusive",
+                                "rules": [],
+                                "score": "INFINITY"
+                            },
+                            "resource_id": "d2",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl4",
+                                "lifetime": [],
+                                "node": "node4",
+                                "resource_discovery": "exclusive",
+                                "rules": [],
+                                "score": "INFINITY"
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl5",
+                                "lifetime": [],
+                                "node": "node3",
+                                "resource_discovery": "never",
+                                "rules": [],
+                                "score": "-INFINITY"
+                            },
+                            "resource_id": "d2",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl6",
+                                "lifetime": [],
+                                "node": "node5",
+                                "resource_discovery": "never",
+                                "rules": [],
+                                "score": "-32"
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-d3",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 1",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 1",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-d3-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "1"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-d3-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "score": "INFINITY"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": "d3",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-dd",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 1",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 1",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-dd-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "1"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-dd-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "score": "INFINITY"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl7",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 2 and (date gt 2000-01-01 or date-spec weekdays=1)",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 2",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "cl7-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "2"
+                                                },
+                                                "type": "EXPRESSION"
+                                            },
+                                            {
+                                                "as_string": "date gt 2000-01-01 or date-spec weekdays=1",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [
+                                                    {
+                                                        "as_string": "date gt 2000-01-01",
+                                                        "date_spec": null,
+                                                        "duration": null,
+                                                        "expressions": [],
+                                                        "id": "cl7-rule-rule-expr",
+                                                        "in_effect": "UNKNOWN",
+                                                        "options": {
+                                                            "operation": "gt",
+                                                            "start": "2000-01-01"
+                                                        },
+                                                        "type": "DATE_EXPRESSION"
+                                                    },
+                                                    {
+                                                        "as_string": "date-spec weekdays=1",
+                                                        "date_spec": {
+                                                            "id": "cl7-rule-rule-expr-1-datespec",
+                                                            "options": {
+                                                                "weekdays": "1"
+                                                            }
+                                                        },
+                                                        "duration": null,
+                                                        "expressions": [],
+                                                        "id": "cl7-rule-rule-expr-1",
+                                                        "in_effect": "UNKNOWN",
+                                                        "options": {
+                                                            "operation": "date_spec"
+                                                        },
+                                                        "type": "DATE_EXPRESSION"
+                                                    }
+                                                ],
+                                                "id": "cl7-rule-rule",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "boolean-op": "or",
+                                                    "score": "0"
+                                                },
+                                                "type": "RULE"
+                                            }
+                                        ],
+                                        "id": "cl7-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "boolean-op": "and",
+                                            "score": "INFINITY"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": "d3",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl8",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 2 and (date gt 2000-01-01 or date-spec weekdays=1)",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 2",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "cl8-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "2"
+                                                },
+                                                "type": "EXPRESSION"
+                                            },
+                                            {
+                                                "as_string": "date gt 2000-01-01 or date-spec weekdays=1",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [
+                                                    {
+                                                        "as_string": "date gt 2000-01-01",
+                                                        "date_spec": null,
+                                                        "duration": null,
+                                                        "expressions": [],
+                                                        "id": "cl8-rule-rule-expr",
+                                                        "in_effect": "UNKNOWN",
+                                                        "options": {
+                                                            "operation": "gt",
+                                                            "start": "2000-01-01"
+                                                        },
+                                                        "type": "DATE_EXPRESSION"
+                                                    },
+                                                    {
+                                                        "as_string": "date-spec weekdays=1",
+                                                        "date_spec": {
+                                                            "id": "cl8-rule-rule-expr-1-datespec",
+                                                            "options": {
+                                                                "weekdays": "1"
+                                                            }
+                                                        },
+                                                        "duration": null,
+                                                        "expressions": [],
+                                                        "id": "cl8-rule-rule-expr-1",
+                                                        "in_effect": "UNKNOWN",
+                                                        "options": {
+                                                            "operation": "date_spec"
+                                                        },
+                                                        "type": "DATE_EXPRESSION"
+                                                    }
+                                                ],
+                                                "id": "cl8-rule-rule",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "boolean-op": "or",
+                                                    "score": "0"
+                                                },
+                                                "type": "RULE"
+                                            }
+                                        ],
+                                        "id": "cl8-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "boolean-op": "and",
+                                            "score": "INFINITY"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-d3-1",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 3 or #uname eq node2",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 3",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-d3-1-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "3"
+                                                },
+                                                "type": "EXPRESSION"
+                                            },
+                                            {
+                                                "as_string": "#uname eq node2",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-d3-1-rule-expr-1",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "#uname",
+                                                    "operation": "eq",
+                                                    "value": "node2"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-d3-1-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "boolean-op": "or",
+                                            "role": "Promoted",
+                                            "score": "INFINITY"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": "d3",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-dd-1",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 3 or #uname eq node2",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 3",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-dd-1-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "3"
+                                                },
+                                                "type": "EXPRESSION"
+                                            },
+                                            {
+                                                "as_string": "#uname eq node2",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-dd-1-rule-expr-1",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "#uname",
+                                                    "operation": "eq",
+                                                    "value": "node2"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-dd-1-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "boolean-op": "or",
+                                            "role": "Promoted",
+                                            "score": "INFINITY"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-d3-2",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 4 and value gt -10",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 4",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-d3-2-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "4"
+                                                },
+                                                "type": "EXPRESSION"
+                                            },
+                                            {
+                                                "as_string": "value gt -10",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-d3-2-rule-expr-1",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "value",
+                                                    "operation": "gt",
+                                                    "value": "-10"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-d3-2-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "boolean-op": "and",
+                                            "score": "-47"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": "d3",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-dd-2",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 4 and value gt -10",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 4",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-dd-2-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "4"
+                                                },
+                                                "type": "EXPRESSION"
+                                            },
+                                            {
+                                                "as_string": "value gt -10",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-dd-2-rule-expr-1",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "value",
+                                                    "operation": "gt",
+                                                    "value": "-10"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-dd-2-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "boolean-op": "and",
+                                            "score": "-47"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-d3-3",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "(rule eq 5 or value ne string interesting;string&) and x gt 0",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 5 or value ne string interesting;string&",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [
+                                                    {
+                                                        "as_string": "rule eq 5",
+                                                        "date_spec": null,
+                                                        "duration": null,
+                                                        "expressions": [],
+                                                        "id": "location-d3-3-rule-rule-expr",
+                                                        "in_effect": "UNKNOWN",
+                                                        "options": {
+                                                            "attribute": "rule",
+                                                            "operation": "eq",
+                                                            "value": "5"
+                                                        },
+                                                        "type": "EXPRESSION"
+                                                    },
+                                                    {
+                                                        "as_string": "value ne string interesting;string&",
+                                                        "date_spec": null,
+                                                        "duration": null,
+                                                        "expressions": [],
+                                                        "id": "location-d3-3-rule-rule-expr-1",
+                                                        "in_effect": "UNKNOWN",
+                                                        "options": {
+                                                            "attribute": "value",
+                                                            "operation": "ne",
+                                                            "type": "string",
+                                                            "value": "interesting;string&"
+                                                        },
+                                                        "type": "EXPRESSION"
+                                                    }
+                                                ],
+                                                "id": "location-d3-3-rule-rule",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "boolean-op": "or",
+                                                    "score": "0"
+                                                },
+                                                "type": "RULE"
+                                            },
+                                            {
+                                                "as_string": "x gt 0",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-d3-3-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "x",
+                                                    "operation": "gt",
+                                                    "value": "0"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-d3-3-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "boolean-op": "and",
+                                            "score-attribute": "myscore"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": "d3",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-dd-3",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": null,
+                                "rules": [
+                                    {
+                                        "as_string": "(rule eq 5 or value ne string interesting;string&) and x gt 0",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 5 or value ne string interesting;string&",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [
+                                                    {
+                                                        "as_string": "rule eq 5",
+                                                        "date_spec": null,
+                                                        "duration": null,
+                                                        "expressions": [],
+                                                        "id": "location-dd-3-rule-rule-expr",
+                                                        "in_effect": "UNKNOWN",
+                                                        "options": {
+                                                            "attribute": "rule",
+                                                            "operation": "eq",
+                                                            "value": "5"
+                                                        },
+                                                        "type": "EXPRESSION"
+                                                    },
+                                                    {
+                                                        "as_string": "value ne string interesting;string&",
+                                                        "date_spec": null,
+                                                        "duration": null,
+                                                        "expressions": [],
+                                                        "id": "location-dd-3-rule-rule-expr-1",
+                                                        "in_effect": "UNKNOWN",
+                                                        "options": {
+                                                            "attribute": "value",
+                                                            "operation": "ne",
+                                                            "type": "string",
+                                                            "value": "interesting;string&"
+                                                        },
+                                                        "type": "EXPRESSION"
+                                                    }
+                                                ],
+                                                "id": "location-dd-3-rule-rule",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "boolean-op": "or",
+                                                    "score": "0"
+                                                },
+                                                "type": "RULE"
+                                            },
+                                            {
+                                                "as_string": "x gt 0",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-dd-3-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "x",
+                                                    "operation": "gt",
+                                                    "value": "0"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-dd-3-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "boolean-op": "and",
+                                            "score-attribute": "myscore"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-d3-4",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": "always",
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 6",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 6",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-d3-4-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "6"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-d3-4-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "score": "INFINITY"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": "d3",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "location-dd-4",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": "always",
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 6",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 6",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "location-dd-4-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "6"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "location-dd-4-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "score": "INFINITY"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl9",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": "always",
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 7",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 7",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "cl9-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "7"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "cl9-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "role": "Unpromoted",
+                                            "score": "-47"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": "d3",
+                            "resource_pattern": null,
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cl10",
+                                "lifetime": [],
+                                "node": null,
+                                "resource_discovery": "always",
+                                "rules": [
+                                    {
+                                        "as_string": "rule eq 7",
+                                        "date_spec": null,
+                                        "duration": null,
+                                        "expressions": [
+                                            {
+                                                "as_string": "rule eq 7",
+                                                "date_spec": null,
+                                                "duration": null,
+                                                "expressions": [],
+                                                "id": "cl10-rule-expr",
+                                                "in_effect": "UNKNOWN",
+                                                "options": {
+                                                    "attribute": "rule",
+                                                    "operation": "eq",
+                                                    "value": "7"
+                                                },
+                                                "type": "EXPRESSION"
+                                            }
+                                        ],
+                                        "id": "cl10-rule",
+                                        "in_effect": "UNKNOWN",
+                                        "options": {
+                                            "role": "Unpromoted",
+                                            "score": "-47"
+                                        },
+                                        "type": "RULE"
+                                    }
+                                ],
+                                "score": null
+                            },
+                            "resource_id": null,
+                            "resource_pattern": "d\\d+",
+                            "role": null
+                        }
+                    ],
+                    "location_set": [],
+                    "order": [],
+                    "order_set": [],
+                    "ticket": [],
+                    "ticket_set": []
+                }
+          block:
+            - name: Fetch location constraints configuration from the cluster
+              command:
+                cmd: pcs --output-format=json -- constraint location
+              register: __test_pcs_location_config
+              changed_when: false
+
+            - name: Print real location constraints configuration
+              debug:
+                var: __test_pcs_location_config.stdout | from_json
+
+            - name: Print expected location constraints configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check location constraints configuration
+              assert:
+                that:
+                  - __test_pcs_location_config.stdout | from_json == __test_expected_lines | from_json
+
         - name: Verify colocation constraints
+          when:
+            - '"pcmk.constraint.config.output-formats" not in __test_pcs_capabilities'
           vars:
             # wokeignore:rule=master
             __mstr: Master
@@ -585,7 +1571,7 @@
           block:
             - name: Fetch colocation constraints configuration from the cluster
               command:
-                cmd: pcs constraint colocation --full
+                cmd: pcs --full -- constraint colocation
               register: __test_pcs_colocation_config
               changed_when: false
 
@@ -602,7 +1588,198 @@
                 that:
                   - __test_pcs_colocation_config.stdout_lines == __test_expected_lines | select | list
 
+        - name: Verify colocation constraints
+          when:
+            - '"pcmk.constraint.config.output-formats" in __test_pcs_capabilities'
+          vars:
+            __test_expected_lines: >
+                {
+                    "colocation": [
+                        {
+                            "attributes": {
+                                "constraint_id": "colocation-d1-d2-INFINITY",
+                                "influence": null,
+                                "lifetime": [],
+                                "score": "INFINITY"
+                            },
+                            "node_attribute": null,
+                            "resource_id": "d1",
+                            "resource_instance": null,
+                            "resource_role": null,
+                            "with_resource_id": "d2",
+                            "with_resource_instance": null,
+                            "with_resource_role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "colocation-d2-d3--10",
+                                "influence": null,
+                                "lifetime": [],
+                                "score": "-10"
+                            },
+                            "node_attribute": null,
+                            "resource_id": "d2",
+                            "resource_instance": null,
+                            "resource_role": null,
+                            "with_resource_id": "d3",
+                            "with_resource_instance": null,
+                            "with_resource_role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cc-id",
+                                "influence": null,
+                                "lifetime": [],
+                                "score": "INFINITY"
+                            },
+                            "node_attribute": null,
+                            "resource_id": "d3",
+                            "resource_instance": null,
+                            "resource_role": null,
+                            "with_resource_id": "d4",
+                            "with_resource_instance": null,
+                            "with_resource_role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "colocation-d1-d3-INFINITY",
+                                "influence": null,
+                                "lifetime": [],
+                                "score": "INFINITY"
+                            },
+                            "node_attribute": null,
+                            "resource_id": "d1",
+                            "resource_instance": null,
+                            "resource_role": "Promoted",
+                            "with_resource_id": "d3",
+                            "with_resource_instance": null,
+                            "with_resource_role": "Promoted"
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "colocation-d1-d4-INFINITY",
+                                "influence": null,
+                                "lifetime": [],
+                                "score": "INFINITY"
+                            },
+                            "node_attribute": "attribute-name",
+                            "resource_id": "d1",
+                            "resource_instance": null,
+                            "resource_role": null,
+                            "with_resource_id": "d4",
+                            "with_resource_instance": null,
+                            "with_resource_role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cc-all",
+                                "influence": null,
+                                "lifetime": [],
+                                "score": "-INFINITY"
+                            },
+                            "node_attribute": "attribute-name",
+                            "resource_id": "d2",
+                            "resource_instance": null,
+                            "resource_role": "Unpromoted",
+                            "with_resource_id": "d4",
+                            "with_resource_instance": null,
+                            "with_resource_role": "Started"
+                        }
+                    ],
+                    "colocation_set": [
+                        {
+                            "attributes": {
+                                "constraint_id": "colocation_set_d1d2",
+                                "influence": null,
+                                "lifetime": [],
+                                "score": "INFINITY"
+                            },
+                            "resource_sets": [
+                                {
+                                    "action": null,
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": null,
+                                    "resources_ids": [
+                                        "d1",
+                                        "d2"
+                                    ],
+                                    "role": null,
+                                    "score": null,
+                                    "sequential": null,
+                                    "set_id": "colocation_set_d1d2_set"
+                                }
+                            ]
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "cc-set",
+                                "influence": null,
+                                "lifetime": [],
+                                "score": "20"
+                            },
+                            "resource_sets": [
+                                {
+                                    "action": null,
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": null,
+                                    "resources_ids": [
+                                        "d1",
+                                        "d2"
+                                    ],
+                                    "role": "Promoted",
+                                    "score": null,
+                                    "sequential": null,
+                                    "set_id": "cc-set_set"
+                                },
+                                {
+                                    "action": null,
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": null,
+                                    "resources_ids": [
+                                        "d3",
+                                        "d4"
+                                    ],
+                                    "role": null,
+                                    "score": null,
+                                    "sequential": false,
+                                    "set_id": "cc-set_set-1"
+                                }
+                            ]
+                        }
+                    ],
+                    "location": [],
+                    "location_set": [],
+                    "order": [],
+                    "order_set": [],
+                    "ticket": [],
+                    "ticket_set": []
+                }
+          block:
+            - name: Fetch colocation constraints configuration from the cluster
+              command:
+                cmd: pcs --output-format=json -- constraint colocation
+              register: __test_pcs_colocation_config
+              changed_when: false
+
+            - name: Print real colocation constraints configuration
+              debug:
+                var: __test_pcs_colocation_config.stdout | from_json
+
+            - name: Print expected colocation constraints configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check colocation constraints configuration
+              assert:
+                that:
+                  - __test_pcs_colocation_config.stdout | from_json == __test_expected_lines | from_json
+
         - name: Verify order constraints
+          when:
+            - '"pcmk.constraint.config.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_expected_lines:
               - 'Ordering Constraints:'
@@ -618,7 +1795,7 @@
           block:
             - name: Fetch order constraints configuration from the cluster
               command:
-                cmd: pcs constraint order --full
+                cmd: pcs --full -- constraint order
               register: __test_pcs_order_config
               changed_when: false
 
@@ -635,7 +1812,200 @@
                 that:
                   - __test_pcs_order_config.stdout_lines == __test_expected_lines | select | list
 
+        - name: Verify order constraints
+          when:
+            - '"pcmk.constraint.config.output-formats" in __test_pcs_capabilities'
+          vars:
+            __test_expected_lines: >
+                {
+                    "colocation": [],
+                    "colocation_set": [],
+                    "location": [],
+                    "location_set": [],
+                    "order": [
+                        {
+                            "attributes": {
+                                "constraint_id": "order-d1-d2-mandatory",
+                                "kind": null,
+                                "require_all": null,
+                                "score": null,
+                                "symmetrical": null
+                            },
+                            "first_action": "start",
+                            "first_resource_id": "d1",
+                            "first_resource_instance": null,
+                            "then_action": "start",
+                            "then_resource_id": "d2",
+                            "then_resource_instance": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "co-id",
+                                "kind": null,
+                                "require_all": null,
+                                "score": null,
+                                "symmetrical": null
+                            },
+                            "first_action": "start",
+                            "first_resource_id": "d2",
+                            "first_resource_instance": null,
+                            "then_action": "start",
+                            "then_resource_id": "d3",
+                            "then_resource_instance": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "order-d3-d4-mandatory",
+                                "kind": null,
+                                "require_all": null,
+                                "score": null,
+                                "symmetrical": null
+                            },
+                            "first_action": "demote",
+                            "first_resource_id": "d3",
+                            "first_resource_instance": null,
+                            "then_action": "promote",
+                            "then_resource_id": "d4",
+                            "then_resource_instance": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "order-d1-d3-Optional",
+                                "kind": "Optional",
+                                "require_all": false,
+                                "score": null,
+                                "symmetrical": false
+                            },
+                            "first_action": "start",
+                            "first_resource_id": "d1",
+                            "first_resource_instance": null,
+                            "then_action": "start",
+                            "then_resource_id": "d3",
+                            "then_resource_instance": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "order-d1-d4--15",
+                                "kind": null,
+                                "require_all": null,
+                                "score": "-15",
+                                "symmetrical": null
+                            },
+                            "first_action": "start",
+                            "first_resource_id": "d1",
+                            "first_resource_instance": null,
+                            "then_action": "start",
+                            "then_resource_id": "d4",
+                            "then_resource_instance": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "co-all",
+                                "kind": null,
+                                "require_all": false,
+                                "score": "10",
+                                "symmetrical": false
+                            },
+                            "first_action": "demote",
+                            "first_resource_id": "d2",
+                            "first_resource_instance": null,
+                            "then_action": "stop",
+                            "then_resource_id": "d4",
+                            "then_resource_instance": null
+                        }
+                    ],
+                    "order_set": [
+                        {
+                            "attributes": {
+                                "constraint_id": "order_set_d1d2",
+                                "kind": null,
+                                "require_all": null,
+                                "score": null,
+                                "symmetrical": null
+                            },
+                            "resource_sets": [
+                                {
+                                    "action": null,
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": null,
+                                    "resources_ids": [
+                                        "d1",
+                                        "d2"
+                                    ],
+                                    "role": null,
+                                    "score": null,
+                                    "sequential": null,
+                                    "set_id": "order_set_d1d2_set"
+                                }
+                            ]
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "co-set",
+                                "kind": "Serialize",
+                                "require_all": null,
+                                "score": null,
+                                "symmetrical": false
+                            },
+                            "resource_sets": [
+                                {
+                                    "action": "promote",
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": null,
+                                    "resources_ids": [
+                                        "d1",
+                                        "d2"
+                                    ],
+                                    "role": null,
+                                    "score": null,
+                                    "sequential": null,
+                                    "set_id": "co-set_set"
+                                },
+                                {
+                                    "action": null,
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": true,
+                                    "resources_ids": [
+                                        "d3",
+                                        "d4"
+                                    ],
+                                    "role": null,
+                                    "score": null,
+                                    "sequential": false,
+                                    "set_id": "co-set_set-1"
+                                }
+                            ]
+                        }
+                    ],
+                    "ticket": [],
+                    "ticket_set": []
+                }
+          block:
+            - name: Fetch order constraints configuration from the cluster
+              command:
+                cmd: pcs --output-format=json -- constraint order
+              register: __test_pcs_order_config
+              changed_when: false
+
+            - name: Print real order constraints configuration
+              debug:
+                var: __test_pcs_order_config.stdout | from_json
+
+            - name: Print expected order constraints configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check order constraints configuration
+              assert:
+                that:
+                  - __test_pcs_order_config.stdout | from_json == __test_expected_lines | from_json
+
         - name: Verify ticket constraints
+          when:
+            - '"pcmk.constraint.config.output-formats" not in __test_pcs_capabilities'
           vars:
             # wokeignore:rule=master
             __mstr: Master
@@ -660,7 +2030,7 @@
           block:
             - name: Fetch ticket constraints configuration from the cluster
               command:
-                cmd: pcs constraint ticket --full
+                cmd: pcs --full -- constraint ticket
               register: __test_pcs_ticket_config
               changed_when: false
 
@@ -676,6 +2046,151 @@
               assert:
                 that:
                   - __test_pcs_ticket_config.stdout_lines == __test_expected_lines | select | list
+
+        - name: Verify ticket constraints
+          when:
+            - '"pcmk.constraint.config.output-formats" in __test_pcs_capabilities'
+          vars:
+            # wokeignore:rule=master
+            __mstr: Master
+            __promoted: Promoted
+            __test_expected_lines: '
+                {
+                    "colocation": [],
+                    "colocation_set": [],
+                    "location": [],
+                    "location_set": [],
+                    "order": [],
+                    "order_set": [],
+                    "ticket": [
+                        {
+                            "attributes": {
+                                "constraint_id": "ticket-ticket1-d1",
+                                "loss_policy": null,
+                                "ticket": "ticket1"
+                            },
+                            "resource_id": "d1",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "ct-id",
+                                "loss_policy": null,
+                                "ticket": "ticket2"
+                            },
+                            "resource_id": "d1",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "ticket-ticket1-d2-{{
+                                    __test_new_roles_cib | ternary(__promoted, __mstr) }}",
+                                "loss_policy": null,
+                                "ticket": "ticket1"
+                            },
+                            "resource_id": "d2",
+                            "role": "Promoted"
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "ticket-ticket2-d2",
+                                "loss_policy": "stop",
+                                "ticket": "ticket2"
+                            },
+                            "resource_id": "d2",
+                            "role": null
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "ct-all",
+                                "loss_policy": "demote",
+                                "ticket": "ticket3"
+                            },
+                            "resource_id": "d3",
+                            "role": "Unpromoted"
+                        }
+                    ],
+                    "ticket_set": [
+                        {
+                            "attributes": {
+                                "constraint_id": "ticket_set_d1",
+                                "loss_policy": null,
+                                "ticket": "ticket-set1"
+                            },
+                            "resource_sets": [
+                                {
+                                    "action": null,
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": null,
+                                    "resources_ids": [
+                                        "d1"
+                                    ],
+                                    "role": null,
+                                    "score": null,
+                                    "sequential": null,
+                                    "set_id": "ticket_set_d1_set"
+                                }
+                            ]
+                        },
+                        {
+                            "attributes": {
+                                "constraint_id": "ct-set",
+                                "loss_policy": "fence",
+                                "ticket": "ticket-set1"
+                            },
+                            "resource_sets": [
+                                {
+                                    "action": null,
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": null,
+                                    "resources_ids": [
+                                        "d1",
+                                        "d2"
+                                    ],
+                                    "role": null,
+                                    "score": null,
+                                    "sequential": null,
+                                    "set_id": "ct-set_set"
+                                },
+                                {
+                                    "action": null,
+                                    "kind": null,
+                                    "ordering": null,
+                                    "require_all": true,
+                                    "resources_ids": [
+                                        "d3",
+                                        "d4"
+                                    ],
+                                    "role": null,
+                                    "score": null,
+                                    "sequential": false,
+                                    "set_id": "ct-set_set-1"
+                                }
+                            ]
+                        }
+                    ]
+                }'
+          block:
+            - name: Fetch ticket constraints configuration from the cluster
+              command:
+                cmd: pcs --output-format=json -- constraint ticket
+              register: __test_pcs_ticket_config
+              changed_when: false
+
+            - name: Print real ticket constraints configuration
+              debug:
+                var: __test_pcs_ticket_config.stdout | from_json
+
+            - name: Print expected ticket constraints configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check ticket constraints configuration
+              assert:
+                that:
+                  - __test_pcs_ticket_config.stdout | from_json == __test_expected_lines | from_json
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
