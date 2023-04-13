@@ -12,7 +12,9 @@
                 path: "/etc/modprobe.d/{{ item }}.conf"
                 create: true
                 mode: 0644
+                # wokeignore:rule=blacklist
                 regexp: "^(options|blacklist) {{ item }}"
+                # wokeignore:rule=blacklist
                 line: "blacklist {{ item }}"
                 state: present
               loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"

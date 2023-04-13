@@ -69,6 +69,7 @@
             that:
               - __blockstr in __test_sbd_watchdog_blocklist_file_lines
           vars:
+            # wokeignore:rule=blacklist
             __blockstr: blacklist iTCO_wdt
 
         - name: Slurp generated SBD watchdog modprobe file
