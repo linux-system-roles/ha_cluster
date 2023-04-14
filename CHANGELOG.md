@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.9.1] - 2023-04-13
+--------------------
+
+### Other Changes
+
+- fix ansible-lint issues with changed_when, others (#118)
+
 [1.9.0] - 2023-04-06
 --------------------
 
