@@ -146,6 +146,12 @@
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
 
+        - name: Check header for ansible_managed, fingerprint
+          include_tasks: tasks/check_header.yml
+          vars:
+            __file_content: "{{ __test_sbd_config }}"
+            __fingerprint: "system_role:ha_cluster"
+
       always:
         - name: Unset SBD devices and watchdogs
           set_fact:
