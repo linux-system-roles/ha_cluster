@@ -18,8 +18,7 @@
     state: present
 
 - name: Check and prepare role variables
-  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}
-    /check-and-prepare-role-variables.yml
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml # noqa yamllint[line-length]
 
 # The user is created by installing pacemaker packages. We just need to set the
 # password.
@@ -85,7 +84,7 @@
       include_tasks: shell_common/cluster-enable-disable.yml
 
     - name: Start the cluster and reload corosync.conf
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-start-and-reload.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml # noqa yamllint[line-length]
 
     - name: Create and push CIB
       include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/create-and-push-cib.yml
@@ -94,8 +93,7 @@
   when: not ha_cluster_cluster_present
   block:
     - name: Remove cluster configuration
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}
-        /cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml # noqa yamllint[line-length]
 
     - name: Remove fence-virt authkey
       file:
