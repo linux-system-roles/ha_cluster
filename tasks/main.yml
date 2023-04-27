@@ -18,7 +18,8 @@
     state: present
 
 - name: Check and prepare role variables
-  include_tasks: check-and-prepare-role-variables.yml
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}
+    /check-and-prepare-role-variables.yml
 
 # The user is created by installing pacemaker packages. We just need to set the
 # password.
@@ -33,7 +34,7 @@
     - ha_cluster_hacluster_password | string | length > 0
 
 - name: Configure pcs / pcsd
-  include_tasks: pcs-configure-pcs-pcsd.yml
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/pcs-configure-pcs-pcsd.yml
 
 - name: Install and configure HA cluster
   when: ha_cluster_cluster_present | bool
@@ -64,36 +65,37 @@
         - ansible_architecture == "x86_64"
 
     - name: Configure SBD
-      include_tasks: sbd.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/sbd.yml
 
     - name: Configure corosync
-      include_tasks: cluster-setup-corosync.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-setup-corosync.yml
 
     - name: Pcs auth
       # Auth is run after corosync.conf has been distributed so that pcs
       # distributes pcs tokens in the cluster automatically.
-      include_tasks: pcs-auth.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/pcs-auth.yml
 
     - name: Distribute cluster shared keys
       # This is run after pcs auth, so that the nodes are authenticated against
       # a qnetd host, if configured, and can connect to the qnetd host's pcsd
       # to get qnetd certificates.
-      include_tasks: cluster-setup-keys.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-setup-keys.yml
 
     - name: Enable or disable cluster services on boot
-      include_tasks: cluster-enable-disable.yml
+      include_tasks: shell_common/cluster-enable-disable.yml
 
     - name: Start the cluster and reload corosync.conf
-      include_tasks: cluster-start-and-reload.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-start-and-reload.yml
 
     - name: Create and push CIB
-      include_tasks: create-and-push-cib.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/create-and-push-cib.yml
 
 - name: Remove cluster configuration
   when: not ha_cluster_cluster_present
   block:
     - name: Remove cluster configuration
-      include_tasks: cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}
+        /cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml
 
     - name: Remove fence-virt authkey
       file:
@@ -101,4 +103,4 @@
         state: absent
 
 - name: Configure qnetd
-  include_tasks: pcs-qnetd.yml
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/pcs-qnetd.yml
