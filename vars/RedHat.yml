@@ -1,0 +1,43 @@
+---
+
+# Variables for RedHat set in ansible_facts['os_family']
+
+# TODO autodetection
+# Currently, only 'pcs-0.10' is supported by the role. When support for
+# 'pcs-0.9' is added, the variable will be moved to distro-specific variable
+# files.
+__ha_cluster_pcs_provider: pcs-0.10
+
+__ha_cluster_repos: []
+
+__ha_cluster_role_essential_packages:
+  - pcs
+  # even if qnetd is not being configured, it is needed for removing qnetd
+  # configuration
+  - corosync-qnetd
+
+__ha_cluster_fullstack_node_packages:
+  - corosync
+  - libknet1-plugins-all
+  - resource-agents
+  - pacemaker
+  - openssl  # used in the role for generating preshared keys
+
+__ha_cluster_qdevice_node_packages:
+  - corosync-qdevice
+  # dependencies of a script to set up qdevice certificates
+  - bash
+  - coreutils
+  - curl
+  - grep
+  - nss-tools
+  - openssl
+  - sed
+
+__ha_cluster_sbd_packages:
+  - sbd
+
+__ha_cluster_services:
+  - corosync
+  - corosync-qdevice
+  - pacemaker
