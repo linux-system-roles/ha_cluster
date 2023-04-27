@@ -84,7 +84,7 @@
       include_tasks: shell_common/cluster-enable-disable.yml
 
     - name: Start the cluster and reload corosync.conf
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml # noqa yamllint[line-length]
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-start-and-reload.yml # noqa yamllint[line-length]
 
     - name: Create and push CIB
       include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/create-and-push-cib.yml
