@@ -18,7 +18,7 @@
     state: present
 
 - name: Check and prepare role variables
-  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml # noqa yamllint[line-length]
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml  # yamllint disable-line rule:line-length
 
 # The user is created by installing pacemaker packages. We just need to set the
 # password.
@@ -33,7 +33,7 @@
     - ha_cluster_hacluster_password | string | length > 0
 
 - name: Configure pcs / pcsd
-  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/pcs-configure-pcs-pcsd.yml
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/pcs-configure-pcs-pcsd.yml  # yamllint disable-line rule:line-length
 
 - name: Install and configure HA cluster
   when: ha_cluster_cluster_present | bool
@@ -67,7 +67,7 @@
       include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/sbd.yml
 
     - name: Configure corosync
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-setup-corosync.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-setup-corosync.yml  # yamllint disable-line rule:line-length
 
     - name: Pcs auth
       # Auth is run after corosync.conf has been distributed so that pcs
@@ -78,22 +78,22 @@
       # This is run after pcs auth, so that the nodes are authenticated against
       # a qnetd host, if configured, and can connect to the qnetd host's pcsd
       # to get qnetd certificates.
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-setup-keys.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-setup-keys.yml  # yamllint disable-line rule:line-length
 
     - name: Enable or disable cluster services on boot
       include_tasks: shell_common/cluster-enable-disable.yml
 
     - name: Start the cluster and reload corosync.conf
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-start-and-reload.yml # noqa yamllint[line-length]
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-start-and-reload.yml  # yamllint disable-line rule:line-length
 
     - name: Create and push CIB
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/create-and-push-cib.yml
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/create-and-push-cib.yml  # yamllint disable-line rule:line-length
 
 - name: Remove cluster configuration
   when: not ha_cluster_cluster_present
   block:
     - name: Remove cluster configuration
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml # noqa yamllint[line-length]
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml  # yamllint disable-line rule:line-length
 
     - name: Remove fence-virt authkey
       file:

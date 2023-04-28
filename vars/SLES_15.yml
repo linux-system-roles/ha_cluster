@@ -1,3 +1,4 @@
 ---
 
-# Variables for SLES set in ansible_facts['distribution'] and 15 set in ansible_facts['distribution_major_version']
+# Variables for SLES set in ansible_facts['distribution'] and
+# 15 set in ansible_facts['distribution_major_version']
