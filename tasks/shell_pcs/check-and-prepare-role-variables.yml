@@ -116,6 +116,30 @@
     __ha_cluster_pcs_capabilities: "{{
         __ha_cluster_pcs_version.stdout_lines[1].split()
       }}"
+    # To support a pre-release version in CI, there is a special check for
+    # 0.11.5 with a capability. This can be removed once 0.11.6 is released
+    __ha_cluster_pcsd_capabilities_available: "{{
+        (__ha_cluster_pcs_version.stdout_lines[0] is version('0.11.6', '>='))
+        or
+        (__ha_cluster_pcs_version.stdout_lines[0] is version('0.11.5', '>=')
+          and
+          'pcmk.constraint.config.output-formats'
+          in __ha_cluster_pcs_version.stdout_lines[1].split())
+      }}"
+
+- name: Fetch pcsd capabilities
+  command:
+    cmd: pcsd --version --full
+  check_mode: false
+  changed_when: false  # this is a read-only command
+  register: __ha_cluster_pcsd_version
+  when: __ha_cluster_pcsd_capabilities_available
+
+- name: Parse pcsd capabilities
+  set_fact:
+    __ha_cluster_pcsd_capabilities: "{{
+        (__ha_cluster_pcsd_version.stdout_lines[1] | default('')).split()
+      }}"
 
 # The capability got released in RHEL 8.3, which is currently the oldest
 # release supported by the role. Therefore, support for pcs without the

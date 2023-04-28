@@ -34,18 +34,29 @@
     mode: 0400
   register: __ha_cluster_distribute_pacemaker_authkey
 
-- name: Remove qdevice certificates
+- name: Remove qdevice certificates [CLI]
   command:
     cmd: pcs -- qdevice net-client destroy
   when:
     - not ansible_check_mode
     - __ha_cluster_qdevice_model != "net" or ha_cluster_regenerate_keys
+    - ('corosync.quorum.device.client.model.net.certificates.rest-api.v2'
+      not in __ha_cluster_pcsd_capabilities)
   changed_when: true
 
-- name: Obtain and distribute qdevice certificates
+- name: Remove qdevice certificates [API]
+  pcs_api_v2:
+    cmd_name: qdevice.client_net_destroy
+  when:
+    - not ansible_check_mode
+    - __ha_cluster_qdevice_model != "net" or ha_cluster_regenerate_keys
+    - ('corosync.quorum.device.client.model.net.certificates.rest-api.v2'
+      in __ha_cluster_pcsd_capabilities)
+
+- name: Obtain and distribute qdevice certificates [CLI]
   script:
     cmd: >
-      files/qdevice-certs{{ use_pcs | ternary('-pcs', '') }}.sh
+      files/qdevice-certs.sh
       {{ ansible_check_mode | ternary('check', 'check-and-setup') }}
       {{ ha_cluster_cluster_name | quote }}
       {{ __ha_cluster_qdevice_host | quote }}
@@ -55,9 +66,18 @@
     - __ha_cluster_qdevice_certs.rc == 0
     - __ha_cluster_qdevice_certs.stdout_lines[-1]
       != "** certificate already present **"
-  vars:
-    use_pcs: "{{ 'corosync.quorum.device.client.model.net.certificates.local'
-        in __ha_cluster_pcs_capabilities }}"
   when:
     - __ha_cluster_qdevice_in_use
     - __ha_cluster_qdevice_model == "net"
+    - ('corosync.quorum.device.client.model.net.certificates.local'
+      not in __ha_cluster_pcsd_capabilities)
+
+- name: Obtain and distribute qdevice certificates [API]
+  pcs_qdevice_certs:
+    qnetd_host: "{{ __ha_cluster_qdevice_host }}"
+    cluster_name: "{{ ha_cluster_cluster_name }}"
+  when:
+    - __ha_cluster_qdevice_in_use
+    - __ha_cluster_qdevice_model == "net"
+    - ('corosync.quorum.device.client.model.net.certificates.local'
+      in __ha_cluster_pcsd_capabilities)
