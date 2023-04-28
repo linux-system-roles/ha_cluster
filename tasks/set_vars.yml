@@ -21,4 +21,4 @@
   when: __vars_file is file
 
 - name: Set Linux Pacemaker shell specific variables
-  include_vars: "{{ role_path }}/vars/shell_{{ ha_cluster_pacemaker_shell }}.yml"
+  include_vars: "{{ role_path }}/vars/shell_{{ ha_cluster_pacemaker_shell }}.yml"  # yamllint disable-line rule:line-length
