@@ -27,6 +27,9 @@
             name: linux-system-roles.ha_cluster
             public: true
 
+        - name: Fetch cluster versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+
         - name: Fetch cluster properties configuration from the cluster
           command:
             cmd: pcs property
@@ -40,12 +43,28 @@
         - name: Check cluster properties configuration
           assert:
             that:
-              - >
-                'no-quorum-policy: stop'
-                in __test_pcs_property_config.stdout_lines | map('trim')
-              - >
-                'stonith-enabled: true'
-                in __test_pcs_property_config.stdout_lines | map('trim')
+              - "'no-quorum-policy: stop' in stdout_lines"
+              - "'stonith-enabled: true' in stdout_lines"
+          vars:
+            stdout_lines: "{{
+              __test_pcs_property_config.stdout_lines | map('trim') }}"
+          when:
+            - >
+              'pcmk.properties.cluster.config.output-formats'
+              not in __test_pcs_capabilities
+
+        - name: Check cluster properties configuration
+          assert:
+            that:
+              - "'no-quorum-policy=stop' in stdout_lines"
+              - "'stonith-enabled=true' in stdout_lines"
+          vars:
+            stdout_lines: "{{
+              __test_pcs_property_config.stdout_lines | map('trim') }}"
+          when:
+            - >
+              'pcmk.properties.cluster.config.output-formats'
+              in __test_pcs_capabilities
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
