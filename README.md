@@ -1,4 +1,5 @@
 # ha_cluster
+
 ![CI Testing](https://github.com/linux-system-roles/ha_cluster/workflows/tox/badge.svg)
 
 An Ansible role for managing High Availability Clustering.
@@ -24,6 +25,10 @@ An Ansible role for managing High Availability Clustering.
 
 ## Requirements
 
+See below
+
+### Collection requirements
+
 The role requires the `firewall` role and the `selinux` role from the
 `fedora.linux_system_roles` collection, if `ha_cluster_manage_firewall`
 and `ha_cluster_manage_selinux` is set to true, respectively.
@@ -35,6 +40,7 @@ collection or from the Fedora RPM package, the requirement is already
 satisfied.
 
 Otherwise, please run the following command line to install the collection.
+
 ```
 ansible-galaxy collection install -r meta/collection-requirements.yml
 ```
@@ -1161,7 +1167,8 @@ they are omitted in each example playbook, we highly recommend to set them
 to `true` in your playbooks using the `ha_cluster` role.
 
 ```yaml
-- hosts: node1 node2
+- name: Manage HA cluster and firewall and selinux
+  hosts: node1 node2
   vars:
     ha_cluster_manage_firewall: true
     ha_cluster_manage_selinux: true
@@ -1176,7 +1183,8 @@ This example creates self-signed pcsd certificate and private key files
 in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 
 ```yaml
-- hosts: node1 node2
+- name: Manage HA cluster with certificates
+  hosts: node1 node2
   vars:
     ha_cluster_pcsd_certificates:
       - name: FILENAME
@@ -1188,7 +1196,8 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 
 ### Creating a cluster running no resources
 ```yaml
-- hosts: node1 node2
+- name: Manage HA cluster with no resources
+  hosts: node1 node2
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
@@ -1199,7 +1208,8 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 
 ### Advanced Corosync configuration
 ```yaml
-- hosts: node1 node2
+- name: Manage HA cluster with Corosync options
+  hosts: node1 node2
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
