@@ -8,16 +8,10 @@
 # pylint: disable=missing-function-docstring
 
 import json
-import sys
 from typing import Any
 from unittest import TestCase, mock
 
-import pcs_api_v2_utils
-
-# Add paths to pcs bundled libraries to make Dacite available
-sys.path.insert(0, "/usr/lib64/pcs/pcs_bundled/packages/")
-sys.path.insert(0, "/usr/lib/pcs/pcs_bundled/packages/")
-
+from ha_cluster_lsr import pcs_api_v2_utils
 from pcs.common.async_tasks.dto import (
     CommandDto,
     CommandOptionsDto,
