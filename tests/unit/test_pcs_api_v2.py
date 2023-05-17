@@ -8,14 +8,14 @@
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 
-import sys
-
-# Add paths to pcs bundled libraries to make Dacite available
-sys.path.insert(0, "/usr/lib64/pcs/pcs_bundled/packages/")
-sys.path.insert(0, "/usr/lib/pcs/pcs_bundled/packages/")
-
 import json
+import sys
+from importlib import import_module
 from unittest import TestCase, mock
+
+sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
+    "ha_cluster_lsr"
+)
 
 import pcs_api_v2
 from pcs.common.async_tasks.dto import CommandDto, CommandOptionsDto

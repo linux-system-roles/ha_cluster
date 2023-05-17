@@ -5,6 +5,14 @@
 # Author: Tomas Jelinek <tojeline@redhat.com>
 # SPDX-License-Identifier: MIT
 
+# make ansible-test happy, even though the module requires Python 3.9
+from __future__ import absolute_import, division, print_function
+
+# make ansible-test happy, even though the module requires Python 3.9
+# pylint: disable=invalid-name
+__metaclass__ = type
+# pylint: enable=invalid-name
+
 DOCUMENTATION = r"""
 ---
 module: pcs_qdevice_certs
@@ -19,7 +27,7 @@ requirements:
     - python 3.9 or newer (it is a dependency of pcs anyway)
 options:
     qnetd_host:
-        decription: address of a qnetd host
+        description: address of a qnetd host
         required: true
         type: str
     cluster_name:
@@ -28,8 +36,8 @@ options:
         type: str
     cmd_options:
         description: pcs API v2 command options
-        type: dictionary
-        options:
+        type: dict
+        suboptions:
             request_timeout:
                 description: request timeout
                 type: int
@@ -54,7 +62,7 @@ pcs_result:
     description: Result of the pcs API call
     type: dict
     returned: when the command is valid and accepted by API
-    options:
+    contains:
         task_ident:
             description: Pcs internal task ID, for debugging purposes.
             type: str
@@ -65,16 +73,16 @@ pcs_result:
             returned: when the command is valid and accepted by API
         result:
             description: >
-                Data returned by the command. Format and content depends on the
-                command called.
-            type: complex
+                Data returned by the command. The field does not have any
+                useful meaning in this module.
+            type: bool
             returned: when the command is valid and accepted by API
         reports:
             description: Messages produced by the command being processed.
             type: list
             elements: dict
             returned: when the command is valid and accepted by API
-            options:
+            contains:
                 code:
                     description: Message type identifier.
                     type: str
@@ -101,11 +109,10 @@ pcs_result:
 
 from ansible.module_utils.basic import AnsibleModule
 
-try:
-    from ansible.module_utils import pcs_api_v2_utils as api_utils
-except ImportError:
-    import pcs_api_v2_utils as api_utils
+# pylint: disable=no-name-in-module
+from ansible.module_utils.ha_cluster_lsr import pcs_api_v2_utils as api_utils
 
+# pylint: enable=no-name-in-module
 from pcs.common.async_tasks.dto import CommandDto, CommandOptionsDto
 
 

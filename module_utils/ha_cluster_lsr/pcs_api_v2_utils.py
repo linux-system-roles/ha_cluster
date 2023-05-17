@@ -1,9 +1,16 @@
-#!/usr/bin/python
 # -*- coding: utf-8 -*-
 
 # Copyright (C) 2023 Red Hat, Inc.
 # Author: Tomas Jelinek <tojeline@redhat.com>
 # SPDX-License-Identifier: MIT
+
+# make ansible-test happy, even though the module requires Python 3.9
+from __future__ import absolute_import, division, print_function
+
+# make ansible-test happy, even though the module requires Python 3.9
+# pylint: disable=invalid-name
+__metaclass__ = type
+# pylint: enable=invalid-name
 
 import sys
 
