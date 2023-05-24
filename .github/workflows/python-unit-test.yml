@@ -18,20 +18,14 @@ jobs:
   python:
     strategy:
       matrix:
-        pyver_os:
-          - ver: "2.7"
-            os: ubuntu-20.04
-          - ver: "3.6"
-            os: ubuntu-20.04
-          - ver: "3.8"
-            os: ubuntu-latest
-          - ver: "3.9"
-            os: ubuntu-latest
-          - ver: "3.10"
-            os: ubuntu-latest
-          - ver: "3.11"
-            os: ubuntu-latest
-    runs-on: ${{ matrix.pyver_os.os }}
+        os:
+          - ubuntu-22.04
+          - ubuntu-latest
+        pcs_version:
+          - v0.11.4
+          - v0.11.5
+          - main
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Update git
         run: |
@@ -41,11 +35,6 @@ jobs:
 
       - name: checkout PR
         uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ matrix.pyver_os.ver }}
 
       - name: Install platform dependencies, python, tox, tox-lsr
         run: |
@@ -59,10 +48,34 @@ jobs:
             sudo apt-get install -y $(cat .github/config/ubuntu-requirements.txt)
           fi
 
+      - name: Clone pcs
+        uses: actions/checkout@v3
+        with:
+          repository: ClusterLabs/pcs
+          ref: ${{ matrix.pcs_version }}
+          path: pcs-upstream
+
+      - name: Build and install pcs
+        run: |
+          set -euxo pipefail
+          pcs_dir="${RUNNER_TEMP}/pcs"
+          mkdir -p pcs_dir
+          cd pcs-upstream
+          if [ "x${{ matrix.pcs_version }}" == "xmain" ]; then
+            echo "0.0.1+ci" > .tarball-version
+          fi
+          ./autogen.sh && ./configure --prefix "$pcs_dir" && make && make install
+          cd ..
+          rm -rf pcs-upstream
+          site_pkgs_dir=`python -m site --user-site`
+          pyver=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
+          echo "${pcs_dir}/lib/python${pyver}/site-packages/" > "${site_pkgs_dir}/pcs.pth"
+          python -c 'from pcs import settings; print(settings.pcs_version)'
+
       - name: Run unit tests
         run: |
           set -euxo pipefail
-          toxpyver=$(echo "${{ matrix.pyver_os.ver }}" | tr -d .)
+          toxpyver=$(python -c 'import sys; print(f"{sys.version_info.major}{sys.version_info.minor}")')
           toxenvs="py${toxpyver}"
           # NOTE: The use of flake8, pylint, black with specific
           # python envs is arbitrary and must be changed in tox-lsr
