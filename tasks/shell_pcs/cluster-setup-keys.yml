@@ -40,8 +40,8 @@
   when:
     - not ansible_check_mode
     - __ha_cluster_qdevice_model != "net" or ha_cluster_regenerate_keys
-    - ('corosync.quorum.device.client.model.net.certificates.rest-api.v2'
-      not in __ha_cluster_pcsd_capabilities)
+    - "'corosync.quorum.device.client.model.net.certificates.rest-api.v2'
+      not in __ha_cluster_pcsd_capabilities"
   changed_when: true
 
 - name: Remove qdevice certificates [API]
@@ -50,8 +50,8 @@
   when:
     - not ansible_check_mode
     - __ha_cluster_qdevice_model != "net" or ha_cluster_regenerate_keys
-    - ('corosync.quorum.device.client.model.net.certificates.rest-api.v2'
-      in __ha_cluster_pcsd_capabilities)
+    - "'corosync.quorum.device.client.model.net.certificates.rest-api.v2'
+      in __ha_cluster_pcsd_capabilities"
 
 - name: Obtain and distribute qdevice certificates [CLI]
   script:
@@ -69,8 +69,8 @@
   when:
     - __ha_cluster_qdevice_in_use
     - __ha_cluster_qdevice_model == "net"
-    - ('corosync.quorum.device.client.model.net.certificates.local'
-      not in __ha_cluster_pcsd_capabilities)
+    - "'corosync.quorum.device.client.model.net.certificates.local'
+      not in __ha_cluster_pcsd_capabilities"
 
 - name: Obtain and distribute qdevice certificates [API]
   pcs_qdevice_certs:
@@ -79,5 +79,5 @@
   when:
     - __ha_cluster_qdevice_in_use
     - __ha_cluster_qdevice_model == "net"
-    - ('corosync.quorum.device.client.model.net.certificates.local'
-      in __ha_cluster_pcsd_capabilities)
+    - "'corosync.quorum.device.client.model.net.certificates.local'
+      in __ha_cluster_pcsd_capabilities"
