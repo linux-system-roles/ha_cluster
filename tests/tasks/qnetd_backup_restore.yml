@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Manage qnetd backup
-  when: action == "backup"
+  when: operation == "backup"
   block:
     - name: Create /etc/corosync/qnetd_backup directory
       file:
@@ -18,7 +18,7 @@
       changed_when: true
 
 - name: Manage qnetd restore
-  when: action == "restore"
+  when: operation == "restore"
   block:
     - name: Restore qnetd settings
       command:
