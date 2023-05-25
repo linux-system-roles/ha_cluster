@@ -29,7 +29,7 @@
         - name: Back up qnetd
           include_tasks: tasks/qnetd_backup_restore.yml
           vars:
-            action: backup
+            operation: backup
           run_once: true  # noqa: run_once[task]
 
         - name: Set qnetd address
@@ -55,7 +55,7 @@
         - name: Restore qnetd
           include_tasks: tasks/qnetd_backup_restore.yml
           vars:
-            action: restore
+            operation: restore
           run_once: true  # noqa: run_once[task]
 
         - name: Get services status

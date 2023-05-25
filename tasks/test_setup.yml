@@ -8,7 +8,7 @@
 ---
 - name: Set node name to 'localhost' for single-node clusters
   set_fact:
-    inventory_hostname: localhost
+    inventory_hostname: localhost  # noqa: var-naming
   when: ansible_play_hosts_all | length == 1
 
 - name: Ensure facts used by tests
