@@ -47,7 +47,7 @@
               - "'stonith-enabled: true' in stdout_lines"
           vars:
             stdout_lines: "{{
-              __test_pcs_property_config.stdout_lines | map('trim') }}"
+              __test_pcs_property_config.stdout_lines | map('trim') | list }}"
           when:
             - >
               'pcmk.properties.cluster.config.output-formats'
@@ -60,7 +60,7 @@
               - "'stonith-enabled=true' in stdout_lines"
           vars:
             stdout_lines: "{{
-              __test_pcs_property_config.stdout_lines | map('trim') }}"
+              __test_pcs_property_config.stdout_lines | map('trim') | list }}"
           when:
             - >
               'pcmk.properties.cluster.config.output-formats'
