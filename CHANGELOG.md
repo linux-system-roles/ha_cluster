@@ -1,6 +1,18 @@
 Changelog
 =========
 
+[1.9.3] - 2023-05-26
+--------------------
+
+### Other Changes
+
+- style: address ansible-lint issues
+- docs: Consistent contributing.md for all roles - allow role specific contributing.md section
+- docs: fix collection requirements section
+- style: fix linter issues in SBD task files
+- test: update for upcoming pcs release
+- refactor: update qdevice for upcoming pcs release
+
 [1.9.2] - 2023-04-27
 --------------------
 
