@@ -133,6 +133,14 @@ Password of the `hacluster` user. This user has full access to a cluster. It is
 recommended to vault encrypt the value, see
 https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 
+#### `ha_cluster_hacluster_qdevice_password`
+
+string, no default - optional
+
+Needed only if a `ha_cluster_quorum` is configured to use a qdevice of type `net` used AND password of the `hacluster` user on the qdevice is different from `ha_cluster_hacluster_password`. This user has full access to a cluster. It is
+recommended to vault encrypt the value, see
+https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
+
 #### `ha_cluster_corosync_key_src`
 
 path to Corosync authkey file, default: `null`
