@@ -24,7 +24,8 @@
       {% if __ha_cluster_qdevice_pcs_address %}
         addr={{ __ha_cluster_qdevice_pcs_address | quote }}
       {% endif %}
-    stdin: "{{ ha_cluster_hacluster_qdevice_password | default(ha_cluster_hacluster_password) }}"
+    stdin: "{{ ha_cluster_hacluster_qdevice_password |
+      d(ha_cluster_hacluster_password) }}"
   when:
     - __ha_cluster_qdevice_model == "net"
     - __ha_cluster_qdevice_host
