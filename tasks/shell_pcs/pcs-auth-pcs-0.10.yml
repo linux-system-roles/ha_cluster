@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+---
 - name: Pcs auth using pcs-0.10
   command:
     # Always auth all nodes to prevent possible corner cases with synchronizing
