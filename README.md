@@ -137,7 +137,7 @@ https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 
 string, no default - optional
 
-Needed only if a `ha_cluster_quorum` is configured to use a qdevice of type `net` used AND password of the `hacluster` user on the qdevice is different from `ha_cluster_hacluster_password`. This user has full access to a cluster. It is
+Needed only if a `ha_cluster_quorum` is configured to use a qdevice of type `net` AND password of the `hacluster` user on the qdevice is different from `ha_cluster_hacluster_password`. This user has full access to a cluster. It is
 recommended to vault encrypt the value, see
 https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
 
