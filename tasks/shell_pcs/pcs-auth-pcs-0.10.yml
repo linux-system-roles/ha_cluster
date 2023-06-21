@@ -30,7 +30,7 @@
       d(ha_cluster_hacluster_password) }}"
   when:
     - __ha_cluster_qdevice_model == "net"
-    - __ha_cluster_qdevice_host
+    - __ha_cluster_qdevice_host | length > 0
     - __ha_cluster_qdevice_host not in __ha_cluster_all_node_names
   run_once: true  # noqa: run_once[task]
   changed_when: true
