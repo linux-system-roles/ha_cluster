@@ -30,7 +30,7 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup_sbd.yml
           vars:
-            __test_disable_modprobe: true
+            __test_disable_modprobe: true  # noqa: var-naming[no-role-prefix]
 
         - name: Set SBD devices and watchdogs
           set_fact:
