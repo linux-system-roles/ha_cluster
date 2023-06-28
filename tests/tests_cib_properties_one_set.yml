@@ -50,8 +50,12 @@
               __test_pcs_property_config.stdout_lines | map('trim') | list }}"
           when:
             - >
-              'pcmk.properties.cluster.config.output-formats'
-              not in __test_pcs_capabilities
+              not((ansible_facts['distribution'] in ['RedHat', 'CentOS'])
+              and
+              ansible_facts['distribution_major_version'] == '9'
+              and
+              ('pcmk.properties.cluster.config.output-formats'
+              in __test_pcs_capabilities))
 
         - name: Check cluster properties configuration
           assert:
@@ -63,8 +67,12 @@
               __test_pcs_property_config.stdout_lines | map('trim') | list }}"
           when:
             - >
-              'pcmk.properties.cluster.config.output-formats'
-              in __test_pcs_capabilities
+              (ansible_facts['distribution'] in ['RedHat', 'CentOS'])
+              and
+              ansible_facts['distribution_major_version'] == '9'
+              and
+              ('pcmk.properties.cluster.config.output-formats'
+              in __test_pcs_capabilities)
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
