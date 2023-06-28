@@ -24,6 +24,7 @@ jobs:
         pcs_version:
           - v0.11.4
           - v0.11.5
+          - v0.11.6
           - main
     runs-on: ${{ matrix.os }}
     steps:
