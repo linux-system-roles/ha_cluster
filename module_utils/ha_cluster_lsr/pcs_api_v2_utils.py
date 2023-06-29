@@ -196,4 +196,8 @@ def call_api(module: AnsibleModule, api_command: CommandDto) -> TaskResultDto:
     # handle returned API errors
     if info["status"] >= 400:
         raise ResponseFormatError(info["body"])
+    if response is None:
+        if "msg" in info:
+            raise ResponseFormatError(info["msg"])
+        raise ResponseFormatError(str(info))
     return parse_api_response(module, response.read())
