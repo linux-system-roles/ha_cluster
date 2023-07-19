@@ -1,6 +1,25 @@
 Changelog
 =========
 
+[1.10.0] - 2023-07-19
+--------------------
+
+### New Features
+
+- feat: cluster and quorum can have distinct passwords (#134)
+
+### Bug Fixes
+
+- fix: various minor fixes (#137)
+- fix: facts being gathered unnecessarily (#139)
+
+### Other Changes
+
+- ci: Add pull request template and run commitlint on PR title only (#133)
+- ci: Rename commitlint to PR title Lint, echo PR titles from env var (#135)
+- ci: test with pcs v0.11.6 (#136)
+- ci: ansible-lint - ignore var-naming[no-role-prefix] (#138)
+
 [1.9.3] - 2023-05-26
 --------------------
 
