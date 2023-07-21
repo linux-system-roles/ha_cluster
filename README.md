@@ -736,7 +736,8 @@ multiple sets of the defaults and apply them to resources of specific agents
 and / or specific resource operations using rules. Note, that defaults do not
 apply to resource operations which override them with their own defined values.
 Note, that by default, the role configures resources in such a way that they
-define own values for resource operations. See `copy_operations_from_agent` in
+define their own values for resource operations. See
+`copy_operations_from_agent` in
 [`ha_cluster_resource_primitives`](#ha_cluster_resource_primitives) for more
 information.
 
