@@ -41,7 +41,7 @@ satisfied.
 
 Otherwise, please run the following command line to install the collection.
 
-```
+```bash
 ansible-galaxy collection install -r meta/collection-requirements.yml
 ```
 
@@ -131,7 +131,7 @@ string, no default - must be specified
 
 Password of the `hacluster` user. This user has full access to a cluster. It is
 recommended to vault encrypt the value, see
-https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
+<https://docs.ansible.com/ansible/latest/user_guide/vault.html> for details.
 
 #### `ha_cluster_hacluster_qdevice_password`
 
@@ -139,7 +139,7 @@ string, no default - optional
 
 Needed only if a `ha_cluster_quorum` is configured to use a qdevice of type `net` AND password of the `hacluster` user on the qdevice is different from `ha_cluster_hacluster_password`. This user has full access to a cluster. It is
 recommended to vault encrypt the value, see
-https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
+<https://docs.ansible.com/ansible/latest/user_guide/vault.html> for details.
 
 #### `ha_cluster_corosync_key_src`
 
@@ -150,7 +150,7 @@ recommended to have a unique value for each cluster. The key should be 256
 bytes of random data.
 
 If value is provided, it is recommended to vault encrypt it. See
-https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
+<https://docs.ansible.com/ansible/latest/user_guide/vault.html> for details.
 
 If no key is specified, a key already present on the nodes will be used. If
 nodes don't have the same key, a key from one node will be distributed to other
@@ -168,7 +168,7 @@ recommended to have a unique value for each cluster. The key should be 256
 bytes of random data.
 
 If value is provided, it is recommended to vault encrypt it. See
-https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
+<https://docs.ansible.com/ansible/latest/user_guide/vault.html> for details.
 
 If no key is specified, a key already present on the nodes will be used. If
 nodes don't have the same key, a key from one node will be distributed to other
@@ -184,7 +184,7 @@ path to fence-virt or fence-xvm pre-shared key file, default: `null`
 Authentication key for fence-virt or fence-xvm fence agent.
 
 If value is provided, it is recommended to vault encrypt it. See
-https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
+<https://docs.ansible.com/ansible/latest/user_guide/vault.html> for details.
 
 If no key is specified, a key already present on the nodes will be used. If
 nodes don't have the same key, a key from one node will be distributed to other
@@ -205,7 +205,7 @@ certificate - key pair already present on the nodes will be used. If
 certificate - key pair is not present, a random new one will be generated.
 
 If private key value is provided, it is recommended to vault encrypt it. See
-https://docs.ansible.com/ansible/latest/user_guide/vault.html for details.
+<https://docs.ansible.com/ansible/latest/user_guide/vault.html> for details.
 
 If these variables are set, `ha_cluster_regenerate_keys` is ignored for this
 certificate - key pair.
@@ -257,6 +257,7 @@ See also:
 #### `ha_cluster_pcs_permission_list`
 
 structure and default value:
+
 ```yaml
 ha_cluster_pcs_permission_list:
   - type: group
@@ -758,6 +759,7 @@ pattern matching more resources. Nodes can be specified by their name or a
 rule.
 
 Structure for constraints with resource ID and node name:
+
 ```yaml
 ha_cluster_constraints_location:
   - resource:
@@ -770,6 +772,7 @@ ha_cluster_constraints_location:
       - name: option-name
         value: option-value
 ```
+
 * `resource` (mandatory) - Specification of a resource the constraint applies
   to.
 * `node` (mandatory) - Name of a node the resource should prefer or avoid.
@@ -786,6 +789,7 @@ You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
 
 Structure for constraints with resource pattern and node name:
+
 ```yaml
 ha_cluster_constraints_location:
   - resource:
@@ -798,6 +802,7 @@ ha_cluster_constraints_location:
       - name: resource-discovery
         value: resource-discovery-value
 ```
+
 * This is the same as the previous type, except the resource specification.
 * `pattern` (mandatory) - POSIX extended regular expression resource IDs are
   matched against.
@@ -806,6 +811,7 @@ You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
 
 Structure for constraints with resource ID and a rule:
+
 ```yaml
 ha_cluster_constraints_location:
   - resource:
@@ -819,6 +825,7 @@ ha_cluster_constraints_location:
       - name: resource-discovery
         value: resource-discovery-value
 ```
+
 * `resource` (mandatory) - Specification of a resource the constraint applies
   to.
   * `id` (mandatory) - Resource ID.
@@ -832,6 +839,7 @@ You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
 
 Structure for constraints with resource pattern and a rule:
+
 ```yaml
 ha_cluster_constraints_location:
   - resource:
@@ -845,6 +853,7 @@ ha_cluster_constraints_location:
       - name: resource-discovery
         value: resource-discovery-value
 ```
+
 * This is the same as the previous type, except the resource specification.
 * `pattern` (mandatory) - POSIX extended regular expression resource IDs are
   matched against.
@@ -862,6 +871,7 @@ are two types of colocation constraints: a simple one for two resources, and a
 set constraint for multiple resources.
 
 Structure for simple constraints:
+
 ```yaml
 ha_cluster_constraints_colocation:
   - resource_follower:
@@ -877,6 +887,7 @@ ha_cluster_constraints_colocation:
       - name: option-name
         value: option-value
 ```
+
 * `resource_follower` (mandatory) - A resource that should be located relative
   to `resource_leader`.
   * `id` (mandatory) - Resource ID.
@@ -900,6 +911,7 @@ You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
 
 Structure for set constraints:
+
 ```yaml
 ha_cluster_constraints_colocation:
   - resource_sets:
@@ -916,6 +928,7 @@ ha_cluster_constraints_colocation:
       - name: option-name
         value: option-value
 ```
+
 * `resource_sets` (mandatory) - List of resource sets.
   * `resource_ids` (mandatory) - List of resources in a set.
   * `options` (optional) - List of name-value dictionaries fine-tuning how
@@ -936,6 +949,7 @@ order constraints: a simple one for two resources, and a set constraint for
 multiple resources.
 
 Structure for simple constraints:
+
 ```yaml
 ha_cluster_constraints_order:
   - resource_first:
@@ -951,6 +965,7 @@ ha_cluster_constraints_order:
       - name: option-name
         value: option-value
 ```
+
 * `resource_first` (mandatory) - Resource that the `resource_then` depends on.
   * `id` (mandatory) - Resource ID.
   * `action` (optional) - The action that the resource must complete before  an
@@ -969,6 +984,7 @@ You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
 
 Structure for set constraints:
+
 ```yaml
 ha_cluster_constraints_order:
   - resource_sets:
@@ -985,6 +1001,7 @@ ha_cluster_constraints_order:
       - name: option-name
         value: option-value
 ```
+
 * `resource_sets` (mandatory) - List of resource sets.
   * `resource_ids` (mandatory) - List of resources in a set.
   * `options` (optional) - List of name-value dictionaries fine-tuning how
@@ -1005,6 +1022,7 @@ constraints: a simple one for two resources, and a set constraint for multiple
 resources.
 
 Structure for simple constraints:
+
 ```yaml
 ha_cluster_constraints_ticket:
   - resource:
@@ -1018,6 +1036,7 @@ ha_cluster_constraints_ticket:
       - name: option-name
         value: option-value
 ```
+
 * `resource` (mandatory) - Specification of a resource the constraint applies
   to.
   * `id` (mandatory) - Resource ID.
@@ -1034,6 +1053,7 @@ You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
 
 Structure for set constraints:
+
 ```yaml
 ha_cluster_constraints_ticket:
   - resource_sets:
@@ -1049,6 +1069,7 @@ ha_cluster_constraints_ticket:
       - name: option-name
         value: option-value
 ```
+
 * `resource_sets` (mandatory) - List of resource sets.
   * `resource_ids` (mandatory) - List of resources in a set.
   * `options` (optional) - List of name-value dictionaries fine-tuning how
@@ -1063,6 +1084,7 @@ You may take a look at
 #### `ha_cluster_qnetd`
 
 structure and default value:
+
 ```yaml
 ha_cluster_qnetd:
   present: boolean
@@ -1093,10 +1115,12 @@ example](#configuring-a-cluster-using-a-quorum-device).
 ### Inventory
 
 #### Nodes' names and addresses
+
 Nodes' names and addresses can be configured in inventory. This is optional. If
 no names or addresses are configured, play's targets will be used.
 
 Example inventory with targets `node1` and `node2`:
+
 ```yaml
 all:
   hosts:
@@ -1123,6 +1147,7 @@ all:
   have the same number of addresses and the order of the addresses matters
 
 #### SBD watchdog and devices
+
 When using SBD, you may optionally configure watchdog and SBD devices for each
 node in inventory. Even though all SBD devices must be shared to and accessible
 from all nodes, each node may use different names for the devices. The loaded
@@ -1130,6 +1155,7 @@ watchdog modules and used devices may also be different for each node. See also
 [SBD variables](#ha_cluster_sbd_enabled).
 
 Example inventory with targets `node1` and `node2`:
+
 ```yaml
 all:
   hosts:
@@ -1204,6 +1230,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 ```
 
 ### Creating a cluster running no resources
+
 ```yaml
 - name: Manage HA cluster with no resources
   hosts: node1 node2
@@ -1216,6 +1243,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 ```
 
 ### Advanced Corosync configuration
+
 ```yaml
 - name: Manage HA cluster with Corosync options
   hosts: node1 node2
@@ -1345,6 +1373,7 @@ SBD stonith resource.
 ```
 
 ### Configuring cluster properties
+
 ```yaml
 - hosts: node1 node2
   vars:
@@ -1362,6 +1391,7 @@ SBD stonith resource.
 ```
 
 ### Creating a cluster with fencing and several resources
+
 ```yaml
 - hosts: node1 node2
   vars:
@@ -1491,6 +1521,7 @@ SBD stonith resource.
 ```
 
 ### Configuring resource and resource operation defaults
+
 ```yaml
 - hosts: node1 node2
   vars:
@@ -1528,6 +1559,7 @@ SBD stonith resource.
 ```
 
 ### Creating a cluster with resource constraints
+
 ```yaml
 - hosts: node1 node2
   vars:
@@ -1663,6 +1695,7 @@ SBD stonith resource.
 ### Configuring a cluster using a quorum device
 
 #### Configuring a quorum device
+
 Before you can add a quorum device to a cluster, you need to set the device up.
 This is only needed to be done once for each quorum device. Once it has been
 set up, you can use a quorom device in any number of clusters.
@@ -1682,6 +1715,7 @@ Note that you cannot run a quorum device on a cluster node.
 ```
 
 #### Configuring a cluster to use a quorum device
+
 ```yaml
 - hosts: node1 node2
   vars:
@@ -1701,6 +1735,7 @@ Note that you cannot run a quorum device on a cluster node.
 ```
 
 ### Purging all cluster configuration
+
 ```yaml
 - hosts: node1 node2
   vars:
