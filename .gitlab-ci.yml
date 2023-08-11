@@ -3,7 +3,7 @@
 variables:
   PYTHON_CODE_DIRS: "./library/ ./module_utils/ha_cluster_lsr/ ./tests/unit/"
   WOKE_CONFIG: "https://raw.githubusercontent.com/linux-system-roles/tox-lsr/main/src/tox_lsr/config_files/woke.yml"
-  YAMLLINT_CONFIG: "{extends: .yamllint.yml, ignore: [.github/]}"
+  YAMLLINT_CONFIG: "{extends: .yamllint.yml, ignore: [.github/, .markdownlint.yaml]}"
   PYENV_ROOT: /root/pyenvs/ansible
 
 .rhel8_images: &RHEL8_IMAGES
@@ -129,6 +129,7 @@ ansible_test:
     - mkdir -pv "$ignore_dir"
     - for file in .sanity-ansible-ignore-*.txt; do if [ -f "$file" ]; then cp "$file" "$ignore_dir/${file//*.sanity-ansible-}"; fi; done  # wokeignore:rule=sanity
     - cd "$coll_dir"
+    - rm -f .pandoc_template-ha_cluster.html5  # remove irrelevant files
     - ansible-test --version
     - ansible-test sanity -v --color=yes --truncate=0 --no-redact --coverage --docker  # wokeignore:rule=sanity
 
@@ -138,6 +139,13 @@ shellcheck:
   script:
     - shellcheck --version
     - shellcheck files/*.sh
+
+markdownlint:
+  extends: .job_generic_linter
+  stage: tier0
+  script:
+    - chcon -R -t container_ro_file_t "../$(basename $(pwd))"
+    - podman run --rm --volume "$(pwd):/ha_cluster:ro" docker://avtodev/markdown-lint:master --config /ha_cluster/.markdownlint.yaml /ha_cluster/README.md  # wokeignore:rule=master
 
 woke:
   extends: .job_generic_linter
