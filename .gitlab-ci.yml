@@ -145,7 +145,7 @@ markdownlint:
   stage: tier0
   script:
     - chcon -R -t container_ro_file_t "../$(basename $(pwd))"
-    - podman run --rm --volume "$(pwd):/ha_cluster:ro" docker://avtodev/markdown-lint:master --config /ha_cluster/.markdownlint.yaml /ha_cluster/README.md  # wokeignore:rule=master
+    - podman run --rm --volume "$(pwd):/ha_cluster:ro" docker://avtodev/markdown-lint:master --config /ha_cluster/.markdownlint.yaml --ignore /ha_cluster/CHANGELOG.md /ha_cluster/**/*.md  # wokeignore:rule=master
 
 woke:
   extends: .job_generic_linter
