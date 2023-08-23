@@ -1,6 +1,8 @@
 # ha_cluster
 
-![CI Testing](https://github.com/linux-system-roles/ha_cluster/workflows/tox/badge.svg)
+[![ansible-lint.yml](https://github.com/linux-system-roles/ha_cluster/actions/workflows/ansible-lint.yml/badge.svg)](https://github.com/linux-system-roles/ha_cluster/actions/workflows/ansible-lint.yml) [![ansible-test.yml](https://github.com/linux-system-roles/ha_cluster/actions/workflows/ansible-test.yml/badge.svg)](https://github.com/linux-system-roles/ha_cluster/actions/workflows/ansible-test.yml) [![codeql.yml](https://github.com/linux-system-roles/ha_cluster/actions/workflows/codeql.yml/badge.svg)](https://github.com/linux-system-roles/ha_cluster/actions/workflows/codeql.yml) [![shellcheck.yml](https://github.com/linux-system-roles/ha_cluster/actions/workflows/shellcheck.yml/badge.svg)](https://github.com/linux-system-roles/ha_cluster/actions/workflows/shellcheck.yml) [![markdownlint.yml](https://github.com/linux-system-roles/ha_cluster/actions/workflows/markdownlint.yml/badge.svg)](https://github.com/linux-system-roles/ha_cluster/actions/workflows/markdownlint.yml) [![woke.yml](https://github.com/linux-system-roles/ha_cluster/actions/workflows/woke.yml/badge.svg)](https://github.com/linux-system-roles/ha_cluster/actions/workflows/woke.yml) [![python-unit-test.yml](https://github.com/linux-system-roles/ha_cluster/actions/workflows/python-unit-test.yml/badge.svg)](https://github.com/linux-system-roles/ha_cluster/actions/workflows/python-unit-test.yml)
+
+---
 
 An Ansible role for managing High Availability Clustering.
 
