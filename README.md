@@ -138,7 +138,9 @@ recommended to vault encrypt the value, see
 
 string, no default - optional
 
-Needed only if a `ha_cluster_quorum` is configured to use a qdevice of type `net` AND password of the `hacluster` user on the qdevice is different from `ha_cluster_hacluster_password`. This user has full access to a cluster. It is
+Needed only if a `ha_cluster_quorum` is configured to use a qdevice of type
+`net` AND password of the `hacluster` user on the qdevice is different from
+`ha_cluster_hacluster_password`. This user has full access to a cluster. It is
 recommended to vault encrypt the value, see
 <https://docs.ansible.com/ansible/latest/user_guide/vault.html> for details.
 
@@ -213,33 +215,35 @@ certificate - key pair.
 
 #### `ha_cluster_pcsd_certificates`
 
-If there is no pcsd private key and certificate, there are two ways to create them.
+If there is no pcsd private key and certificate, there are two ways to create
+them.
 
-One way is by setting `ha_cluster_pcsd_certificates` variable.
-Another way is by setting none of
-[`ha_cluster_pcsd_public_key_src` and `ha_cluster_pcsd_private_key_src`](#ha_cluster_pcsd_public_key_src-ha_cluster_pcsd_private_key_src) and `ha_cluster_pcsd_certificates`.
+One way is by setting `ha_cluster_pcsd_certificates` variable. Another way is
+by setting none of
+[`ha_cluster_pcsd_public_key_src` and `ha_cluster_pcsd_private_key_src`](#ha_cluster_pcsd_public_key_src-ha_cluster_pcsd_private_key_src)
+and `ha_cluster_pcsd_certificates`.
 
-If `ha_cluster_pcsd_certificates` is provided, the `certificate` role is internally
-used and it creates the private key and certificate for pcsd as defined.
-If none of the variables are provided, the `ha_cluster` role will create pcsd
-certificates via pcsd itself.
+If `ha_cluster_pcsd_certificates` is provided, the `certificate` role is
+internally used and it creates the private key and certificate for pcsd as
+defined. If none of the variables are provided, the `ha_cluster` role will
+create pcsd certificates via pcsd itself.
 
-The value of `ha_cluster_pcsd_certificates` is set to the variable `certificate_requests`
-in the `certificate` role.
-For more information, see the `certificate_requests` section in the `certificate`
-role documentation.
+The value of `ha_cluster_pcsd_certificates` is set to the variable
+`certificate_requests` in the `certificate` role. For more information, see the
+`certificate_requests` section in the `certificate` role documentation.
 
 The default value is `[]`.
 
-NOTE: The `certificate` role, unless using IPA and joining the systems to an IPA domain,
-creates self-signed certificates, so you will need to explicitly configure trust,
-which is not currently supported by the system roles.
+NOTE: The `certificate` role, unless using IPA and joining the systems to an
+IPA domain, creates self-signed certificates, so you will need to explicitly
+configure trust, which is not currently supported by the system roles.
 
 NOTE: When you set `ha_cluster_pcsd_certificates`, you must not set
-`ha_cluster_pcsd_public_key_src` and `ha_cluster_pcsd_private_key_src` variables.
+`ha_cluster_pcsd_public_key_src` and `ha_cluster_pcsd_private_key_src`
+variables.
 
-NOTE: When you set `ha_cluster_pcsd_certificates`, `ha_cluster_regenerate_keys` is
-ignored for this certificate - key pair.
+NOTE: When you set `ha_cluster_pcsd_certificates`, `ha_cluster_regenerate_keys`
+is ignored for this certificate - key pair.
 
 #### `ha_cluster_regenerate_keys`
 
