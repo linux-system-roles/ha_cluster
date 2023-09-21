@@ -53,6 +53,8 @@ ha_cluster_resource_groups: []
 ha_cluster_resource_clones: []
 ha_cluster_resource_bundles: []
 
+ha_cluster_stonith_levels: []
+
 ha_cluster_constraints_location: []
 ha_cluster_constraints_colocation: []
 ha_cluster_constraints_order: []

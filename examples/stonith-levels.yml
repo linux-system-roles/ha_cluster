@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - stonith levels
+  hosts: all
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_resource_primitives:
+      - id: apc1
+        agent: 'stonith:fence_apc_snmp'
+        instance_attrs:
+          - attrs:
+              - name: ip
+                value: apc1.example.com
+              - name: username
+                value: user
+              - name: password
+                value: secret
+              - name: pcmk_host_map
+                value: node1:1;node2:2
+      - id: apc2
+        agent: 'stonith:fence_apc_snmp'
+        instance_attrs:
+          - attrs:
+              - name: ip
+                value: apc2.example.com
+              - name: username
+                value: user
+              - name: password
+                value: secret
+              - name: pcmk_host_map
+                value: node1:1;node2:2
+    # Nodes have redundant power supplies, apc1 and apc2. Cluster must ensure
+    # that when attempting to reboot a node, both power supplies are turned off
+    # before either power supply is turned back on.
+    ha_cluster_stonith_levels:
+      - level: 1
+        target: node1
+        resource_ids:
+          - apc1
+          - apc2
+      - level: 1
+        target: node2
+        resource_ids:
+          - apc1
+          - apc2
+
+  roles:
+    - linux-system-roles.ha_cluster

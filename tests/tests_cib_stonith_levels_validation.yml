@@ -1,0 +1,95 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure stonith levels are properly defined
+  hosts: all
+  vars_files: vars/main.yml
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Check that target is specified
+          block:
+            - name: Run HA Cluster role 1
+              include_role:
+                name: linux-system-roles.ha_cluster
+              vars:
+                ha_cluster_cluster_name: test-cluster
+                ha_cluster_stonith_levels:
+                  - level: 1
+                    resource_ids:
+                      - fence1
+          rescue:
+            - name: Check errors 1
+              assert:
+                that:
+                  - ansible_failed_result.results[0].msg ==
+                    "Specify exactly one of 'target', 'target_pattern', "
+                    ~ "'target_attribute' for each fencing level\n"
+              run_once: true  # noqa: run_once[task]
+
+        - name: Check that exactly one target is specified
+          block:
+            - name: Run HA Cluster role 2
+              include_role:
+                name: linux-system-roles.ha_cluster
+              vars:
+                ha_cluster_cluster_name: test-cluster
+                ha_cluster_stonith_levels:
+                  - level: 1
+                    target: node
+                    target_pattern: node
+                    resource_ids:
+                      - fence1
+          rescue:
+            - name: Check errors 2
+              assert:
+                that:
+                  - ansible_failed_result.results[0].msg ==
+                    "Specify exactly one of 'target', 'target_pattern', "
+                    ~ "'target_attribute' for each fencing level\n"
+              run_once: true  # noqa: run_once[task]
+
+        - name: Check that level is specified
+          block:
+            - name: Run HA Cluster role 3
+              include_role:
+                name: linux-system-roles.ha_cluster
+              vars:
+                ha_cluster_cluster_name: test-cluster
+                ha_cluster_stonith_levels:
+                  - target: node
+                    resource_ids:
+                      - fence1
+          rescue:
+            - name: Check errors 3
+              assert:
+                that:
+                  - ansible_failed_result.results[0].msg ==
+                    "Specify 'level' 1..9 for each fencing level"
+              run_once: true  # noqa: run_once[task]
+
+        - name: Check that level is correct
+          block:
+            - name: Run HA Cluster role 4
+              include_role:
+                name: linux-system-roles.ha_cluster
+              vars:
+                ha_cluster_cluster_name: test-cluster
+                ha_cluster_stonith_levels:
+                  - level: 10
+                    target: node
+                    resource_ids:
+                      - fence1
+          rescue:
+            - name: Check errors 4
+              assert:
+                that:
+                  - ansible_failed_result.results[0].msg ==
+                    "Specify 'level' 1..9 for each fencing level"
+              run_once: true  # noqa: run_once[task]

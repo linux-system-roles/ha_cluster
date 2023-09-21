@@ -21,6 +21,7 @@ An Ansible role for managing High Availability Clustering.
   * Pacemaker cluster properties
   * stonith and resources
   * resource defaults and resource operation defaults
+  * stonith levels, also known as fencing topology
   * resource constraints
 
 ## Requirements
@@ -748,6 +749,51 @@ The structure is the same as for
 [`ha_cluster_resource_defaults`](#ha_cluster_resource_defaults), except that
 rules are described in section `resource op defaults set create` of `pcs(8)`
 man page.
+
+#### `ha_cluster_stonith_levels`
+
+structure, default: no stonith levels
+
+```yaml
+ha_cluster_stonith_levels:
+  - level: 1..9
+    target: node_name
+    target_pattern: node_name_regular_expression
+    target_attribute: node_attribute_name
+    target_value: node_attribute_value
+    resource_ids:
+      - fence_device_1
+      - fence_device_2
+  - level: 1..9
+    target: node_name
+    target_pattern: node_name_regular_expression
+    target_attribute: node_attribute_name
+    target_value: node_attribute_value
+    resource_ids:
+      - fence_device_1
+      - fence_device_2
+```
+
+This variable defines stonith levels, also known as fencing topology. They
+configure the cluster to use multiple devices to fence nodes. You may define
+alternative devices in case one fails, or require multiple devices to all be
+executed successfully in order to consider a node successfully fenced, or even
+a combination of the two.
+
+The items are as follows:
+
+* `level` (mandatory) - Order in which to attempt the levels. Levels are
+  attempted in ascending order until one succeeds.
+* `target` (optional) - Name of a node this level applies to.
+* `target_pattern` (optional) - Regular expression (as defined in
+  [POSIX](https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap09.html#tag_09_04))
+  matching names of nodes this level applies to.
+* `target_attribute` and `target_value` (optional) - Name and value of a node
+  attribute that is set for nodes this level applies to.
+* Exactly one of `target`, `target_pattern`, `target_attribute` must be
+  specified.
+* `resource_ids` (mandatory) - List of stonith resources that must all be tried
+  for this level.
 
 #### `ha_cluster_constraints_location`
 
@@ -1553,6 +1599,57 @@ SBD stonith resource.
           attrs:
             - name: timeout
               value: 8s
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Configuring stonith levels
+
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_resource_primitives:
+      - id: apc1
+        agent: 'stonith:fence_apc_snmp'
+        instance_attrs:
+          - attrs:
+              - name: ip
+                value: apc1.example.com
+              - name: username
+                value: user
+              - name: password
+                value: secret
+              - name: pcmk_host_map
+                value: node1:1;node2:2
+      - id: apc2
+        agent: 'stonith:fence_apc_snmp'
+        instance_attrs:
+          - attrs:
+              - name: ip
+                value: apc2.example.com
+              - name: username
+                value: user
+              - name: password
+                value: secret
+              - name: pcmk_host_map
+                value: node1:1;node2:2
+    # Nodes have redundant power supplies, apc1 and apc2. Cluster must ensure
+    # that when attempting to reboot a node, both power supplies are turned off
+    # before either power supply is turned back on.
+    ha_cluster_stonith_levels:
+      - level: 1
+        target: node1
+        resource_ids:
+          - apc1
+          - apc2
+      - level: 1
+        target: node2
+        resource_ids:
+          - apc1
+          - apc2
 
   roles:
     - linux-system-roles.ha_cluster

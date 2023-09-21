@@ -153,8 +153,15 @@
         resource_clone: "{{ item }}"
       loop: "{{ ha_cluster_resource_clones }}"
 
-    ## Constraints
+    ## Stonith levels
+    - name: Configure stonith levels
+      include_tasks: pcs-cib-stonith-level.yml
+      loop: "{{ ha_cluster_stonith_levels }}"
+      loop_control:
+        index_var: stonith_level_index
+        loop_var: stonith_level
 
+    ## Constraints
     - name: Configure resource location constraints
       include_tasks: pcs-cib-constraint-location.yml
       loop: "{{ ha_cluster_constraints_location }}"

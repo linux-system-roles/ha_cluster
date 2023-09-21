@@ -37,6 +37,28 @@
         - ha_cluster_cluster_present
         - ha_cluster_qnetd.present | d(false)
 
+    - name: Fail if no valid level is specified for a fencing level
+      fail:
+        msg: Specify 'level' 1..9 for each fencing level
+      when:
+        - not((item.level | d() | int) > 0 and (item.level | d() | int) < 10)
+      loop: "{{ ha_cluster_stonith_levels }}"
+      run_once: true
+
+    - name: Fail if no target is specified for a fencing level
+      fail:
+        msg: >
+          Specify exactly one of 'target', 'target_pattern', 'target_attribute'
+          for each fencing level
+      when:
+        - >
+          [item.target is defined,
+            item.target_pattern is defined,
+            item.target_attribute is defined]
+          | select("true") | list | length != 1
+      loop: "{{ ha_cluster_stonith_levels }}"
+      run_once: true
+
 - name: Discover cluster node names
   set_fact:
     __ha_cluster_node_name: "{{ ha_cluster.node_name | d(inventory_hostname) }}"

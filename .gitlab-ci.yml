@@ -34,6 +34,8 @@ variables:
   - cib_properties_one_set
   - cib_resources_create
   - cib_rsc_op_defaults
+  - cib_stonith_levels_validation
+  - cib_stonith_levels
   - cluster_advanced_knet_full
   - cluster_advanced_knet_implicit
   - cluster_advanced_udp_full
