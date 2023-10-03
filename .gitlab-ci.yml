@@ -205,10 +205,19 @@ unit_tests:
     - PYTHONPATH="./library:./module_utils:$PYTHONPATH" python -m unittest --verbose tests/unit/*.py
 
 # tier 1
+# RHEL 8.4 with the newest compatible Ansible doesn't work with the new ansible
+# galaxy deployed on 2023-09-30. It works with the old one, though, so we set
+# it to connect to the old one using the --server option.
+# references:
+# https://www.ansible.com/blog/new-ansible-galaxy
+# https://forum.ansible.com/t/new-ansible-galaxy/1155/20
+# https://github.com/ansible/awx/issues/14496#issuecomment-1743711473
 .role_test:
   stage: tier1
   script:
-    - ansible-galaxy -vv collection install -r ./meta/collection-requirements.yml
+    - if [ "x${BASE_IMAGE_NAME}" == "xLsrRhel8OldestAnsibleCurrent" ]; then GALAXY_SERVER="https://old-galaxy.ansible.com"; fi
+    - echo "$GALAXY_SERVER"
+    - ansible-galaxy collection install -vvv "--server=${GALAXY_SERVER}" -r ./meta/collection-requirements.yml
     - varsparams=""
     - TEST_FILE_NAME="tests_${TEST_FILE}.yml"
     - echo "$TEST_FILE_NAME"
