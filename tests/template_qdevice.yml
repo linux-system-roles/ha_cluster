@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Run test
+  vars:
+    ha_cluster_cluster_name: test-cluster
+  block:
+    - name: Set up test environment
+      include_role:
+        name: linux-system-roles.ha_cluster
+        tasks_from: test_setup.yml
+
+    - name: Clean up test environment for qnetd
+      include_role:
+        name: linux-system-roles.ha_cluster
+        tasks_from: test_cleanup_qnetd.yml
+
+    - name: Set up test environment for qnetd
+      include_role:
+        name: linux-system-roles.ha_cluster
+        tasks_from: test_setup_qnetd.yml
+      run_once: true  # noqa: run_once[task]
+
+    - name: Back up qnetd
+      include_tasks: tasks/qnetd_backup_restore.yml
+      vars:
+        operation: backup
+      run_once: true  # noqa: run_once[task]
+
+    - name: Run HA Cluster role
+      include_role:
+        name: linux-system-roles.ha_cluster
+        # variables for the role are supposed to be defined in a playbook which
+        # includes this task file
+
+    # The role removed qnetd configuration
+    - name: Restore qnetd
+      include_tasks: tasks/qnetd_backup_restore.yml
+      vars:
+        operation: restore
+      run_once: true  # noqa: run_once[task]
+
+    - name: Get services status
+      service_facts:
+
+    - name: Check qdevice status
+      assert:
+        that:
+          - ansible_facts.services["corosync-qdevice.service"].status
+              == "enabled"
+          - ansible_facts.services["corosync-qdevice.service"].state
+              == "running"
+
+    - name: Check corosync
+      include_tasks: tasks/assert_corosync_config.yml
+      # __test_expected_lines is supposed to be defined in a playbook which
+      # includes this task file
+
+    - name: Check cluster status
+      include_tasks: tasks/assert_cluster_running.yml
+
+    - name: Check qdevice status
+      include_tasks: tasks/assert_qdevice_in_cluster.yml
+
+  always:
+    - name: Clean up test environment for qnetd
+      include_role:
+        name: linux-system-roles.ha_cluster
+        tasks_from: test_cleanup_qnetd.yml

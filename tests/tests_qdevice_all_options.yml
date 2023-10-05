@@ -3,114 +3,65 @@
 - name: Test qdevice - all options
   hosts: all
   vars_files: vars/main.yml
-  vars:
-    ha_cluster_cluster_name: test-cluster
+
   tasks:
+    - name: Set qnetd address
+      set_fact:
+        __test_qnetd_address: "{{
+            (ansible_play_hosts_all | length == 1)
+            | ternary('localhost', ansible_play_hosts[0]) }}"
+
     - name: Run test
       tags: tests::verify
-      block:
-        - name: Set up test environment
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup.yml
-
-        - name: Set up test environment for qnetd / qdevice
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup_qnetd.yml
-          run_once: true  # noqa: run_once[task]
-
-        - name: Back up qnetd
-          include_tasks: tasks/qnetd_backup_restore.yml
-          vars:
-            operation: backup
-          run_once: true  # noqa: run_once[task]
-
-        - name: Set qnetd address
-          set_fact:
-            __test_qnetd_address: "{{
-                (ansible_play_hosts_all | length == 1)
-                | ternary('localhost', ansible_play_hosts[0]) }}"
-
-        - name: Run HA Cluster role
-          include_role:
-            name: linux-system-roles.ha_cluster
-          vars:
-            ha_cluster_quorum:
-              device:
-                model: net
-                model_options:
-                  - name: host
-                    value: "{{ __test_qnetd_address }}"
-                  - name: algorithm
-                    value: lms
-                generic_options:
-                  - name: timeout
-                    value: 1000
-                  - name: sync_timeout
-                    value: 3000
-                heuristics_options:
-                  - name: mode
-                    value: "on"
-                  - name: exec_ping
-                    value: /usr/bin/ping -c 1 127.0.0.1
-
-        # The role removed qnetd configuration
-        - name: Restore qnetd
-          include_tasks: tasks/qnetd_backup_restore.yml
-          vars:
-            operation: restore
-          run_once: true  # noqa: run_once[task]
-
-        - name: Get services status
-          service_facts:
-
-        - name: Check qdevice status
-          assert:
-            that:
-              - ansible_facts.services["corosync-qdevice.service"].status
-                  == "enabled"
-              - ansible_facts.services["corosync-qdevice.service"].state
-                  == "running"
-
-        - name: Check corosync
-          include_tasks: tasks/assert_corosync_config.yml
-          vars:
-            __test_expected_lines:
-              - 'totem {'
-              - '    version: 2'
-              - '    cluster_name: {{ ha_cluster_cluster_name }}'
-              - '    transport: knet'
-              - '    crypto_cipher: aes256'
-              - '    crypto_hash: sha256'
-              - '}'
-              - 'nodelist {'
-              - '}'
-              - "quorum {"
-              - "    provider: corosync_votequorum"
-              - "    device {"
-              - "        sync_timeout: 3000"
-              - "        timeout: 1000"
-              - "        model: net"
-              - "        net {"
-              - "            algorithm: lms"
-              - "            host: {{ __test_qnetd_address }}"
-              - "        }"
-              - "        heuristics {"
-              - "            exec_ping: /usr/bin/ping -c 1 127.0.0.1"
-              - "            mode: on"
-              - "        }"
-              - "    }"
-              - "}"
-              - 'logging {'
-              - '    to_logfile: yes'
-              - '    logfile: /var/log/cluster/corosync.log'
-              - '    to_syslog: yes'
-              - '    timestamp: on'
-              - '}'
-
-        - name: Check cluster status
-          include_tasks: tasks/assert_cluster_running.yml
-
-        - name: Check qdevice status
-          include_tasks: tasks/assert_qdevice_in_cluster.yml
+      include_tasks: template_qdevice.yml
+      vars:
+        ha_cluster_quorum:
+          device:
+            model: net
+            model_options:
+              - name: host
+                value: "{{ __test_qnetd_address }}"
+              - name: algorithm
+                value: lms
+            generic_options:
+              - name: timeout
+                value: 1000
+              - name: sync_timeout
+                value: 3000
+            heuristics_options:
+              - name: mode
+                value: "on"
+              - name: exec_ping
+                value: /usr/bin/ping -c 1 127.0.0.1
+        __test_expected_lines:
+          - "totem {"
+          - "    version: 2"
+          - "    cluster_name: {{ ha_cluster_cluster_name }}"
+          - "    transport: knet"
+          - "    crypto_cipher: aes256"
+          - "    crypto_hash: sha256"
+          - "}"
+          - "nodelist {"
+          - "}"
+          - "quorum {"
+          - "    provider: corosync_votequorum"
+          - "    device {"
+          - "        sync_timeout: 3000"
+          - "        timeout: 1000"
+          - "        model: net"
+          - "        net {"
+          - "            algorithm: lms"
+          - "            host: {{ __test_qnetd_address }}"
+          - "        }"
+          - "        heuristics {"
+          - "            exec_ping: /usr/bin/ping -c 1 127.0.0.1"
+          - "            mode: on"
+          - "        }"
+          - "    }"
+          - "}"
+          - "logging {"
+          - "    to_logfile: yes"
+          - "    logfile: /var/log/cluster/corosync.log"
+          - "    to_syslog: yes"
+          - "    timestamp: on"
+          - "}"
