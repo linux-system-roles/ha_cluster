@@ -52,6 +52,7 @@ variables:
   - include_vars_from_parent
   - qdevice_all_options
   - qdevice_minimal
+  - qdevice_tls_kaptb_options
   - qnetd_and_cluster
   - qnetd_disabled
   - qnetd
