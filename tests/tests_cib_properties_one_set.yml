@@ -50,9 +50,7 @@
               __test_pcs_property_config.stdout_lines | map('trim') | list }}"
           when:
             - >
-              not((ansible_facts['distribution'] in ['RedHat', 'CentOS'])
-              and
-              ansible_facts['distribution_major_version'] == '9'
+              not((__test_pcs_version is version('0.11', '>='))
               and
               ('pcmk.properties.cluster.config.output-formats'
               in __test_pcs_capabilities))
@@ -67,9 +65,7 @@
               __test_pcs_property_config.stdout_lines | map('trim') | list }}"
           when:
             - >
-              (ansible_facts['distribution'] in ['RedHat', 'CentOS'])
-              and
-              ansible_facts['distribution_major_version'] == '9'
+              (__test_pcs_version is version('0.11', '>='))
               and
               ('pcmk.properties.cluster.config.output-formats'
               in __test_pcs_capabilities)
