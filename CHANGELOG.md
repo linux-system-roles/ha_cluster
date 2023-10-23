@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.11.0] - 2023-10-23
+--------------------
+
+### New Features
+
+- feat: Add support for configuring stonith levels (#147)
+
+### Other Changes
+
+- build(deps): bump actions/checkout from 3 to 4 (#146)
+- ci: dependabot git commit msg lint; badge ordering (#150)
+- ci: use dump_packages.py callback to get packages used by role (#152)
+- test: support for qdevice tls and kaptb options (#153)
+- ci: tox-lsr version 3.1.1 (#156)
+
 [1.10.1] - 2023-09-08
 --------------------
 
