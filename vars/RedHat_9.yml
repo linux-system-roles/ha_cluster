@@ -8,3 +8,5 @@
 __ha_cluster_repos:
   - id: rhel-9-for-{{ ansible_architecture }}-highavailability-rpms
     name: High Availability
+  - id: rhel-9-for-{{ ansible_architecture }}-resilientstorage-rpms
+    name: Resilient Storage

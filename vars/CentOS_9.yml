@@ -1,12 +1,12 @@
 # SPDX-License-Identifier: MIT
 ---
-# Put internal variables here with CentOS 8 specific values.
+# Put internal variables here with CentOS 9 specific values.
 
 # List of repositories holding HA cluster packages.
 # id: repo ID used to enable the repo
 # name: user-friendly name of a repo used to check if the repo is enabled
 __ha_cluster_repos:
-  - id: ha
+  - id: highavailability
     name: HighAvailability
   - id: resilientstorage
     name: ResilientStorage

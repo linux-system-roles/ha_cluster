@@ -11,5 +11,8 @@
   command:
     cmd: dnf config-manager --set-enabled {{ item.id | quote }}
   loop: "{{ __ha_cluster_repos }}"
-  when: item.name not in __ha_cluster_repolist.stdout
+  when:
+    - item.id not in __ha_cluster_repolist.stdout
+    - item.name != "ResilientStorage"
+      or ha_cluster_enable_repos_resilient_storage
   changed_when: item.name not in __ha_cluster_repolist.stdout
