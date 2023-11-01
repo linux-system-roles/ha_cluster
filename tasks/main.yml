@@ -13,8 +13,7 @@
     name: "{{
       __ha_cluster_role_essential_packages
       +
-      ha_cluster_extra_packages
-    }}"
+      ha_cluster_extra_packages }}"
     state: present
 
 - name: Check and prepare role variables
@@ -26,9 +25,8 @@
   user:
     name: hacluster
     password: "{{
-      ha_cluster_hacluster_password | string
-      | password_hash('sha512', ansible_hostname.replace('-', 'x')[:16])
-    }}"
+      ha_cluster_hacluster_password | string |
+      password_hash('sha512', ansible_hostname.replace('-', 'x')[:16]) }}"
   when:
     - ha_cluster_hacluster_password | string | length > 0
 

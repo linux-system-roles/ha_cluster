@@ -11,8 +11,10 @@
     name:
       - corosync-qnetd
     state: absent
+  when: ansible_facts.pkg_mgr | d() != "ansible.posix.rhel_rpm_ostree"
 
 - name: Make sure qnetd config files are not present
   file:
     path: /etc/corosync/qnetd
     state: absent
+  when: ansible_facts.pkg_mgr | d() != "ansible.posix.rhel_rpm_ostree"
