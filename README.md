@@ -56,6 +56,14 @@ boolean, default: `true`
 
 RHEL and CentOS only, enable repositories containing needed packages
 
+#### `ha_cluster_enable_repos_resilient_storage`
+
+boolean, default: `false`
+
+RHEL and CentOS only, enable repositories containing resilient storage
+packages, such as dlm or gfs2. For this option to take effect,
+`ha_cluster_enable_repos` must be set to `true`.
+
 #### `ha_cluster_manage_firewall`
 
 boolean, default: false

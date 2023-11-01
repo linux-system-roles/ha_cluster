@@ -5,6 +5,7 @@
 ha_cluster_pacemaker_shell: pcs
 
 ha_cluster_enable_repos: true
+ha_cluster_enable_repos_resilient_storage: false
 
 ha_cluster_cluster_present: true
 
