@@ -18,6 +18,10 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
+        - name: Skip test on ostree systems
+          meta: end_host
+          when: ansible_facts.pkg_mgr | d() == "ansible.posix.rhel_rpm_ostree"
+
         - name: Ensure extra package is not installed
           package:
             name: "{{ __test_extra_package }}"

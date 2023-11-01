@@ -21,6 +21,7 @@
           package:
             name: fence-agents-all
             state: absent
+          when: ansible_facts.pkg_mgr | d() != "ansible.posix.rhel_rpm_ostree"
 
         - name: Run HA Cluster role
           include_role:
@@ -29,12 +30,14 @@
 
         - name: Get packages status
           package_facts:
+          when: ansible_facts.pkg_mgr | d() != "ansible.posix.rhel_rpm_ostree"
 
         - name: Check installed fence-agents packages
           assert:
             that:
               - "'fence-agents-all' not in ansible_facts.packages"
               - "'fence-agents-ipmilan' in ansible_facts.packages"
+          when: ansible_facts.pkg_mgr | d() != "ansible.posix.rhel_rpm_ostree"
 
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml

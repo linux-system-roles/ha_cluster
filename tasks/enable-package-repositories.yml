@@ -26,3 +26,4 @@
   when:
     - ha_cluster_enable_repos
     - __ha_cluster_enable_repo_tasks_file is defined
+    - ansible_facts.pkg_mgr | d() != "ansible.posix.rhel_rpm_ostree"
