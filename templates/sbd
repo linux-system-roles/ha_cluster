@@ -3,7 +3,7 @@
 
 {% macro option(ansible_name, default_value) -%}
   {%- for option in options if option.name == ansible_name -%}
-    {{ option.value }}
+    {{ option.value | string }}
   {%- else -%}
     {{ default_value }}
   {%- endfor -%}
