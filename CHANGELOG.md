@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.12.0] - 2023-11-06
+--------------------
+
+### New Features
+
+- feat: add an option to enable Resilient Storage rpm repository (#158)
+
+### Bug Fixes
+
+- fix: cast sbd option value to string (#160)
+
 [1.11.0] - 2023-10-23
 --------------------
 
