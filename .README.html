@@ -149,6 +149,8 @@ id="toc-defined-in-defaultsmainyml">Defined in
 <ul>
 <li><a href="#ha_cluster_enable_repos"
 id="toc-ha_cluster_enable_repos"><code>ha_cluster_enable_repos</code></a></li>
+<li><a href="#ha_cluster_enable_repos_resilient_storage"
+id="toc-ha_cluster_enable_repos_resilient_storage"><code>ha_cluster_enable_repos_resilient_storage</code></a></li>
 <li><a href="#ha_cluster_manage_firewall"
 id="toc-ha_cluster_manage_firewall"><code>ha_cluster_manage_firewall</code></a></li>
 <li><a href="#ha_cluster_manage_selinux"
@@ -338,6 +340,13 @@ id="ha_cluster_enable_repos"><code>ha_cluster_enable_repos</code></h3>
 <p>boolean, default: <code>true</code></p>
 <p>RHEL and CentOS only, enable repositories containing needed
 packages</p>
+<h3
+id="ha_cluster_enable_repos_resilient_storage"><code>ha_cluster_enable_repos_resilient_storage</code></h3>
+<p>boolean, default: <code>false</code></p>
+<p>RHEL and CentOS only, enable repositories containing resilient
+storage packages, such as dlm or gfs2. For this option to take effect,
+<code>ha_cluster_enable_repos</code> must be set to
+<code>true</code>.</p>
 <h3
 id="ha_cluster_manage_firewall"><code>ha_cluster_manage_firewall</code></h3>
 <p>boolean, default: false</p>
