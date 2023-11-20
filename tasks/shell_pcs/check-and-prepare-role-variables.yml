@@ -55,7 +55,7 @@
           [item.target is defined,
             item.target_pattern is defined,
             item.target_attribute is defined]
-          | select("true") | list | length != 1
+          | select | list | length != 1
       loop: "{{ ha_cluster_stonith_levels }}"
       run_once: true
 
