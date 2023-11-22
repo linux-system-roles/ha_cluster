@@ -20,7 +20,7 @@
 
         - name: Skip test on ostree systems
           meta: end_host
-          when: ansible_facts.pkg_mgr | d() == "ansible.posix.rhel_rpm_ostree"
+          when: __ha_cluster_is_ostree | d(false)
 
         - name: Ensure extra package is not installed
           package:

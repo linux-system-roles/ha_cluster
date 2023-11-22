@@ -40,7 +40,8 @@ If the `ha_cluster` is a role from the `fedora.linux_system_roles`
 collection or from the Fedora RPM package, the requirement is already
 satisfied.
 
-Otherwise, please run the following command line to install the collection.
+If you need to manage `rpm-ostree` systems, you will need to install additional
+collections.  Please run the following command line to install the collections.
 
 ```bash
 ansible-galaxy collection install -r meta/collection-requirements.yml
@@ -1853,6 +1854,10 @@ Note that you cannot run a quorum device on a cluster node.
   roles:
     - linux-system-roles.ha_cluster
 ```
+
+## rpm-ostree
+
+See README-ostree.md
 
 ## License
 

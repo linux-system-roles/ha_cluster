@@ -19,6 +19,8 @@
       package:
         name: openssl
         state: present
+        use: "{{ (__ha_cluster_is_ostree | d(false)) |
+                 ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
       when: "'openssl' not in ansible_facts.packages"
 
     - name: Generate a self signed pcsd cert and the pcsd key
