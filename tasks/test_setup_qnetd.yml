@@ -12,6 +12,8 @@
       - corosync-qnetd
       - pcs
     state: present
+    use: "{{ (__ha_cluster_is_ostree | d(false)) |
+             ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
 - name: Set up qnetd
   command:

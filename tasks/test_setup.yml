@@ -16,23 +16,17 @@
     gather_subset: min
   when: "'distribution' not in ansible_facts"
 
-- name: Ensure correct package manager for ostree systems
-  vars:
-    ostree_pkg_mgr: ansible.posix.rhel_rpm_ostree
-    ostree_booted_file: /run/ostree-booted
-  when: ansible_facts.pkg_mgr | d("") != ostree_pkg_mgr
+- name: Determine if system is ostree and set flag
+  when: not __ha_cluster_is_ostree is defined
   block:
     - name: Check if system is ostree
       stat:
-        path: "{{ ostree_booted_file }}"
+        path: /run/ostree-booted
       register: __ostree_booted_stat
 
-    - name: Set package manager to use for ostree
-      ansible.utils.update_fact:
-        updates:
-          - path: ansible_facts.pkg_mgr
-            value: "{{ ostree_pkg_mgr }}"
-      when: __ostree_booted_stat.stat.exists
+    - name: Set flag to indicate system is ostree
+      set_fact:
+        __ha_cluster_is_ostree: "{{ __ostree_booted_stat.stat.exists }}"
 
 # Test systems may not have repositories available through subscriptions
 - name: Do not try to enable RHEL repositories
@@ -53,5 +47,5 @@
           grep "^$username" /usr/lib/passwd >> /etc/passwd
       fi
     done
-  when: ansible_facts.pkg_mgr | d() == "ansible.posix.rhel_rpm_ostree"
+  when: __ha_cluster_is_ostree | d(false)
   changed_when: true
