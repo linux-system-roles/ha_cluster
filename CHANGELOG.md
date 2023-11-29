@@ -1,6 +1,18 @@
 Changelog
 =========
 
+[1.13.0] - 2023-11-29
+--------------------
+
+### New Features
+
+- feat: support for ostree systems (#159)
+
+### Other Changes
+
+- test: update for ansible-test-2.16 (#162)
+- test: do not use true test with select (#163)
+
 [1.12.0] - 2023-11-06
 --------------------
 

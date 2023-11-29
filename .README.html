@@ -283,6 +283,7 @@ cluster to use a quorum device</a></li>
 id="toc-purging-all-cluster-configuration">Purging all cluster
 configuration</a></li>
 </ul></li>
+<li><a href="#rpm-ostree" id="toc-rpm-ostree">rpm-ostree</a></li>
 <li><a href="#license" id="toc-license">License</a></li>
 <li><a href="#author-information" id="toc-author-information">Author
 Information</a></li>
@@ -328,8 +329,9 @@ href="#ha_cluster_manage_selinux"><code>ha_cluster_manage_selinux</code></a>.</p
 <p>If the <code>ha_cluster</code> is a role from the
 <code>fedora.linux_system_roles</code> collection or from the Fedora RPM
 package, the requirement is already satisfied.</p>
-<p>Otherwise, please run the following command line to install the
-collection.</p>
+<p>If you need to manage <code>rpm-ostree</code> systems, you will need
+to install additional collections. Please run the following command line
+to install the collections.</p>
 <div class="sourceCode" id="cb1"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">ansible-galaxy</span> collection install <span class="at">-r</span> meta/collection-requirements.yml</span></code></pre></div>
 <h1 id="role-variables">Role Variables</h1>
@@ -2093,6 +2095,8 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb39-1"><a href=
 <span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
 <span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.ha_cluster</span></span></code></pre></div>
+<h1 id="rpm-ostree">rpm-ostree</h1>
+<p>See README-ostree.md</p>
 <h1 id="license">License</h1>
 <p>MIT</p>
 <h1 id="author-information">Author Information</h1>
