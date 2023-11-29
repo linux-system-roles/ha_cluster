@@ -17,11 +17,14 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
+        - name: Skip test on ostree systems
+          meta: end_host
+          when: __ha_cluster_is_ostree | d(false)
+
         - name: Ensure fence-agents-all is not installed
           package:
             name: fence-agents-all
             state: absent
-          when: not __ha_cluster_is_ostree | d(false)
 
         - name: Run HA Cluster role
           include_role:
@@ -30,14 +33,12 @@
 
         - name: Get packages status
           package_facts:
-          when: not __ha_cluster_is_ostree | d(false)
 
         - name: Check installed fence-agents packages
           assert:
             that:
               - "'fence-agents-all' not in ansible_facts.packages"
               - "'fence-agents-ipmilan' in ansible_facts.packages"
-          when: not __ha_cluster_is_ostree | d(false)
 
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml
