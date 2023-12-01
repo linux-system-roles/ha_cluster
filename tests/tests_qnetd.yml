@@ -7,6 +7,8 @@
     ha_cluster_cluster_present: false
     ha_cluster_qnetd:
       present: true
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
   tasks:
     - name: Run test
       tags: tests::verify
@@ -35,3 +37,6 @@
                 == "enabled"
               - ansible_facts.services["corosync-qnetd.service"].state
                  == "running"
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
