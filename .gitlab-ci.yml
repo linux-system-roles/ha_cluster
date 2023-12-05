@@ -60,6 +60,7 @@ variables:
   - sbd_check_devices_count
   - sbd_defaults_disabled
   - sbd_defaults
+  - sbd_delay_start
   - sbd_needs_atb_while_atb_disabled
   - sbd_needs_atb_while_atb_enabled
 
