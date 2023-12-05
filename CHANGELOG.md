@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.13.2] - 2023-12-05
+--------------------
+
+### Bug Fixes
+
+- fix: set sbd.service timeout based on SBD_START_DELAY (#169)
+
+### Other Changes
+
+- ci: bump actions/github-script from 6 to 7 (#168)
+
 [1.13.1] - 2023-12-01
 --------------------
 

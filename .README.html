@@ -715,13 +715,32 @@ example</a>.</p>
 example</a>.</p>
 <h3 id="ha_cluster_sbd_options"><code>ha_cluster_sbd_options</code></h3>
 <p>list, default: <code>[]</code></p>
-<p>List of name-value dictionaries specifying SBD options. Supported
-options are: <code>delay-start</code> (defaults to <code>false</code>),
-<code>startmode</code> (defaults to <code>always</code>),
-<code>timeout-action</code> (defaults to <code>flush,reboot</code>) and
-<code>watchdog-timeout</code> (defaults to <code>5</code>). See
+<p>List of name-value dictionaries specifying SBD options. See
 <code>sbd(8)</code> man page, section 'Configuration via environment'
-for their description.</p>
+for their description. Supported options are:</p>
+<ul>
+<li><code>delay-start</code>
+<ul>
+<li><code>false</code> or <code>integer</code>, defaults to
+<code>false</code></li>
+<li>documented as SBD_DELAY_START</li>
+</ul></li>
+<li><code>startmode</code>
+<ul>
+<li><code>string</code>, defaults to <code>always</code></li>
+<li>documented as SBD_STARTMODE</li>
+</ul></li>
+<li><code>timeout-action</code>
+<ul>
+<li><code>string</code>, defaults to <code>flush,reboot</code></li>
+<li>documented as SBD_TIMEOUT_ACTION</li>
+</ul></li>
+<li><code>watchdog-timeout</code>
+<ul>
+<li><code>integer</code>, defaults to <code>5</code></li>
+<li>documented as SBD_WATCHDOG_TIMEOUT</li>
+</ul></li>
+</ul>
 <p>You may take a look at <a href="#configuring-cluster-to-use-sbd">an
 example</a>.</p>
 <p>Watchdog and SBD devices are configured on a node to node basis in <a
