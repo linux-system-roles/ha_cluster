@@ -449,11 +449,22 @@ You may take a look at [an example](#configuring-cluster-to-use-sbd).
 
 list, default: `[]`
 
-List of name-value dictionaries specifying SBD options. Supported options are:
-`delay-start` (defaults to `false`), `startmode` (defaults to `always`),
-`timeout-action` (defaults to `flush,reboot`) and `watchdog-timeout` (defaults
-to `5`). See `sbd(8)` man page, section 'Configuration via environment' for
-their description.
+List of name-value dictionaries specifying SBD options. See `sbd(8)` man page,
+section 'Configuration via environment' for their description. Supported
+options are:
+
+* `delay-start`
+  * `false` or `integer`, defaults to `false`
+  * documented as SBD\_DELAY\_START
+* `startmode`
+  * `string`, defaults to `always`
+  * documented as SBD\_STARTMODE
+* `timeout-action`
+  * `string`, defaults to `flush,reboot`
+  * documented as SBD\_TIMEOUT\_ACTION
+* `watchdog-timeout`
+  * `integer`, defaults to `5`
+  * documented as SBD\_WATCHDOG\_TIMEOUT
 
 You may take a look at [an example](#configuring-cluster-to-use-sbd).
 

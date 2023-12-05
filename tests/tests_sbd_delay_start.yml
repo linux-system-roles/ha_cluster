@@ -1,0 +1,99 @@
+# SPDX-License-Identifier: MIT
+---
+- name: SBD with long delay-start
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_sbd_enabled: true
+    ha_cluster_sbd_options:
+      - name: delay-start
+        value: 101
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Set up test environment for SBD
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup_sbd.yml
+
+        - name: Ensure SBD config file is not present
+          file:
+            path: /etc/sysconfig/sbd
+            state: absent
+
+        - name: Ensure systemd overrides for SBD are not present
+          file:
+            path: /etc/systemd/system/sbd.service.d/override-timeout.conf
+            state: absent
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Slurp SBD config file
+          slurp:
+            src: /etc/sysconfig/sbd
+          register: __test_sbd_config
+
+        - name: Decode SBD config
+          set_fact:
+            __test_sbd_config_lines: "{{
+                (__test_sbd_config.content | b64decode).splitlines() }}"
+
+        - name: Print SBD config lines
+          debug:
+            var: __test_sbd_config_lines
+
+        - name: Check SBD config
+          assert:
+            that:
+              - "'SBD_DELAY_START=\"101\"' in __test_sbd_config_lines"
+              - >
+                __test_sbd_config_lines[-1]
+                == 'SBD_OPTS="-n {{ __ha_cluster_node_name }}"'
+
+        - name: Check header for ansible_managed, fingerprint
+          include_tasks: tasks/check_header.yml
+          vars:
+            __file_content: "{{ __test_sbd_config }}"
+            __fingerprint: "system_role:ha_cluster"
+
+        - name: Slurp SBD overrides
+          slurp:
+            src: /etc/systemd/system/sbd.service.d/override-timeout.conf
+          register: __test_sbd_overrides_config
+
+        - name: Decode SBD overrides
+          set_fact:
+            __test_sbd_overrides_config_lines: "{{
+                (__test_sbd_overrides_config.content | b64decode).splitlines()
+                }}"
+
+        - name: Check SBD overrides
+          assert:
+            that:
+              - "'TimeoutStartSec=122' in __test_sbd_overrides_config_lines"
+
+        - name: Check header for ansible_managed, fingerprint
+          include_tasks: tasks/check_header.yml
+          vars:
+            __file_content: "{{ __test_sbd_overrides_config }}"
+            __fingerprint: "system_role:ha_cluster"
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
+
+      always:
+        - name: Clean up test environment for SBD
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_cleanup_sbd.yml

@@ -8,7 +8,7 @@
     ha_cluster_sbd_enabled: true
     ha_cluster_sbd_options:
       - name: delay-start
-        value: 2s
+        value: 2
       - name: startmode
         value: clean
       - name: timeout-action
@@ -132,7 +132,7 @@
         - name: Check SBD config
           assert:
             that:
-              - "'SBD_DELAY_START=\"2s\"' in __test_sbd_config_lines"
+              - "'SBD_DELAY_START=\"2\"' in __test_sbd_config_lines"
               - "'SBD_DEVICE=\"{{ __test_sbd_mount.stdout }}\"'
                 in __test_sbd_config_lines"
               - "'SBD_STARTMODE=\"clean\"' in __test_sbd_config_lines"

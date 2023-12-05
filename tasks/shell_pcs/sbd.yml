@@ -99,6 +99,43 @@
         node_devices: "{{ ha_cluster.sbd_devices | d([]) }}"
       register: __ha_cluster_distribute_sbd_config
 
+    - name: Configure systemd timeout for SBD
+      vars:
+        __sbd_delay_start: "{{ ha_cluster_sbd_options
+          | selectattr('name', 'match', '^delay-start$')
+          | map(attribute='value') | list }}"
+      when:
+        - __sbd_delay_start | length > 0
+        - __sbd_delay_start | first | int > 0
+      block:
+        - name: Ensure /etc/systemd/system/sbd.service.d directory exists
+          file:
+            path: /etc/systemd/system/sbd.service.d
+            state: directory
+            owner: root
+            group: root
+            mode: 0755
+
+        - name: Override start timeout for SBD
+          template:
+            src: templates/override-timeout.conf
+            dest: /etc/systemd/system/sbd.service.d/override-timeout.conf
+            owner: root
+            group: root
+            mode: 0644
+          vars:
+            # Make sure the timeout is at least the default 90 seconds.
+            # The intent is to make the timeout longer if needed, not shorter.
+            # yamllint disable rule:line-length
+            timeout_value: "{{ [90,
+              (__sbd_delay_start | first | float * 1.2) | round(0, 'ceil') | int] |
+              max }}"
+            # yamllint enable rule:line-length
+
+        - name: Reload systemd service files
+          systemd:
+            daemon_reload: true
+
 - name: Get services status - detect pacemaker
   service_facts:
 
