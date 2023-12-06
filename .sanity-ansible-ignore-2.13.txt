@@ -29,4 +29,3 @@ plugins/module_utils/ha_cluster_lsr/pcs_api_v2_utils.py import-3.9!skip
 plugins/module_utils/ha_cluster_lsr/pcs_api_v2_utils.py import-3.10!skip
 tests/ha_cluster/unit/test_pcs_api_v2.py shebang!skip
 tests/ha_cluster/unit/test_pcs_qdevice_certs.py shebang!skip
-roles/ha_cluster/.ostree/get_ostree_data.sh shebang!skip
