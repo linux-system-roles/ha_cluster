@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.13.3] - 2023-12-08
+--------------------
+
+### Other Changes
+
+- refactor: get_ostree_data.sh use env shebang - remove from .sanity* (#171)
+
 [1.13.2] - 2023-12-05
 --------------------
 
