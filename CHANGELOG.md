@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.13.4] - 2023-12-12
+--------------------
+
+### Other Changes
+
+- test: fix jinja templates in conditionals (#173)
+
 [1.13.3] - 2023-12-08
 --------------------
 
