@@ -133,7 +133,7 @@
           assert:
             that:
               - "'SBD_DELAY_START=\"2\"' in __test_sbd_config_lines"
-              - "'SBD_DEVICE=\"{{ __test_sbd_mount.stdout }}\"'
+              - "'SBD_DEVICE=\"' ~ __test_sbd_mount.stdout ~ '\"'
                 in __test_sbd_config_lines"
               - "'SBD_STARTMODE=\"clean\"' in __test_sbd_config_lines"
               - "'SBD_TIMEOUT_ACTION=\"reboot,flush\"'
@@ -142,7 +142,7 @@
               - "'SBD_WATCHDOG_TIMEOUT=\"10\"' in __test_sbd_config_lines"
               - >
                 __test_sbd_config_lines[-1]
-                == 'SBD_OPTS="-n {{ __ha_cluster_node_name }}"'
+                == 'SBD_OPTS="-n ' ~ __ha_cluster_node_name ~ '"'
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
