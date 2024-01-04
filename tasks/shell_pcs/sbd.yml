@@ -20,7 +20,7 @@
               loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
 
             - name: Unload watchdog kernel modules from blocklist
-              modprobe:
+              community.general.modprobe:
                 name: "{{ item }}"
                 state: absent
               loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
@@ -38,7 +38,7 @@
               loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
 
             - name: Load watchdog kernel modules
-              modprobe:
+              community.general.modprobe:
                 name: "{{ item }}"
                 state: present
               loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"

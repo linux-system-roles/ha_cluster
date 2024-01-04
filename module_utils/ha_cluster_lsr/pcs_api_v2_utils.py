@@ -13,6 +13,8 @@ __metaclass__ = type
 # pylint: enable=invalid-name
 
 import sys
+import traceback
+
 
 # Add paths to pcs bundled libraries to make Dacite available
 sys.path.insert(0, "/usr/lib64/pcs/pcs_bundled/packages/")
@@ -24,15 +26,45 @@ from typing import Any, Mapping, Union
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import fetch_url
-from dacite import DaciteError
-from pcs.common.async_tasks.dto import (
-    CommandDto,
-    CommandOptionsDto,
-    TaskResultDto,
-)
-from pcs.common.async_tasks.types import TaskFinishType, TaskKillReason
-from pcs.common.interface.dto import from_dict, to_dict
-from pcs.common.reports import ReportItemDto, ReportItemSeverity
+
+try:
+    from dacite import DaciteError
+except ImportError:
+    HAS_DACITE = False
+    DACITE_IMPORT_ERROR = traceback.format_exc()
+else:
+    HAS_DACITE = True
+    DACITE_IMPORT_ERROR = None
+
+try:
+    from pcs.common.async_tasks.dto import (
+        CommandDto,
+        CommandOptionsDto,
+        TaskResultDto,
+    )
+    from pcs.common.async_tasks.types import TaskFinishType, TaskKillReason
+    from pcs.common.interface.dto import from_dict, to_dict
+    from pcs.common.reports import ReportItemDto, ReportItemSeverity
+except ImportError:
+    HAS_PCS = False
+    PCS_IMPORT_ERROR = traceback.format_exc()
+
+    class CommandOptionsDto(object):
+        def __init__(self, **kwargs):
+            pass
+
+    class ReportItemDto(object):
+        pass
+
+    class TaskResultDto(object):
+        pass
+
+    class CommandDto(object):
+        pass
+
+else:
+    HAS_PCS = True
+    PCS_IMPORT_ERROR = None
 
 PCSD_SOCKET = "/var/run/pcsd.socket"
 API_ENDPOINT = "http://doesntmatter/api/v2/task/run"

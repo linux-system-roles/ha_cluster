@@ -37,6 +37,7 @@ options:
     cmd_options:
         description: pcs API v2 command options
         type: dict
+        default: {}
         suboptions:
             request_timeout:
                 description: request timeout
@@ -112,8 +113,25 @@ from ansible.module_utils.basic import AnsibleModule
 # pylint: disable=no-name-in-module
 from ansible.module_utils.ha_cluster_lsr import pcs_api_v2_utils as api_utils
 
+import traceback
+
 # pylint: enable=no-name-in-module
-from pcs.common.async_tasks.dto import CommandDto, CommandOptionsDto
+try:
+    from pcs.common.async_tasks.dto import CommandDto, CommandOptionsDto
+except ImportError:
+    HAS_PCS = False
+    PCS_IMPORT_ERROR = traceback.format_exc()
+
+    class CommandOptionsDto(object):
+        def __init__(self, **kwargs):
+            pass
+
+    class CommandDto(object):
+        pass
+
+else:
+    HAS_PCS = True
+    PCS_IMPORT_ERROR = None
 
 
 def run_module() -> None:
