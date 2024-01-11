@@ -49,7 +49,6 @@ variables:
   - cluster_basic
   - cluster_destroy
   - default
-  - include_vars_from_parent
   - qdevice_all_options
   - qdevice_minimal
   - qdevice_tls_kaptb_options
@@ -114,6 +113,17 @@ stages:
   - tier1
 
 # tier0 - non-python
+check_tier1_test_list:
+  extends: .job_generic_linter
+  stage: tier0
+  script:
+    - TESTS_DIR=$(find tests/tests_*.yml)
+    - TESTS_CI=$(python -c 'import yaml; f=open(".gitlab-ci.yml"); d=yaml.safe_load(f); print("\n".join([f"tests/tests_{test}.yml" for test in d[".tier1_tests"]]))')
+    - echo -e "Tests found:\n$TESTS_DIR"
+    - echo -e "\nTests defined:\n$TESTS_CI"
+    - echo -e "\nDiff tests found vs tests defined:"
+    - diff <(echo -e "$TESTS_DIR") <(echo -e "$TESTS_CI")
+
 ansible_lint:
   extends: .job_ansible_check
   stage: tier0
