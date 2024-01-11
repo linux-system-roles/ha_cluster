@@ -103,6 +103,17 @@ variables:
   - if [ "x$PYTHON_VER" != "x3.9" ]; then pushd .; cd "${PYENV_PACKAGES}"; rename --verbose "3.9" "$PYTHON_VER" pcs-*.egg-info; popd; fi
   - ls -l "$PYENV_PACKAGES"
 
+.convert_role_to_collection: &convert_role_to_collection
+  - MY_DIR="$(basename $(pwd))"
+  - if [ "x$MY_DIR" != "xha_cluster" ]; then ln -s "$MY_DIR" ../ha_cluster; fi
+  - LSR_INFO=true python /usr/local/lib/lsr-auto-maintenance/lsr_role2collection.py --dest-path ../ --src-path ../ --src-owner tomjelinek --role ha_cluster
+  - coll_dir="../ansible_collections/fedora/linux_system_roles/"
+  - ignore_dir="$coll_dir/tests/sanity"  # wokeignore:rule=sanity
+  - mkdir -pv "$ignore_dir"
+  - for file in .sanity-ansible-ignore-*.txt; do if [ -f "$file" ]; then cp "$file" "$ignore_dir/${file//*.sanity-ansible-}"; fi; done  # wokeignore:rule=sanity
+  - cd "$coll_dir"
+  - rm -f .pandoc_template-ha_cluster.html5  # remove irrelevant files
+
 default:
   before_script:
     - source "${PYENV_ROOT}/bin/activate"
@@ -135,15 +146,7 @@ ansible_test:
   extends: .job_ansible_check
   stage: tier0
   script:
-    - MY_DIR="$(basename $(pwd))"
-    - if [ "x$MY_DIR" != "xha_cluster" ]; then ln -s "$MY_DIR" ../ha_cluster; fi
-    - LSR_INFO=true python /usr/local/lib/lsr-auto-maintenance/lsr_role2collection.py --dest-path ../ --src-path ../ --src-owner tomjelinek --role ha_cluster
-    - coll_dir="../ansible_collections/fedora/linux_system_roles/"
-    - ignore_dir="$coll_dir/tests/sanity"  # wokeignore:rule=sanity
-    - mkdir -pv "$ignore_dir"
-    - for file in .sanity-ansible-ignore-*.txt; do if [ -f "$file" ]; then cp "$file" "$ignore_dir/${file//*.sanity-ansible-}"; fi; done  # wokeignore:rule=sanity
-    - cd "$coll_dir"
-    - rm -f .pandoc_template-ha_cluster.html5  # remove irrelevant files
+    - *convert_role_to_collection
     - ansible-test --version
     - ansible-test sanity -v --color=yes --truncate=0 --no-redact --coverage --docker  # wokeignore:rule=sanity
 
