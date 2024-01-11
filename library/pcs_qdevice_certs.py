@@ -108,12 +108,12 @@ pcs_result:
             returned: when the command is valid and accepted by API
 """
 
+import traceback
+
 from ansible.module_utils.basic import AnsibleModule
 
 # pylint: disable=no-name-in-module
 from ansible.module_utils.ha_cluster_lsr import pcs_api_v2_utils as api_utils
-
-import traceback
 
 # pylint: enable=no-name-in-module
 try:

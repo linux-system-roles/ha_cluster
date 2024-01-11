@@ -15,7 +15,6 @@ __metaclass__ = type
 import sys
 import traceback
 
-
 # Add paths to pcs bundled libraries to make Dacite available
 sys.path.insert(0, "/usr/lib64/pcs/pcs_bundled/packages/")
 sys.path.insert(0, "/usr/lib/pcs/pcs_bundled/packages/")
