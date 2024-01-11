@@ -109,6 +109,7 @@ pcs_result:
 """
 
 import traceback
+from typing import Optional
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -120,13 +121,18 @@ try:
     from pcs.common.async_tasks.dto import CommandDto, CommandOptionsDto
 except ImportError:
     HAS_PCS = False
-    PCS_IMPORT_ERROR = traceback.format_exc()
+    PCS_IMPORT_ERROR: Optional[str] = traceback.format_exc()
 
-    class CommandOptionsDto(object):
-        def __init__(self, **kwargs):
+    # These classes need to be available and imported above to do linting
+    # properly, linters can be safely silenced for these stubs.
+
+    # pylint: disable=missing-class-docstring
+    # pylint: disable=too-few-public-methods
+    class CommandOptionsDto:  # type: ignore
+        def __init__(self, **kwargs):  # type: ignore
             pass
 
-    class CommandDto(object):
+    class CommandDto:  # type: ignore
         pass
 
 else:
