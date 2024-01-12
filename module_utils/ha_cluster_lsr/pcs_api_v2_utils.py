@@ -15,14 +15,13 @@ __metaclass__ = type
 import sys
 import traceback
 
-
 # Add paths to pcs bundled libraries to make Dacite available
 sys.path.insert(0, "/usr/lib64/pcs/pcs_bundled/packages/")
 sys.path.insert(0, "/usr/lib/pcs/pcs_bundled/packages/")
 
 from http.client import HTTPResponse
 from json import JSONDecodeError
-from typing import Any, Mapping, Union
+from typing import Any, Mapping, Optional, Union
 
 from ansible.module_utils.basic import AnsibleModule
 from ansible.module_utils.urls import fetch_url
@@ -31,7 +30,7 @@ try:
     from dacite import DaciteError
 except ImportError:
     HAS_DACITE = False
-    DACITE_IMPORT_ERROR = traceback.format_exc()
+    DACITE_IMPORT_ERROR: Optional[str] = traceback.format_exc()
 else:
     HAS_DACITE = True
     DACITE_IMPORT_ERROR = None
@@ -47,19 +46,24 @@ try:
     from pcs.common.reports import ReportItemDto, ReportItemSeverity
 except ImportError:
     HAS_PCS = False
-    PCS_IMPORT_ERROR = traceback.format_exc()
+    PCS_IMPORT_ERROR: Optional[str] = traceback.format_exc()
 
-    class CommandOptionsDto(object):
-        def __init__(self, **kwargs):
+    # These classes need to be available and imported above to do linting
+    # properly, linters can be safely silenced for these stubs.
+
+    # pylint: disable=missing-class-docstring
+    # pylint: disable=too-few-public-methods
+    class CommandOptionsDto:  # type: ignore
+        def __init__(self, **kwargs):  # type: ignore
             pass
 
-    class ReportItemDto(object):
+    class ReportItemDto:  # type: ignore
         pass
 
-    class TaskResultDto(object):
+    class TaskResultDto:  # type: ignore
         pass
 
-    class CommandDto(object):
+    class CommandDto:  # type: ignore
         pass
 
 else:
