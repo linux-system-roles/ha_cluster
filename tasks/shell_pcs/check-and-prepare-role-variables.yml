@@ -180,8 +180,7 @@
 - name: Parse pcsd capabilities
   set_fact:
     __ha_cluster_pcsd_capabilities: "{{
-        (__ha_cluster_pcsd_version.stdout_lines[1] | default('')).split()
-      }}"
+        (__ha_cluster_pcsd_version.stdout_lines[1] | d('')).split() }}"
 
 # The capability got released in RHEL 8.3, which is currently the oldest
 # release supported by the role. Therefore, support for pcs without the

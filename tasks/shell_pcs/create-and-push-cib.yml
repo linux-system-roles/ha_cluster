@@ -98,8 +98,8 @@
     ## Node attributes
     - name: Configure node attributes
       include_tasks: pcs-node-attributes.yml
-      loop: "{{ ha_cluster_node_options | default([]) |
-        selectattr('attributes', 'defined') | list }}"
+      loop: "{{ ha_cluster_node_options | selectattr('attributes', 'defined') |
+        list }}"
       loop_control:
         loop_var: node_options
 
@@ -111,7 +111,7 @@
       include_tasks: pcs-rsc-op-defaults.yml
       vars:
         operations: false
-      loop: "{{ ha_cluster_resource_defaults.meta_attrs | default([]) }}"
+      loop: "{{ ha_cluster_resource_defaults.meta_attrs | d([]) }}"
       loop_control:
         index_var: defaults_set_index
         loop_var: defaults_set
@@ -124,7 +124,7 @@
       vars:
         operations: true
       loop: "{{
-        ha_cluster_resource_operation_defaults.meta_attrs | default([]) }}"
+        ha_cluster_resource_operation_defaults.meta_attrs | d([]) }}"
       loop_control:
         index_var: defaults_set_index
         loop_var: defaults_set
