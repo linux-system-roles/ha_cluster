@@ -46,6 +46,7 @@ ha_cluster_pcs_permission_list:
       - write
 
 ha_cluster_cluster_properties: []
+ha_cluster_node_options: []
 ha_cluster_resource_defaults: {}
 ha_cluster_resource_operation_defaults: {}
 

@@ -88,13 +88,22 @@
     ## Cluster properties
     - name: Configure cluster properties
       include_tasks: pcs-cluster-properties.yml
-      # pcs-0.10 supports only one set of attributes, that's the reason for
+      # pcs-0.11 supports only one set of attributes, that's the reason for
       # 'ha_cluster_cluster_properties[0]' and 'when' instead of looping over
       # ha_cluster_cluster_properties
       vars:
         properties_set: "{{ ha_cluster_cluster_properties[0] }}"
       when: ha_cluster_cluster_properties[0].attrs | d([])
 
+    ## Node attributes
+    - name: Configure node attributes
+      include_tasks: pcs-node-attributes.yml
+      loop: "{{ ha_cluster_node_options | default([]) |
+        selectattr('attributes', 'defined') | list }}"
+      loop_control:
+        loop_var: node_options
+
+    ## Resource and operation defaults
     # RHEL 8.3, which is the oldest version supported by the role, supports
     # multiple sets of resources and resources operations defaults. Therefore,
     # we don't need any checks for pcs capabilities.

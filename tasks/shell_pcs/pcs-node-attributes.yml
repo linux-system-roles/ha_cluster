@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure node attributes set for node {{ node_options.node_name }}
+  command:
+    # Multiple sets of attributes (with rules) per node are not supported by
+    # pcs (and therefore the role) as of yet
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      -- node attribute {{ node_options.node_name | quote }}
+      {% for attr_set in node_options.attributes | d([], true) %}
+        {% for attr in attr_set.attrs | d([]) %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endfor %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: false
+  changed_when: not ansible_check_mode

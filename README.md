@@ -23,6 +23,7 @@ An Ansible role for managing High Availability Clustering.
   * resource defaults and resource operation defaults
   * stonith levels, also known as fencing topology
   * resource constraints
+  * Pacemaker node attributes
 
 ## Requirements
 
@@ -488,6 +489,41 @@ List of sets of cluster properties - Pacemaker cluster-wide configuration.
 Currently, only one set is supported.
 
 You may take a look at [an example](#configuring-cluster-properties).
+
+#### `ha_cluster_node_options`
+
+structure, default: no node options
+
+```yaml
+ha_cluster_node_options:
+  - node_name: node1
+    attributes:
+      - attrs:
+          - name: attribute1
+            value: value1_node1
+          - name: attribute2
+            value: value2_node1
+  - node_name: node2
+    attributes:
+      - attrs:
+          - name: attribute1
+            value: value1_node2
+          - name: attribute2
+            value: value2_node2
+```
+
+This variable defines various settings which vary from cluster node to cluster
+node. **Note:** Use an inventory or playbook hosts to specify which nodes form
+the cluster. This variable merely sets options for the specified nodes. The
+items are as follows:
+
+* `node_name` (mandatory) - Node name.
+* `attributes` (optional) - List of sets of Pacemaker node attributes for the
+  node. Currently, no more than one set for each node is supported.
+
+You may take a look at examples:
+
+* [configuring node attributes](#configuring-node-attributes)
 
 #### `ha_cluster_resource_primitives`
 
@@ -1850,6 +1886,33 @@ Note that you cannot run a quorum device on a cluster node.
             value: nodeQ
           - name: algorithm
             value: lms
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Configuring node attributes
+
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_node_options:
+      - node_name: node1
+        attributes:
+          - attrs:
+              - name: attribute1
+                value: value1A
+              - name: attribute2
+                value: value2A
+      - node_name: node2
+        attributes:
+          - attrs:
+              - name: attribute1
+                value: value1B
+              - name: attribute2
+                value: value2B
 
   roles:
     - linux-system-roles.ha_cluster
