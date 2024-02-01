@@ -30,6 +30,7 @@ variables:
 
 .tier1_tests: &TIER1_TESTS
   - cib_constraints_create
+  - cib_node_attributes
   - cib_properties_empty
   - cib_properties_one_set
   - cib_resources_create
@@ -49,6 +50,7 @@ variables:
   - cluster_basic
   - cluster_destroy
   - default
+  - node_options_check
   - qdevice_all_options
   - qdevice_minimal
   - qdevice_tls_kaptb_options

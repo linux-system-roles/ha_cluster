@@ -1,0 +1,69 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure node attributes
+  hosts: all
+  vars_files: vars/main.yml
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Find first node name
+          set_fact:
+            __test_first_node: "{{
+                (ansible_play_hosts_all | length == 1)
+                | ternary('localhost', ansible_play_hosts[0]) }}"
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+          vars:
+            ha_cluster_cluster_name: test-cluster
+            ha_cluster_manage_firewall: true
+            ha_cluster_manage_selinux: true
+            ha_cluster_node_options:
+              - node_name: "{{ __test_first_node }}"
+                attributes:
+                  - attrs:
+                      - name: attr1
+                        value: val1
+                      - name: attr2
+                        value: val2
+                  - attrs:
+                      - name: attr3
+                        value: val3
+
+        - name: Verify node attributes
+          vars:
+            __test_expected_lines:
+              - "Node Attributes:"
+              - " {{ __test_first_node }}: attr1=val1 attr2=val2 attr3=val3"
+          block:
+            - name: Fetch node attributes configuration from the cluster
+              command:
+                cmd: pcs node attribute
+              register: __test_pcs_node_attribute_config
+              changed_when: false
+
+            - name: Print real node attributes configuration
+              debug:
+                var: __test_pcs_node_attribute_config
+
+            - name: Print expected node attributes configuration
+              debug:
+                var: __test_expected_lines | list
+
+            - name: Check node attributes configuration
+              assert:
+                that:
+                  - __test_pcs_node_attribute_config.stdout_lines
+                    == __test_expected_lines | list
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml

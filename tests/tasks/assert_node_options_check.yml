@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Debug ha_cluster_node_options
+  debug:
+    var: ha_cluster_node_options
+
+- name: Run the role and check for errors
+  block:
+    - name: Run the role
+      include_role:
+        name: linux-system-roles.ha_cluster
+
+    - name: Fail
+      fail:
+        msg: Expected failure did not occur
+  rescue:
+    - name: Check errors
+      assert:
+        that: ansible_failed_result.msg | trim == expected_msg
+      run_once: true  # noqa: run_once[task]
+      vars:
+        expected_msg: >-
+          node_name fields in ha_cluster_node_options
+          must be unique and they must match cluster nodes
