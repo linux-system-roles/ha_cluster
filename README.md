@@ -6,9 +6,12 @@ An Ansible role for managing High Availability Clustering.
 
 ## Limitations
 
-* Supported OS: RHEL 8.3+, Fedora 31+
+* Compatible OS
+  * RHEL 8.3+, Fedora 31+
+  * SLES 15 SP4+ with HA extension, SLES4SAP 15 SP4+
 * Systems running RHEL are expected to be registered and have High-Availability
-  repositories accessible.
+  repositories accessible, and ResilientStorage repositories accessible if using
+  `ha_cluster_enable_repos_resilient_storage`
 * The role replaces the configuration of HA Cluster on specified nodes. Any
   settings not specified in the role variables will be lost.
 * The role is capable of configuring:
