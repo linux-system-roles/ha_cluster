@@ -1,0 +1,266 @@
+# SPDX-License-Identifier: MIT
+---
+# We always need to create CIB to see whether it's the same as what is already
+# present in the cluster. However, we don't want to report it as a change since
+# the only thing which matters is pushing the resulting CIB to the cluster.
+
+# Create backup of current cib in /root
+- name: Gather facts for ansible_date_time
+  ansible.builtin.setup:
+    filter:
+      - 'ansible_date_time'
+
+# Prepare CIB files
+- name: Create a tempfile for original CIB
+  ansible.builtin.tempfile:
+    state: file
+    suffix: _ha_cluster_original_cib_xml
+  register: __ha_cluster_tempfile_original_cib_xml
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Create a tempfile for new CIB
+  ansible.builtin.tempfile:
+    state: file
+    suffix: _ha_cluster_cib_xml
+  register: __ha_cluster_tempfile_cib_xml
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+# Maintenance mode is required, because CIB version changes with cluster
+# status changes, resulting in shadow CIB outdated and unable to patch.
+# Sleep is implemented to ensure that cluster have enough time to freeze
+# to ensure CIB export consistency.
+- name: Put cluster in maintenance mode to freeze cib changes
+  ansible.builtin.shell:
+    cmd: crm configure property maintenance-mode=true; sleep 10
+  check_mode: false
+  changed_when: true
+
+- name: Fetch CIB configuration
+  ansible.builtin.command:
+    cmd: cibadmin --query
+  register: __ha_cluster_fetch_cib
+  check_mode: false
+  changed_when: false  # this is a read-only command
+
+- name: Write CIB configuration
+  ansible.builtin.copy:
+    content: "{{ __ha_cluster_fetch_cib.stdout }}"
+    dest: "{{ item }}"
+    owner: root
+    group: root
+    mode: '0600'
+  loop:
+    - "{{ __ha_cluster_tempfile_cib_xml.path }}"
+    - "{{ __ha_cluster_tempfile_original_cib_xml.path }}"
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+# Starting with an empty CIB would remove all nodes and other parts of CIB
+# automatically created by pacemaker. That would effectively make the role to
+# report changed == True every time. Therefore, we start with the current
+# cluster CIB and purge it instead, thus keeping all the automatically created
+# parts in place and report only actual configuration changes.
+- name: Purge new CIB configuration
+  ansible.builtin.command:
+    cmd: >
+      cibadmin --force --delete-all --xpath
+      '/cib/configuration/*[not(
+        self::crm_config or
+        self::nodes or
+        self::resources or
+        self::constraints
+      )]
+      | /cib/configuration/*[self::resources or self::constraints]/*
+      | /cib/configuration/nodes/*/*
+      | /cib/configuration/crm_config//nvpair[not(
+        @name="cluster-infrastructure" or
+        @name="cluster-name" or
+        @name="dc-version" or
+        @name="have-watchdog" or
+        @name="last-lrm-refresh" or
+        @name="stonith-watchdog-timeout"
+      )]'
+  environment:
+    CIB_file: "{{ __ha_cluster_tempfile_cib_xml.path }}"
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+# Create/Replace shadow configuration with new based on current cluster.
+- name: Create new shadow crm configuration with force
+  ansible.builtin.command:
+    cmd: crm configure cib new {{ __ha_cluster_crm_shadow }} --force
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+# Build the new CIB
+- name: Build the new CIB
+  block:
+    ## Cluster properties
+    - name: Configure cluster properties
+      ansible.builtin.include_tasks: crm-cluster-properties.yml
+      vars:
+        properties_set: "{{ ha_cluster_cluster_properties[0] }}"
+      when: ha_cluster_cluster_properties[0].attrs | d([])
+
+    ## Resources
+    - name: Configure cluster resources
+      ansible.builtin.include_tasks: crm-cib-resource-primitive.yml
+      vars:
+        resource: "{{ item }}"
+      loop: "{{ ha_cluster_resource_primitives }}"
+
+    - name: Configure cluster resource groups
+      ansible.builtin.include_tasks: crm-cib-resource-group.yml
+      vars:
+        resource_group: "{{ item }}"
+      loop: "{{ ha_cluster_resource_groups }}"
+
+    - name: Configure cluster resource clones
+      ansible.builtin.include_tasks: crm-cib-resource-clone.yml
+      vars:
+        resource_clone: "{{ item }}"
+      loop: "{{ ha_cluster_resource_clones }}"
+
+    ## Stonith levels - fencing_topology
+    - name: Configure stonith levels - fencing_topology
+      include_tasks: crm-cib-stonith-level.yml
+      when: ha_cluster_stonith_levels
+
+    ## Constraints
+    - name: Configure resource location constraints
+      ansible.builtin.include_tasks: crm-cib-constraint-location.yml
+      loop: "{{ ha_cluster_constraints_location }}"
+      loop_control:
+        index_var: constraint_index
+        loop_var: constraint
+
+    - name: Configure resource colocation constraints
+      ansible.builtin.include_tasks: crm-cib-constraint-colocation.yml
+      when: not constraint.resource_sets | d()
+      loop: "{{ ha_cluster_constraints_colocation }}"
+      loop_control:
+        index_var: constraint_index
+        loop_var: constraint
+
+    - name: Configure resource set colocation constraints
+      ansible.builtin.include_tasks: crm-cib-constraint-set.yml
+      vars:
+        constraint_type: colocation
+      when: constraint.resource_sets | d()
+      loop: "{{ ha_cluster_constraints_colocation }}"
+      loop_control:
+        index_var: constraint_index
+        loop_var: constraint
+
+    - name: Configure resource order constraints
+      ansible.builtin.include_tasks: crm-cib-constraint-order.yml
+      when: not constraint.resource_sets | d()
+      loop: "{{ ha_cluster_constraints_order }}"
+      loop_control:
+        index_var: constraint_index
+        loop_var: constraint
+
+    - name: Configure resource set order constraints
+      ansible.builtin.include_tasks: crm-cib-constraint-set.yml
+      vars:
+        constraint_type: order
+      when: constraint.resource_sets | d()
+      loop: "{{ ha_cluster_constraints_order }}"
+      loop_control:
+        index_var: constraint_index
+        loop_var: constraint
+
+    - name: Configure resource ticket constraints
+      ansible.builtin.include_tasks: crm-cib-constraint-ticket.yml
+      when: not constraint.resource_sets | d()
+      loop: "{{ ha_cluster_constraints_ticket }}"
+      loop_control:
+        index_var: constraint_index
+        loop_var: constraint
+
+    - name: Configure resource set ticket constraints
+      ansible.builtin.include_tasks: crm-cib-constraint-set.yml
+      vars:
+        constraint_type: ticket
+      when: constraint.resource_sets | d()
+      loop: "{{ ha_cluster_constraints_ticket }}"
+      loop_control:
+        index_var: constraint_index
+        loop_var: constraint
+
+# Push the new CIB into the cluster
+- name: Copy shadow cib to temp
+  ansible.builtin.copy:
+    src: "/var/lib/pacemaker/cib/shadow.{{ __ha_cluster_crm_shadow }}"
+    dest: "{{ __ha_cluster_tempfile_cib_xml.path }}"
+    owner: root
+    group: root
+    mode: '0600'
+    remote_src: true
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Create a tempfile for CIB diff
+  ansible.builtin.tempfile:
+    state: file
+    suffix: _ha_cluster_cib_diff
+  register: __ha_cluster_tempfile_cib_diff
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Compare new and original CIB
+  ansible.builtin.command:
+    cmd: >
+      crm_diff --no-version
+      --original {{ __ha_cluster_tempfile_original_cib_xml.path }}
+      --new {{ __ha_cluster_tempfile_cib_xml.path }}
+  register: __ha_cluster_cib_diff
+  check_mode: false
+  changed_when: not ansible_check_mode
+  failed_when:
+    - __ha_cluster_cib_diff.rc != 0  # success, CIBs are the same
+    - __ha_cluster_cib_diff.rc != 1  # success, CIBs are not the same
+
+- name: Write CIB diff to its tempfile
+  ansible.builtin.copy:
+    content: "{{ __ha_cluster_cib_diff.stdout }}"
+    dest: "{{ __ha_cluster_tempfile_cib_diff.path }}"
+    owner: root
+    group: root
+    mode: '0600'
+  check_mode: false
+  changed_when: not ansible_check_mode
+  when: __ha_cluster_cib_diff.rc == 1
+
+# crm_diff is able to recognize same resources and constraints regardless if they
+# were re-created and resulting patch will not be executed when re-running.
+- name: Push CIB diff to the cluster if it has any changes
+  ansible.builtin.command:
+    cmd: >
+      cibadmin --verbose --patch
+      --xml-file {{ __ha_cluster_tempfile_cib_diff.path | quote }}
+  register: __ha_cluster_cib_path_out
+  changed_when: not ansible_check_mode
+  failed_when: __ha_cluster_cib_path_out.rc != 0
+  ignore_errors: true
+  when: __ha_cluster_cib_diff.rc == 1
+  run_once: true  # noqa: run_once[task]
+
+- name: Disable maintenance mode
+  ansible.builtin.command:
+    cmd: crm configure property maintenance-mode=false
+  check_mode: false
+  changed_when: true
+
+- name: Remove CIB tempfiles
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: absent
+  loop:
+    - "{{ __ha_cluster_tempfile_cib_xml }}"
+    - "{{ __ha_cluster_tempfile_original_cib_xml }}"
+    - "{{ __ha_cluster_tempfile_cib_diff }}"
+  check_mode: false
+  changed_when: not ansible_check_mode

@@ -1,0 +1,51 @@
+# SPDX-License-Identifier: MIT
+---
+# Verify if Shadow CIB already contains same resource id.
+- name: Verify resource primitive presence {{ resource.id }}
+  ansible.builtin.command:
+    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure show {{ resource.id }}
+  register: __ha_cluster_resource_status
+  changed_when: false
+  failed_when: false
+
+# Delete resource id in Shadow CIB to avoid duplicate errors during cibadmin patch.
+- name: Delete present resource primitive {{ resource.id }}
+  ansible.builtin.command:
+    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete {{ resource.id }}
+  when: __ha_cluster_resource_status.rc == 0
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Configure resource primitive {{ resource.id }}
+  ansible.builtin.command: # noqa jinja[spacing]
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }} configure primitive
+        {{ resource.id | quote }} {{ resource.agent | quote }} \
+      {% if resource.instance_attrs[0].attrs | default(False) %}
+        params
+        {% for attr in resource.instance_attrs[0].attrs -%}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}\
+      {% if resource.meta_attrs[0].attrs | default(False) %}
+        meta
+        {% for attr in resource.meta_attrs[0].attrs -%}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+      {% if resource.operations | default(False) %}\
+        {% for operation in resource.operations %}
+          {% if operation.action | default(False) %}
+            op {{ operation.action | quote }}
+            {% if operation.attrs | default(False) %}
+              {%- for attr in operation.attrs -%}
+                {{ attr.name | quote }}={{ attr.value | quote }}
+              {% endfor %}
+              {% if not loop.last %}\
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+  check_mode: false
+  changed_when: not ansible_check_mode

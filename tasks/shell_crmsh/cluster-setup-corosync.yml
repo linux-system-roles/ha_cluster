@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Create a corosync.conf tempfile
+  ansible.builtin.tempfile:
+    state: file
+    suffix: _ha_cluster_corosync_conf
+  register: __ha_cluster_tempfile_corosync_conf
+  run_once: true  # noqa: run_once[task]
+  # We always need to create corosync.conf file to see whether it's the same as
+  # what is already present on the cluster nodes. However, we don't want to
+  # report it as a change since the only thing which matters is copying the
+  # resulting corosync.conf to cluster nodes.
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Generate corosync.conf using template
+  ansible.builtin.template:
+    src: corosync.j2
+    dest: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
+    owner: root
+    group: root
+    mode: '0644'
+  run_once: true  # noqa: run_once[task]
+
+- name: Fetch created corosync.conf file
+  ansible.builtin.slurp:
+    src: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
+  register: __ha_cluster_data_corosync_conf
+  run_once: true  # noqa: run_once[task]
+  when: __ha_cluster_tempfile_corosync_conf.path is defined
+
+- name: Distribute corosync.conf file
+  ansible.builtin.copy:
+    content: "{{ __ha_cluster_data_corosync_conf['content'] | b64decode }}"
+    dest: /etc/corosync/corosync.conf
+    owner: root
+    group: root
+    mode: '0644'
+  register: __ha_cluster_distribute_corosync_conf
+  when: __ha_cluster_data_corosync_conf is defined
+
+- name: Remove a corosync.conf tempfile
+  ansible.builtin.file:
+    path: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
+    state: absent
+  when: __ha_cluster_tempfile_corosync_conf.path is defined
+  run_once: true  # noqa: run_once[task]
+  # We always need to create corosync.conf file to see whether it's the same as
+  # what is already present on the cluster nodes. However, we don't want to
+  # report it as a change since the only thing which matters is copying the
+  # resulting corosync.conf to cluster nodes.
+  check_mode: false
+  changed_when: not ansible_check_mode

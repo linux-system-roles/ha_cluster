@@ -1,3 +1,40 @@
 ---
-
 # Variables for Suse set in ansible_facts['os_family']
+ha_cluster_pacemaker_shell: crmsh
+
+# Placeholder with pcs name
+__ha_cluster_pcs_provider: crm
+
+__ha_cluster_role_essential_packages:
+  - 'corosync'
+  - 'crmsh'
+  - 'fence-agents'
+  - 'ha-cluster-bootstrap'
+  - 'pacemaker'
+  - 'patterns-ha-ha_sles'
+  - 'resource-agents'
+  - 'cluster-glue'
+  - 'socat'
+  - 'libxml2-tools'
+  - 'ClusterTools2' # not pre-installed in SLES for SAP
+  - 'SAPHanaSR'
+  - 'rsyslog'
+
+__ha_cluster_fullstack_node_packages: "{{ __ha_cluster_role_essential_packages }}"
+
+__ha_cluster_sbd_packages:
+  - sbd
+  - open-iscsi
+
+__ha_cluster_services:
+  - corosync
+  - corosync-qdevice
+  - pacemaker
+
+__ha_cluster_crm_shadow: shd
+
+# fence agent list moved from defaults
+ha_cluster_fence_agent_packages: ['fence-agents']
+
+# Corosync input for jinja2 template
+ha_cluster_corosync_params:

@@ -1,0 +1,127 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Check cluster configuration variables
+  block:
+    - name: Fail if passwords are not specified
+      ansible.builtin.fail:
+        msg: "{{ item }} must be specified"
+      when:
+        - lookup("vars", item, default="") | string | length < 1
+        - ha_cluster_cluster_present | bool
+      loop:
+        - ha_cluster_hacluster_password
+      run_once: true
+
+    - name: Fail if nodes do not have the same number of SBD devices specified
+      ansible.builtin.fail:
+        msg: All nodes must have the same number of SBD devices specified
+      when:
+        - ha_cluster_cluster_present
+        - ha_cluster_sbd_enabled
+        - >
+          ansible_play_hosts
+          | map('extract', hostvars, ['ha_cluster', 'sbd_devices'])
+          | map('default', [], true)
+          | map('length') | unique | length > 1
+      run_once: true
+
+    # Running a qnetd on a cluster node does't make sense, fencing would make
+    # the qnetd unavailable, even if temporarily.
+    - name: Fail if configuring qnetd on a cluster node
+      ansible.builtin.fail:
+        msg: >
+          Qnetd cannot be configured on a cluster node -
+          'ha_cluster_cluster_present' and 'ha_cluster_qnetd.present' cannot
+          be both set to true
+      when:
+        - ha_cluster_cluster_present
+        - ha_cluster_qnetd.present | d(false)
+
+    - name: Fail if no valid level is specified for a fencing level
+      ansible.builtin.fail:
+        msg: Specify 'level' 1..9 for each fencing level
+      when:
+        - not((item.level | d() | int) > 0 and (item.level | d() | int) < 10)
+      loop: "{{ ha_cluster_stonith_levels }}"
+      run_once: true
+
+    - name: Fail if no target is specified for a fencing level
+      ansible.builtin.fail:
+        msg: >
+          Specify exactly one of 'target', 'target_pattern', 'target_attribute'
+          for each fencing level
+      when:
+        - >
+          [item.target is defined,
+            item.target_pattern is defined,
+            item.target_attribute is defined]
+          | select | list | length != 1
+      loop: "{{ ha_cluster_stonith_levels }}"
+      run_once: true
+
+- name: Collect service information
+  ansible.builtin.service_facts:
+
+- name: Assert that required services are available
+  ansible.builtin.assert:
+    that: "'{{ item }}' in ansible_facts.services"
+    fail_msg: >-
+      The service '{{ item }}' was not found on this system. Ensure that this
+      service is available before running this role.
+    success_msg: >-
+      The service '{{ item }}' was discovered on this system.
+  loop:
+    - 'logd.service'
+
+- name: Discover cluster node names
+  ansible.builtin.set_fact:
+    __ha_cluster_node_name: "{{ ha_cluster.node_name | d(inventory_hostname) }}"
+
+- name: Collect cluster node names
+  ansible.builtin.set_fact:
+    __ha_cluster_all_node_names: "{{
+        ansible_play_hosts
+        | map('extract', hostvars, '__ha_cluster_node_name')
+        | list
+      }}"
+
+- name: Extract qdevice settings
+  ansible.builtin.set_fact:
+    __ha_cluster_qdevice_in_use: "{{ 'device' in ha_cluster_quorum }}"
+    __ha_cluster_qdevice_model: "{{ ha_cluster_quorum.device.model | d('') }}"
+    # This may set empty value, if it is not defined. Such value is not valid.
+    # It will be caught by crm validation before we try using it in the role.
+    __ha_cluster_qdevice_host: "{{
+        ha_cluster_quorum.device.model_options | d([])
+        | selectattr('name', 'match', '^host$')
+        | map(attribute='value') | list | last | d('')
+      }}"
+    __ha_cluster_qdevice_crm_address: "{{
+        ha_cluster_quorum.device.model_options | d([])
+        | selectattr('name', 'match', '^crm-address$')
+        | map(attribute='value') | list | last | d('')
+      }}"
+
+- name: Figure out if ATB needs to be enabled for SBD
+  ansible.builtin.set_fact:
+    # SBD needs ATB enabled if all of these are true:
+    # - sbd does not use devices (In check-and-prepare-role-variables.yml it
+    #   is verified that all nodes have the same number of devices defined.
+    #   Therefore it is enough to check devices of any single node.)
+    # - number of nodes is even
+    # - qdevice is not used
+    __ha_cluster_sbd_needs_atb: "{{
+        ha_cluster_sbd_enabled
+        and not ha_cluster.sbd_devices | d([])
+        and __ha_cluster_all_node_names | length is even
+        and not __ha_cluster_qdevice_in_use
+      }}"
+
+- name: Fail if SBD needs ATB enabled and the user configured ATB to be disabled
+  ansible.builtin.fail:
+    msg: Cannot set auto_tie_breaker to disabled when SBD needs it to be enabled
+  when:
+    - __ha_cluster_sbd_needs_atb | bool
+    - ha_cluster_quorum.options | d([])
+      | selectattr('name', 'match', '^auto_tie_breaker$')
+      | map(attribute='value') | select('in', ['0', 0]) | list | length > 0

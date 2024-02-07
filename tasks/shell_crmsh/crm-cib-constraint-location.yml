@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Define location constraint.id {{ constraint.id | d(constraint_index) }}
+  ansible.builtin.set_fact:
+    __ha_cluster_constraint_id:
+      "{{ constraint.id if constraint.id is defined
+       else (constraint.resource.pattern | regex_replace('[^A-Za-z0-9]', '') | quote) + '-location'
+       if constraint.resource.pattern is defined else (constraint.resource.id | quote) + '-location' }}"
+
+# Verify if Shadow CIB already contains same constraint id.
+- name: Verify location constraint presence {{ __ha_cluster_constraint_id }}
+  ansible.builtin.command:
+    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure show {{ __ha_cluster_constraint_id }}
+  register: __ha_cluster_constraint_status
+  changed_when: false
+  failed_when: false
+
+# Delete constraint id in Shadow CIB to avoid duplicate errors during cibadmin patch.
+- name: Delete present location constraint {{ __ha_cluster_constraint_id }}
+  ansible.builtin.command:
+    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete {{ __ha_cluster_constraint_id }}
+  when: __ha_cluster_constraint_status.rc == 0
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Configure location constraint {{ __ha_cluster_constraint_id }}
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }} configure location {{ __ha_cluster_constraint_id }}
+      {% if constraint.resource.pattern | d() %}
+        /{{ constraint.resource.pattern | quote }}/
+      {% else %}
+        {{ constraint.resource.id | quote }}
+      {% endif %}\
+        rule
+      {% for option in constraint.options | d([]) if option.name == 'score' %}
+        {{ option.value | lower | replace('infinity', 'inf') | quote }}:
+      {% else %}
+        inf:
+      {% endfor %}
+      {% if constraint.rule | d() %}
+        {{ constraint.rule }}
+      {% else %}
+        '\'#uname eq {{ constraint.node }}
+      {% endif %}
+      {% for option in constraint.options | d([]) if option.name != 'score' %}
+        {{ option.name | quote }}={{ option.value | quote }}
+      {% endfor %}
+  check_mode: false
+  changed_when: not ansible_check_mode

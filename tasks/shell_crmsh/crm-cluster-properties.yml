@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure cluster properties set
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }} configure property {{ item.name | quote }}={{ item.value | quote }}
+  loop: "{{ properties_set.attrs }}"
+  # Pause ensures that cluster is consistent for further property changes.
+  # Setting up crm properties without pause resulted in unstable cluster.
+  loop_control:
+    pause: 5
+  retries: 10
+  check_mode: false
+  changed_when: not ansible_check_mode
