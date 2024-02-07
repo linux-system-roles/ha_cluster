@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Define ticket constraint.id {{ constraint.id | d(constraint_index) }}
+  ansible.builtin.set_fact:
+    __ha_cluster_constraint_id:
+      "{{ constraint.id if constraint.id is defined else
+      (constraint.resource.id | quote) + '-ticket' }}"
+
+# Verify if Shadow CIB already contains same constraint id.
+- name: Verify ticket constraint presence {{ __ha_cluster_constraint_id }}
+  ansible.builtin.command:
+    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure show {{ __ha_cluster_constraint_id }}
+  register: __ha_cluster_constraint_status
+  changed_when: false
+  failed_when: false
+
+# Delete constraint id in Shadow CIB to avoid duplicate errors during cibadmin patch.
+- name: Delete present ticket constraint {{ __ha_cluster_constraint_id }}
+  ansible.builtin.command:
+    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete {{ __ha_cluster_constraint_id }}
+  when: __ha_cluster_constraint_status.rc == 0
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Configure ticket constraint {{ __ha_cluster_constraint_id }}
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }} configure rsc_ticket {{ __ha_cluster_constraint_id }}
+      {{ constraint.ticket | quote }}: {{ constraint.resource.id | quote }}
+      {% for option in constraint.options | d([]) %}
+        {{ option.name | quote }}={{ option.value | quote }}
+      {% endfor %}
+  check_mode: false
+  changed_when: not ansible_check_mode

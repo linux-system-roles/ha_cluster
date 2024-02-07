@@ -1,0 +1,107 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Get services status - detect corosync-qdevice
+  ansible.builtin.service_facts:
+
+- name: Stop cluster daemons to reload configuration
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: stopped  # noqa no-handler
+  loop:
+    - pacemaker
+    - corosync
+    - corosync-qdevice
+  when:
+    - >
+        __ha_cluster_distribute_corosync_conf.changed
+        or __ha_cluster_distribute_corosync_authkey.changed
+        or __ha_cluster_distribute_pacemaker_authkey.changed
+        or (__ha_cluster_sbd_service_enable_disable.changed | d(false))
+        or (__ha_cluster_distribute_sbd_config.changed | d(false))
+        or (__ha_cluster_qdevice_certs.changed | d(false))
+    - >
+        item != 'corosync-qdevice'
+        or 'corosync-qdevice.service' in ansible_facts.services
+
+
+# We must always start daemons to get the cluster running on newly added nodes.
+
+- name: Start corosync
+  ansible.builtin.service:
+    name: corosync
+    state: started
+
+# To prevent corner cases, always reload the config. It is sufficient to run
+# the reload command on one node. Corosync then reloads config on all cluster
+# nodes. If there was no change in corosync.conf, the reload is an empty
+# operation.
+- name: Reload corosync configuration
+  ansible.builtin.command:
+    cmd: corosync-cfgtool -R
+  run_once: true  # noqa: run_once[task]
+  when: not ansible_check_mode
+  changed_when: false
+
+- name: Start corosync-qdevice
+  ansible.builtin.service:
+    name: corosync-qdevice
+    state: started
+  when: __ha_cluster_qdevice_in_use
+
+- name: Start pacemaker
+  ansible.builtin.service:
+    name: pacemaker
+    state: started
+
+# crm cluster should be started already by previous service start
+- name: Start pacemaker cluster
+  ansible.builtin.command:
+    cmd: crm cluster start
+  changed_when: true
+
+- name: Create cluster query string
+  ansible.builtin.set_fact:
+    __ha_cluster_node_count: "{{ ansible_play_hosts_all | length }} nodes configured"
+
+- name: Wait for the cluster to show all cluster nodes
+  ansible.builtin.command:
+    cmd: crm status
+  run_once: true  # noqa: run_once[task]
+  when: not ansible_check_mode
+  changed_when: false
+  register: __ha_cluster_crm_output_nodes
+  until: __ha_cluster_crm_output_nodes.stdout is regex(__ha_cluster_node_count)
+  # 2 minutes retry loop for cluster to initialize
+  retries: 12
+  delay: 10
+  timeout: 120
+
+- name: Wait for the cluster to show Online nodes
+  ansible.builtin.command:
+    cmd: crm status
+  run_once: true  # noqa: run_once[task]
+  when: not ansible_check_mode
+  changed_when: false
+  register: __ha_cluster_crm_output_online
+  until: __ha_cluster_crm_output_online.stdout is regex("Online:")
+  # 2 minutes retry loop for cluster nodes to come up
+  retries: 12
+  delay: 10
+  timeout: 120
+
+- name: Output current cluster status
+  ansible.builtin.debug:
+    var: __ha_cluster_crm_output_online.stdout_lines
+
+- name: Filter out crm status output
+  ansible.builtin.set_fact:
+    __ha_cluster_crm_status_online: "{{ __ha_cluster_crm_output_online.stdout_lines | select('search', 'Online:')
+     | list }}"
+
+- name: Fail if one of nodes is in Offline status
+  ansible.builtin.fail:
+    msg: "Cluster start failed and one or more nodes are Offline. Example: {{ item }}"
+  loop: "{{ ansible_play_hosts_all }}"
+  when:
+    - __ha_cluster_crm_status_online is defined
+    - "item not in __ha_cluster_crm_status_online | join(' ')"
