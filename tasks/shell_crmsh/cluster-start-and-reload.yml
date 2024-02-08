@@ -95,8 +95,8 @@
 
 - name: Filter out crm status output
   ansible.builtin.set_fact:
-    __ha_cluster_crm_status_online: "{{ __ha_cluster_crm_output_online.stdout_lines | select('search', 'Online:')
-     | list }}"
+    __ha_cluster_crm_status_online: "{{ __ha_cluster_crm_output_online.stdout_lines |
+      select('search', 'Online:') | list }}"
 
 - name: Fail if one of nodes is in Offline status
   ansible.builtin.fail:
@@ -104,4 +104,4 @@
   loop: "{{ ansible_play_hosts_all }}"
   when:
     - __ha_cluster_crm_status_online is defined
-    - "item not in __ha_cluster_crm_status_online | join(' ')"
+    - item not in __ha_cluster_crm_status_online | join(' ')

@@ -1,15 +1,11 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Set fact list of configuration files
-  ansible.builtin.set_fact:
-    __ha_cluster_config_files:
-      - /etc/corosync/corosync.conf
-      - /var/lib/pacemaker/cib/cib.xml
-
 - name: Get stat of cluster configuration files
   ansible.builtin.stat:
     path: "{{ item }}"
-  loop: "{{ __ha_cluster_config_files }}"
+  loop:
+    - /etc/corosync/corosync.conf
+    - /var/lib/pacemaker/cib/cib.xml
   register: __ha_cluster_config_files_stat
 
 - name: Stop cluster

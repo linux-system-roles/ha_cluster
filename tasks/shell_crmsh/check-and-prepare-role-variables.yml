@@ -11,13 +11,14 @@
       loop:
         - ha_cluster_hacluster_password
       run_once: true
+      no_log: true
 
     - name: Fail if nodes do not have the same number of SBD devices specified
       ansible.builtin.fail:
         msg: All nodes must have the same number of SBD devices specified
       when:
-        - ha_cluster_cluster_present
-        - ha_cluster_sbd_enabled
+        - ha_cluster_cluster_present | bool
+        - ha_cluster_sbd_enabled | bool
         - >
           ansible_play_hosts
           | map('extract', hostvars, ['ha_cluster', 'sbd_devices'])
@@ -34,7 +35,7 @@
           'ha_cluster_cluster_present' and 'ha_cluster_qnetd.present' cannot
           be both set to true
       when:
-        - ha_cluster_cluster_present
+        - ha_cluster_cluster_present | bool
         - ha_cluster_qnetd.present | d(false)
 
     - name: Fail if no valid level is specified for a fencing level
