@@ -3,15 +3,19 @@
 # Verify if Shadow CIB already contains same resource id.
 - name: Verify resource group presence {{ resource_group.id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure show {{ resource_group.id }}
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ resource_group.id }}
   register: __ha_cluster_resource_status
   changed_when: false
   failed_when: false
 
-# Delete resource id in Shadow CIB to avoid duplicate errors during cibadmin patch.
+# Delete resource id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present resource group {{ resource_group.id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete {{ resource_group.id }}
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure delete {{ resource_group.id }}
   when: __ha_cluster_resource_status.rc == 0
   check_mode: false
   changed_when: not ansible_check_mode

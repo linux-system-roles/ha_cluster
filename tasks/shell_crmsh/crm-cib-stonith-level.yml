@@ -9,7 +9,7 @@
   changed_when: false
   failed_when: false
 
-# Delete fencing_topology in Shadow CIB to avoid duplicate errors during cibadmin patch.
+# Delete fencing_topology in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete clone if it is already present
   ansible.builtin.command:
     cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete fencing_topology

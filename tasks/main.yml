@@ -32,8 +32,8 @@
   when:
     - ha_cluster_hacluster_password | string | length > 0
 
-- name: Configure cluster software
-  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-configure.yml  # yamllint disable-line rule:line-length
+- name: Configure shell
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/configure-shell.yml  # yamllint disable-line rule:line-length
 
 - name: Configure firewall and selinux
   when: ha_cluster_cluster_present | bool or ha_cluster_qnetd.present | d(false)
@@ -57,7 +57,9 @@
           +
           ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
           +
-          ha_cluster_fence_agent_packages }}"
+          ha_cluster_fence_agent_packages
+            if ha_cluster_fence_agent_packages | length > 0
+            else __ha_cluster_fence_agent_packages }}"
         state: present
         use: "{{ (__ha_cluster_is_ostree | d(false)) |
                  ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
@@ -92,8 +94,8 @@
 
     - name: Create and push CIB
       include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/create-and-push-cib.yml  # yamllint disable-line rule:line-length
-      # CIB changes should be done only on one of cluster nodes to avoid corruption and
-      # inconsistency of resulting cibadmin patch file.
+      # CIB changes should be done only on one of cluster nodes to avoid
+      # corruption and inconsistency of resulting cibadmin patch file.
       run_once: true
 
 - name: Remove cluster configuration
