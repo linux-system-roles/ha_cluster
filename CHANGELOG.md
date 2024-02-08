@@ -1,6 +1,18 @@
 Changelog
 =========
 
+[1.14.0] - 2024-02-07
+--------------------
+
+### New Features
+
+- feat: add support for configuring node attributes (#184)
+
+### Other Changes
+
+- ci: bump codecov/codecov-action from 3 to 4 (#182)
+- ci: fix python unit test - copy pytest config to tests/unit (#183)
+
 [1.13.5] - 2024-01-16
 --------------------
 
