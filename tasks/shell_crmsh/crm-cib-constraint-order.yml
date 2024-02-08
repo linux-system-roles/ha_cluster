@@ -9,15 +9,19 @@
 # Verify if Shadow CIB already contains same constraint id.
 - name: Verify order constraint presence {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure show {{ __ha_cluster_constraint_id }}
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ __ha_cluster_constraint_id }}
   register: __ha_cluster_constraint_status
   changed_when: false
   failed_when: false
 
-# Delete constraint id in Shadow CIB to avoid duplicate errors during cibadmin patch.
+# Delete constraint id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present order constraint {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete {{ __ha_cluster_constraint_id }}
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure delete {{ __ha_cluster_constraint_id }}
   when: __ha_cluster_constraint_status.rc == 0
   check_mode: false
   changed_when: not ansible_check_mode
@@ -25,9 +29,12 @@
 - name: Configure order constraint {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
     cmd: |
-      crm -c {{ __ha_cluster_crm_shadow }} configure order {{ __ha_cluster_constraint_id | quote }}
-      {{ constraint.resource_first.id | quote }}:{{ constraint.resource_first.action | quote }}
-      {{ constraint.resource_then.id | quote }}:{{ constraint.resource_then.action | quote }}
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure order {{ __ha_cluster_constraint_id | quote }}
+      {{ constraint.resource_first.id
+       | quote }}:{{ constraint.resource_first.action | quote }}
+      {{ constraint.resource_then.id
+       | quote }}:{{ constraint.resource_then.action | quote }}
       {% for option in constraint.options | d([]) if option.name != 'score' %}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}

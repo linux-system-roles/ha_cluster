@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Define {{ constraint_type }} set constraint.id {{ constraint_index | string }} # noqa name[template]
+- name: Define {{ constraint_type }} set constraint.id '{{
+    constraint_index | string }}'  # noqa name[template]
   ansible.builtin.set_fact:
     __ha_cluster_constraint_id:
       "{{ constraint.id if constraint.id is defined else
@@ -9,20 +10,25 @@
 # Verify if Shadow CIB already contains same constraint id.
 - name: Verify constraint set presence {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure show {{ __ha_cluster_constraint_id }}
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ __ha_cluster_constraint_id }}
   register: __ha_cluster_resource_status
   changed_when: false
   failed_when: false
 
-# Delete constraint id in Shadow CIB to avoid duplicate errors during cibadmin patch.
+# Delete constraint id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present constraint set {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete {{ __ha_cluster_constraint_id }}
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure delete {{ __ha_cluster_constraint_id }}
   when: __ha_cluster_resource_status.rc == 0
   check_mode: false
   changed_when: not ansible_check_mode
 
-- name: Configure {{ constraint_type }} constraint set {{ __ha_cluster_constraint_id }} # noqa name[template]
+- name: Configure {{ constraint_type }} constraint set '{{
+    __ha_cluster_constraint_id }}'  # noqa name[template]
   ansible.builtin.command:
     cmd: |
       crm -c {{ __ha_cluster_crm_shadow }} configure
@@ -30,13 +36,15 @@
       {{ __ha_cluster_constraint_id }}
       {% if constraint_type != 'ticket' %}
         {% if constraint_type == 'order' %}
-          {% for option in constraint.options | d([]) if option.name == 'kind' %}
+          {% for option in constraint.options | d([])
+            if option.name == 'kind' %}
             {{ option.value | quote }}:
           {% else %}
             Mandatory:
           {% endfor %}
         {% elif constraint_type == 'colocation' %}
-          {% for option in constraint.options | d([]) if option.name == 'score' %}
+          {% for option in constraint.options | d([])
+            if option.name == 'score' %}
             {{ option.value | lower | replace('infinity', 'inf') | quote }}:
           {% else %}
             inf:

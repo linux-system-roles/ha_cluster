@@ -1,3 +1,5 @@
+{{ ansible_managed | comment }}
+{{ "system_role:ha_cluster" | comment(prefix="", postfix="") }}
 totem {
         version: {{ ha_cluster_corosync_params.totem.version | default(2) }}
         token: {{ ha_cluster_corosync_params.totem.token | default(30000) }}

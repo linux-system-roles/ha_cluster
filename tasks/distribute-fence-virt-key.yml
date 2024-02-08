@@ -4,7 +4,7 @@
   file:
     path: /etc/cluster
     state: directory
-    mode: 0755
+    mode: '0755'
 
 - name: Get fence_xvm.key
   include_tasks: presharedkey.yml
@@ -20,4 +20,4 @@
     dest: /etc/cluster/fence_xvm.key
     owner: root
     group: root
-    mode: 0600
+    mode: '0600'

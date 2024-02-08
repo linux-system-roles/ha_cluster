@@ -31,11 +31,28 @@
 # status changes, resulting in shadow CIB outdated and unable to patch.
 # Sleep is implemented to ensure that cluster have enough time to freeze
 # to ensure CIB export consistency.
+# Meta-attrs is-managed will conflict with maintenance mode. Option n
+# will skip their deletion.
 - name: Put cluster in maintenance mode to freeze cib changes
-  ansible.builtin.shell:
-    cmd: crm configure property maintenance-mode=true; sleep 10
+  ansible.builtin.expect:
+    command: crm configure property maintenance-mode=true
+    responses:
+      ".*is-managed.*": "n"
+  run_once: true  # noqa: run_once[task]
   check_mode: false
   changed_when: true
+
+- name: Verify that maintenace-mode is true
+  ansible.builtin.command:
+    cmd: crm status
+  register: __ha_cluster_crm_status_maint
+  retries: 10
+  delay: 5
+  until:
+    '"Resource management is DISABLED" in __ha_cluster_crm_status_maint.stdout'
+  check_mode: false
+  changed_when: false
+  run_once: true  # noqa: run_once[task]
 
 - name: Fetch CIB configuration
   ansible.builtin.command:
@@ -86,6 +103,7 @@
     CIB_file: "{{ __ha_cluster_tempfile_cib_xml.path }}"
   check_mode: false
   changed_when: not ansible_check_mode
+  run_once: true  # noqa: run_once[task]
 
 # Create/Replace shadow configuration with new based on current cluster.
 - name: Create new shadow crm configuration with force
@@ -222,6 +240,7 @@
   failed_when:
     - __ha_cluster_cib_diff.rc != 0  # success, CIBs are the same
     - __ha_cluster_cib_diff.rc != 1  # success, CIBs are not the same
+  run_once: true  # noqa: run_once[task]
 
 - name: Write CIB diff to its tempfile
   ansible.builtin.copy:
@@ -234,8 +253,8 @@
   changed_when: not ansible_check_mode
   when: __ha_cluster_cib_diff.rc == 1
 
-# crm_diff is able to recognize same resources and constraints regardless if they
-# were re-created and resulting patch will not be executed when re-running.
+# crm_diff is able to recognize same resources and constraints regardless if
+# they were re-created and patch will not be executed when re-running.
 - name: Push CIB diff to the cluster if it has any changes
   ansible.builtin.command:
     cmd: >
@@ -248,11 +267,16 @@
   when: __ha_cluster_cib_diff.rc == 1
   run_once: true  # noqa: run_once[task]
 
+# Meta-attrs is-managed will conflict with maintenance mode. Option n
+# will skip their deletion.
 - name: Disable maintenance mode
-  ansible.builtin.command:
-    cmd: crm configure property maintenance-mode=false
+  ansible.builtin.expect:
+    command: crm configure property maintenance-mode=false
+    responses:
+      ".*is-managed.*": "n"
   check_mode: false
   changed_when: true
+  run_once: true  # noqa: run_once[task]
 
 - name: Remove CIB tempfiles
   ansible.builtin.file:

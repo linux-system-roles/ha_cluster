@@ -3,7 +3,8 @@
 - name: Configure cluster properties set
   ansible.builtin.command:
     cmd: |
-      crm -c {{ __ha_cluster_crm_shadow }} configure property {{ item.name | quote }}={{ item.value | quote }}
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure property {{ item.name | quote }}={{ item.value | quote }}
   loop: "{{ properties_set.attrs }}"
   # Pause ensures that cluster is consistent for further property changes.
   # Setting up crm properties without pause resulted in unstable cluster.

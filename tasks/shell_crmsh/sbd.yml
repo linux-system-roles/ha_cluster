@@ -12,11 +12,12 @@
       ansible.builtin.assert:
         that: __ha_cluster_watchdog_check.stat.exists
         fail_msg: >-
-          The role has been called with the 'ha_cluster.sbd_softdog' option set to
-          false. This expects the device '/dev/watchdog' to be available but '/dev/watchdog'
-          was not found. You must configure the watchdog before running the role.
-          If no watchdog is available, set 'ha_cluster.sbd_softdog' to 'true' and the softdog
-          will be automatically configured.
+          The role has been called with the 'ha_cluster.sbd_softdog' option set
+          to false. This expects the device '/dev/watchdog' to be available but
+          '/dev/watchdog' was not found. You must configure the watchdog before
+          running the role. If no watchdog is available, set
+          'ha_cluster.sbd_softdog' to 'true' and the softdog will be
+          automatically configured.
         success_msg: >-
           The watchdog device was found.
       when:
@@ -136,8 +137,8 @@
             # The intent is to make the timeout longer if needed, not shorter.
             # yamllint disable rule:line-length
             timeout_value: "{{ [90,
-              (__sbd_delay_start | first | float * 1.2) | round(0, 'ceil') | int] |
-              max }}"
+              (__sbd_delay_start | first | float * 1.2) | round(0, 'ceil') |
+               int] | max }}"
             # yamllint enable rule:line-length
 
         - name: Reload systemd service files

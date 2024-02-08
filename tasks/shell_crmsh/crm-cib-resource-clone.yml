@@ -1,22 +1,28 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Define resouce clone resource_clone.id {{ resource_clone.id | d(resource_clone.resource_id + '-clone') }}
+- name: Define resouce clone resource_clone.id '{{
+    resource_clone.id | d(resource_clone.resource_id + '-clone') }}'
   ansible.builtin.set_fact:
     __ha_cluster_resource_id:
-      "{{ resource_clone.id if resource_clone.id is defined else resource_clone.resource_id + '-clone' }}"
+      "{{ resource_clone.id if resource_clone.id is defined
+        else resource_clone.resource_id + '-clone' }}"
 
 # Verify if Shadow CIB already contains same resource id.
 - name: Verify resouce clone presence {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure show {{ __ha_cluster_resource_id }}
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ __ha_cluster_resource_id }}
   register: __ha_cluster_resource_status
   changed_when: false
   failed_when: false
 
-# Delete resource id in Shadow CIB to avoid duplicate errors during cibadmin patch.
+# Delete resource id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present resouce clone {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete {{ __ha_cluster_resource_id }}
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure delete {{ __ha_cluster_resource_id }}
   when: __ha_cluster_resource_status.rc == 0
   check_mode: false
   changed_when: not ansible_check_mode
@@ -24,7 +30,8 @@
 - name: Configure resource clone {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
     cmd: |
-      crm -c {{ __ha_cluster_crm_shadow }} configure clone {{ __ha_cluster_resource_id }}
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure clone {{ __ha_cluster_resource_id }}
       {{ resource_clone.resource_id | quote }} \
       {% if resource_clone.meta_attrs[0].attrs | default(False) %}
         meta
