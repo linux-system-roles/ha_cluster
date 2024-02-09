@@ -13,7 +13,9 @@ ha_cluster_start_on_boot: true
 
 ha_cluster_extra_packages: []
 
-ha_cluster_fence_agent_packages: []
+# Default fence agent packages are defined in respective os_family var files
+ha_cluster_fence_agent_packages:
+  "{{ __ha_cluster_fence_agent_packages_default }}"
 
 ha_cluster_hacluster_password: ""
 ha_cluster_regenerate_keys: false
