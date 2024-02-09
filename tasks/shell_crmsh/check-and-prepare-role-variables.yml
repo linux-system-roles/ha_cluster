@@ -125,3 +125,11 @@
     - ha_cluster_quorum.options | d([])
       | selectattr('name', 'match', '^auto_tie_breaker$')
       | map(attribute='value') | select('in', ['0', 0]) | list | length > 0
+
+# Sets fence agent list from os_familu vars depending on user input.
+- name: Set __ha_cluster_fence_agent_packages_final fact
+  ansible.builtin.set_fact:
+    __ha_cluster_fence_agent_packages_final:
+      "{{ (ha_cluster_fence_agent_packages | length == 0) |
+        ternary(__ha_cluster_fence_agent_packages_default,
+        ha_cluster_fence_agent_packages) }}"

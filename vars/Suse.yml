@@ -33,7 +33,11 @@ __ha_cluster_services:
 __ha_cluster_crm_shadow: shd
 
 # fence agent list for os_family
-__ha_cluster_fence_agent_packages: ['fence-agents']
+__ha_cluster_fence_agent_packages_default: ['fence-agents']
 
 # Corosync input for jinja2 template
 ha_cluster_corosync_params:
+
+# user override: selinux and firewall roles are currently not supported
+ha_cluster_manage_firewall: false
+ha_cluster_manage_selinux: false

@@ -43,7 +43,7 @@ __ha_cluster_services:
   - pacemaker
 
 # fence agent list for os_family
-__ha_cluster_fence_agent_packages: "{{
+__ha_cluster_fence_agent_packages_default: "{{
     ['fence-agents-all']
     +
     (['fence-virt'] if ansible_architecture == 'x86_64' else [])

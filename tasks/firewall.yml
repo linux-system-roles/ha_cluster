@@ -7,9 +7,9 @@
     # noqa: var-naming[no-role-prefix]
     __arch: "{{ ansible_facts['architecture'] }}"
     __use_fence_fw_port: "{{ __arch == 'x86_64' and
-      ('fence-virt' in ha_cluster_fence_agent_packages
+      ('fence-virt' in __ha_cluster_fence_agent_packages_final
        or 'fence-virt' in ha_cluster_extra_packages
-       or 'fence-agents-all' in ha_cluster_fence_agent_packages
+       or 'fence-agents-all' in __ha_cluster_fence_agent_packages_final
        or 'fence-agents-all' in ha_cluster_extra_packages) }}"
     __fence_fw_port: "{{ [{'port': '1229/tcp', 'state': 'enabled'}]
       if __use_fence_fw_port else [] }}"
