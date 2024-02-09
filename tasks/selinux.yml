@@ -17,11 +17,11 @@
       when:
         - ansible_facts['architecture'] == 'x86_64'
         - (
-            'fence-virt' in __ha_cluster_fence_agent_packages_final
+            'fence-virt' in ha_cluster_fence_agent_packages
             or
             'fence-virt' in ha_cluster_extra_packages
             or
-            'fence-agents-all' in __ha_cluster_fence_agent_packages_final
+            'fence-agents-all' in ha_cluster_fence_agent_packages
             or
             'fence-agents-all' in ha_cluster_extra_packages
           )

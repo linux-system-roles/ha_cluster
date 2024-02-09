@@ -57,7 +57,7 @@
           +
           ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
           +
-          __ha_cluster_fence_agent_packages_final }}"
+          ha_cluster_fence_agent_packages }}"
         state: present
         use: "{{ (__ha_cluster_is_ostree | d(false)) |
                  ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
