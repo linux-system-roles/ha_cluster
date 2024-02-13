@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.15.0] - 2024-02-13
+--------------------
+
+### New Features
+
+- feat: crmsh workflow and SUSE support (#186)
+
+### Other Changes
+
+- docs: change Supported to Compatible (#188)
+
 [1.14.0] - 2024-02-07
 --------------------
 
