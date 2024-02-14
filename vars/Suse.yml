@@ -5,6 +5,8 @@ ha_cluster_pacemaker_shell: crmsh
 # Placeholder with pcs name
 __ha_cluster_pcs_provider: crm
 
+# ClusterTools2 removed because it is SLES4SAP specific
+# patterns-ha-ha_sles requires SLES 15 SP5+ or SLES4SAP 15
 __ha_cluster_role_essential_packages:
   - 'pacemaker'
   - 'corosync'
@@ -16,10 +18,12 @@ __ha_cluster_role_essential_packages:
   - 'cluster-glue'
   - 'socat'
   - 'libxml2-tools'
-  - 'ClusterTools2'
   - 'rsyslog'
 
 __ha_cluster_fullstack_node_packages: []
+
+__ha_cluster_qdevice_node_packages:
+  - corosync-qdevice
 
 __ha_cluster_sbd_packages:
   - sbd

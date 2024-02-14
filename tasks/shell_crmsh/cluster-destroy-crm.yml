@@ -15,6 +15,10 @@
     selectattr('stat.exists', 'equalto', false) | list | length > 0
   changed_when: true
 
+- name: Populate service facts
+  ansible.builtin.service_facts:
+
+# Conditional added to skip qdevice in case qdevice was not configured
 - name: Stop cluster daemons
   ansible.builtin.service:
     name: "{{ item }}"
@@ -23,6 +27,7 @@
     - pacemaker
     - corosync
     - corosync-qdevice
+  when: item in ansible_facts.services
 
 - name: Backup configuration files by renaming to _backup
   ansible.builtin.copy:

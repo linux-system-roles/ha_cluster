@@ -8,6 +8,9 @@
   when:
     - ha_cluster_enable_repos
 
+- name: Check and prepare role variables
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml  # yamllint disable-line rule:line-length
+
 - name: Install role essential packages
   package:
     name: "{{
@@ -17,9 +20,6 @@
     state: present
     use: "{{ (__ha_cluster_is_ostree | d(false)) |
              ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
-
-- name: Check and prepare role variables
-  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml  # yamllint disable-line rule:line-length
 
 # The user is created by installing pacemaker packages. We just need to set the
 # password.
