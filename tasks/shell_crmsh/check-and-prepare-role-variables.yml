@@ -2,6 +2,30 @@
 ---
 - name: Check cluster configuration variables
   block:
+    # High Availability Extension is required for cluster setup as well
+    # as qnetd/qdevice configuration.
+    - name: Gather package facts
+      ansible.builtin.package_facts:
+        manager: auto
+
+    - name: Check High Availability Extension presence using product file
+      ansible.builtin.stat:
+        path: /etc/products.d/sle-ha.prod
+      register: __ha_cluster_ha_ext_stat
+
+    # Registering HA Extension creates file /etc/products.d/sle-ha.prod and
+    # installs rpm sle-ha-release. Cluster software is not installed.
+    - name: Assert that High Availability Extension is present
+      ansible.builtin.assert:
+        that:
+          - "'sle-ha-release' in ansible_facts.packages"
+          - __ha_cluster_ha_ext_stat.stat.exists
+        success_msg: "High Availability Extension was detected."
+        fail_msg: "High Availability Extension is not registered!
+          Register HA Extension before executing again."
+      # Fatal fail will occur if any of cluster nodes is missing HAE
+      any_errors_fatal: true
+
     - name: Fail if passwords are not specified
       ansible.builtin.fail:
         msg: "{{ item }} must be specified"
@@ -58,20 +82,6 @@
           | select | list | length != 1
       loop: "{{ ha_cluster_stonith_levels }}"
       run_once: true
-
-- name: Collect service information
-  ansible.builtin.service_facts:
-
-- name: Assert that required services are available
-  ansible.builtin.assert:
-    that: "'{{ item }}' in ansible_facts.services"
-    fail_msg: >-
-      The service '{{ item }}' was not found on this system. Ensure that this
-      service is available before running this role.
-    success_msg: >-
-      The service '{{ item }}' was discovered on this system.
-  loop:
-    - 'logd.service'
 
 - name: Discover cluster node names
   ansible.builtin.set_fact:

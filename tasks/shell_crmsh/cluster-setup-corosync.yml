@@ -13,6 +13,13 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
+# Gather facts for corosync template creation
+- name: Gather facts for corosync template
+  ansible.builtin.setup:
+    filter:
+      - eth0
+      - eth1
+
 - name: Generate corosync.conf using template
   ansible.builtin.template:
     src: crmsh_corosync.j2
