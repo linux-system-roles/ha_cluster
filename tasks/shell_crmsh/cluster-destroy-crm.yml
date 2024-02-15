@@ -24,9 +24,9 @@
     name: "{{ item }}"
     state: stopped  # noqa no-handler
   loop:
-    - pacemaker
-    - corosync
-    - corosync-qdevice
+    - pacemaker.service
+    - corosync.service
+    - corosync-qdevice.service
   when: item in ansible_facts.services
 
 - name: Backup configuration files by renaming to _backup
