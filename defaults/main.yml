@@ -43,6 +43,7 @@ ha_cluster_pcs_permission_list:
       - read
       - write
 
+ha_cluster_acls: {}
 ha_cluster_cluster_properties: []
 ha_cluster_node_options: []
 ha_cluster_resource_defaults: {}

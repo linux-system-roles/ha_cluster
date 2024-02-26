@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure acl roles
+  command:
+    cmd: >-
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      --
+      acl role create
+      {{ acl_role.id | quote }}
+      {% if acl_role.description | d() %}
+        description={{ acl_role.description | quote }}
+      {% endif %}
+      {% for acl_permission in acl_role.permissions | d([]) %}
+        {{ acl_permission.kind | quote }}
+        {% if acl_permission.xpath | d() %}
+          xpath {{ acl_permission.xpath | quote }}
+        {% endif %}
+        {% if acl_permission.reference | d() %}
+          id {{ acl_permission.reference | quote }}
+        {% endif %}
+      {% endfor %}
+  loop: "{{ acls.acl_roles | d([]) }}"
+  loop_control:
+    loop_var: acl_role
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Configure acl users
+  command:
+    cmd: >-
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      --
+      acl user create
+      {{ acl_user.id | quote }}
+      {% for acl_role_id in acl_user.roles | d([]) %}
+        {{ acl_role_id | quote }}
+      {% endfor %}
+  loop: "{{ acls.acl_users | d([]) }}"
+  loop_control:
+    loop_var: acl_user
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Configure acl groups
+  command:
+    cmd: >-
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      --
+      acl group create
+      {{ acl_group.id | quote }}
+      {% for acl_role_id in acl_group.roles | d([]) %}
+        {{ acl_role_id | quote }}
+      {% endfor %}
+  loop: "{{ acls.acl_groups | d([]) }}"
+  loop_control:
+    loop_var: acl_group
+  check_mode: false
+  changed_when: not ansible_check_mode

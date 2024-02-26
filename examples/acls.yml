@@ -1,0 +1,42 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - acls definition
+  hosts: all
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    # To use an acl role permission reference, the reference must exist in CIB.
+    ha_cluster_resource_primitives:
+      - id: not-for-operator
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+    ha_cluster_acls:
+      acl_roles:
+        - id: operator
+          description: HA cluster operator
+          permissions:
+            - kind: write
+              xpath: //crm_config//nvpair[@name='maintenance-mode']
+            - kind: deny
+              reference: not-for-operator
+        - id: administrator
+          permissions:
+            - kind: write
+              xpath: /cib
+      acl_users:
+        - id: alice
+          roles:
+            - operator
+            - administrator
+        - id: bob
+          roles:
+            - administrator
+      acl_groups:
+        - id: admins
+          roles:
+            - administrator
+
+  roles:
+    - linux-system-roles.ha_cluster
