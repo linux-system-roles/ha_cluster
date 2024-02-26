@@ -29,6 +29,7 @@ variables:
   - LsrRhel8OldestAnsible29
 
 .tier1_tests: &TIER1_TESTS
+  - cib_acls
   - cib_constraints_create
   - cib_node_attributes
   - cib_properties_empty

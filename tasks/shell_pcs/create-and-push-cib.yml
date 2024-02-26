@@ -232,6 +232,11 @@
         index_var: constraint_index
         loop_var: constraint
 
+    - name: Configure acls
+      include_tasks: pcs-cib-acls.yml
+      vars:
+        acls: "{{ ha_cluster_acls | d({}) }}"
+
 # Push the new CIB into the cluster
 
 - name: Create a tempfile for CIB diff
