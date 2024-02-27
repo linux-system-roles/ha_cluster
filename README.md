@@ -1193,7 +1193,7 @@ You may take a look at
 
 #### ha_cluster_acls
 
-structure, default: no acls
+structure, default: no ACLs
 
 ```yaml
 ha_cluster_acls:
@@ -1225,8 +1225,8 @@ This variable defines ACLs roles, users and groups.
 The items of `acl_roles` are as follows:
 
 * `id` (mandatory) - ID of an ACL role.
-* `description` (optional) - Description of the acl role.
-* `permissions` (optional) - List of acl role permissions.
+* `description` (optional) - Description of the ACL role.
+* `permissions` (optional) - List of ACL role permissions.
   * `kind` (mandatory) - The access being granted. Allowed values are `read`,
     `write`, and `deny`.
   * `xpath` (optional) - An XPath specification selecting an XML element in the
@@ -1238,15 +1238,15 @@ The items of `acl_roles` are as follows:
 
 The items of `acl_users` are as follows:
 
-* `id` (mandatory) - ID of an acl user.
+* `id` (mandatory) - ID of an ACL user.
 * `roles` (optional) - List of ACL role IDs assigned to the user.
 
 The items of `acl_groups` are as follows:
 
-* `id` (mandatory) - ID of an acl group.
+* `id` (mandatory) - ID of an ACL group.
 * `roles` (optional) - List of ACL role IDs assigned to the group.
 
-**Note:** Configure cluster property `enable-acl` to enable acls in the cluster:
+**Note:** Configure cluster property `enable-acl` to enable ACLs in the cluster:
 
 ```yaml
 ha_cluster_cluster_properties:
@@ -1988,14 +1988,14 @@ Note that you cannot run a quorum device on a cluster node.
     - linux-system-roles.ha_cluster
 ```
 
-### Configuring acls
+### Configuring ACLs
 
 ```yaml
 - hosts: node1 node2
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
-    # To use an acl role permission reference, the reference must exist in CIB.
+    # To use an ACL role permission reference, the reference must exist in CIB.
     ha_cluster_resource_primitives:
       - id: not-for-operator
         # wokeignore:rule=dummy
