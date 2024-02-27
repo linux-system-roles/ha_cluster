@@ -24,13 +24,13 @@
             ha_cluster_cluster_name: test-cluster
             ha_cluster_manage_firewall: true
             ha_cluster_manage_selinux: true
-            # To test a acl role permission reference, the reference must exist
+            # To test an acl role permission reference, the reference must exist
             # in CIB.
             ha_cluster_resource_primitives:
               - id: not-for-operator
                 # wokeignore:rule=dummy
                 agent: 'ocf:pacemaker:Dummy'
-            # To work with acl we need to enable acl in cluster propertis.
+            # To work with acls, we need to enable acls in cluster properties.
             ha_cluster_cluster_properties:
               - attrs:
                   - name: enable-acl
