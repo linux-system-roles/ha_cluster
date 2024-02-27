@@ -8,9 +8,6 @@
     - name: Create multiple acl objects
       tags: tests::verify
       block:
-        - name: Print test name
-          debug:
-            msg: Test with acl objects!
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
