@@ -27,7 +27,7 @@ An Ansible role for managing High Availability Clustering.
   * stonith levels, also known as fencing topology
   * resource constraints
   * Pacemaker node attributes
-  * acl roles, users and groups
+  * Pacemaker Access Control Lists (ACLs)
 
 ## Requirements
 
@@ -536,36 +536,33 @@ structure, default: no acls
 ```yaml
 ha_cluster_acls:
   acl_roles:
-    - id: operator
-      description: HA cluster operator
+    - id: role-id-1
+      description: role description
       permissions:
-        - kind: write
-          xpath: //crm_config//nvpair[@name='maintenance-mode']
-        - kind: deny
-          reference: not-for-operator
-    - id: administrator
+        - kind: access-type
+          xpath: XPath expression
+        - kind: access-type
+          reference: cib-element-id
+    - id: role-id-2
       permissions:
-        - kind: write
-          xpath: /cib
+        - kind: access-type
+          xpath: XPath expression
   acl_users:
-    - id: alice
+    - id: user-name
       roles:
-        - operator
-        - administrator
-    - id: bob
-      roles:
-        - administrator
+        - role-id-1
+        - role-id-2
   acl_groups:
-    - id: admins
+    - id: group-name
       roles:
-        - administrator
+        - role-id-2
 ```
 
-This variable defines acl roles, acl users and acl groups.
+This variable defines ACLs roles, users and groups.
 
-The items of acl roles are as follows:
+The items of `acl_roles` are as follows:
 
-* `id` (mandatory) - ID of an acl role.
+* `id` (mandatory) - ID of an ACL role.
 * `description` (optional) - Description of the acl role.
 * `permissions` (optional) - List of acl role permissions.
   * `kind` (mandatory) - The access being granted. Allowed values are `read`,
@@ -575,17 +572,17 @@ The items of acl roles are as follows:
     of the items: `xpath` or `reference`.
   * `reference` (optional) - The ID of an XML element in the CIB to which the
     permission applies. It is mandatory to specify exactly one of the items:
-  `xpath` or `reference`. **Note:** the ID must exists.
+    `xpath` or `reference`. **Note:** the ID must exist.
 
-The items of acl users are as follows:
+The items of `acl_users` are as follows:
 
 * `id` (mandatory) - ID of an acl user.
-* `roles` (optional) - List of acl role IDs.
+* `roles` (optional) - List of ACL role IDs assigned to the user.
 
-The items of acl groups are as follows:
+The items of `acl_groups` are as follows:
 
 * `id` (mandatory) - ID of an acl group.
-* `roles` (optional) - List of acl role IDs.
+* `roles` (optional) - List of ACL role IDs assigned to the group.
 
 **Note:** Configure cluster property `enable-acl` to enable acls in the cluster:
 
@@ -596,9 +593,7 @@ ha_cluster_cluster_properties:
         value: 'true'
 ```
 
-You may take a look at examples:
-
-* [configuring acls](#configuring-acls)
+You may take a look at [an example](#configuring-acls).
 
 #### `ha_cluster_resource_primitives`
 
@@ -2000,6 +1995,13 @@ Note that you cannot run a quorum device on a cluster node.
   vars:
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
+    # To use an acl role permission reference, the reference must exist in CIB.
+    ha_cluster_resource_primitives:
+      - id: not-for-operator
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+    # ACLs must be enabled (using the enable-acl cluster property) in order to
+    # be effective.
     ha_cluster_cluster_properties:
       - attrs:
           - name: enable-acl
