@@ -529,72 +529,6 @@ You may take a look at examples:
 
 * [configuring node attributes](#configuring-node-attributes)
 
-#### ha_cluster_acls
-
-structure, default: no acls
-
-```yaml
-ha_cluster_acls:
-  acl_roles:
-    - id: role-id-1
-      description: role description
-      permissions:
-        - kind: access-type
-          xpath: XPath expression
-        - kind: access-type
-          reference: cib-element-id
-    - id: role-id-2
-      permissions:
-        - kind: access-type
-          xpath: XPath expression
-  acl_users:
-    - id: user-name
-      roles:
-        - role-id-1
-        - role-id-2
-  acl_groups:
-    - id: group-name
-      roles:
-        - role-id-2
-```
-
-This variable defines ACLs roles, users and groups.
-
-The items of `acl_roles` are as follows:
-
-* `id` (mandatory) - ID of an ACL role.
-* `description` (optional) - Description of the acl role.
-* `permissions` (optional) - List of acl role permissions.
-  * `kind` (mandatory) - The access being granted. Allowed values are `read`,
-    `write`, and `deny`.
-  * `xpath` (optional) - An XPath specification selecting an XML element in the
-    CIB to which the permission applies. It is mandatory to specify exactly one
-    of the items: `xpath` or `reference`.
-  * `reference` (optional) - The ID of an XML element in the CIB to which the
-    permission applies. It is mandatory to specify exactly one of the items:
-    `xpath` or `reference`. **Note:** the ID must exist.
-
-The items of `acl_users` are as follows:
-
-* `id` (mandatory) - ID of an acl user.
-* `roles` (optional) - List of ACL role IDs assigned to the user.
-
-The items of `acl_groups` are as follows:
-
-* `id` (mandatory) - ID of an acl group.
-* `roles` (optional) - List of ACL role IDs assigned to the group.
-
-**Note:** Configure cluster property `enable-acl` to enable acls in the cluster:
-
-```yaml
-ha_cluster_cluster_properties:
-  - attrs:
-      - name: enable-acl
-        value: 'true'
-```
-
-You may take a look at [an example](#configuring-acls).
-
 #### `ha_cluster_resource_primitives`
 
 structure, default: no resources
@@ -1256,6 +1190,72 @@ ha_cluster_constraints_ticket:
 
 You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
+
+#### ha_cluster_acls
+
+structure, default: no acls
+
+```yaml
+ha_cluster_acls:
+  acl_roles:
+    - id: role-id-1
+      description: role description
+      permissions:
+        - kind: access-type
+          xpath: XPath expression
+        - kind: access-type
+          reference: cib-element-id
+    - id: role-id-2
+      permissions:
+        - kind: access-type
+          xpath: XPath expression
+  acl_users:
+    - id: user-name
+      roles:
+        - role-id-1
+        - role-id-2
+  acl_groups:
+    - id: group-name
+      roles:
+        - role-id-2
+```
+
+This variable defines ACLs roles, users and groups.
+
+The items of `acl_roles` are as follows:
+
+* `id` (mandatory) - ID of an ACL role.
+* `description` (optional) - Description of the acl role.
+* `permissions` (optional) - List of acl role permissions.
+  * `kind` (mandatory) - The access being granted. Allowed values are `read`,
+    `write`, and `deny`.
+  * `xpath` (optional) - An XPath specification selecting an XML element in the
+    CIB to which the permission applies. It is mandatory to specify exactly one
+    of the items: `xpath` or `reference`.
+  * `reference` (optional) - The ID of an XML element in the CIB to which the
+    permission applies. It is mandatory to specify exactly one of the items:
+    `xpath` or `reference`. **Note:** the ID must exist.
+
+The items of `acl_users` are as follows:
+
+* `id` (mandatory) - ID of an acl user.
+* `roles` (optional) - List of ACL role IDs assigned to the user.
+
+The items of `acl_groups` are as follows:
+
+* `id` (mandatory) - ID of an acl group.
+* `roles` (optional) - List of ACL role IDs assigned to the group.
+
+**Note:** Configure cluster property `enable-acl` to enable acls in the cluster:
+
+```yaml
+ha_cluster_cluster_properties:
+  - attrs:
+      - name: enable-acl
+        value: 'true'
+```
+
+You may take a look at [an example](#configuring-acls).
 
 #### `ha_cluster_qnetd`
 
