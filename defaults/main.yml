@@ -11,8 +11,8 @@ ha_cluster_cluster_present: true
 
 ha_cluster_start_on_boot: true
 
+ha_cluster_install_cloud_agents: false
 ha_cluster_extra_packages: []
-
 # Default fence agent packages are defined in respective os_family var files
 ha_cluster_fence_agent_packages:
   "{{ __ha_cluster_fence_agent_packages_default }}"

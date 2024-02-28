@@ -10,3 +10,11 @@ __ha_cluster_repos:
     name: High Availability
   - id: rhel-8-for-{{ ansible_architecture }}-resilientstorage-rpms
     name: Resilient Storage
+
+__ha_cluster_cloud_agents_packages:
+  - resource-agents-aliyun
+  - resource-agents-gcp
+  - fence-agents-aliyun
+  - fence-agents-aws
+  - fence-agents-azure-arm
+  - fence-agents-gce
