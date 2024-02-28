@@ -1,0 +1,4 @@
+# SPDX-License-Identifier: MIT
+---
+# Put internal variables here with Fedora specific values.
+__ha_cluster_cloud_agents_packages: []

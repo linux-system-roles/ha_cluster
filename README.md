@@ -125,6 +125,17 @@ boolean, default: `true`
 If set to `true`, cluster services will be configured to start on boot. If set
 to `false`, cluster services will be configured not to start on boot.
 
+#### `ha_cluster_install_cloud_agents`
+
+boolean, default: `false`
+
+The role automatically installs needed HA Cluster packages. However, resource
+and fence agents for cloud environments are not installed by default on RHEL.
+If you need those to be installed, set this variable to `true`. Alternatively,
+you can specify those packages in
+[`ha_cluster_fence_agent_packages`](#ha_cluster_fence_agent_packages) and
+[`ha_cluster_extra_packages`](#ha_cluster_extra_packages) variables.
+
 #### `ha_cluster_fence_agent_packages`
 
 list of fence agent packages to install, default: fence-agents-all, fence-virt
@@ -137,8 +148,8 @@ This variable can be used to install additional packages not installed
 automatically by the role, for example custom resource agents.
 
 It is possible to specify fence agents here as well. However,
-`ha_cluster_fence_agent_packages` is preferred for that, so that its default
-value is overridden.
+[`ha_cluster_fence_agent_packages`](#ha_cluster_fence_agent_packages) is
+preferred for that, so that its default value is overridden.
 
 #### `ha_cluster_hacluster_password`
 

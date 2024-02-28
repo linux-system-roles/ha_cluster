@@ -10,3 +10,11 @@ __ha_cluster_repos:
     name: HighAvailability
   - id: resilientstorage
     name: ResilientStorage
+
+__ha_cluster_cloud_agents_packages:
+  - resource-agents-aliyun
+  - resource-agents-gcp
+  - fence-agents-aliyun
+  - fence-agents-aws
+  - fence-agents-azure-arm
+  - fence-agents-gce

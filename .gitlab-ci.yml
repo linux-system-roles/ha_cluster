@@ -41,6 +41,7 @@ variables:
   - cluster_advanced_knet_full
   - cluster_advanced_knet_implicit
   - cluster_advanced_udp_full
+  - cluster_basic_cloud_packages
   - cluster_basic_custom_fence_agents
   - cluster_basic_custom_packages
   - cluster_basic_custom_pcsd_tls_cert_role

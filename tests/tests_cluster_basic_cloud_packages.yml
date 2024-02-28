@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Minimal cluster configuration, install cloud agents
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_install_cloud_agents: true
+    __test_agents_rhel_8:
+      - resource-agents-aliyun
+      - resource-agents-gcp
+      - fence-agents-aliyun
+      - fence-agents-aws
+      - fence-agents-azure-arm
+      - fence-agents-gce
+    __test_agents_rhel_9:
+      - resource-agents-cloud
+      - fence-agents-aliyun
+      - fence-agents-aws
+      - fence-agents-azure-arm
+      - fence-agents-compute
+      - fence-agents-gce
+      - fence-agents-ibm-powervs
+      - fence-agents-ibm-vpc
+      - fence-agents-kubevirt
+      - fence-agents-openstack
+    __test_agents: "{{ (ansible_facts['distribution_major_version'] == '8') |
+      ternary(__test_agents_rhel_8, __test_agents_rhel_9) }}"
+    __test_eligible: "{{
+      ansible_facts['distribution'] in ['RedHat', 'CentOS'] }}"
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      when: __test_eligible
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Skip test on ostree systems
+          meta: end_host
+          when: __ha_cluster_is_ostree | d(false)
+
+        - name: Ensure cloud agents are not installed
+          package:
+            name: "{{ __test_agents }}"
+            state: absent
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Get packages status
+          package_facts:
+
+        - name: Check installed packages
+          assert:
+            that:
+              - "item in ansible_facts.packages"
+          loop: "{{ __test_agents }}"
+
+        - name: Check cluster status
+          include_tasks: tasks/assert_cluster_running.yml
+
+    - name: Message
+      debug:
+        msg: This test is RHEL / CentOS specific
+      when: not __test_eligible

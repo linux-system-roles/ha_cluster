@@ -22,6 +22,8 @@ __ha_cluster_role_essential_packages:
 
 __ha_cluster_fullstack_node_packages: []
 
+__ha_cluster_cloud_agents_packages: []
+
 __ha_cluster_qdevice_node_packages:
   - corosync-qdevice
 

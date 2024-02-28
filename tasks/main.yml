@@ -57,6 +57,9 @@
           +
           ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
           +
+          ha_cluster_install_cloud_agents |
+            ternary(__ha_cluster_cloud_agents_packages, [])
+          +
           ha_cluster_fence_agent_packages }}"
         state: present
         use: "{{ (__ha_cluster_is_ostree | d(false)) |
