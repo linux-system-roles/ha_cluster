@@ -159,6 +159,8 @@ id="toc-ha_cluster_manage_selinux"><code>ha_cluster_manage_selinux</code></a></l
 id="toc-ha_cluster_cluster_present"><code>ha_cluster_cluster_present</code></a></li>
 <li><a href="#ha_cluster_start_on_boot"
 id="toc-ha_cluster_start_on_boot"><code>ha_cluster_start_on_boot</code></a></li>
+<li><a href="#ha_cluster_install_cloud_agents"
+id="toc-ha_cluster_install_cloud_agents"><code>ha_cluster_install_cloud_agents</code></a></li>
 <li><a href="#ha_cluster_fence_agent_packages"
 id="toc-ha_cluster_fence_agent_packages"><code>ha_cluster_fence_agent_packages</code></a></li>
 <li><a href="#ha_cluster_extra_packages"
@@ -415,6 +417,17 @@ id="ha_cluster_start_on_boot"><code>ha_cluster_start_on_boot</code></h3>
 start on boot. If set to <code>false</code>, cluster services will be
 configured not to start on boot.</p>
 <h3
+id="ha_cluster_install_cloud_agents"><code>ha_cluster_install_cloud_agents</code></h3>
+<p>boolean, default: <code>false</code></p>
+<p>The role automatically installs needed HA Cluster packages. However,
+resource and fence agents for cloud environments are not installed by
+default on RHEL. If you need those to be installed, set this variable to
+<code>true</code>. Alternatively, you can specify those packages in <a
+href="#ha_cluster_fence_agent_packages"><code>ha_cluster_fence_agent_packages</code></a>
+and <a
+href="#ha_cluster_extra_packages"><code>ha_cluster_extra_packages</code></a>
+variables.</p>
+<h3
 id="ha_cluster_fence_agent_packages"><code>ha_cluster_fence_agent_packages</code></h3>
 <p>list of fence agent packages to install, default: fence-agents-all,
 fence-virt</p>
@@ -424,9 +437,9 @@ id="ha_cluster_extra_packages"><code>ha_cluster_extra_packages</code></h3>
 <p>This variable can be used to install additional packages not
 installed automatically by the role, for example custom resource
 agents.</p>
-<p>It is possible to specify fence agents here as well. However,
-<code>ha_cluster_fence_agent_packages</code> is preferred for that, so
-that its default value is overridden.</p>
+<p>It is possible to specify fence agents here as well. However, <a
+href="#ha_cluster_fence_agent_packages"><code>ha_cluster_fence_agent_packages</code></a>
+is preferred for that, so that its default value is overridden.</p>
 <h3
 id="ha_cluster_hacluster_password"><code>ha_cluster_hacluster_password</code></h3>
 <p>string, no default - must be specified</p>
