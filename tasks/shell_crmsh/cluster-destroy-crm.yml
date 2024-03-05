@@ -10,7 +10,7 @@
 
 - name: Stop cluster
   ansible.builtin.command:
-    cmd: crm cluster stop --all
+    cmd: crm cluster stop
   when: not __ha_cluster_config_files_stat.results |
     selectattr('stat.exists', 'equalto', false) | list | length > 0
   changed_when: true
