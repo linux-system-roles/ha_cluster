@@ -31,11 +31,15 @@
     cmd: |
       crm -c {{ __ha_cluster_crm_shadow }}
       configure order {{ __ha_cluster_constraint_id | quote }}
+      {% for option in constraint.options | d([]) if option.name == 'kind' %}
+        {{ option.value | quote }}:
+      {% endfor %}
       {{ constraint.resource_first.id
-       | quote }}:{{ constraint.resource_first.action | quote }}
+       | quote }}:{{ constraint.resource_first.action | default('start') | quote }}
       {{ constraint.resource_then.id
-       | quote }}:{{ constraint.resource_then.action | quote }}
-      {% for option in constraint.options | d([]) if option.name != 'score' %}
+       | quote }}:{{ constraint.resource_then.action | default('start') | quote }}
+      {% for option in constraint.options | d([])
+       if option.name != 'score' and option.name != 'kind'%}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}
   check_mode: false
