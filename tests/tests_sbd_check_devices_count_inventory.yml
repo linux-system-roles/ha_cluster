@@ -1,6 +1,10 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Ensure all nodes have the same number of SBD devices
+# All nodes must have the same number of SBD devices. The role is supposed to
+# exit with an error if that's not the case. This test verifies, that the check
+# works, when SBD devices are defined in 'ha_cluster' variable (inventory
+# style).
+- name: Test a check SBD devices count matches for all nodes (inventory)
   hosts: all
   vars_files: vars/main.yml
   vars:
@@ -16,6 +20,7 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
+        # Generate an "inventory" variable for each node
         - name: Set SBD devices variable
           set_fact:
             ha_cluster:

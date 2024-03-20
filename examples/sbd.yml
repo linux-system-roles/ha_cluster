@@ -2,7 +2,6 @@
 ---
 - name: Example ha_cluster role invocation - cluster with SBD
   hosts: node1 node2
-  # do not forget to also set variables via inventory or host_vars.
   vars:
     ha_cluster_manage_firewall: true
     ha_cluster_manage_selinux: true
@@ -18,6 +17,27 @@
         value: 'flush,reboot'
       - name: watchdog-timeout
         value: 30
+    ha_cluster_node_options:
+      - node_name: node1
+        sbd_watchdog_modules:
+          - iTCO_wdt
+        sbd_watchdog_modules_blocklist:
+          - ipmi_watchdog
+        sbd_watchdog: /dev/watchdog1
+        sbd_devices:
+          - /dev/vdx
+          - /dev/vdy
+          - /dev/vdz
+      - node_name: node2
+        sbd_watchdog_modules:
+          - iTCO_wdt
+        sbd_watchdog_modules_blocklist:
+          - ipmi_watchdog
+        sbd_watchdog: /dev/watchdog1
+        sbd_devices:
+          - /dev/vdx
+          - /dev/vdy
+          - /dev/vdz
     # Best practice for setting SBD timeouts:
     # watchdog-timeout * 2 = msgwait-timeout (set automatically)
     # msgwait-timeout * 1.2 = stonith-timeout

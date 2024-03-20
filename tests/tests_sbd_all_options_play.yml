@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Maximal SBD configuration (play)
+  hosts: all
+  vars_files: vars/main.yml
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Set up test environment for SBD
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup_sbd.yml
+          vars:
+            __test_disable_modprobe: true  # noqa: var-naming[no-role-prefix]
+
+        # Generate a play variable. Play variables are equal for all nodes.
+        # This variable is expected to hold data for all nodes.
+        - name: Generate SBD devices and watchdogs variables
+          set_fact:
+            # use hostvars to get hostname possibly modified by test_setup.yml
+            __test_node_options: >-
+              {{
+                (__test_node_options | d([])) + [{
+                  'node_name': hostvars[item]['inventory_hostname'],
+                  'sbd_watchdog_modules': ['softdog'],
+                  'sbd_watchdog_modules_blocklist': ['iTCO_wdt'],
+                  'sbd_watchdog': '/dev/null',
+                  'sbd_devices': [__test_sbd_mount.stdout],
+                }]
+              }}
+          loop: "{{ ansible_play_hosts_all }}"
+
+        - name: Run the role and assert results
+          include_tasks: template_sbd_all_options.yml
+          vars:
+            ha_cluster_node_options: "{{ __test_node_options }}"
+
+      always:
+        - name: Unset SBD devices and watchdog variables
+          set_fact:
+            __test_node_options:
+
+        - name: Clean up test environment for SBD
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_cleanup_sbd.yml

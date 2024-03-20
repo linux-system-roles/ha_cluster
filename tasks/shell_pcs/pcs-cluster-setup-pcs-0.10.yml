@@ -14,7 +14,8 @@
       {% for node in ansible_play_hosts %}
         {{ hostvars[node].__ha_cluster_node_name | quote }}
         {%
-          for addr in hostvars[node].ha_cluster.corosync_addresses | d([])
+          for addr in
+            hostvars[node].__ha_cluster_local_node.corosync_addresses | d([])
         %}
           addr={{ addr | quote }}
         {% endfor %}
