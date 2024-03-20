@@ -59,8 +59,12 @@ variables:
   - qnetd_and_cluster
   - qnetd_disabled
   - qnetd
-  - sbd_all_options
-  - sbd_check_devices_count
+  - sbd_all_options_combined
+  - sbd_all_options_inventory
+  - sbd_all_options_play
+  - sbd_check_devices_count_combined
+  - sbd_check_devices_count_inventory
+  - sbd_check_devices_count_play
   - sbd_defaults_disabled
   - sbd_defaults
   - sbd_delay_start

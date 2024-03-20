@@ -17,13 +17,17 @@
                 # wokeignore:rule=blacklist
                 line: "blacklist {{ item }}"
                 state: present
-              loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
+              loop: "{{
+                __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
+                }}"
 
             - name: Unload watchdog kernel modules from blocklist
               community.general.modprobe:
                 name: "{{ item }}"
                 state: absent
-              loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
+              loop: "{{
+                __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
+                }}"
 
         - name: Configure and load watchdog kernel module
           block:
@@ -35,13 +39,13 @@
                 regexp: "^{{ item }}"
                 line: "{{ item }}"
                 state: present
-              loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
+              loop: "{{ __ha_cluster_local_node.sbd_watchdog_modules | d([]) }}"
 
             - name: Load watchdog kernel modules
               community.general.modprobe:
                 name: "{{ item }}"
                 state: present
-              loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
+              loop: "{{ __ha_cluster_local_node.sbd_watchdog_modules | d([]) }}"
 
     - name: Manage SBD devices
       # Ideally, the block as a whole should run one node at a time. This does
@@ -57,7 +61,7 @@
         - name: Probe SBD devices
           command:
             cmd: sbd -d {{ item | quote }} dump
-          loop: "{{ ha_cluster.sbd_devices | d([]) }}"
+          loop: "{{ __ha_cluster_local_node.sbd_devices | d([]) }}"
           register: __ha_cluster_check_sbd_devices_result
           changed_when: false
           # return_code == 0 means the disk is initialized already
@@ -95,8 +99,9 @@
       vars:
         options: "{{ ha_cluster_sbd_options | d([]) }}"
         node_name: "{{ __ha_cluster_node_name }}"
-        node_watchdog: "{{ ha_cluster.sbd_watchdog | d('/dev/watchdog') }}"
-        node_devices: "{{ ha_cluster.sbd_devices | d([]) }}"
+        node_watchdog: "{{ __ha_cluster_local_node.sbd_watchdog
+          | d('/dev/watchdog') }}"
+        node_devices: "{{ __ha_cluster_local_node.sbd_devices | d([]) }}"
       register: __ha_cluster_distribute_sbd_config
 
     - name: Configure systemd timeout for SBD

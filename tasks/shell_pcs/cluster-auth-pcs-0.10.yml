@@ -8,8 +8,8 @@
       pcs host auth -u hacluster --
       {% for node in ansible_play_hosts %}
         {{ hostvars[node].__ha_cluster_node_name | quote }}
-        {% if hostvars[node].ha_cluster.pcs_address | d("") %}
-          addr={{ hostvars[node].ha_cluster.pcs_address | quote }}
+        {% if hostvars[node].__ha_cluster_local_node.pcs_address | d("") %}
+          addr={{ hostvars[node].__ha_cluster_local_node.pcs_address | quote }}
         {% endif %}
       {% endfor %}
     stdin: "{{ ha_cluster_hacluster_password }}"

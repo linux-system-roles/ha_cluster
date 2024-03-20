@@ -485,7 +485,86 @@ options are:
 You may take a look at [an example](#configuring-cluster-to-use-sbd).
 
 Watchdog and SBD devices are configured on a node to node basis in
+[`ha_cluster_node_options`](#ha_cluster_node_options) (preferred) or
 [inventory](#sbd-watchdog-and-devices).
+
+#### `ha_cluster_node_options`
+
+structure, default: no node options
+
+```yaml
+ha_cluster_node_options:
+  - node_name: node1
+    pcs_address: node1-address
+    corosync_addresses:
+      - 192.168.1.11
+      - 192.168.2.11
+    sbd_watchdog_modules:
+      - module1
+      - module2
+    sbd_watchdog_modules_blocklist:
+      - module3
+    sbd_watchdog: /dev/watchdog2
+    sbd_devices:
+      - /dev/vdx
+      - /dev/vdy
+    attributes:
+      - attrs:
+          - name: attribute1
+            value: value1_node1
+          - name: attribute2
+            value: value2_node1
+  - node_name: node2
+    pcs_address: node2-address:2224
+    corosync_addresses:
+      - 192.168.1.12
+      - 192.168.2.12
+    sbd_watchdog_modules:
+      - module1
+    sbd_watchdog_modules_blocklist:
+      - module3
+    sbd_watchdog: /dev/watchdog1
+    sbd_devices:
+      - /dev/vdw
+      - /dev/vdz
+    attributes:
+      - attrs:
+          - name: attribute1
+            value: value1_node2
+          - name: attribute2
+            value: value2_node2
+```
+
+This variable defines various settings which vary from cluster node to cluster
+node.
+
+**Note:** Use an inventory or playbook hosts to specify which nodes form
+the cluster. This variable merely sets options for the specified nodes.
+
+The items are as follows:
+
+* `node_name` (mandatory) - Node name. It must match a name defined for a node
+  in [inventory variable `ha_cluster.node_name`](#nodes-names-and-addresses).
+* `pcs_address` (optional) - Address used by pcs to communicate with the node,
+  it can be a name, a FQDN or an IP address. Port can be specified as well.
+* `corosync_addresses` (optional) - List of addresses used by Corosync, all
+  nodes must have the same number of addresses and the order of the addresses
+  matters.
+* `sbd_watchdog_modules` (optional) - Watchdog kernel modules to be loaded
+  (creates `/dev/watchdog*` devices). Defaults to empty list if not set.
+* `sbd_watchdog_modules_blocklist` (optional) - Watchdog kernel modules to be
+  unloaded and blocked. Defaults to empty list if not set.
+* `sbd_watchdog` (optional) - Watchdog device to be used by SBD. Defaults to
+  `/dev/watchdog` if not set.
+* `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
+  monitoring. Defaults to empty list if not set.
+* `attributes` (optional) - List of sets of Pacemaker node attributes for the
+  node. Currently, no more than one set for each node is supported.
+
+You may take a look at examples:
+
+* [configuring cluster to use SBD](#configuring-cluster-to-use-sbd)
+* [configuring node attributes](#configuring-node-attributes)
 
 #### `ha_cluster_cluster_properties`
 
@@ -504,41 +583,6 @@ List of sets of cluster properties - Pacemaker cluster-wide configuration.
 Currently, only one set is supported.
 
 You may take a look at [an example](#configuring-cluster-properties).
-
-#### `ha_cluster_node_options`
-
-structure, default: no node options
-
-```yaml
-ha_cluster_node_options:
-  - node_name: node1
-    attributes:
-      - attrs:
-          - name: attribute1
-            value: value1_node1
-          - name: attribute2
-            value: value2_node1
-  - node_name: node2
-    attributes:
-      - attrs:
-          - name: attribute1
-            value: value1_node2
-          - name: attribute2
-            value: value2_node2
-```
-
-This variable defines various settings which vary from cluster node to cluster
-node. **Note:** Use an inventory or playbook hosts to specify which nodes form
-the cluster. This variable merely sets options for the specified nodes. The
-items are as follows:
-
-* `node_name` (mandatory) - Node name.
-* `attributes` (optional) - List of sets of Pacemaker node attributes for the
-  node. Currently, no more than one set for each node is supported.
-
-You may take a look at examples:
-
-* [configuring node attributes](#configuring-node-attributes)
 
 #### `ha_cluster_resource_primitives`
 
@@ -1303,8 +1347,10 @@ example](#configuring-a-cluster-using-a-quorum-device).
 
 #### Nodes' names and addresses
 
-Nodes' names and addresses can be configured in inventory. This is optional. If
-no names or addresses are configured, play's targets will be used.
+Nodes' names and addresses can be configured in inventory. This is optional.
+Addresses configured in [`ha_cluster_node_options`](#ha_cluster_node_options)
+override those configured in inventory.
+If no names or addresses are configured, play's targets will be used.
 
 Example inventory with targets `node1` and `node2`:
 
@@ -1338,8 +1384,10 @@ all:
 When using SBD, you may optionally configure watchdog and SBD devices for each
 node in inventory. Even though all SBD devices must be shared to and accessible
 from all nodes, each node may use different names for the devices. The loaded
-watchdog modules and used devices may also be different for each node. See also
-[SBD variables](#ha_cluster_sbd_enabled).
+watchdog modules and used devices may also be different for each node.
+SBD settings defined in [`ha_cluster_node_options`](#ha_cluster_node_options)
+override those defined in inventory.
+See also [SBD variables](#ha_cluster_sbd_enabled).
 
 Example inventory with targets `node1` and `node2`:
 
@@ -1484,10 +1532,70 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 
 ### Configuring cluster to use SBD
 
-#### inventory
+#### Using playbook variables
 
-These variables need to be set in inventory or via `host_vars`. Of course
-the SBD kernel modules and device path might differ depending on your setup.
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_sbd_enabled: true
+    ha_cluster_sbd_options:
+      - name: delay-start
+        value: 'no'
+      - name: startmode
+        value: always
+      - name: timeout-action
+        value: 'flush,reboot'
+      - name: watchdog-timeout
+        value: 30
+    ha_cluster_node_options:
+      - node_name: node1
+        sbd_watchdog_modules:
+          - iTCO_wdt
+        sbd_watchdog_modules_blocklist:
+          - ipmi_watchdog
+        sbd_watchdog: /dev/watchdog1
+        sbd_devices:
+          - /dev/vdx
+          - /dev/vdy
+          - /dev/vdz
+      - node_name: node2
+        sbd_watchdog_modules:
+          - iTCO_wdt
+        sbd_watchdog_modules_blocklist:
+          - ipmi_watchdog
+        sbd_watchdog: /dev/watchdog1
+        sbd_devices:
+          - /dev/vdx
+          - /dev/vdy
+          - /dev/vdz
+    # Best practice for setting SBD timeouts:
+    # watchdog-timeout * 2 = msgwait-timeout (set automatically)
+    # msgwait-timeout * 1.2 = stonith-timeout
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: stonith-timeout
+            value: 72
+    ha_cluster_resource_primitives:
+      - id: fence_sbd
+        agent: 'stonith:fence_sbd'
+        instance_attrs:
+          - attrs:
+              # taken from host_vars
+              - name: devices
+                value: "{{ ha_cluster.sbd_devices | join(',') }}"
+              - name: pcmk_delay_base
+                value: 30
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+#### Using inventory
+
+The same result can be achieved by specifying node-specific options in inventory
+like this:
 
 ```yaml
 all:
@@ -1516,11 +1624,7 @@ all:
           - /dev/vdz
 ```
 
-#### playbook
-
-After setting the inventory correctly, use this playbook to configure a
-complete SBD setup including loading watchdog modules and creating the
-SBD stonith resource.
+Variables specified in inventory can be omitted when writing the playbook:
 
 ```yaml
 - hosts: node1 node2
@@ -1558,6 +1662,9 @@ SBD stonith resource.
   roles:
     - linux-system-roles.ha_cluster
 ```
+
+If both the inventory and the playbook contain SBD options, those in the
+playbook have precedence.
 
 ### Configuring cluster properties
 
