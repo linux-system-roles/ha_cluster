@@ -484,9 +484,15 @@ options are:
 
 You may take a look at [an example](#configuring-cluster-to-use-sbd).
 
-Watchdog and SBD devices are configured on a node to node basis in
-[`ha_cluster_node_options`](#ha_cluster_node_options) (preferred) or
-[inventory](#sbd-watchdog-and-devices).
+Watchdog and SBD devices can be configured on a node to node basis in two
+variables:
+
+* [`ha_cluster_node_options`](#ha_cluster_node_options) is a single variable
+  expected to have the same value for all cluster nodes. It is a list of
+  dictionaries, each dictionary defines options for one node.
+* [`ha_cluster`](#sbd-watchdog-and-devices) dictionary defines options for one
+  node only. To set different values for each node, you define the variable
+  separately for each node.
 
 #### `ha_cluster_node_options`
 
@@ -543,8 +549,8 @@ the cluster. This variable merely sets options for the specified nodes.
 
 The items are as follows:
 
-* `node_name` (mandatory) - Node name. It must match a name defined for a node
-  in [inventory variable `ha_cluster.node_name`](#nodes-names-and-addresses).
+* `node_name` (mandatory) - Node name. It must match a name defined for a node.
+  See also [`ha_cluster.node_name`](#nodes-names-and-addresses).
 * `pcs_address` (optional) - Address used by pcs to communicate with the node,
   it can be a name, a FQDN or an IP address. Port can be specified as well.
 * `corosync_addresses` (optional) - List of addresses used by Corosync, all
@@ -1246,7 +1252,7 @@ ha_cluster_constraints_ticket:
 You may take a look at
 [an example](#creating-a-cluster-with-resource-constraints).
 
-#### ha_cluster_acls
+#### `ha_cluster_acls`
 
 structure, default: no ACLs
 
@@ -1347,9 +1353,10 @@ example](#configuring-a-cluster-using-a-quorum-device).
 
 #### Nodes' names and addresses
 
-Nodes' names and addresses can be configured in inventory. This is optional.
+Nodes' names and addresses can be configured in `ha_cluster` variable, for
+example in inventory. This is optional.
 Addresses configured in [`ha_cluster_node_options`](#ha_cluster_node_options)
-override those configured in inventory.
+override those configured in `ha_cluster`.
 If no names or addresses are configured, play's targets will be used.
 
 Example inventory with targets `node1` and `node2`:
@@ -1382,11 +1389,12 @@ all:
 #### SBD watchdog and devices
 
 When using SBD, you may optionally configure watchdog and SBD devices for each
-node in inventory. Even though all SBD devices must be shared to and accessible
-from all nodes, each node may use different names for the devices. The loaded
-watchdog modules and used devices may also be different for each node.
+node in `ha_cluster` variable, for example in inventory.
+Even though all SBD devices must be shared to and accessible from all nodes,
+each node may use different names for the devices. The loaded watchdog modules
+and used devices may also be different for each node.
 SBD settings defined in [`ha_cluster_node_options`](#ha_cluster_node_options)
-override those defined in inventory.
+override those defined in `ha_cluster`.
 See also [SBD variables](#ha_cluster_sbd_enabled).
 
 Example inventory with targets `node1` and `node2`:
@@ -1532,7 +1540,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 
 ### Configuring cluster to use SBD
 
-#### Using playbook variables
+#### Using `ha_cluster_node_options` variable
 
 ```yaml
 - hosts: node1 node2
@@ -1592,7 +1600,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
     - linux-system-roles.ha_cluster
 ```
 
-#### Using inventory
+#### Using `ha_cluster` variable
 
 The same result can be achieved by specifying node-specific options in inventory
 like this:
@@ -1663,8 +1671,8 @@ Variables specified in inventory can be omitted when writing the playbook:
     - linux-system-roles.ha_cluster
 ```
 
-If both the inventory and the playbook contain SBD options, those in the
-playbook have precedence.
+If both the `ha_cluster_node_options` and `ha_cluster` variables contain SBD
+options, those in `ha_cluster_node_options` have precedence.
 
 ### Configuring cluster properties
 
