@@ -141,9 +141,16 @@
         resource_clone: "{{ item }}"
       loop: "{{ ha_cluster_resource_clones }}"
 
+    ## Added support for Master Slave clone resources
+    - name: Configure cluster master slave clone resources
+      ansible.builtin.include_tasks: crm-cib-resource-master-slave.yml
+      vars:
+        resource: "{{ item }}"
+      loop: "{{ ha_cluster_resource_master_slave_clones }}"
+
     ## Stonith levels - fencing_topology
     - name: Configure stonith levels - fencing_topology
-      include_tasks: crm-cib-stonith-level.yml
+      ansible.builtin.include_tasks: crm-cib-stonith-level.yml
       when: ha_cluster_stonith_levels
 
     ## Constraints
@@ -274,6 +281,7 @@
     command: crm configure property maintenance-mode=false
     responses:
       ".*is-managed.*": "n"
+      ".*already.*": "n"
   check_mode: false
   changed_when: true
   run_once: true  # noqa: run_once[task]

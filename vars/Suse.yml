@@ -47,3 +47,7 @@ ha_cluster_corosync_params:
 # user override: selinux and firewall roles are currently not supported
 ha_cluster_manage_firewall: false
 ha_cluster_manage_selinux: false
+
+# List of allowed role inputs to limit crmsh issues
+__ha_cluster_crmsh_roles:
+  ['promoted', 'unpromoted', 'master', 'slave', 'started', 'stopped']

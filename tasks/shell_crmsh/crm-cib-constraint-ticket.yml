@@ -1,10 +1,22 @@
 # SPDX-License-Identifier: MIT
 ---
+# Verify if constraint.resource.id exists
+- name: Verify resource presence {{ constraint.resource.id }}
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ constraint.resource.id }}
+  register: __ha_cluster_constraint_resource
+  changed_when: false
+  when: constraint.resource.pattern is not defined
+  failed_when:
+    - "'does not exist' in __ha_cluster_constraint_resource.stderr"
+
 - name: Define ticket constraint.id {{ constraint.id | d(constraint_index) }}
   ansible.builtin.set_fact:
     __ha_cluster_constraint_id:
       "{{ constraint.id if constraint.id is defined else
-      (constraint.resource.id | quote) + '-ticket' }}"
+      'tck_' + (constraint.resource.id | quote) }}"
 
 # Verify if Shadow CIB already contains same constraint id.
 - name: Verify ticket constraint presence {{ __ha_cluster_constraint_id }}
@@ -20,7 +32,7 @@
 - name: Delete present ticket constraint {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
     cmd: |
-      crm -c {{ __ha_cluster_crm_shadow }}
+      crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ __ha_cluster_constraint_id }}
   when: __ha_cluster_constraint_status.rc == 0
   check_mode: false
@@ -31,7 +43,14 @@
     cmd: |
       crm -c {{ __ha_cluster_crm_shadow }}
       configure rsc_ticket {{ __ha_cluster_constraint_id }}
-      {{ constraint.ticket | quote }}: {{ constraint.resource.id | quote }}
+      {{ constraint.ticket | quote }}:
+      {% if constraint.resource.role | d() and
+        constraint.resource.role | lower in __ha_cluster_crmsh_roles %}
+        {{ constraint.resource.id | quote }}:{{
+          constraint.resource.role | lower | capitalize | quote }}
+      {% else %}
+        {{ constraint.resource.id | quote }}
+      {% endif %}
       {% for option in constraint.options | d([]) %}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}

@@ -1,13 +1,26 @@
 # SPDX-License-Identifier: MIT
 ---
+# Verify if constraint.resource.id exists
+- name: Verify resource presence {{ constraint.resource.id }}
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ constraint.resource.id }}
+  register: __ha_cluster_constraint_resource
+  changed_when: false
+  when: constraint.resource.pattern is not defined
+  failed_when:
+    - "'does not exist' in __ha_cluster_constraint_resource.stderr"
+
 - name: Define location constraint.id {{ constraint.id | d(constraint_index) }}
   ansible.builtin.set_fact:
     __ha_cluster_constraint_id:
       "{{ constraint.id if constraint.id is defined
-        else (constraint.resource.pattern | regex_replace('[^A-Za-z0-9]', '')
-         | quote) + '-location'
+        else 'loc_' +
+         (constraint.resource.pattern | regex_replace('[^A-Za-z0-9]', '')
+         | quote)
       if constraint.resource.pattern is defined
-      else (constraint.resource.id | quote) + '-location' }}"
+      else 'loc_' + (constraint.resource.id | quote) }}"
 
 # Verify if Shadow CIB already contains same constraint id.
 - name: Verify location constraint presence {{ __ha_cluster_constraint_id }}
@@ -23,7 +36,7 @@
 - name: Delete present location constraint {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
     cmd: |
-      crm -c {{ __ha_cluster_crm_shadow }}
+      crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ __ha_cluster_constraint_id }}
   when: __ha_cluster_constraint_status.rc == 0
   check_mode: false
@@ -39,14 +52,20 @@
       {% else %}
         {{ constraint.resource.id | quote }}
       {% endif %}\
-        rule
+      {% if constraint.resource.role | d() and
+        constraint.resource.role | lower in __ha_cluster_crmsh_roles %}
+          role={{
+            constraint.resource.role | lower | capitalize | quote
+          }}
+        {% endif %}
+      rule
       {% for option in constraint.options | d([]) if option.name == 'score' %}
         {{ option.value | lower | replace('infinity', 'inf') | quote }}:
       {% else %}
         inf:
       {% endfor %}
       {% if constraint.rule | d() %}
-        {{ constraint.rule }}
+        rule {{ constraint.rule }}
       {% else %}
         '\'#uname eq {{ constraint.node }}
       {% endif %}
