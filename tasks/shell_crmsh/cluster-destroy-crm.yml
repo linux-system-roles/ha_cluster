@@ -52,17 +52,7 @@
     loop_var: config_file
   when: config_file.stat.exists
 
-- name: Find all files in /var/lib/pacemaker/cib/
-  ansible.builtin.find:
-    paths: /var/lib/pacemaker/cib
-    recurse: true
-    patterns:
-      - 'cib*'
-      - 'shadow*'
-  register: __ha_cluster_cib_files
-
 - name: Remove all files in /var/lib/pacemaker/cib/
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: absent
-  loop: "{{ __ha_cluster_cib_files.files }}"
+  ansible.builtin.command:
+    cmd: "rm -f /var/lib/pacemaker/cib/{cib*,shadow*}"
+  changed_when: true
