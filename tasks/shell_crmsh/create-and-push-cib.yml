@@ -38,6 +38,7 @@
     command: crm configure property maintenance-mode=true
     responses:
       ".*is-managed.*": "n"
+      ".*already.*": "n"
   run_once: true  # noqa: run_once[task]
   check_mode: false
   changed_when: true
