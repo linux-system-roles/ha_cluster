@@ -1,11 +1,26 @@
 # SPDX-License-Identifier: MIT
 ---
+# Verify if resources in sets exist
+- name: Verify set resources presence
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {% for set in constraint.resource_sets %}
+          {% for resource in set.resource_ids %}
+            {{ resource | quote }}
+          {% endfor %}
+          {% endfor %}
+  register: __ha_cluster_constraint_resource_set
+  changed_when: false
+  failed_when:
+    - "'does not exist' in __ha_cluster_constraint_resource_set.stderr"
+
 - name: Define {{ constraint_type }} set constraint.id '{{
     constraint_index | string }}'  # noqa name[template]
   ansible.builtin.set_fact:
     __ha_cluster_constraint_id:
       "{{ constraint.id if constraint.id is defined else
-       constraint_type + '-set-' + constraint_index | string }}"
+       'set_' + constraint_type + '_' + constraint_index | string }}"
 
 # Verify if Shadow CIB already contains same constraint id.
 - name: Verify constraint set presence {{ __ha_cluster_constraint_id }}
@@ -21,7 +36,7 @@
 - name: Delete present constraint set {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
     cmd: |
-      crm -c {{ __ha_cluster_crm_shadow }}
+      crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ __ha_cluster_constraint_id }}
   when: __ha_cluster_resource_status.rc == 0
   check_mode: false

@@ -1,5 +1,18 @@
 # SPDX-License-Identifier: MIT
 ---
+# Verify if resource_group.resource_ids exists
+- name: Verify resource_group.resource_ids presence
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ resource }}
+  register: __ha_cluster_constraint_resources
+  changed_when: false
+  loop: "{{ resource_group.resource_ids }}"
+  loop_control:
+    loop_var: resource
+  failed_when: "'does not exist' in __ha_cluster_constraint_resources.stderr"
+
 # Verify if Shadow CIB already contains same resource id.
 - name: Verify resource group presence {{ resource_group.id }}
   ansible.builtin.command:
@@ -14,7 +27,7 @@
 - name: Delete present resource group {{ resource_group.id }}
   ansible.builtin.command:
     cmd: |
-      crm -c {{ __ha_cluster_crm_shadow }}
+      crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ resource_group.id }}
   when: __ha_cluster_resource_status.rc == 0
   check_mode: false

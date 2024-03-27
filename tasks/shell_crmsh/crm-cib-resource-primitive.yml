@@ -11,7 +11,9 @@
 # Delete resource id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present resource primitive {{ resource.id }}
   ansible.builtin.command:
-    cmd: crm -c {{ __ha_cluster_crm_shadow }} configure delete {{ resource.id }}
+    cmd: |
+      crm --force -c {{ __ha_cluster_crm_shadow }}
+      configure delete {{ resource.id }}
   when: __ha_cluster_resource_status.rc == 0
   check_mode: false
   changed_when: not ansible_check_mode

@@ -1,11 +1,33 @@
 # SPDX-License-Identifier: MIT
 ---
+# Verify if constraint.resource_leader.id exists
+- name: Verify resource_leader presence {{ constraint.resource_leader.id }}
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ constraint.resource_leader.id }}
+  register: __ha_cluster_constraint_resource_leader
+  changed_when: false
+  failed_when:
+    - "'does not exist' in __ha_cluster_constraint_resource_leader.stderr"
+
+# Verify if constraint.resourceresource_follower_leader.id exists
+- name: Verify resource_follower presence {{ constraint.resource_follower.id }}
+  ansible.builtin.command:
+    cmd: |
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure show {{ constraint.resource_follower.id }}
+  register: __ha_cluster_constraint_resource_follower
+  changed_when: false
+  failed_when:
+    - "'does not exist' in __ha_cluster_constraint_resource_follower.stderr"
+
 - name: Define colocation constraint.id '{{
     constraint.id | d(constraint_index) }}'
   ansible.builtin.set_fact:
     __ha_cluster_constraint_id:
       "{{ constraint.id if constraint.id is defined else
-      (constraint.resource_leader.id | quote) + '-colocation' }}"
+      'col_' + (constraint.resource_leader.id | quote) }}"
 
 # Verify if Shadow CIB already contains same constraint id.
 - name: Verify colocation constraint presence {{ __ha_cluster_constraint_id }}
@@ -21,7 +43,7 @@
 - name: Delete present colocation constraint {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
     cmd: |
-      crm -c {{ __ha_cluster_crm_shadow }}
+      crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ __ha_cluster_constraint_id }}
   when: __ha_cluster_constraint_status.rc == 0
   check_mode: false
@@ -37,8 +59,20 @@
       {% else %}
         inf:
       {% endfor %}
-        {{ constraint.resource_leader.id
-         | quote }} {{ constraint.resource_follower.id | quote }}
+      {% if constraint.resource_follower.role | d() and
+      constraint.resource_follower.role | lower in __ha_cluster_crmsh_roles %}
+        {{ constraint.resource_follower.id | quote }}:{{
+          constraint.resource_follower.role | lower | capitalize | quote }}
+      {% else %}
+        {{ constraint.resource_follower.id | quote }}
+      {% endif %}
+      {% if constraint.resource_leader.role | d() and
+        constraint.resource_leader.role | lower in __ha_cluster_crmsh_roles %}
+        {{ constraint.resource_leader.id | quote }}:{{
+          constraint.resource_leader.role | lower | capitalize | quote }}
+      {% else %}
+        {{ constraint.resource_leader.id | quote }}
+      {% endif %}
       {% for option in constraint.options | d([]) if option.name != 'score' %}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}

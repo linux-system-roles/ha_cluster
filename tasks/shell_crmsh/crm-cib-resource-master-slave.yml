@@ -1,25 +1,25 @@
 # SPDX-License-Identifier: MIT
 ---
-# Verify if resource_clone exists
-- name: Verify resource_clone presence {{ resource_clone.resource_id }}
+# Verify if resource.resource_id exists
+- name: Verify resource presence {{ resource.resource_id }}
   ansible.builtin.command:
     cmd: |
       crm -c {{ __ha_cluster_crm_shadow }}
-      configure show {{ resource_clone.resource_id }}
+      configure show {{ resource.resource_id }}
   register: __ha_cluster_constraint_resource
   changed_when: false
   failed_when:
     - "'does not exist' in __ha_cluster_constraint_resource.stderr"
- 
-- name: Define resouce clone resource_clone.id '{{
-    resource_clone.id | d('cln_' + resource_clone.resource_id) }}'
+
+- name: Define master slave msl_ resource id '{{
+    resource.id | d('msl_' + resource.resource_id) }}'
   ansible.builtin.set_fact:
     __ha_cluster_resource_id:
-      "{{ resource_clone.id if resource_clone.id is defined
-        else 'cln_' + resource_clone.resource_id | quote }}"
+      "{{ resource.id if resource.id is defined
+        else 'msl_' + resource.resource_id | quote }}"
 
 # Verify if Shadow CIB already contains same resource id.
-- name: Verify resouce clone presence {{ __ha_cluster_resource_id }}
+- name: Verify master slave clone presence {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
     cmd: |
       crm -c {{ __ha_cluster_crm_shadow }}
@@ -29,7 +29,7 @@
   failed_when: false
 
 # Delete resource id in Shadow CIB to avoid errors during cibadmin patch.
-- name: Delete present resouce clone {{ __ha_cluster_resource_id }}
+- name: Delete present master slave clone {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
     cmd: |
       crm --force -c {{ __ha_cluster_crm_shadow }}
@@ -38,15 +38,15 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-- name: Configure resource clone {{ __ha_cluster_resource_id }}
+- name: Configure master slave clone {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
     cmd: |
       crm -c {{ __ha_cluster_crm_shadow }}
-      configure clone {{ __ha_cluster_resource_id }}
-      {{ resource_clone.resource_id | quote }} \
-      {% if resource_clone.meta_attrs[0].attrs | default(False) %}
+      configure ms {{ __ha_cluster_resource_id }}
+      {{ resource.resource_id | quote }} \
+      {% if resource.meta_attrs[0].attrs | default(False) %}
         meta
-        {% for attr in resource_clone.meta_attrs[0].attrs -%}
+        {% for attr in resource.meta_attrs[0].attrs -%}
           {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
