@@ -3,14 +3,14 @@
 # Verify if resource_clone exists
 - name: Verify resource_clone presence {{ resource_clone.resource_id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {{ resource_clone.resource_id }}
   register: __ha_cluster_constraint_resource
   changed_when: false
   failed_when:
     - "'does not exist' in __ha_cluster_constraint_resource.stderr"
- 
+
 - name: Define resouce clone resource_clone.id '{{
     resource_clone.id | d('cln_' + resource_clone.resource_id) }}'
   ansible.builtin.set_fact:
@@ -21,7 +21,7 @@
 # Verify if Shadow CIB already contains same resource id.
 - name: Verify resouce clone presence {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {{ __ha_cluster_resource_id }}
   register: __ha_cluster_resource_status
@@ -31,18 +31,23 @@
 # Delete resource id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present resouce clone {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ __ha_cluster_resource_id }}
   when: __ha_cluster_resource_status.rc == 0
   check_mode: false
   changed_when: not ansible_check_mode
 
+# Clone is default resource type, unless attribute ms: true is specified
+# Pacemaker 2.0 deprecated use of ms, but it is still valid and supported
+# solution for SAP Hana clusters on SUSE using SAPHanaSR.
 - name: Configure resource clone {{ __ha_cluster_resource_id }}
   ansible.builtin.command:
     cmd: |
       crm -c {{ __ha_cluster_crm_shadow }}
-      configure clone {{ __ha_cluster_resource_id }}
+      configure {% if resource_clone.ms is defined and
+       resource_clone.ms %} ms {% else %} clone {% endif %}
+       {{ __ha_cluster_resource_id }}
       {{ resource_clone.resource_id | quote }} \
       {% if resource_clone.meta_attrs[0].attrs | default(False) %}
         meta
@@ -50,5 +55,7 @@
           {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
+  # crm can get stuck if it encounters error and expects prompt response.
+  timeout: 60
   check_mode: false
   changed_when: not ansible_check_mode

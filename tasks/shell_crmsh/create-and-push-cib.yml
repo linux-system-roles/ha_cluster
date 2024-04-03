@@ -31,8 +31,8 @@
 # status changes, resulting in shadow CIB outdated and unable to patch.
 # Sleep is implemented to ensure that cluster have enough time to freeze
 # to ensure CIB export consistency.
-# Meta-attrs is-managed will conflict with maintenance mode. Option n
-# will skip their deletion.
+# Meta-attrs is-managed will conflict with maintenance mode as well as
+# individual resource maintenance attributes. Expect will skip their deletion.
 - name: Put cluster in maintenance mode to freeze cib changes
   ansible.builtin.expect:
     command: crm configure property maintenance-mode=true
@@ -141,13 +141,6 @@
       vars:
         resource_clone: "{{ item }}"
       loop: "{{ ha_cluster_resource_clones }}"
-
-    ## Added support for Master Slave clone resources
-    - name: Configure cluster master slave clone resources
-      ansible.builtin.include_tasks: crm-cib-resource-master-slave.yml
-      vars:
-        resource: "{{ item }}"
-      loop: "{{ ha_cluster_resource_master_slave_clones }}"
 
     ## Stonith levels - fencing_topology
     - name: Configure stonith levels - fencing_topology
@@ -275,8 +268,8 @@
   when: __ha_cluster_cib_diff.rc == 1
   run_once: true  # noqa: run_once[task]
 
-# Meta-attrs is-managed will conflict with maintenance mode. Option n
-# will skip their deletion.
+# Meta-attrs is-managed will conflict with maintenance mode as well as
+# individual resource maintenance attributes. Expect will skip their deletion.
 - name: Disable maintenance mode
   ansible.builtin.expect:
     command: crm configure property maintenance-mode=false

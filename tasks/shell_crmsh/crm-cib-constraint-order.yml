@@ -14,7 +14,7 @@
 # Verify if constraint.resource_then.id exists
 - name: Verify resource_then presence {{ constraint.resource_then.id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {{ constraint.resource_then.id }}
   register: __ha_cluster_constraint_resource_then
@@ -31,7 +31,7 @@
 # Verify if Shadow CIB already contains same constraint id.
 - name: Verify order constraint presence {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {{ __ha_cluster_constraint_id }}
   register: __ha_cluster_constraint_status
@@ -41,16 +41,17 @@
 # Delete constraint id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present order constraint {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ __ha_cluster_constraint_id }}
   when: __ha_cluster_constraint_status.rc == 0
   check_mode: false
   changed_when: not ansible_check_mode
 
+# Expect module is used to combat crmsh freezing when asking for user prompt
 - name: Configure order constraint {{ __ha_cluster_constraint_id }}
-  ansible.builtin.command:
-    cmd: |
+  ansible.builtin.expect:
+    command: |
       crm -c {{ __ha_cluster_crm_shadow }}
       configure order {{ __ha_cluster_constraint_id | quote }}
       {% for option in constraint.options | d([]) if option.name == 'kind' %}
@@ -66,5 +67,16 @@
        if option.name != 'score' and option.name != 'kind'%}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}
+    responses:
+      ".*Do you still want to commit.*": "n"
   check_mode: false
   changed_when: not ansible_check_mode
+  ignore_errors: true
+  register: __ha_cluster_crmsh_output
+
+- name: Display crm command error details
+  ansible.builtin.fail:
+    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+  when:
+    - __ha_cluster_crmsh_output is defined
+    - __ha_cluster_crmsh_output.rc != 0

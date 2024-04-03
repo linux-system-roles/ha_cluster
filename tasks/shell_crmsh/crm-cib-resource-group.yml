@@ -3,7 +3,7 @@
 # Verify if resource_group.resource_ids exists
 - name: Verify resource_group.resource_ids presence
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {{ resource }}
   register: __ha_cluster_constraint_resources
@@ -16,7 +16,7 @@
 # Verify if Shadow CIB already contains same resource id.
 - name: Verify resource group presence {{ resource_group.id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {{ resource_group.id }}
   register: __ha_cluster_resource_status
@@ -26,7 +26,7 @@
 # Delete resource id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present resource group {{ resource_group.id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ resource_group.id }}
   when: __ha_cluster_resource_status.rc == 0
@@ -47,5 +47,7 @@
           {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
+  # crm can get stuck if it encounters error and expects prompt response.
+  timeout: 60
   check_mode: false
   changed_when: not ansible_check_mode
