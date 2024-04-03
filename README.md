@@ -676,41 +676,6 @@ This variable defines resource clones. The items are as follows:
 You may take a look at
 [an example](#creating-a-cluster-with-fencing-and-several-resources).
 
-#### `ha_cluster_resource_master_slave_clones`
-
-**[Master Slave clones are deprecated](
-  https://crmsh.github.io/man-4.3/#cmdhelp_configure_ms), but they are
-supported for crmsh and SUSE servers.**
-
-structure, default: no master slave resource clones
-
-```yaml
-ha_cluster_resource_master_slave_clones:
-  - resource_id: resource-to-be-cloned
-    id: custom-clone-id
-    meta_attrs:
-      - attrs:
-          - name: clone_meta_attribute1_name
-            value: clone_meta_attribute1_value
-          - name: clone_meta_attribute2_name
-            value: clone_meta_attribute2_value
-```
-
-This variable defines master slave resource clones. The items are as follows:
-
-* `resource_id` (mandatory) - Resource to be cloned. The resource must be
-  defined in
-  [`ha_cluster_resource_primitives`](#ha_cluster_resource_primitives) or
-  [`ha_cluster_resource_groups`](#ha_cluster_resource_groups).
-* `id` (optional) - Custom ID of the clone. If no ID is specified, it will be
-  generated. Warning will be emitted if this option is not supported by the
-  cluster.
-* `meta_attrs` (optional) - List of sets of the clone's meta attributes.
-  Currently, only one set is supported.
-
-You may take a look at
-[an example](#creating-a-cluster-with-fencing-and-several-resources).
-
 #### `ha_cluster_resource_bundles`
 
 structure, default: no bundle resources
@@ -1700,15 +1665,6 @@ SBD stonith resource.
                 value: '1'
       - resource_id: cloned-group
         promotable: true
-    ha_cluster_resource_master_slave_clones:
-      - resource_id: resource-to-be-cloned
-        id: custom-clone-id
-        meta_attrs:
-          - attrs:
-              - name: clone-max
-                value: '2'
-              - name: clone-node-max
-                value: '1'
     ha_cluster_resource_bundles:
       - id: bundle-with-resource
         resource-id: bundled-resource

@@ -3,13 +3,13 @@
 # Verify if resources in sets exist
 - name: Verify set resources presence
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {% for set in constraint.resource_sets %}
-          {% for resource in set.resource_ids %}
-            {{ resource | quote }}
-          {% endfor %}
-          {% endfor %}
+        {% for resource in set.resource_ids %}
+          {{ resource | quote }}
+        {% endfor %}
+      {% endfor %}
   register: __ha_cluster_constraint_resource_set
   changed_when: false
   failed_when:
@@ -25,7 +25,7 @@
 # Verify if Shadow CIB already contains same constraint id.
 - name: Verify constraint set presence {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {{ __ha_cluster_constraint_id }}
   register: __ha_cluster_resource_status
@@ -35,17 +35,18 @@
 # Delete constraint id in Shadow CIB to avoid errors during cibadmin patch.
 - name: Delete present constraint set {{ __ha_cluster_constraint_id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm --force -c {{ __ha_cluster_crm_shadow }}
       configure delete {{ __ha_cluster_constraint_id }}
   when: __ha_cluster_resource_status.rc == 0
   check_mode: false
   changed_when: not ansible_check_mode
 
+# Expect module is used to combat crmsh freezing when asking for user prompt
 - name: Configure {{ constraint_type }} constraint set '{{
     __ha_cluster_constraint_id }}'  # noqa name[template]
-  ansible.builtin.command:
-    cmd: |
+  ansible.builtin.expect:
+    command: |
       crm -c {{ __ha_cluster_crm_shadow }} configure
       {{ constraint_type if constraint_type != 'ticket' else 'rsc_ticket' }}
       {{ __ha_cluster_constraint_id }}
@@ -81,5 +82,16 @@
       {% for option in constraint.options | d([]) %}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}
+    responses:
+      ".*Do you still want to commit.*": "n"
   check_mode: false
   changed_when: not ansible_check_mode
+  ignore_errors: true
+  register: __ha_cluster_crmsh_output
+
+- name: Display crm command error details
+  ansible.builtin.fail:
+    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+  when:
+    - __ha_cluster_crmsh_output is defined
+    - __ha_cluster_crmsh_output.rc != 0
