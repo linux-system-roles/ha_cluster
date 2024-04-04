@@ -41,9 +41,10 @@
 # Clone is default resource type, unless attribute ms: true is specified
 # Pacemaker 2.0 deprecated use of ms, but it is still valid and supported
 # solution for SAP Hana clusters on SUSE using SAPHanaSR.
+# Expect module is used to combat crmsh freezing when asking for user input
 - name: Configure resource clone {{ __ha_cluster_resource_id }}
-  ansible.builtin.command:
-    cmd: |
+  ansible.builtin.expect:
+    command: |
       crm -c {{ __ha_cluster_crm_shadow }}
       configure {% if resource_clone.ms is defined and
        resource_clone.ms %} ms {% else %} clone {% endif %}
@@ -55,7 +56,18 @@
           {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
-  # crm can get stuck if it encounters error and expects prompt response.
-  timeout: 60
+    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
+    responses:
+      ".*ERROR.*": "n"
+      ".*y/n*": "n"
   check_mode: false
   changed_when: not ansible_check_mode
+  ignore_errors: true
+  register: __ha_cluster_crmsh_output
+
+- name: Display crm command error details
+  ansible.builtin.fail:
+    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+  when:
+    - __ha_cluster_crmsh_output is defined
+    - __ha_cluster_crmsh_output.rc != 0

@@ -2,7 +2,7 @@
 ---
 - name: Configure cluster properties set
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure property {{ item.name | quote }}={{ item.value | quote }}
   loop: "{{ properties_set.attrs }}"
