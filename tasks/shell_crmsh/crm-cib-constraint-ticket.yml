@@ -38,9 +38,10 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
+# Expect module is used to combat crmsh freezing when asking for user input
 - name: Configure ticket constraint {{ __ha_cluster_constraint_id }}
-  ansible.builtin.command:
-    cmd: |
+  ansible.builtin.expect:
+    command: |
       crm -c {{ __ha_cluster_crm_shadow }}
       configure rsc_ticket {{ __ha_cluster_constraint_id }}
       {{ constraint.ticket | quote }}:
@@ -54,7 +55,18 @@
       {% for option in constraint.options | d([]) %}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}
-  # crm can get stuck if it encounters error and expects prompt response.
-  timeout: 60
+    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
+    responses:
+      ".*ERROR.*": "n"
+      ".*y/n*": "n"
   check_mode: false
   changed_when: not ansible_check_mode
+  ignore_errors: true
+  register: __ha_cluster_crmsh_output
+
+- name: Display crm command error details
+  ansible.builtin.fail:
+    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+  when:
+    - __ha_cluster_crmsh_output is defined
+    - __ha_cluster_crmsh_output.rc != 0

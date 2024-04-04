@@ -72,10 +72,10 @@
   changed_when: false
   register: __ha_cluster_crm_output_nodes
   until: __ha_cluster_crm_output_nodes.stdout is regex(__ha_cluster_node_count)
-  # 2 minutes retry loop for cluster to initialize
-  retries: 12
+  # Retry loop for cluster to initialize
+  retries: 20
   delay: 10
-  timeout: 120
+#  timeout: 120
 
 - name: Wait for the cluster to show Online nodes
   ansible.builtin.command:
@@ -85,10 +85,10 @@
   changed_when: false
   register: __ha_cluster_crm_output_online
   until: __ha_cluster_crm_output_online.stdout is regex("Online:")
-  # 2 minutes retry loop for cluster nodes to come up
-  retries: 12
+  # Retry loop for cluster to initialize
+  retries: 20
   delay: 10
-  timeout: 120
+#  timeout: 120
 
 - name: Output current cluster status
   ansible.builtin.debug:

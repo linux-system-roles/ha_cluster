@@ -48,7 +48,7 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-# Expect module is used to combat crmsh freezing when asking for user prompt
+# Expect module is used to combat crmsh freezing when asking for user input
 - name: Configure order constraint {{ __ha_cluster_constraint_id }}
   ansible.builtin.expect:
     command: |
@@ -67,8 +67,10 @@
        if option.name != 'score' and option.name != 'kind'%}
         {{ option.name | quote }}={{ option.value | quote }}
       {% endfor %}
+    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
     responses:
-      ".*Do you still want to commit.*": "n"
+      ".*ERROR.*": "n"
+      ".*y/n*": "n"
   check_mode: false
   changed_when: not ansible_check_mode
   ignore_errors: true

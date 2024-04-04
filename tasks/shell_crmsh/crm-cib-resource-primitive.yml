@@ -18,9 +18,10 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
+# Expect module is used to combat crmsh freezing when asking for user input
 - name: Configure resource primitive {{ resource.id }}
-  ansible.builtin.command:  # noqa jinja[spacing]
-    cmd: |
+  ansible.builtin.expect:  # noqa jinja[spacing]
+    command: |
       crm -c {{ __ha_cluster_crm_shadow }} configure primitive
         {{ resource.id | quote }} {{ resource.agent | quote }} \
       {% if resource.instance_attrs[0].attrs | default(False) %}
@@ -49,7 +50,18 @@
           {% endif %}
         {% endfor %}
       {% endif %}
-  # crm can get stuck if it encounters error and expects prompt response.
-  timeout: 60
+    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
+    responses:
+      ".*ERROR.*": "n"
+      ".*y/n*": "n"
   check_mode: false
   changed_when: not ansible_check_mode
+  ignore_errors: true
+  register: __ha_cluster_crmsh_output
+
+- name: Display crm command error details
+  ansible.builtin.fail:
+    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+  when:
+    - __ha_cluster_crmsh_output is defined
+    - __ha_cluster_crmsh_output.rc != 0
