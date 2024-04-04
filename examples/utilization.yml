@@ -1,0 +1,44 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - node attributes definition
+  hosts: node1 node2
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    # For utilization to have an effect, the `placement-strategy` property
+    # must be set and its value must be different from the value `default`.
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: placement-strategy
+            value: utilization
+    ha_cluster_node_options:
+      - node_name: node1
+        utilization:
+          - attrs:
+              - name: utilization1
+                value: 1
+              - name: utilization2
+                value: 2
+      - node_name: node2
+        utilization:
+          - attrs:
+              - name: utilization1
+                value: 3
+              - name: utilization2
+                value: 4
+    ha_cluster_resource_primitives:
+      - id: resource1
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+        utilization:
+          - attrs:
+              - name: utilization1
+                value: 2
+              - name: utilization2
+                value: 3
+
+
+  roles:
+    - linux-system-roles.ha_cluster

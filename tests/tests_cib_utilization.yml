@@ -1,0 +1,114 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure utilization
+  hosts: all
+  vars_files: vars/main.yml
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Find first node name
+          set_fact:
+            __test_first_node: "{{
+                (ansible_play_hosts_all | length == 1)
+                | ternary('localhost', ansible_play_hosts[0]) }}"
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+          vars:
+            ha_cluster_cluster_name: test-cluster
+            ha_cluster_manage_firewall: true
+            ha_cluster_manage_selinux: true
+            # Property placement-strategy must be set accordingly. When not set,
+            # there is an extra warning in the `pcs node|resource utilization`
+            # result.
+            ha_cluster_cluster_properties:
+              - attrs:
+                  - name: placement-strategy
+                    value: utilization
+            ha_cluster_node_options:
+              - node_name: "{{ __test_first_node }}"
+                utilization:
+                  - attrs:
+                      - name: cpu
+                        value: 2
+                      - name: memory
+                        value: 4096
+            ha_cluster_resource_primitives:
+              - id: resource1
+                # wokeignore:rule=dummy
+                agent: 'ocf:pacemaker:Dummy'
+                utilization:
+                  - attrs:
+                      - name: cpu
+                        value: 1
+                  - attrs:
+                      - name: memory
+                        value: 1024
+              # Resource without utilization to ensure that they are optional.
+              - id: resource2
+                # wokeignore:rule=dummy
+                agent: 'ocf:pacemaker:Dummy'
+
+        - name: Verify node utilization
+          vars:
+            __test_expected_lines:
+              - "Node Utilization:"
+              - " {{ __test_first_node }}: cpu=2 memory=4096"
+          block:
+            - name: Fetch node utilization configuration from the cluster
+              command:
+                cmd: pcs node utilization
+              register: __test_pcs_node_utilization_config
+              changed_when: false
+
+            - name: Print real node utilization configuration
+              debug:
+                var: __test_pcs_node_utilization_config
+
+            - name: Print expected node utilization configuration
+              debug:
+                var: __test_expected_lines | list
+
+            - name: Check node utilization configuration
+              assert:
+                that:
+                  - __test_pcs_node_utilization_config.stdout_lines
+                    == __test_expected_lines | list
+
+        - name: Verify resource utilization
+          vars:
+            __test_expected_lines:
+              - "Resource Utilization:"
+              - " resource1: cpu=1"
+          block:
+            - name: Fetch resource utilization configuration from the cluster
+              command:
+                cmd: pcs resource utilization
+              register: __test_pcs_resource_utilization_config
+              changed_when: false
+
+            - name: Print real resource utilization configuration
+              debug:
+                var: __test_pcs_resource_utilization_config
+
+            - name: Print expected resource utilization configuration
+              debug:
+                var: __test_expected_lines | list
+
+            - name: Check resource utilization configuration
+              assert:
+                that:
+                  - __test_pcs_resource_utilization_config.stdout_lines
+                    == __test_expected_lines | list
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
