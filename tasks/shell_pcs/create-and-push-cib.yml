@@ -103,6 +103,16 @@
       loop_control:
         loop_var: node_options
 
+    ## Node utilization
+    - name: Configure node utilization
+      include_tasks: pcs-node-utilization.yml
+      loop: >-
+        {{
+          ha_cluster_node_options | selectattr('utilization', 'defined') | list
+        }}
+      loop_control:
+        loop_var: node_options
+
     ## Resource and operation defaults
     # RHEL 8.3, which is the oldest version supported by the role, supports
     # multiple sets of resources and resources operations defaults. Therefore,

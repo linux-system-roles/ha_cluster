@@ -57,3 +57,22 @@
   # the cluster.
   check_mode: false
   changed_when: not ansible_check_mode
+
+- name: Configure utilization for resource {{ resource.id }}
+  command:
+    # Multiple sets of utilization per node are not supported by pcs (and
+    # therefore the role) as of yet
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      -- resource utilization {{ resource.id | quote }}
+      {% if resource.utilization | d([]) %}
+        {% for attr in resource.utilization[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: false
+  changed_when: not ansible_check_mode

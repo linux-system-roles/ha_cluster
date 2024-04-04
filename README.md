@@ -28,6 +28,7 @@ An Ansible role for managing High Availability Clustering.
   * resource constraints
   * Pacemaker node attributes
   * Pacemaker Access Control Lists (ACLs)
+  * node and resource utilization
 
 ## Requirements
 
@@ -520,6 +521,12 @@ ha_cluster_node_options:
             value: value1_node1
           - name: attribute2
             value: value2_node1
+    utilization:
+      - attrs:
+          - name: utilization1
+            value: value1_node1
+          - name: utilization2
+            value: value2_node1
   - node_name: node2
     pcs_address: node2-address:2224
     corosync_addresses:
@@ -538,6 +545,12 @@ ha_cluster_node_options:
           - name: attribute1
             value: value1_node2
           - name: attribute2
+            value: value2_node2
+    utilization:
+      - attrs:
+          - name: utilization1
+            value: value1_node2
+          - name: utilization2
             value: value2_node2
 ```
 
@@ -567,11 +580,15 @@ The items are as follows:
 * `attributes` (optional) - List of sets of Pacemaker node attributes for the
   node. Currently, only one set is supported, so the first set is used and the
   rest are ignored.
+* `utilization` (optional) - List of sets of the node's utilization.The field
+  `value` must be an integer. Currently, only one set is supported, so the first
+  set is used and the rest are ignored.
 
 You may take a look at examples:
 
 * [configuring cluster to use SBD](#configuring-cluster-to-use-sbd)
 * [configuring node attributes](#configuring-node-attributes)
+* [configuring utilization](#configuring-utilization)
 
 #### `ha_cluster_cluster_properties`
 
@@ -626,6 +643,12 @@ ha_cluster_resource_primitives:
             value: operation2_attribute1_value
           - name: operation2_attribute2_name
             value: operation2_attribute2_value
+    utilization:
+      - attrs:
+          - name: utilization1_name
+            value: utilization1_value
+          - name: utilization2_name
+            value: utilization2_value
 ```
 
 This variable defines Pacemaker resources (including stonith) configured by the
@@ -661,9 +684,14 @@ role. The items are as follows:
     resource or stonith agent.
   * `attrs` (mandatory) - Operation options, at least one option must be
     specified.
+* `utilization` (optional) - List of sets of the resource's utilization. The
+  field `value` must be an integer. Currently, only one set is supported, so the
+  first set is used and the rest are ignored.
 
-You may take a look at
-[an example](#creating-a-cluster-with-fencing-and-several-resources).
+You may take a look at examples:
+
+* [creating a cluster with fencing and several resources](#creating-a-cluster-with-fencing-and-several-resources).
+* [configuring utilization](#configuring-utilization)
 
 #### `ha_cluster_resource_groups`
 
@@ -2163,6 +2191,51 @@ Note that you cannot run a quorum device on a cluster node.
         - id: admins
           roles:
             - administrator
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Configuring utilization
+
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    # For utilization to have an effect, the `placement-strategy` property
+    # must be set and its value must be different from the value `default`.
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: placement-strategy
+            value: utilization
+    ha_cluster_node_options:
+      - node_name: node1
+        utilization:
+          - attrs:
+              - name: utilization1
+                value: 1
+              - name: utilization2
+                value: 2
+      - node_name: node2
+        utilization:
+          - attrs:
+              - name: utilization1
+                value: 3
+              - name: utilization2
+                value: 4
+    ha_cluster_resource_primitives:
+      - id: resource1
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+        utilization:
+          - attrs:
+              - name: utilization1
+                value: 2
+              - name: utilization2
+                value: 3
 
   roles:
     - linux-system-roles.ha_cluster
