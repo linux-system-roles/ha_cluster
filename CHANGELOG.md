@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.16.0] - 2024-04-04
+--------------------
+
+### New Features
+
+- feat: SLES15 enablement, HAE detection (#192)
+- feat: Add support for ACL (#193)
+- feat: easily install cloud agents (#194)
+- feat: ha_cluster_node_options allows per-node addresses and SBD options to be set (#196)
+
+### Other Changes
+
+- ci: bump ansible/ansible-lint from 6 to 24 (#195)
+- ci: bump mathieudutour/github-tag-action from 6.1 to 6.2 (#198)
+
 [1.15.0] - 2024-02-13
 --------------------
 
@@ -138,7 +153,6 @@ Changelog
   - Remove badges from README.md prior to converting to HTML
   
   Signed-off-by: Sergei Petrosian <spetrosi@redhat.com>
-
 
 [1.10.0] - 2023-07-19
 --------------------
