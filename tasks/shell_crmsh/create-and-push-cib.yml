@@ -123,6 +123,26 @@
         properties_set: "{{ ha_cluster_cluster_properties[0] }}"
       when: ha_cluster_cluster_properties[0].attrs | d([])
 
+    ## Resource defaults
+    - name: Configure resource defaults
+      ansible.builtin.include_tasks: crm-rsc-op-defaults.yml
+      vars:
+        operations: false
+      loop: "{{ ha_cluster_resource_defaults.meta_attrs | d([]) }}"
+      loop_control:
+        index_var: defaults_set_index
+        loop_var: defaults_set
+
+    ## Resource operation defaults
+    - name: Configure resource operation defaults
+      ansible.builtin.include_tasks: crm-rsc-op-defaults.yml
+      vars:
+        operations: true
+      loop: "{{ ha_cluster_resource_operation_defaults.meta_attrs | d([]) }}"
+      loop_control:
+        index_var: defaults_set_index
+        loop_var: defaults_set
+
     ## Resources
     - name: Configure cluster resources
       ansible.builtin.include_tasks: crm-cib-resource-primitive.yml

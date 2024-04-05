@@ -3,7 +3,7 @@
 # Verify if constraint.resource_first.id exists
 - name: Verify resource_first presence {{ constraint.resource_first.id }}
   ansible.builtin.command:
-    cmd: |
+    cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
       configure show {{ constraint.resource_first.id }}
   register: __ha_cluster_constraint_resource_first
