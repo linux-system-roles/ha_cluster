@@ -1,0 +1,61 @@
+# SPDX-License-Identifier: MIT
+---
+# Verify if defaults_set.id exists
+- name: Block for handling defined defaults_set.id
+  when: defaults_set.id is defined
+  block:
+    - name: Verify defaults set presence {{ defaults_set.id | d('') }}
+      ansible.builtin.command:
+        cmd: >-
+          crm -c {{ __ha_cluster_crm_shadow }}
+          configure show {{ defaults_set.id }}
+      register: __ha_cluster_defaults_set_status
+      changed_when: false
+      failed_when: false
+
+    # Delete defaults set in Shadow CIB to avoid errors during cibadmin patch.
+    - name: Delete present defaults set {{ defaults_set.id | d('') }}
+      ansible.builtin.command:
+        cmd: >-
+          crm --force -c {{ __ha_cluster_crm_shadow }}
+          configure delete {{ defaults_set.id }}
+      when:
+        - __ha_cluster_defaults_set_status.rc == 0
+      check_mode: false
+      changed_when: not ansible_check_mode
+
+# TODO: rule and score are not implemented due to cmrsh syntax
+- name: Configure rsc/op defaults set {{
+    defaults_set.id | d(defaults_set_index) }}
+  ansible.builtin.expect:
+    command: >
+      crm -c {{ __ha_cluster_crm_shadow }}
+      configure
+      {% if operations %}
+        op_defaults
+      {% else %}
+        rsc_defaults
+      {% endif %}
+      {% if defaults_set.id is defined %}
+        {{ defaults_set.id }}:
+      {% endif %}
+      {% if defaults_set.attrs | d([]) %}
+        {% for attr in defaults_set.attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
+    responses:
+      ".*ERROR.*": "n"
+      ".*y/n*": "n"
+  check_mode: false
+  changed_when: not ansible_check_mode
+  ignore_errors: true
+  register: __ha_cluster_crmsh_output
+
+- name: Display crm command error details
+  ansible.builtin.fail:
+    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+  when:
+    - __ha_cluster_crmsh_output is defined
+    - __ha_cluster_crmsh_output.rc != 0
