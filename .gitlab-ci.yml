@@ -167,9 +167,9 @@ build_tier1_ci_yml:
   stage: tier0
   script:
     - cd tests
-    - export TESTS=$(ls -1 tests_*.yml)
+    - export TESTS=$(ls -1 tests_*.yml | sed -e 's/^tests_\(.*\)\.yml$/\1/')
     - cd ..
-    - python -c 'import os; from jinja2 import Template; print(Template(open(".gitlab-ci-tier1.yml.j2").read()).render(test_file_list=os.environ["TESTS"].split()));' > .gitlab-ci-tier1.yml
+    - python -c 'import os; from jinja2 import Template; print(Template(open(".gitlab-ci-tier1.yml.j2").read()).render(tests=os.environ["TESTS"].split()));' > .gitlab-ci-tier1.yml
   artifacts:
     paths:
       - .gitlab-ci-tier1.yml
