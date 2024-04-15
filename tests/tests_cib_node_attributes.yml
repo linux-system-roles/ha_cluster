@@ -43,7 +43,9 @@
           vars:
             __test_expected_lines:
               - "Node Attributes:"
-              - " {{ __test_first_node }}: attr1=val1 attr2=val2 attr3=val3"
+              # Except the first one, nvsets are ignored, so attr3=val3 is not
+              # there.
+              - " {{ __test_first_node }}: attr1=val1 attr2=val2"
           block:
             - name: Fetch node attributes configuration from the cluster
               command:
