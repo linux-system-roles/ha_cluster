@@ -6,18 +6,6 @@ variables:
   YAMLLINT_CONFIG: "{extends: .yamllint.yml, ignore: [.github/, .markdownlint.yaml]}"
   PYENV_ROOT: /root/pyenvs/ansible
 
-.rhel8_images: &RHEL8_IMAGES
-  - LsrRhel8NextAnsibleCurrent
-  - LsrRhel8NextAnsible29
-  - LsrRhel8OldestAnsibleCurrent
-  - LsrRhel8OldestAnsible29
-
-.rhel9_images: &RHEL9_IMAGES
-  - LsrRhel9NextAnsibleCurrent
-  - LsrRhel9NextAnsible29
-  - LsrRhel9CurrentAnsibleCurrent
-  - LsrRhel9CurrentAnsible29
-
 .all_images: &ALL_IMAGES
   - LsrRhel9NextAnsibleCurrent
   - LsrRhel9NextAnsible29
@@ -27,49 +15,6 @@ variables:
   - LsrRhel8NextAnsible29
   - LsrRhel8OldestAnsibleCurrent
   - LsrRhel8OldestAnsible29
-
-.tier1_tests: &TIER1_TESTS
-  - cib_acls
-  - cib_constraints_create
-  - cib_node_attributes
-  - cib_properties_empty
-  - cib_properties_one_set
-  - cib_resources_create
-  - cib_rsc_op_defaults
-  - cib_stonith_levels_validation
-  - cib_stonith_levels
-  - cluster_advanced_knet_full
-  - cluster_advanced_knet_implicit
-  - cluster_advanced_udp_full
-  - cluster_basic_cloud_packages
-  - cluster_basic_custom_fence_agents
-  - cluster_basic_custom_packages
-  - cluster_basic_custom_pcsd_tls_cert_role
-  - cluster_basic_custom_pcsd_tls
-  - cluster_basic_disabled
-  - cluster_basic_existing_psks
-  - cluster_basic_new_psks
-  - cluster_basic
-  - cluster_destroy
-  - default
-  - node_options_check
-  - qdevice_all_options
-  - qdevice_minimal
-  - qdevice_tls_kaptb_options
-  - qnetd_and_cluster
-  - qnetd_disabled
-  - qnetd
-  - sbd_all_options_combined
-  - sbd_all_options_inventory
-  - sbd_all_options_play
-  - sbd_check_devices_count_combined
-  - sbd_check_devices_count_inventory
-  - sbd_check_devices_count_play
-  - sbd_defaults_disabled
-  - sbd_defaults
-  - sbd_delay_start
-  - sbd_needs_atb_while_atb_disabled
-  - sbd_needs_atb_while_atb_enabled
 
 # Jobs running linters and test tools shipped with ansible. Old versions of
 # ansible don't provide all required functionality.
@@ -132,17 +77,6 @@ stages:
   - tier1
 
 # tier0 - non-python
-check_tier1_test_list:
-  extends: .job_generic_linter
-  stage: tier0
-  script:
-    - TESTS_DIR=$(find tests/tests_*.yml)
-    - TESTS_CI=$(python -c 'import yaml; f=open(".gitlab-ci.yml"); d=yaml.safe_load(f); print("\n".join([f"tests/tests_{test}.yml" for test in d[".tier1_tests"]]))')
-    - echo -e "Tests found:\n$TESTS_DIR"
-    - echo -e "\nTests defined:\n$TESTS_CI"
-    - echo -e "\nDiff tests found vs tests defined:"
-    - diff <(echo -e "$TESTS_DIR") <(echo -e "$TESTS_CI")
-
 ansible_lint:
   extends: .job_ansible_check
   stage: tier0
@@ -228,40 +162,26 @@ unit_tests:
     - PYTHONPATH="./library:./module_utils:$PYTHONPATH" python -m unittest --verbose tests/unit/*.py
 
 # tier 1
-# RHEL 8.4 with the newest compatible Ansible doesn't work with the new ansible
-# galaxy deployed on 2023-09-30. It works with the old one, though, so we set
-# it to connect to the old one using the --server option.
-# references:
-# https://www.ansible.com/blog/new-ansible-galaxy
-# https://forum.ansible.com/t/new-ansible-galaxy/1155/20
-# https://github.com/ansible/awx/issues/14496#issuecomment-1743711473
-.role_test:
-  stage: tier1
+build_tier1_ci_yml:
+  extends: .job_generic_linter
+  stage: tier0
   script:
-    - if [ "x${BASE_IMAGE_NAME}" == "xLsrRhel8OldestAnsibleCurrent" ]; then GALAXY_SERVER="https://old-galaxy.ansible.com"; fi
-    - echo "$GALAXY_SERVER"
-    - ansible-galaxy collection install -vvv "--server=${GALAXY_SERVER}" -r ./meta/collection-requirements.yml
-    - varsparams=""
-    - TEST_FILE_NAME="tests_${TEST_FILE}.yml"
-    - echo "$TEST_FILE_NAME"
-    - if ! grep "$TEST_FILE_NAME" tests/no-vault-variables.txt; then varsparams="-e @tests/vars/vault-variables.yml"; fi
-    - ansible-playbook -v -i localhost, --vault-password-file tests/vault_pwd $varsparams "tests/${TEST_FILE_NAME}"
+    - cd tests
+    - export TESTS=$(ls -1 tests_*.yml | sed -e 's/^tests_\(.*\)\.yml$/\1/')
+    - cd ..
+    - python -c 'import os; from jinja2 import Template; print(Template(open(".gitlab-ci-tier1.yml.j2").read()).render(tests=os.environ["TESTS"].split()));' > .gitlab-ci-tier1.yml
   artifacts:
     paths:
-      - /var/log/pcsd/
-    when: on_failure
-    expire_in: 1 week
+      - .gitlab-ci-tier1.yml
+    expire_in: 1 day
 
-rhel8:
-  extends: .role_test
+trigger_tier1:
+  stage: tier1
+  trigger:
+    include:
+      - artifact: .gitlab-ci-tier1.yml
+        job: build_tier1_ci_yml
+    strategy: depend
   parallel:
     matrix:
-      - TEST_FILE: *TIER1_TESTS
-        BASE_IMAGE_NAME: *RHEL8_IMAGES
-
-rhel9:
-  extends: .role_test
-  parallel:
-    matrix:
-      - TEST_FILE: *TIER1_TESTS
-        BASE_IMAGE_NAME: *RHEL9_IMAGES
+      - BASE_IMAGE_NAME: *ALL_IMAGES

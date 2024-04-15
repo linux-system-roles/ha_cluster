@@ -1,0 +1,44 @@
+---
+# yamllint disable rule:line-length
+
+# RHEL 8.4 with the newest compatible Ansible doesn't work with the new ansible
+# galaxy deployed on 2023-09-30. It works with the old one, though, so we set
+# it to connect to the old one using the --server option.
+# references:
+# https://www.ansible.com/blog/new-ansible-galaxy
+# https://forum.ansible.com/t/new-ansible-galaxy/1155/20
+# https://github.com/ansible/awx/issues/14496#issuecomment-1743711473
+.run_test:
+  before_script:
+    - source "${PYENV_ROOT}/bin/activate"
+    - python --version
+  script:
+    - echo "$BASE_IMAGE_NAME"
+    - echo "$TEST_NAME"
+    - if [ "x${BASE_IMAGE_NAME}" == "xLsrRhel8OldestAnsibleCurrent" ]; then GALAXY_SERVER="https://old-galaxy.ansible.com"; fi
+    - echo "$GALAXY_SERVER"
+    - ansible-galaxy collection install -vvv "--server=${GALAXY_SERVER}" -r ./meta/collection-requirements.yml
+    - varsparams=""
+    - TEST_FILE_NAME="tests_${TEST_NAME}.yml"
+    - echo "$TEST_FILE_NAME"
+    - if ! grep "$TEST_FILE_NAME" tests/no-vault-variables.txt; then varsparams="-e @tests/vars/vault-variables.yml"; fi
+    - ansible-playbook -v -i localhost, --vault-password-file tests/vault_pwd $varsparams "tests/${TEST_FILE_NAME}"
+  after_script:
+    - mkdir var_log
+    - journalctl -x > var_log/journal
+    - cp -r /var/log/pcsd/ var_log/ || true
+    - cp -r /var/log/pacemaker/ var_log/ || true
+    - cp -r /var/log/cluster/ var_log/ || true
+  artifacts:
+    name: "ha_cluster-${CI_COMMIT_SHORT_SHA}-${TEST_NAME}-${BASE_IMAGE_NAME}"
+    paths:
+      - var_log/
+    when: always
+    expire_in: 2 weeks
+
+{% for test_name in tests %}
+{{ test_name }}:
+  extends: .run_test
+  variables:
+    TEST_NAME: {{ test_name }}
+{% endfor %}
