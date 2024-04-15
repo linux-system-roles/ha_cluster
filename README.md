@@ -565,7 +565,8 @@ The items are as follows:
 * `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
   monitoring. Defaults to empty list if not set.
 * `attributes` (optional) - List of sets of Pacemaker node attributes for the
-  node. Currently, no more than one set for each node is supported.
+  node. Currently, only one set is supported, so the first set is used and the
+  rest are ignored.
 
 You may take a look at examples:
 
@@ -586,7 +587,8 @@ ha_cluster_cluster_properties:
 ```
 
 List of sets of cluster properties - Pacemaker cluster-wide configuration.
-Currently, only one set is supported.
+Currently, only one set is supported, so the first set is used and the rest are
+ignored.
 
 You may take a look at [an example](#configuring-cluster-properties).
 
@@ -640,11 +642,12 @@ role. The items are as follows:
   it will be unable to decide which agent should be used. Therefore, it is
   recommended to use full names.
 * `instance_attrs` (optional) - List of sets of the resource's instance
-  attributes. Currently, only one set is supported. The exact names and values
-  of attributes, as well as whether they are mandatory or not, depends on the
-  resource or stonith agent.
+  attributes. Currently, only one set is supported, so the first set is used and
+  the rest are ignored. The exact names and values of attributes, as well as
+  whether they are mandatory or not, depends on the resource or stonith agent.
 * `meta_attrs` (optional) - List of sets of the resource's meta attributes.
-  Currently, only one set is supported.
+  Currently, only one set is supported, so the first set is used and the rest
+  are ignored.
 * `copy_operations_from_agent` (optional) - Resource agents usually define
   default settings for resource operations (e.g. interval, timeout) optimized
   for the specific agent. If this variable is set to `true`, then those
@@ -688,7 +691,8 @@ This variable defines resource groups. The items are as follows:
   [`ha_cluster_resource_primitives`](#ha_cluster_resource_primitives). At least
   one resource must be listed.
 * `meta_attrs` (optional) - List of sets of the group's meta attributes.
-  Currently, only one set is supported.
+  Currently, only one set is supported, so the first set is used and the rest
+  are ignored.
 
 You may take a look at
 [an example](#creating-a-cluster-with-fencing-and-several-resources).
@@ -721,7 +725,8 @@ This variable defines resource clones. The items are as follows:
   generated. Warning will be emitted if this option is not supported by the
   cluster.
 * `meta_attrs` (optional) - List of sets of the clone's meta attributes.
-  Currently, only one set is supported.
+  Currently, only one set is supported, so the first set is used and the rest
+  are ignored.
 
 You may take a look at
 [an example](#creating-a-cluster-with-fencing-and-several-resources).
@@ -796,7 +801,8 @@ This variable defines resource bundles. The items are as follows:
   directories on the host's filesystem into the container. Each list of
   name-value dictionaries holds options for one directory mapping.
 * `meta_attrs` (optional) - List of sets of the bundle's meta attributes.
-  Currently, only one set is supported.
+  Currently, only one set is supported, so the first set is used and the rest
+  are ignored.
 
 Note, that the role does not install container launch technology automatically.
 However, you can install it by listing appropriate packages in
