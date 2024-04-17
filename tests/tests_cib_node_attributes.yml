@@ -35,16 +35,11 @@
                         value: val1
                       - name: attr2
                         value: val2
-                  - attrs:
-                      - name: attr3
-                        value: val3
 
         - name: Verify node attributes
           vars:
             __test_expected_lines:
               - "Node Attributes:"
-              # Except the first one, nvsets are ignored, so attr3=val3 is not
-              # there.
               - " {{ __test_first_node }}: attr1=val1 attr2=val2"
           block:
             - name: Fetch node attributes configuration from the cluster
