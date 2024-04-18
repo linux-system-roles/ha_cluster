@@ -860,8 +860,8 @@ SBD. Defaults to <code>/dev/watchdog</code> if not set.</li>
 <li><code>sbd_devices</code> (optional) - Devices to use for exchanging
 SBD messages and for monitoring. Defaults to empty list if not set.</li>
 <li><code>attributes</code> (optional) - List of sets of Pacemaker node
-attributes for the node. Currently, no more than one set for each node
-is supported.</li>
+attributes for the node. Currently, only one set is supported, so the
+first set is used and the rest are ignored.</li>
 </ul>
 <p>You may take a look at examples:</p>
 <ul>
@@ -881,7 +881,8 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb7-1"><a href="
 <span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> property2_name</span></span>
 <span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">value</span><span class="kw">:</span><span class="at"> property2_value</span></span></code></pre></div>
 <p>List of sets of cluster properties - Pacemaker cluster-wide
-configuration. Currently, only one set is supported.</p>
+configuration. Currently, only one set is supported, so the first set is
+used and the rest are ignored.</p>
 <p>You may take a look at <a href="#configuring-cluster-properties">an
 example</a>.</p>
 <h3
@@ -936,11 +937,13 @@ same short name are installed, the role will fail as it will be unable
 to decide which agent should be used. Therefore, it is recommended to
 use full names.</li>
 <li><code>instance_attrs</code> (optional) - List of sets of the
-resource's instance attributes. Currently, only one set is supported.
-The exact names and values of attributes, as well as whether they are
-mandatory or not, depends on the resource or stonith agent.</li>
+resource's instance attributes. Currently, only one set is supported, so
+the first set is used and the rest are ignored. The exact names and
+values of attributes, as well as whether they are mandatory or not,
+depends on the resource or stonith agent.</li>
 <li><code>meta_attrs</code> (optional) - List of sets of the resource's
-meta attributes. Currently, only one set is supported.</li>
+meta attributes. Currently, only one set is supported, so the first set
+is used and the rest are ignored.</li>
 <li><code>copy_operations_from_agent</code> (optional) - Resource agents
 usually define default settings for resource operations (e.g. interval,
 timeout) optimized for the specific agent. If this variable is set to
@@ -986,7 +989,8 @@ in <a
 href="#ha_cluster_resource_primitives"><code>ha_cluster_resource_primitives</code></a>.
 At least one resource must be listed.</li>
 <li><code>meta_attrs</code> (optional) - List of sets of the group's
-meta attributes. Currently, only one set is supported.</li>
+meta attributes. Currently, only one set is supported, so the first set
+is used and the rest are ignored.</li>
 </ul>
 <p>You may take a look at <a
 href="#creating-a-cluster-with-fencing-and-several-resources">an
@@ -1018,7 +1022,8 @@ href="#ha_cluster_resource_groups"><code>ha_cluster_resource_groups</code></a>.<
 specified, it will be generated. Warning will be emitted if this option
 is not supported by the cluster.</li>
 <li><code>meta_attrs</code> (optional) - List of sets of the clone's
-meta attributes. Currently, only one set is supported.</li>
+meta attributes. Currently, only one set is supported, so the first set
+is used and the rest are ignored.</li>
 </ul>
 <p>You may take a look at <a
 href="#creating-a-cluster-with-fencing-and-several-resources">an
@@ -1094,7 +1099,8 @@ dictionaries mapping directories on the host's filesystem into the
 container. Each list of name-value dictionaries holds options for one
 directory mapping.</li>
 <li><code>meta_attrs</code> (optional) - List of sets of the bundle's
-meta attributes. Currently, only one set is supported.</li>
+meta attributes. Currently, only one set is supported, so the first set
+is used and the rest are ignored.</li>
 </ul>
 <p>Note, that the role does not install container launch technology
 automatically. However, you can install it by listing appropriate
