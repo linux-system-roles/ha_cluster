@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Example ha_cluster role invocation - node attributes definition
+- name: Example ha_cluster role invocation - utilization definition
   hosts: node1 node2
   vars:
     ha_cluster_manage_firewall: true

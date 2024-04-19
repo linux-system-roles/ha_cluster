@@ -580,7 +580,7 @@ The items are as follows:
 * `attributes` (optional) - List of sets of Pacemaker node attributes for the
   node. Currently, only one set is supported, so the first set is used and the
   rest are ignored.
-* `utilization` (optional) - List of sets of the node's utilization.The field
+* `utilization` (optional) - List of sets of the node's utilization. The field
   `value` must be an integer. Currently, only one set is supported, so the first
   set is used and the rest are ignored.
 
@@ -2201,8 +2201,6 @@ Note that you cannot run a quorum device on a cluster node.
 ```yaml
 - hosts: node1 node2
   vars:
-    ha_cluster_manage_firewall: true
-    ha_cluster_manage_selinux: true
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
     # For utilization to have an effect, the `placement-strategy` property
