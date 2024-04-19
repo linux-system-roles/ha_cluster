@@ -7,7 +7,7 @@
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- node utilization {{ node_options.node_name | quote }}
-      {% for attr in node_options.utilization[0].attrs %}
+      {% for attr in node_options.utilization[0].attrs | d([]) %}
         {{ attr.name | quote }}={{ attr.value | quote }}
       {% endfor %}
   # We always need to create CIB to see whether it's the same as what is
