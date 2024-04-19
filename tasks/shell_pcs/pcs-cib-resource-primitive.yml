@@ -66,7 +66,7 @@
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- resource utilization {{ resource.id | quote }}
       {% if resource.utilization | d([]) %}
-        {% for attr in resource.utilization[0].attrs %}
+        {% for attr in resource.utilization[0].attrs | d([]) %}
           {{ attr.name | quote }}={{ attr.value | quote }}
         {% endfor %}
       {% endif %}
