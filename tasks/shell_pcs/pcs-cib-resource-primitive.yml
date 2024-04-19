@@ -58,7 +58,7 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-- name: Configure utilization for resource {{ resource.id }}
+- name: Configure utilization for resource primitive {{ resource.id }}
   command:
     # Multiple sets of utilization per node are not supported by pcs (and
     # therefore the role) as of yet
