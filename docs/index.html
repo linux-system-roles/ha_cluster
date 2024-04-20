@@ -294,6 +294,8 @@ id="toc-configuring-node-attributes">Configuring node
 attributes</a></li>
 <li><a href="#configuring-acls" id="toc-configuring-acls">Configuring
 ACLs</a></li>
+<li><a href="#configuring-utilization"
+id="toc-configuring-utilization">Configuring utilization</a></li>
 <li><a href="#purging-all-cluster-configuration"
 id="toc-purging-all-cluster-configuration">Purging all cluster
 configuration</a></li>
@@ -335,6 +337,7 @@ lost.</li>
 <li>resource constraints</li>
 <li>Pacemaker node attributes</li>
 <li>Pacemaker Access Control Lists (ACLs)</li>
+<li>node and resource utilization</li>
 </ul></li>
 </ul>
 <h1 id="requirements">Requirements</h1>
@@ -814,25 +817,37 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb6-1"><a href="
 <span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value1_node1</span></span>
 <span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> attribute2</span></span>
 <span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value2_node1</span></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">node_name</span><span class="kw">:</span><span class="at"> node2</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pcs_address</span><span class="kw">:</span><span class="at"> node2-address:2224</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">corosync_addresses</span><span class="kw">:</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fl">192.168.1.12</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fl">192.168.2.12</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sbd_watchdog_modules</span><span class="kw">:</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> module1</span></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sbd_watchdog_modules_blocklist</span><span class="kw">:</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> module3</span></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sbd_watchdog</span><span class="kw">:</span><span class="at"> /dev/watchdog1</span></span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sbd_devices</span><span class="kw">:</span></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> /dev/vdw</span></span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> /dev/vdz</span></span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> attribute1</span></span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value1_node2</span></span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> attribute2</span></span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value2_node2</span></span></code></pre></div>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">utilization</span><span class="kw">:</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization1</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value1_node1</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization2</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value2_node1</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="kw">-</span><span class="at"> </span><span class="fu">node_name</span><span class="kw">:</span><span class="at"> node2</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">pcs_address</span><span class="kw">:</span><span class="at"> node2-address:2224</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">corosync_addresses</span><span class="kw">:</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fl">192.168.1.12</span></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fl">192.168.2.12</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sbd_watchdog_modules</span><span class="kw">:</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> module1</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sbd_watchdog_modules_blocklist</span><span class="kw">:</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> module3</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sbd_watchdog</span><span class="kw">:</span><span class="at"> /dev/watchdog1</span></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">sbd_devices</span><span class="kw">:</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> /dev/vdw</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> /dev/vdz</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">attributes</span><span class="kw">:</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> attribute1</span></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value1_node2</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> attribute2</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value2_node2</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">utilization</span><span class="kw">:</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization1</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value1_node2</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization2</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> value2_node2</span></span></code></pre></div>
 <p>This variable defines various settings which vary from cluster node
 to cluster node.</p>
 <p><strong>Note:</strong> Use an inventory or playbook hosts to specify
@@ -862,6 +877,10 @@ SBD messages and for monitoring. Defaults to empty list if not set.</li>
 <li><code>attributes</code> (optional) - List of sets of Pacemaker node
 attributes for the node. Currently, only one set is supported, so the
 first set is used and the rest are ignored.</li>
+<li><code>utilization</code> (optional) - List of sets of the node's
+utilization. The field <code>value</code> must be an integer. Currently,
+only one set is supported, so the first set is used and the rest are
+ignored.</li>
 </ul>
 <p>You may take a look at examples:</p>
 <ul>
@@ -869,6 +888,7 @@ first set is used and the rest are ignored.</li>
 SBD</a></li>
 <li><a href="#configuring-node-attributes">configuring node
 attributes</a></li>
+<li><a href="#configuring-utilization">configuring utilization</a></li>
 </ul>
 <h3
 id="ha_cluster_cluster_properties"><code>ha_cluster_cluster_properties</code></h3>
@@ -917,7 +937,13 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb8-1"><a href="
 <span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> operation2_attribute1_name</span></span>
 <span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> operation2_attribute1_value</span></span>
 <span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> operation2_attribute2_name</span></span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> operation2_attribute2_value</span></span></code></pre></div>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> operation2_attribute2_value</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">utilization</span><span class="kw">:</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization1_name</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> utilization1_value</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization2_name</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> utilization2_value</span></span></code></pre></div>
 <p>This variable defines Pacemaker resources (including stonith)
 configured by the role. The items are as follows:</p>
 <ul>
@@ -961,10 +987,18 @@ Pacemaker and the resource or stonith agent.</li>
 <li><code>attrs</code> (mandatory) - Operation options, at least one
 option must be specified.</li>
 </ul></li>
+<li><code>utilization</code> (optional) - List of sets of the resource's
+utilization. The field <code>value</code> must be an integer. Currently,
+only one set is supported, so the first set is used and the rest are
+ignored.</li>
 </ul>
-<p>You may take a look at <a
-href="#creating-a-cluster-with-fencing-and-several-resources">an
-example</a>.</p>
+<p>You may take a look at examples:</p>
+<ul>
+<li><a
+href="#creating-a-cluster-with-fencing-and-several-resources">creating a
+cluster with fencing and several resources</a>.</li>
+<li><a href="#configuring-utilization">configuring utilization</a></li>
+</ul>
 <h3
 id="ha_cluster_resource_groups"><code>ha_cluster_resource_groups</code></h3>
 <p>structure, default: no resource groups</p>
@@ -2437,15 +2471,55 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb44-1"><a href=
 <span id="cb44-41"><a href="#cb44-41" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb44-42"><a href="#cb44-42" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
 <span id="cb44-43"><a href="#cb44-43" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.ha_cluster</span></span></code></pre></div>
-<h2 id="purging-all-cluster-configuration">Purging all cluster
-configuration</h2>
+<h2 id="configuring-utilization">Configuring utilization</h2>
 <div class="sourceCode" id="cb45"><pre
 class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> node1 node2</span></span>
 <span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
-<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ha_cluster_cluster_present</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
-<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
-<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.ha_cluster</span></span></code></pre></div>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ha_cluster_cluster_name</span><span class="kw">:</span><span class="at"> my-new-cluster</span></span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ha_cluster_hacluster_password</span><span class="kw">:</span><span class="at"> password</span></span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a><span class="co">    # For utilization to have an effect, the `placement-strategy` property</span></span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a><span class="co">    # must be set and its value must be different from the value `default`.</span></span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ha_cluster_cluster_properties</span><span class="kw">:</span></span>
+<span id="cb45-8"><a href="#cb45-8" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
+<span id="cb45-9"><a href="#cb45-9" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> placement-strategy</span></span>
+<span id="cb45-10"><a href="#cb45-10" aria-hidden="true" tabindex="-1"></a><span class="at">            </span><span class="fu">value</span><span class="kw">:</span><span class="at"> utilization</span></span>
+<span id="cb45-11"><a href="#cb45-11" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ha_cluster_node_options</span><span class="kw">:</span></span>
+<span id="cb45-12"><a href="#cb45-12" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">node_name</span><span class="kw">:</span><span class="at"> node1</span></span>
+<span id="cb45-13"><a href="#cb45-13" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">utilization</span><span class="kw">:</span></span>
+<span id="cb45-14"><a href="#cb45-14" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
+<span id="cb45-15"><a href="#cb45-15" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization1</span></span>
+<span id="cb45-16"><a href="#cb45-16" aria-hidden="true" tabindex="-1"></a><span class="at">                </span><span class="fu">value</span><span class="kw">:</span><span class="at"> </span><span class="dv">1</span></span>
+<span id="cb45-17"><a href="#cb45-17" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization2</span></span>
+<span id="cb45-18"><a href="#cb45-18" aria-hidden="true" tabindex="-1"></a><span class="at">                </span><span class="fu">value</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb45-19"><a href="#cb45-19" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">node_name</span><span class="kw">:</span><span class="at"> node2</span></span>
+<span id="cb45-20"><a href="#cb45-20" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">utilization</span><span class="kw">:</span></span>
+<span id="cb45-21"><a href="#cb45-21" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
+<span id="cb45-22"><a href="#cb45-22" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization1</span></span>
+<span id="cb45-23"><a href="#cb45-23" aria-hidden="true" tabindex="-1"></a><span class="at">                </span><span class="fu">value</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb45-24"><a href="#cb45-24" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization2</span></span>
+<span id="cb45-25"><a href="#cb45-25" aria-hidden="true" tabindex="-1"></a><span class="at">                </span><span class="fu">value</span><span class="kw">:</span><span class="at"> </span><span class="dv">4</span></span>
+<span id="cb45-26"><a href="#cb45-26" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ha_cluster_resource_primitives</span><span class="kw">:</span></span>
+<span id="cb45-27"><a href="#cb45-27" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">id</span><span class="kw">:</span><span class="at"> resource1</span></span>
+<span id="cb45-28"><a href="#cb45-28" aria-hidden="true" tabindex="-1"></a><span class="co">        # wokeignore:rule=dummy</span></span>
+<span id="cb45-29"><a href="#cb45-29" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">agent</span><span class="kw">:</span><span class="at"> </span><span class="st">&#39;ocf:pacemaker:Dummy&#39;</span></span>
+<span id="cb45-30"><a href="#cb45-30" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">utilization</span><span class="kw">:</span></span>
+<span id="cb45-31"><a href="#cb45-31" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="kw">-</span><span class="at"> </span><span class="fu">attrs</span><span class="kw">:</span></span>
+<span id="cb45-32"><a href="#cb45-32" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization1</span></span>
+<span id="cb45-33"><a href="#cb45-33" aria-hidden="true" tabindex="-1"></a><span class="at">                </span><span class="fu">value</span><span class="kw">:</span><span class="at"> </span><span class="dv">2</span></span>
+<span id="cb45-34"><a href="#cb45-34" aria-hidden="true" tabindex="-1"></a><span class="at">              </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> utilization2</span></span>
+<span id="cb45-35"><a href="#cb45-35" aria-hidden="true" tabindex="-1"></a><span class="at">                </span><span class="fu">value</span><span class="kw">:</span><span class="at"> </span><span class="dv">3</span></span>
+<span id="cb45-36"><a href="#cb45-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb45-37"><a href="#cb45-37" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
+<span id="cb45-38"><a href="#cb45-38" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.ha_cluster</span></span></code></pre></div>
+<h2 id="purging-all-cluster-configuration">Purging all cluster
+configuration</h2>
+<div class="sourceCode" id="cb46"><pre
+class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb46-1"><a href="#cb46-1" aria-hidden="true" tabindex="-1"></a><span class="kw">-</span><span class="at"> </span><span class="fu">hosts</span><span class="kw">:</span><span class="at"> node1 node2</span></span>
+<span id="cb46-2"><a href="#cb46-2" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
+<span id="cb46-3"><a href="#cb46-3" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ha_cluster_cluster_present</span><span class="kw">:</span><span class="at"> </span><span class="ch">false</span></span>
+<span id="cb46-4"><a href="#cb46-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb46-5"><a href="#cb46-5" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
+<span id="cb46-6"><a href="#cb46-6" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.ha_cluster</span></span></code></pre></div>
 <h1 id="rpm-ostree">rpm-ostree</h1>
 <p>See README-ostree.md</p>
 <h1 id="license">License</h1>
