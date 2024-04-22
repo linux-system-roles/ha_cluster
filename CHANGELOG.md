@@ -1,6 +1,22 @@
 Changelog
 =========
 
+[1.17.0] - 2024-04-22
+--------------------
+
+### New Features
+
+- feat: crmsh enhancements, master slave, validations (#197)
+- feat: Add support for utilization (#202)
+
+### Bug Fixes
+
+- fix: make consistent approach for multiple node attributes sets (#201)
+
+### Other Changes
+
+- ci: fix internal gitlab CI (#200)
+
 [1.16.0] - 2024-04-04
 --------------------
 
