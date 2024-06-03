@@ -14,7 +14,7 @@
     dest: /etc/corosync/authkey
     owner: root
     group: root
-    mode: 0400
+    mode: "0400"
   register: __ha_cluster_distribute_corosync_authkey
 
 - name: Get pacemaker authkey
@@ -31,7 +31,7 @@
     dest: /etc/pacemaker/authkey
     owner: hacluster
     group: haclient
-    mode: 0400
+    mode: "0400"
   register: __ha_cluster_distribute_pacemaker_authkey
 
 - name: Remove qdevice certificates [CLI]

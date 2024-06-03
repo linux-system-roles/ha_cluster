@@ -35,16 +35,16 @@
       copy:
         content: "{{ lookup('pipe', 'openssl rand -base64 256') | b64decode }}"
         dest: "{{ __test_corosync_key_path }}"
-        mode: 0400
+        mode: "0400"
 
     - name: Generate pacemaker key
       copy:
         content: "{{ lookup('pipe', 'openssl rand -base64 256') | b64decode }}"
         dest: "{{ __test_pacemaker_key_path }}"
-        mode: 0400
+        mode: "0400"
 
     - name: Generate fence_xvm key
       copy:
         content: "{{ lookup('pipe', 'openssl rand -base64 512') | b64decode }}"
         dest: "{{ __test_fence_xvm_key_path }}"
-        mode: 0400
+        mode: "0400"
