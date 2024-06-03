@@ -41,7 +41,7 @@ jobs:
         run: |
           set -euxo pipefail
           python -m pip install --upgrade pip
-          pip install "git+https://github.com/linux-system-roles/tox-lsr@3.3.0"
+          pip install "git+https://github.com/linux-system-roles/tox-lsr@3.4.0"
           # If you have additional OS dependency packages e.g. libcairo2-dev
           # then put them in .github/config/ubuntu-requirements.txt, one
           # package per line.
@@ -80,11 +80,8 @@ jobs:
           toxenvs="py${toxpyver}"
           # NOTE: The use of flake8, pylint, black with specific
           # python envs is arbitrary and must be changed in tox-lsr
-          # We really should either do those checks using the latest
-          # version of python, or in every version of python
           case "$toxpyver" in
-          27) toxenvs="${toxenvs},coveralls,flake8,pylint" ;;
-          36) toxenvs="${toxenvs},coveralls,black" ;;
+          310) toxenvs="${toxenvs},coveralls,flake8,pylint,black" ;;
           *) toxenvs="${toxenvs},coveralls" ;;
           esac
           TOXENV="$toxenvs" lsr_ci_runtox
