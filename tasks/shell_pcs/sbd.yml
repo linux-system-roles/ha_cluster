@@ -11,7 +11,7 @@
               lineinfile:
                 path: "/etc/modprobe.d/{{ item }}.conf"
                 create: true
-                mode: 0644
+                mode: "0644"
                 # wokeignore:rule=blacklist
                 regexp: "^(options|blacklist) {{ item }}"
                 # wokeignore:rule=blacklist
@@ -35,7 +35,7 @@
               lineinfile:
                 path: "/etc/modules-load.d/{{ item }}.conf"
                 create: true
-                mode: 0644
+                mode: "0644"
                 regexp: "^{{ item }}"
                 line: "{{ item }}"
                 state: present
@@ -95,7 +95,7 @@
         dest: /etc/sysconfig/sbd
         owner: root
         group: root
-        mode: 0644
+        mode: "0644"
       vars:
         options: "{{ ha_cluster_sbd_options | d([]) }}"
         node_name: "{{ __ha_cluster_node_name }}"
@@ -119,7 +119,7 @@
             state: directory
             owner: root
             group: root
-            mode: 0755
+            mode: "0755"
 
         - name: Override start timeout for SBD
           template:
@@ -127,7 +127,7 @@
             dest: /etc/systemd/system/sbd.service.d/override-timeout.conf
             owner: root
             group: root
-            mode: 0644
+            mode: "0644"
           vars:
             # Make sure the timeout is at least the default 90 seconds.
             # The intent is to make the timeout longer if needed, not shorter.
@@ -169,7 +169,7 @@
         state: file
         owner: hacluster
         group: haclient
-        mode: 0600
+        mode: "0600"
       when:
         - not pacemaker_running
 

@@ -7,7 +7,7 @@
       file:
         path: /etc/corosync/qnetd_backup
         state: directory
-        mode: 0700
+        mode: "0700"
 
     # Ansible copy doesn't support 'mode: preserve' with 'remote_src: true'
     - name: Back up qnetd settings

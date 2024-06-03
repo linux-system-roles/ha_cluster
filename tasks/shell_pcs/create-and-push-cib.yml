@@ -36,7 +36,7 @@
     dest: "{{ item }}"
     owner: root
     group: root
-    mode: 0600
+    mode: "0600"
   loop:
     - "{{ __ha_cluster_tempfile_cib_xml.path }}"
     - "{{ __ha_cluster_tempfile_original_cib_xml.path }}"
@@ -276,7 +276,7 @@
     dest: "{{ __ha_cluster_tempfile_cib_diff.path }}"
     owner: root
     group: root
-    mode: 0600
+    mode: "0600"
   check_mode: false
   changed_when: not ansible_check_mode
   when: __ha_cluster_cib_diff.rc == 1

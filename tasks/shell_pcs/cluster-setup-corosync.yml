@@ -29,7 +29,7 @@
     dest: /etc/corosync/corosync.conf
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
   register: __ha_cluster_distribute_corosync_conf
   when: __ha_cluster_data_corosync_conf is defined
 
