@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - alerts definition
+  hosts: node1 node2
+  vars:
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_alerts:
+      - id: alert1
+        path: /alert1/path
+        description: Alert1 description
+        instance_attrs:
+          - attrs:
+              - name: alert_attr1_name
+                value: alert_attr1_value
+        meta_attrs:
+          - attrs:
+              - name: alert_meta_attr1_name
+                value: alert_meta_attr1_value
+        recipients:
+          - value: recipient_value
+            id: recipient1
+            description: Recipient1 description
+            instance_attrs:
+              - attrs:
+                  - name: recipient_attr1_name
+                    value: recipient_attr1_value
+            meta_attrs:
+              - attrs:
+                  - name: recipient_meta_attr1_name
+                    value: recipient_meta_attr1_value
+
+  roles:
+    - linux-system-roles.ha_cluster

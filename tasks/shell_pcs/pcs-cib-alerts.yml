@@ -1,0 +1,63 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure alerts
+  command:
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      --
+      alert create
+      path={{ alert.path | quote }}
+      id={{ alert.id | quote }}
+      description={{ alert.description | quote }}
+      {% if alert.instance_attrs[0].attrs | d([]) %}
+        options
+        {% for attr in alert.instance_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+      {% if alert.meta_attrs[0].attrs | d([]) %}
+        meta
+        {% for attr in alert.meta_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: false
+  changed_when: not ansible_check_mode
+
+- name: Configure alerts recipients
+  command:
+    # Multiple sets of utilization per node are not supported by pcs (and
+    # therefore the role) as of yet
+    cmd: >
+      pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
+      --
+      alert recipient add
+      {{ alert.id | quote }}
+      value={{ recipient.value | quote }}
+      id={{ recipient.id | quote }}
+      description={{ recipient.description | quote }}
+      {% if recipient.instance_attrs[0].attrs | d([]) %}
+        options
+        {% for attr in recipient.instance_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+      {% if recipient.meta_attrs[0].attrs | d([]) %}
+        meta
+        {% for attr in recipient.meta_attrs[0].attrs %}
+          {{ attr.name | quote }}={{ attr.value | quote }}
+        {% endfor %}
+      {% endif %}
+  loop: "{{ alert.recipients | d([]) }}"
+  loop_control:
+    loop_var: recipient
+  # We always need to create CIB to see whether it's the same as what is
+  # already present in the cluster. However, we don't want to report it as a
+  # change since the only thing which matters is pushing the resulting CIB to
+  # the cluster.
+  check_mode: false
+  changed_when: not ansible_check_mode

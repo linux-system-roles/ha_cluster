@@ -29,6 +29,7 @@ An Ansible role for managing High Availability Clustering.
   * Pacemaker node attributes
   * Pacemaker Access Control Lists (ACLs)
   * node and resource utilization
+  * Pacemaker Alerts
 
 ## Requirements
 
@@ -1352,6 +1353,66 @@ ha_cluster_cluster_properties:
 
 You may take a look at [an example](#configuring-acls).
 
+#### `ha_cluster_alerts`
+
+structure, default: no Alerts
+
+```yaml
+    ha_cluster_alerts:
+      - id: alert1
+        path: /alert1/path
+        description: Alert1 description
+        instance_attrs:
+          - attrs:
+            - name: alert_attr1_name
+              value: alert_attr1_value
+        meta_attrs:
+          - attrs:
+            - name: alert_meta_attr1_name
+              value: alert_meta_attr1_value
+        recipients:
+          - value: recipient_value
+            id: recipient1
+            description: Recipient1 description
+            instance_attrs:
+              - attrs:
+                - name: recipient_attr1_name
+                  value: recipient_attr1_value
+            meta_attrs:
+              - attrs:
+                - name: recipient_meta_attr1_name
+                  value: recipient_meta_attr1_value
+```
+
+This variable defines Pacemaker alerts.
+
+The items of `alerts` are as follows:
+
+* `id` (mandatory) - ID of an alert.
+* `path` (mandatory) - Path of the alert.
+* `description` (optional) - Description of the alert.
+* `instance_attrs` (optional) - List of sets of the alerts's instance
+  attributes. Currently, only one set is supported, so the first set is used and
+  the rest are ignored.
+* `meta_attrs` (optional) - List of sets of the alerts's meta attributes.
+  Currently, only one set is supported, so the first set is used and the rest
+  are ignored.
+* `recipients` (optional) - List of alert's recipients.
+
+The items of `recipients` are as follows:
+
+* `value` (mandatory) - Value of a recipient.
+* `id` (optional) - ID of the recipient.
+* `description` (optional) - Description of the recipient.
+* `instance_attrs` (optional) - List of sets of the recipient's instance
+  attributes. Currently, only one set is supported, so the first set is used and
+  the rest are ignored.
+* `meta_attrs` (optional) - List of sets of the recipient's meta attributes.
+  Currently, only one set is supported, so the first set is used and the rest
+  are ignored.
+
+You may take a look at [an example](#configuring-alerts).
+
 #### `ha_cluster_qnetd`
 
 structure and default value:
@@ -2234,6 +2295,42 @@ Note that you cannot run a quorum device on a cluster node.
                 value: 2
               - name: utilization2
                 value: 3
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+### Configuring Alerts
+
+```yaml
+- hosts: node1 node2
+  vars:
+    ha_cluster_cluster_name: my-new-cluster
+    ha_cluster_hacluster_password: password
+    ha_cluster_alerts:
+      - id: alert1
+        path: /alert1/path
+        description: Alert1 description
+        instance_attrs:
+          - attrs:
+              - name: alert_attr1_name
+                value: alert_attr1_value
+        meta_attrs:
+          - attrs:
+              - name: alert_meta_attr1_name
+                value: alert_meta_attr1_value
+        recipients:
+          - value: recipient_value
+            id: recipient1
+            description: Recipient1 description
+            instance_attrs:
+              - attrs:
+                  - name: recipient_attr1_name
+                    value: recipient_attr1_value
+            meta_attrs:
+              - attrs:
+                  - name: recipient_meta_attr1_name
+                    value: recipient_meta_attr1_value
 
   roles:
     - linux-system-roles.ha_cluster
