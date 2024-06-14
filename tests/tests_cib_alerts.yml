@@ -1,0 +1,83 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Configure alerts
+  hosts: all
+  vars_files: vars/main.yml
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+          vars:
+            ha_cluster_cluster_name: test-cluster
+            ha_cluster_manage_firewall: true
+            ha_cluster_manage_selinux: true
+            ha_cluster_alerts:
+              - id: alert1
+                description: Alert1 description
+                path: /path/to/somewhere
+                instance_attrs:
+                  - attrs:
+                      - name: debug
+                        value: "false"
+                meta_attrs:
+                  - attrs:
+                      - name: timeout
+                        value: 15s
+                recipients:
+                  - id: recipient1
+                    description: Recipient1 description
+                    value: recipient-value
+                    instance_attrs:
+                      - attrs:
+                          - name: debug
+                            value: "true"
+                    meta_attrs:
+                      - attrs:
+                          - name: timeout
+                            value: 20s
+        - name: Verify alerts
+          vars:
+            __test_expected_lines:
+              - "Alerts:"
+              - " Alert: alert1 (path=/path/to/somewhere)"
+              - "  Description: Alert1 description"
+              - "  Options: debug=false"
+              - "  Meta options: timeout=15s"
+              - "  Recipients:"
+              - "   Recipient: recipient1 (value=recipient-value)"
+              - "    Description: Recipient1 description"
+              - "    Options: debug=true"
+              - "    Meta options: timeout=20s"
+          block:
+            - name: Fetch alerts configuration from the cluster
+              command:
+                cmd: pcs alert
+              register: _test_pcs_alerts_config
+              changed_when: false
+
+            - name: Print real alerts configuration
+              debug:
+                var: _test_pcs_alerts_config
+
+            - name: Print expected alerts configuration
+              debug:
+                var: __test_expected_lines | list
+
+            - name: Check alerts configuration
+              assert:
+                that:
+                  - _test_pcs_alerts_config.stdout_lines
+                    == __test_expected_lines | list
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml

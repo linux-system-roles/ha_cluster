@@ -247,6 +247,12 @@
       vars:
         acls: "{{ ha_cluster_acls | d({}) }}"
 
+    - name: Configure alerts
+      include_tasks: pcs-cib-alerts.yml
+      loop: "{{ ha_cluster_alerts | d([]) }}"
+      loop_control:
+        loop_var: alert
+
 # Push the new CIB into the cluster
 
 - name: Create a tempfile for CIB diff
