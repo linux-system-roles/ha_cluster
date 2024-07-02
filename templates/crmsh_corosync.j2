@@ -1,51 +1,47 @@
 {{ ansible_managed | comment }}
 {{ "system_role:ha_cluster" | comment(prefix="", postfix="") }}
 totem {
-        version: {{ ha_cluster_corosync_params.totem.version | default(2) }}
-        token: {{ ha_cluster_corosync_params.totem.token | default(30000) }}
-        consensus: {{ ha_cluster_corosync_params.totem.consensus | default(36000) }}
-        token_retransmits_before_loss_const: {{ ha_cluster_corosync_params.totem.token_retransmits_before_loss_const | default(6) }}
-        secauth: {{ ha_cluster_corosync_params.totem.secauth | default("on") }}
-        crypto_cipher: {{ ha_cluster_corosync_params.totem.crypto_cipher | default("aes256") }}
-        crypto_hash: {{ ha_cluster_corosync_params.totem.crypto_hash | default("sha1") }}
-        clear_node_high_bit: {{ ha_cluster_corosync_params.totem.clear_node_high_bit | default("yes") }}
-        rrp_mode: {{ ha_cluster_corosync_params.totem.rrp_mode | default("passive") }}
-
-        interface {
-                ringnumber: 0
-                bindnetaddr: {{ ansible_facts['eth0']['ipv4']['address'] }}
-                mcastport: 5405
-                ttl: 1
-        }
+{% if ha_cluster_totem and ha_cluster_totem.options | d({}) %}
+{% if ha_cluster_totem.options | selectattr('name', 'equalto', 'version') | list | length == 0 %}
+        version: 2
+{% endif %}
+{% for option in ha_cluster_totem.options %}
+        {{ option.name | quote }}: {{ option.value | quote }}
+{% endfor %}
+{% if ha_cluster_totem.options | selectattr('name', 'equalto', 'transport') | list | length == 0 %}
+        transport: udpu        
+{% endif %}
+{% else %}
+        # Default values are configured because ha_cluster_totem.options was not defined
+        version: 2
         transport: udpu
-}
-logging {
-        fileline: {{ ha_cluster_corosync_params.logging.fileline | default("off") }}
-        to_logfile: {{ ha_cluster_corosync_params.logging.to_logfile | default("yes") }}
-        to_syslog: {{ ha_cluster_corosync_params.logging.to_syslog | default("yes") }}
-        logfile: /var/log/cluster/corosync.log
-        debug: {{ ha_cluster_corosync_params.logging.debug | default("off") }}
-        timestamp: {{ ha_cluster_corosync_params.logging.timestamp | default("on") }}
-        logger_subsys {
-                subsys: QUORUM
-                debug: off
-        }
+{% endif %}
 }
 nodelist {
 {% for host in ansible_play_batch %}
        node {
+               nodeid: {{ loop.index }}
                ring0_addr: {{ hostvars[host]['ansible_facts']['eth0']['ipv4']['address'] }}
                {% if hostvars[host]['ansible_facts']['eth1']['ipv4']['address'] is defined %}
                ring1_addr: {{ hostvars[host]['ansible_facts']['eth1']['ipv4']['address'] }}
-               {% endif %}
-               nodeid: {{ loop.index }}
+               {% endif -%}
        }
 {% endfor %}
 }
 quorum {
-# Enable and configure quorum subsystem (default: off)
-# see also corosync.conf.5 and votequorum.5
-provider: corosync_votequorum
-expected_votes: 2
-two_node: 1
+{% if ha_cluster_quorum and ha_cluster_quorum.options | d({}) %}
+{% for option in ha_cluster_quorum.options | d([]) %}
+        {{ option.name | quote }}: {{ option.value | quote }} 
+{% endfor %}
+{% if ha_cluster_quorum.options | selectattr('name', 'equalto', 'provider') | list | length == 0 %}
+        provider: corosync_votequorum      
+{% endif %}
+{% if ha_cluster_quorum.options | selectattr('name', 'equalto', 'two_node') | list | length == 0 %}
+        two_node: 1    
+{% endif %}
+{% else %}
+        # Default values are configured because ha_cluster_quorum.options was not defined
+        provider: corosync_votequorum
+        two_node: 1
+{% endif %}
 }
