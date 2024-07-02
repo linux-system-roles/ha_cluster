@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.18.0] - 2024-07-02
+--------------------
+
+### New Features
+
+- feat: crmsh corosync jinja2 template rework (#212)
+
+### Other Changes
+
+- ci: ansible-lint action now requires absolute directory (#211)
+
 [1.17.1] - 2024-06-11
 --------------------
 
