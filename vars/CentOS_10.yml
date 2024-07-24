@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: MIT
+---
+# Put internal variables here with CentOS 9 specific values.
+
+# List of repositories holding HA cluster packages.
+# id: repo ID used to enable the repo
+# name: user-friendly name of a repo used to check if the repo is enabled
+__ha_cluster_repos:
+  - id: highavailability
+    name: HighAvailability
+  - id: resilientstorage
+    name: ResilientStorage
+
+__ha_cluster_cloud_agents_packages:
+  - resource-agents-cloud
+  - fence-agents-aliyun
+  - fence-agents-aws
+  - fence-agents-azure-arm
+  - fence-agents-compute
+  - fence-agents-gce
+  - fence-agents-ibm-powervs
+  - fence-agents-ibm-vpc
+  - fence-agents-kubevirt
+  - fence-agents-openstack

@@ -15,7 +15,11 @@ galaxy_info:
         - "8"
         - "9"
   galaxy_tags:
-    - hacluster
     - corosync
+    - el8
+    - el9
+    - el10
+    - fedora
+    - hacluster
     - pacemaker
 dependencies: []
