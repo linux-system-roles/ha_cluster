@@ -1355,7 +1355,7 @@ You may take a look at [an example](#configuring-acls).
 
 #### `ha_cluster_alerts`
 
-structure, default: no Alerts
+structure, default: no alerts
 
 ```yaml
     ha_cluster_alerts:
@@ -1389,12 +1389,12 @@ This variable defines Pacemaker alerts.
 The items of `alerts` are as follows:
 
 * `id` (mandatory) - ID of an alert.
-* `path` (mandatory) - Path of the alert.
+* `path` (mandatory) - Path to the alert agent executable.
 * `description` (optional) - Description of the alert.
-* `instance_attrs` (optional) - List of sets of the alerts's instance
+* `instance_attrs` (optional) - List of sets of the alert's instance
   attributes. Currently, only one set is supported, so the first set is used and
   the rest are ignored.
-* `meta_attrs` (optional) - List of sets of the alerts's meta attributes.
+* `meta_attrs` (optional) - List of sets of the alert's meta attributes.
   Currently, only one set is supported, so the first set is used and the rest
   are ignored.
 * `recipients` (optional) - List of alert's recipients.
@@ -1410,6 +1410,8 @@ The items of `recipients` are as follows:
 * `meta_attrs` (optional) - List of sets of the recipient's meta attributes.
   Currently, only one set is supported, so the first set is used and the rest
   are ignored.
+
+**Note:** The role configures the cluster to call external programs to handle alerts. It is your responsibility to distribute the programs to cluster nodes.
 
 You may take a look at [an example](#configuring-alerts).
 
