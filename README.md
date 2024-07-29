@@ -1358,30 +1358,30 @@ You may take a look at [an example](#configuring-acls).
 structure, default: no alerts
 
 ```yaml
-    ha_cluster_alerts:
-      - id: alert1
-        path: /alert1/path
-        description: Alert1 description
+ha_cluster_alerts:
+  - id: alert1
+    path: /alert1/path
+    description: Alert1 description
+    instance_attrs:
+      - attrs:
+        - name: alert_attr1_name
+          value: alert_attr1_value
+    meta_attrs:
+      - attrs:
+        - name: alert_meta_attr1_name
+          value: alert_meta_attr1_value
+    recipients:
+      - value: recipient_value
+        id: recipient1
+        description: Recipient1 description
         instance_attrs:
           - attrs:
-            - name: alert_attr1_name
-              value: alert_attr1_value
+            - name: recipient_attr1_name
+              value: recipient_attr1_value
         meta_attrs:
           - attrs:
-            - name: alert_meta_attr1_name
-              value: alert_meta_attr1_value
-        recipients:
-          - value: recipient_value
-            id: recipient1
-            description: Recipient1 description
-            instance_attrs:
-              - attrs:
-                - name: recipient_attr1_name
-                  value: recipient_attr1_value
-            meta_attrs:
-              - attrs:
-                - name: recipient_meta_attr1_name
-                  value: recipient_meta_attr1_value
+            - name: recipient_meta_attr1_name
+              value: recipient_meta_attr1_value
 ```
 
 This variable defines Pacemaker alerts.
