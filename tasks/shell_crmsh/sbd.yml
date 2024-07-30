@@ -3,26 +3,6 @@
 - name: Manage SBD
   when: ha_cluster_sbd_enabled
   block:
-    - name: Check if watchdog is configured when use_softdog is false
-      ansible.builtin.stat:
-        path: '/dev/watchdog'
-      register: __ha_cluster_watchdog_check
-
-    - name: Assert that watchdog is configured when use_softdog is false
-      ansible.builtin.assert:
-        that: __ha_cluster_watchdog_check.stat.exists
-        fail_msg: >-
-          The role has been called with the 'ha_cluster.sbd_softdog' option set
-          to false. This expects the device '/dev/watchdog' to be available but
-          '/dev/watchdog' was not found. You must configure the watchdog before
-          running the role. If no watchdog is available, set
-          'ha_cluster.sbd_softdog' to 'true' and the softdog will be
-          automatically configured.
-        success_msg: >-
-          The watchdog device was found.
-      when:
-        - "'softdog' not in ha_cluster.sbd_watchdog_modules"
-
     - name: Configure SBD watchdog
       block:
         - name: Configure and unload watchdog kernel modules from blocklist
@@ -45,6 +25,8 @@
                 state: absent
               loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
 
+        # Softdog is minimum that needs to be provided if /dev/watchdog is not present.
+        # This ensures that SBD service does not fail due to missing /dev/watchdog.
         - name: Configure and load watchdog kernel module
           block:
             - name: Configure watchdog kernel modules
@@ -55,13 +37,14 @@
                 regexp: "^{{ item }}"
                 line: "{{ item }}"
                 state: present
-              loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
+              loop: "{{ ha_cluster.sbd_watchdog_modules | d(['softdog']) }}"
 
             - name: Load watchdog kernel modules
               community.general.modprobe:
                 name: "{{ item }}"
                 state: present
-              loop: "{{ ha_cluster.sbd_watchdog_modules | d([]) }}"
+              loop: "{{ ha_cluster.sbd_watchdog_modules | d(['softdog']) }}"
+
 
     - name: Manage SBD devices
       # Ideally, the block as a whole should run one node at a time. This does
