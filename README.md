@@ -1411,7 +1411,9 @@ The items of `recipients` are as follows:
   Currently, only one set is supported, so the first set is used and the rest
   are ignored.
 
-**Note:** The role configures the cluster to call external programs to handle alerts. It is your responsibility to distribute the programs to cluster nodes.
+**Note:** The role configures the cluster to call external programs to handle
+alerts. It is your responsibility to provide the programs and distribute them to
+cluster nodes.
 
 You may take a look at [an example](#configuring-alerts).
 
