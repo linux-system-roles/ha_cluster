@@ -1,6 +1,20 @@
 Changelog
 =========
 
+[1.19.0] - 2024-08-01
+--------------------
+
+### New Features
+
+- feat: crmsh watchdog correction, remove obsolete assert for softdog (#217)
+- feat: Add alerts support (#218)
+
+### Other Changes
+
+- ci: Add tft plan and workflow (#214)
+- ci: Update fmf plan to add a separate job to prepare managed nodes (#216)
+- ci: bump sclorg/testing-farm-as-github-action from 2 to 3 (#219)
+
 [1.18.0] - 2024-07-02
 --------------------
 
