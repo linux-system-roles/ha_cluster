@@ -563,7 +563,7 @@
           when:
             - '"pcmk.constraint.config.output-formats" in __test_pcs_capabilities'
           vars:
-            __test_expected_lines: >
+            __test_expected_lines: '
                 {
                     "colocation": [],
                     "colocation_set": [],
@@ -728,6 +728,9 @@
                                         "id": "location-d3-rule",
                                         "in_effect": "UNKNOWN",
                                         "options": {
+                                            {% if __test_pcs_version is version("0.12", ">=") %}
+                                              "boolean-op": "and",
+                                            {% endif %}
                                             "score": "INFINITY"
                                         },
                                         "type": "RULE"
@@ -769,6 +772,9 @@
                                         "id": "location-dd-rule",
                                         "in_effect": "UNKNOWN",
                                         "options": {
+                                            {% if __test_pcs_version is version("0.12", ">=") %}
+                                              "boolean-op": "and",
+                                            {% endif %}
                                             "score": "INFINITY"
                                         },
                                         "type": "RULE"
@@ -1378,6 +1384,9 @@
                                         "id": "location-d3-4-rule",
                                         "in_effect": "UNKNOWN",
                                         "options": {
+                                            {% if __test_pcs_version is version("0.12", ">=") %}
+                                              "boolean-op": "and",
+                                            {% endif %}
                                             "score": "INFINITY"
                                         },
                                         "type": "RULE"
@@ -1419,6 +1428,9 @@
                                         "id": "location-dd-4-rule",
                                         "in_effect": "UNKNOWN",
                                         "options": {
+                                            {% if __test_pcs_version is version("0.12", ">=") %}
+                                              "boolean-op": "and",
+                                            {% endif %}
                                             "score": "INFINITY"
                                         },
                                         "type": "RULE"
@@ -1460,6 +1472,9 @@
                                         "id": "cl9-rule",
                                         "in_effect": "UNKNOWN",
                                         "options": {
+                                            {% if __test_pcs_version is version("0.12", ">=") %}
+                                              "boolean-op": "and",
+                                            {% endif %}
                                             "role": "Unpromoted",
                                             "score": "-47"
                                         },
@@ -1502,6 +1517,9 @@
                                         "id": "cl10-rule",
                                         "in_effect": "UNKNOWN",
                                         "options": {
+                                            {% if __test_pcs_version is version("0.12", ">=") %}
+                                              "boolean-op": "and",
+                                            {% endif %}
                                             "role": "Unpromoted",
                                             "score": "-47"
                                         },
@@ -1520,7 +1538,7 @@
                     "order_set": [],
                     "ticket": [],
                     "ticket_set": []
-                }
+                }'
           block:
             - name: Fetch location constraints configuration from the cluster
               command:
