@@ -20,5 +20,5 @@
 - name: Check cluster is running
   assert:
     that:
-      - "'Cluster name: {{ ha_cluster_cluster_name }}' in cluster_status.stdout"
+      - "'Cluster name: ' ~ ha_cluster_cluster_name in cluster_status.stdout"
       - cluster_status.rc == 0
