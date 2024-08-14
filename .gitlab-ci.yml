@@ -6,7 +6,10 @@ variables:
   YAMLLINT_CONFIG: "{extends: .yamllint.yml, ignore: [.github/, .markdownlint.yaml]}"
   PYENV_ROOT: /root/pyenvs/ansible
 
+# Ansible 2.9 doesn't work with Python 3.12 shipped in RHEL 10
 .all_images: &ALL_IMAGES
+  - LsrRhel10NextAnsibleCurrent
+  - LsrRhel10CurrentAnsibleCurrent
   - LsrRhel9NextAnsibleCurrent
   - LsrRhel9NextAnsible29
   - LsrRhel9CurrentAnsibleCurrent
@@ -38,22 +41,26 @@ variables:
 
 # Linting / code formating that either works the same on all images or using
 # the newest linter / formatter is desired
+# Rhel9 can be dropped once Rhel10 is stable
 .job_generic_linter:
-  variables:
-    BASE_IMAGE_NAME: LsrRhel9NextAnsibleCurrent
+  parallel:
+    matrix:
+      - BASE_IMAGE_NAME:
+          - LsrRhel9NextAnsibleCurrent
+          - LsrRhel10NextAnsibleCurrent
 
-#  If we are running Python 3.11, it won't find installed pcs. Python tests
-#  only run on RHEL 9 and that ships pcs built for Python 3.9. To overcome
-#  this, symlink pcs to pyenv.
+#  If we are running Python version other than what pcs was built for, Python
+#  won't find installed pcs. To overcome this, symlink pcs to pyenv.
 .symlink_pcs_to_pyenv: &symlink_pcs_to_pyenv
   - PYTHON_VER=$(python3 -c 'import sys; v=sys.version_info; print(f"{v.major}.{v.minor}")')
   - PYENV_PACKAGES="${PYENV_ROOT}/lib/python${PYTHON_VER}/site-packages"
   - PCS_DIR=$(rpm -ql pcs | grep 'site-packages/pcs$')
+  - PCS_PYTHON_VER=$(echo "$PCS_DIR" | sed -e 's@.*/python\([0-9\.]\+\)/.*@\1@')
   - PCS_EGG=$(rpm -ql pcs | grep 'site-packages/pcs.*\.egg-info$')
   - PCS_EGG_NAME=$(basename "$PCS_EGG")
-  - if [ "x$PYTHON_VER" != "x3.9" ]; then ln -s "${PCS_DIR}" "${PYENV_PACKAGES}/pcs"; fi
-  - if [ "x$PYTHON_VER" != "x3.9" ]; then ln -s "${PCS_EGG}" "${PYENV_PACKAGES}/${PCS_EGG_NAME}"; fi
-  - if [ "x$PYTHON_VER" != "x3.9" ]; then pushd .; cd "${PYENV_PACKAGES}"; rename --verbose "3.9" "$PYTHON_VER" pcs-*.egg-info; popd; fi
+  - if [ "x$PYTHON_VER" != "x$PCS_PYTHON_VER" ]; then ln -s "${PCS_DIR}" "${PYENV_PACKAGES}/pcs"; fi
+  - if [ "x$PYTHON_VER" != "x$PCS_PYTHON_VER" ]; then ln -s "${PCS_EGG}" "${PYENV_PACKAGES}/${PCS_EGG_NAME}"; fi
+  - if [ "x$PYTHON_VER" != "x$PCS_PYTHON_VER" ]; then pushd .; cd "${PYENV_PACKAGES}"; rename --verbose "${PCS_PYTHON_VER}" "${PYTHON_VER}" pcs-*.egg-info; popd; fi
   - ls -l "$PYENV_PACKAGES"
 
 .convert_role_to_collection: &convert_role_to_collection
@@ -92,12 +99,15 @@ ansible_test:
     - ansible-test --version
     - ansible-test sanity -v --color=yes --truncate=0 --no-redact --coverage --docker  # wokeignore:rule=sanity
 
+# TODO enable shellcheck for RHEL 10 once it is available there
 shellcheck:
   extends: .job_generic_linter
   stage: tier0
   script:
     - shellcheck --version
     - shellcheck files/*.sh
+  rules:
+    - if: $BASE_IMAGE_NAME !~ /^LsrRhel10.*/
 
 markdownlint:
   extends: .job_generic_linter
@@ -163,7 +173,8 @@ unit_tests:
 
 # tier 1
 build_tier1_ci_yml:
-  extends: .job_generic_linter
+  variables:
+    BASE_IMAGE_NAME: LsrRhel9CurrentAnsibleCurrent
   stage: tier0
   script:
     - cd tests
