@@ -23,14 +23,26 @@
 
 # The user is created by installing pacemaker packages. We just need to set the
 # password.
-- name: Set hacluster password
-  user:
-    name: hacluster
-    password: "{{
-      ha_cluster_hacluster_password | string |
-      password_hash('sha512', ansible_hostname.replace('-', 'x')[:16]) }}"
+- name: Provide a password for the hacluster user
   when:
     - ha_cluster_hacluster_password | string | length > 0
+  block:
+    - name: Generate a password hash
+      # The arg `-6` means SHA512 based algorithms.
+      command:
+        cmd: >-
+          openssl passwd
+            -6
+            -salt {{ ansible_hostname.replace('-', 'x') | quote }}
+            {{ ha_cluster_hacluster_password | string | quote }}
+      register: __ha_cluster_openssl_call_result
+      changed_when: false
+      no_log: true
+
+    - name: Set hacluster password
+      user:
+        name: hacluster
+        password: "{{ __ha_cluster_openssl_call_result.stdout }}"
 
 - name: Configure shell
   include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/configure-shell.yml  # yamllint disable-line rule:line-length
