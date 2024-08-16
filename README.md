@@ -514,8 +514,9 @@ ha_cluster_node_options:
       - module3
     sbd_watchdog: /dev/watchdog2
     sbd_devices:
-      - /dev/vdx
-      - /dev/vdy
+      - /dev/disk/by-id/000001
+      - /dev/disk/by-id/000002
+      - /dev/disk/by-id/000003
     attributes:
       - attrs:
           - name: attribute1
@@ -539,8 +540,9 @@ ha_cluster_node_options:
       - module3
     sbd_watchdog: /dev/watchdog1
     sbd_devices:
-      - /dev/vdw
-      - /dev/vdz
+      - /dev/disk/by-id/000001
+      - /dev/disk/by-id/000002
+      - /dev/disk/by-id/000003
     attributes:
       - attrs:
           - name: attribute1
@@ -577,7 +579,8 @@ The items are as follows:
 * `sbd_watchdog` (optional) - Watchdog device to be used by SBD. Defaults to
   `/dev/watchdog` if not set.
 * `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
-  monitoring. Defaults to empty list if not set.
+  monitoring. Defaults to empty list if not set. Always refer to the devices
+  using the long, stable device name (`/dev/disk/by-id/`).
 * `attributes` (optional) - List of sets of Pacemaker node attributes for the
   node. Currently, only one set is supported, so the first set is used and the
   rest are ignored.
@@ -1508,8 +1511,9 @@ all:
           - module2
         sbd_watchdog: /dev/watchdog2
         sbd_devices:
-          - /dev/vdx
-          - /dev/vdy
+          - /dev/disk/by-id/000001
+          - /dev/disk/by-id/000001
+          - /dev/disk/by-id/000003
     node2:
       ha_cluster:
         sbd_watchdog_modules:
@@ -1518,8 +1522,9 @@ all:
           - module2
         sbd_watchdog: /dev/watchdog1
         sbd_devices:
-          - /dev/vdw
-          - /dev/vdz
+          - /dev/disk/by-id/000001
+          - /dev/disk/by-id/000002
+          - /dev/disk/by-id/000003
 ```
 
 * `sbd_watchdog_modules` (optional) - Watchdog kernel modules to be loaded
@@ -1529,7 +1534,8 @@ all:
 * `sbd_watchdog` (optional) - Watchdog device to be used by SBD. Defaults to
   `/dev/watchdog` if not set.
 * `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
-  monitoring. Defaults to empty list if not set.
+  monitoring. Defaults to empty list if not set. Always refer to the devices
+  using the long, stable device name (`/dev/disk/by-id/`).
 
 ## Example Playbooks
 
@@ -1644,6 +1650,13 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
 ```yaml
 - hosts: node1 node2
   vars:
+    my_sbd_devices:
+      # This variable is not used by the role.
+      # It's purpose is to define SBD devices once so they don't need
+      # to be repeated several times in the role variables.
+      - /dev/disk/by-id/000001
+      - /dev/disk/by-id/000002
+      - /dev/disk/by-id/000003
     ha_cluster_cluster_name: my-new-cluster
     ha_cluster_hacluster_password: password
     ha_cluster_sbd_enabled: true
@@ -1663,20 +1676,14 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
         sbd_watchdog_modules_blocklist:
           - ipmi_watchdog
         sbd_watchdog: /dev/watchdog1
-        sbd_devices:
-          - /dev/vdx
-          - /dev/vdy
-          - /dev/vdz
+        sbd_devices: "{{ my_sbd_devices }}"
       - node_name: node2
         sbd_watchdog_modules:
           - iTCO_wdt
         sbd_watchdog_modules_blocklist:
           - ipmi_watchdog
         sbd_watchdog: /dev/watchdog1
-        sbd_devices:
-          - /dev/vdx
-          - /dev/vdy
-          - /dev/vdz
+        sbd_devices: "{{ my_sbd_devices }}"
     # Best practice for setting SBD timeouts:
     # watchdog-timeout * 2 = msgwait-timeout (set automatically)
     # msgwait-timeout * 1.2 = stonith-timeout
@@ -1689,9 +1696,8 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
         agent: 'stonith:fence_sbd'
         instance_attrs:
           - attrs:
-              # taken from host_vars
               - name: devices
-                value: "{{ ha_cluster.sbd_devices | join(',') }}"
+                value: "{{ my_sbd_devices | join(',') }}"
               - name: pcmk_delay_base
                 value: 30
 
@@ -1715,9 +1721,9 @@ all:
           - ipmi_watchdog
         sbd_watchdog: /dev/watchdog1
         sbd_devices:
-          - /dev/vdx
-          - /dev/vdy
-          - /dev/vdz
+          - /dev/disk/by-id/000001
+          - /dev/disk/by-id/000002
+          - /dev/disk/by-id/000003
     node2:
       ha_cluster:
         sbd_watchdog_modules:
@@ -1726,9 +1732,9 @@ all:
           - ipmi_watchdog
         sbd_watchdog: /dev/watchdog1
         sbd_devices:
-          - /dev/vdx
-          - /dev/vdy
-          - /dev/vdz
+          - /dev/disk/by-id/000001
+          - /dev/disk/by-id/000002
+          - /dev/disk/by-id/000003
 ```
 
 Variables specified in inventory can be omitted when writing the playbook:
@@ -1761,6 +1767,7 @@ Variables specified in inventory can be omitted when writing the playbook:
         instance_attrs:
           - attrs:
               # taken from host_vars
+              # this only works if all nodes have the same sbd_devices
               - name: devices
                 value: "{{ ha_cluster.sbd_devices | join(',') }}"
               - name: pcmk_delay_base
