@@ -1,6 +1,20 @@
 Changelog
 =========
 
+[1.19.1] - 2024-08-20
+--------------------
+
+### Bug Fixes
+
+- fix: Fixes for new pcs and ansible (#223)
+
+### Other Changes
+
+- ci: Add workflow for ci_test bad, use remote fmf plan (#221)
+- ci: Fix missing slash in ARTIFACTS_URL (#222)
+- docs: fix sbd_devices documentation and examples (#224)
+- test: add gather_facts true for tests that need facts (#225)
+
 [1.19.0] - 2024-08-01
 --------------------
 
