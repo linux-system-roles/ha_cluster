@@ -2,6 +2,7 @@
 ---
 - name: Create all kinds of resources in a cluster
   hosts: all
+  gather_facts: true  # needs facts
   vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: test-cluster
