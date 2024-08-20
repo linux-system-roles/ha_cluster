@@ -563,7 +563,7 @@
           when:
             - '"pcmk.constraint.config.output-formats" in __test_pcs_capabilities'
           vars:
-            __test_expected_lines: '
+            __test_expected_lines: |
                 {
                     "colocation": [],
                     "colocation_set": [],
@@ -1538,7 +1538,7 @@
                     "order_set": [],
                     "ticket": [],
                     "ticket_set": []
-                }'
+                }
           block:
             - name: Fetch location constraints configuration from the cluster
               command:
@@ -1552,12 +1552,12 @@
 
             - name: Print expected location constraints configuration
               debug:
-                var: __test_expected_lines | from_json
+                var: __test_expected_lines
 
             - name: Check location constraints configuration
               assert:
                 that:
-                  - __test_pcs_location_config.stdout | from_json == __test_expected_lines | from_json
+                  - __test_pcs_location_config.stdout | from_json == __test_expected_lines
 
         - name: Verify colocation constraints
           when:
