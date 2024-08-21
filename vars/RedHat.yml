@@ -15,13 +15,13 @@ __ha_cluster_role_essential_packages:
   # even if qnetd is not being configured, it is needed for removing qnetd
   # configuration
   - corosync-qnetd
+  - openssl
 
 __ha_cluster_fullstack_node_packages:
   - corosync
   - libknet1-plugins-all
   - resource-agents
   - pacemaker
-  - openssl  # used in the role for generating preshared keys
 
 __ha_cluster_cloud_agents_packages: []
 
