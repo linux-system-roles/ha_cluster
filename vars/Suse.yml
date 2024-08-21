@@ -19,6 +19,7 @@ __ha_cluster_role_essential_packages:
   - 'socat'
   - 'libxml2-tools'
   - 'rsyslog'
+  - 'openssl'
 
 __ha_cluster_fullstack_node_packages: []
 
