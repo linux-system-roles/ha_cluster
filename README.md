@@ -31,6 +31,12 @@ An Ansible role for managing High Availability Clustering.
   * Pacemaker Access Control Lists (ACLs)
   * node and resource utilization
   * Pacemaker Alerts
+* The role provides `ha_cluster_info` module which exports current cluster
+  configuration. The module is capable of exporting:
+  * single-link or multi-link cluster
+  * Corosync transport options including compression and encryption
+  * Corosync totem options
+  * Corosync quorum options
 
 ## Requirements
 
@@ -1544,6 +1550,79 @@ all:
 * `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
   monitoring. Defaults to empty list if not set. Always refer to the devices
   using the long, stable device name (`/dev/disk/by-id/`).
+
+## Export current cluster configuration
+
+The role provides `ha_cluster_info` module which exports current cluster
+configuration in a dictionary matching the structure of this role variables. If
+the role is run with these variables, it recreates the same cluster.
+
+Note that the dictionary of variables may not be complete and manual
+modification of it is expected. Most notably, you need to set
+[`ha_cluster_hacluster_password`](#ha_cluster_hacluster_password).
+
+Note that depending on pcs version installed on managed nodes, certain variables
+may not be present in the export.
+
+* Following variables are present in the export:
+  * [`ha_cluster_cluster_present`](#ha_cluster_cluster_present)
+  * [`ha_cluster_start_on_boot`](#ha_cluster_start_on_boot)
+  * [`ha_cluster_cluster_name`](#ha_cluster_cluster_name)
+  * [`ha_cluster_transport`](#ha_cluster_transport)
+  * [`ha_cluster_totem`](#ha_cluster_totem)
+  * [`ha_cluster_quorum`](#ha_cluster_quorum)
+  * [`ha_cluster_node_options`](#ha_cluster_node_options) - currently only
+    `node_name`, `corosync_addresses` and `pcs_address` are present
+
+* Following variables are never present in the export (consult the role
+  documentation for impact of the variables missing when running the role):
+  * [`ha_cluster_hacluster_password`](#ha_cluster_hacluster_password) - This is
+    a mandatory variable for the role but it cannot be extracted from existing
+    clusters.
+  * [`ha_cluster_corosync_key_src`](#ha_cluster_corosync_key_src),
+    [`ha_cluster_pacemaker_key_src`](#ha_cluster_pacemaker_key_src) and
+    [`ha_cluster_fence_virt_key_src`](#ha_cluster_fence_virt_key_src) - These
+    are supposed to contain paths to files with the keys. Since the keys
+    themselves are not exported, these variables are not present in the export
+    either. Corosync and pacemaker keys are supposed to be unique for each
+    cluster.
+  * [`ha_cluster_regenerate_keys`](#ha_cluster_regenerate_keys) - It is your
+    responsibility to decide if you want to use existing keys or generate new
+    ones.
+
+To export current cluster configuration and store it in
+`ha_cluster_info_result` variable, write a task like this:
+
+```yaml
+- name: Get current cluster configuration
+  linux-system-roles.ha_cluster.ha_cluster_info:
+  register: ha_cluster_info_result
+```
+
+Then you may use the `ha_cluster_info_result` variable in your playbook
+depending on your needs.
+
+If you just want to see the content of the variable, use the ansible debug
+module like this:
+
+```yaml
+- name: Print ha_cluster_info_result variable
+  debug:
+    var: ha_cluster_info_result
+```
+
+Or you may want to save the configuration to a file on your controller node in
+YAML format with a task similar to this one, so that you can write a playbook
+around it:
+
+```yaml
+- name: Save current cluster configuration to a file
+  delegate_to: localhost
+  copy:
+    content: "{{
+      ha_cluster_info_result.ha_cluster | to_nice_yaml(sort_keys=false) }}"
+    dest: /path/to/file
+```
 
 ## Example Playbooks
 

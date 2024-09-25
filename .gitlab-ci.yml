@@ -167,6 +167,19 @@ unit_tests:
     - pcs --version
     - PYTHONPATH="./library:./module_utils:$PYTHONPATH" python -m unittest --verbose tests/unit/*.py
 
+unit_tests_rhel8:
+  parallel:
+    matrix:
+      - BASE_IMAGE_NAME: *ALL_IMAGES
+  rules:
+    - if: $BASE_IMAGE_NAME =~ /^LsrRhel8.*/
+  stage: tier0
+  script:
+    - dnf install -y pcs
+    - *symlink_pcs_to_pyenv
+    - pcs --version
+    - PYTHONPATH="./library:./module_utils:$PYTHONPATH" python -m unittest --verbose tests/unit/test_ha_cluster_info.py
+
 # tier 1
 build_tier1_ci_yml:
   variables:

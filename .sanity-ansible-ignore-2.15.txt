@@ -26,3 +26,9 @@ plugins/modules/pcs_qdevice_certs.py import-3.5!skip
 plugins/modules/pcs_qdevice_certs.py import-3.6!skip
 plugins/modules/pcs_qdevice_certs.py import-3.7!skip
 plugins/modules/pcs_qdevice_certs.py import-3.8!skip
+plugins/modules/ha_cluster_info.py compile-2.7!skip
+plugins/modules/ha_cluster_info.py compile-3.5!skip
+plugins/modules/ha_cluster_info.py import-2.7!skip
+plugins/modules/ha_cluster_info.py import-3.5!skip
+plugins/modules/ha_cluster_info.py validate-modules:missing-gplv3-license
+tests/ha_cluster/unit/test_ha_cluster_info.py shebang!skip
