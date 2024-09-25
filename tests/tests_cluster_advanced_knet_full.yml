@@ -12,6 +12,11 @@
           value: ipv4-6
         - name: link_mode
           value: active
+      # Links variable defines two links, one with implicit linknumber and the
+      # other with specified linknumber. On top of that, the links are not
+      # listed in order by linknumbers. This is intentional. It tests that the
+      # role is capable of handling such links definitions, assigning correct
+      # linknumbers and not mixing the links.
       links:
         -
           - name: transport  # yamllint disable-line rule:hyphens
@@ -25,7 +30,7 @@
             value: 5
       compression:
         - name: level
-          value: 5
+          value: "5"
         - name: model
           value: zlib
       crypto:
@@ -36,15 +41,15 @@
     ha_cluster_totem:
       options:
         - name: send_join
-          value: 0
+          value: "0"
         - name: token_retransmits_before_loss_const
-          value: 5
+          value: "5"
     ha_cluster_quorum:
       options:
         - name: auto_tie_breaker
-          value: 1
+          value: "1"
         - name: wait_for_all
-          value: 1
+          value: "1"
 
   tasks:
     - name: Run test
@@ -118,6 +123,57 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
+        - name: Export cluster configuration
+          ha_cluster_info:
+          register: __test_info
+
+        - name: Check exported configuration
+          vars:
+            __test_exported_config: >
+              {{
+                __test_info.ha_cluster | combine({
+                  'ha_cluster_node_options': 'it depends on test environment'
+                })
+              }}
+            __test_expected_config:
+              ha_cluster_cluster_present: true
+              ha_cluster_cluster_name: test-cluster
+              ha_cluster_start_on_boot: true
+              ha_cluster_transport:
+                type: knet
+                options: "{{ ha_cluster_transport.options }}"
+                links:
+                  -
+                    - name: link_priority  # yamllint disable-line rule:hyphens
+                      value: "5"
+                    - name: linknumber
+                      value: "0"
+                  -
+                    - name: link_priority  # yamllint disable-line rule:hyphens
+                      value: "10"
+                    - name: transport
+                      value: udp
+                    - name: linknumber
+                      value: "1"
+                compression: "{{ ha_cluster_transport.compression }}"
+                crypto: "{{ ha_cluster_transport.crypto }}"
+              ha_cluster_totem: "{{ ha_cluster_totem }}"
+              ha_cluster_quorum: "{{ ha_cluster_quorum }}"
+              ha_cluster_node_options: "it depends on test environment"
+          block:
+            - name: Print exported configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config
 
       always:
         - name: Unset node addresses variable
