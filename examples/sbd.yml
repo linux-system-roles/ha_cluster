@@ -4,9 +4,10 @@
   hosts: node1 node2
   vars:
     my_sbd_devices:
-      # This variable is not used by the role.
-      # It's purpose is to define SBD devices once so they don't need
+      # This variable is not used by the role directly.
+      # Its purpose is to define SBD devices once so they don't need
       # to be repeated several times in the role variables.
+      # Instead, variables directly used by the role refer to this variable.
       - /dev/disk/by-id/000001
       - /dev/disk/by-id/000002
       - /dev/disk/by-id/000003
