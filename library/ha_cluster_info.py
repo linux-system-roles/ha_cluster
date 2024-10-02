@@ -74,7 +74,7 @@ ha_cluster:
 
 import json
 import os.path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -82,9 +82,9 @@ COROSYNC_CONF_PATH = "/etc/corosync/corosync.conf"
 KNOWN_HOSTS_PATH = "/var/lib/pcsd/known-hosts"
 
 
-class PcsCliError(Exception):
+class CliCommandError(Exception):
     """
-    Parent exception for errors from running pcs CLI
+    Running pcs has failed
     """
 
     def __init__(
@@ -108,60 +108,37 @@ class PcsCliError(Exception):
         )
 
 
-class PcsCliRunError(PcsCliError):
-    """
-    Running pcs has failed
-    """
-
-
-class PcsCliJsonError(PcsCliError):
-    """
-    Pcs output cannot be decoded as a JSON
-    """
-
-    def __init__(
-        self,
-        pcs_command: List[str],
-        rc: int,
-        stdout: str,
-        stderr: str,
-        json_error: str,
-    ):
-        # pylint: disable=too-many-arguments
-        # pylint 3.3 produces too-many-positional-arguments, but pylint 3.2
-        # complies that it doesn't know such an option. So we need
-        # unknown-option-value to silence pylint 3.2.
-        # pylint: disable=unknown-option-value
-        # pylint: disable=too-many-positional-arguments
-        super().__init__(pcs_command, rc, stdout, stderr)
-        self.json_error = json_error
-
-    @property
-    def kwargs(self) -> Dict[str, Any]:
-        result = super().kwargs
-        result.update(dict(json_error=self.json_error))
-        return result
-
-
-class PcsJsonParseError(Exception):
+class JsonParseError(Exception):
     """
     Unable to parse JSON data
     """
 
-    def __init__(self, error: str, data: str, data_desc: str):
+    def __init__(
+        self,
+        error: str,
+        data: str,
+        data_desc: str,
+        additional_info: Optional[str] = None,
+    ):
         self.error = error
         self.data = data
         self.data_desc = data_desc
+        self.additional_info = additional_info
 
     @property
     def kwargs(self) -> Dict[str, Any]:
         """
         Arguments given to the constructor
         """
-        return dict(error=self.error, data=self.data, data_desc=self.data_desc)
+        return dict(
+            error=self.error,
+            data=self.data,
+            data_desc=self.data_desc,
+            additional_info=self.additional_info,
+        )
 
 
-class PcsJsonMissingKey(Exception):
+class JsonMissingKey(Exception):
     """
     A key is not present in pcs JSON output
     """
@@ -222,11 +199,13 @@ def call_pcs_cli(module: AnsibleModule, command: List[str]) -> Dict[str, Any]:
         environ_update=env,
     )
     if rc != 0:
-        raise PcsCliRunError(full_command, rc, stdout, stderr)
+        raise CliCommandError(full_command, rc, stdout, stderr)
     try:
         return json.loads(stdout)
     except json.JSONDecodeError as e:
-        raise PcsCliJsonError(full_command, rc, stdout, stderr, str(e)) from e
+        raise JsonParseError(
+            str(e), stdout, " ".join(full_command), stderr
+        ) from e
 
 
 def export_start_on_boot(module: AnsibleModule) -> bool:
@@ -295,7 +274,7 @@ def export_corosync_conf(module: AnsibleModule) -> Dict[str, Any]:
                         )
                     )
                 except KeyError as e:
-                    raise PcsJsonMissingKey(
+                    raise JsonMissingKey(
                         e.args[0],
                         conf_dict,
                         f"corosync configuration for node on index {index}",
@@ -303,7 +282,7 @@ def export_corosync_conf(module: AnsibleModule) -> Dict[str, Any]:
             result["ha_cluster_node_options"] = node_list
 
     except KeyError as e:
-        raise PcsJsonMissingKey(
+        raise JsonMissingKey(
             e.args[0], conf_dict, "corosync configuration"
         ) from e
     return result
@@ -337,9 +316,7 @@ def load_pcsd_known_hosts() -> Dict[str, str]:
         return result
     except json.JSONDecodeError as e:
         # cannot show actual data as they contain sensitive information - tokens
-        raise PcsJsonParseError(
-            str(e), "not logging data", "known hosts"
-        ) from e
+        raise JsonParseError(str(e), "not logging data", "known hosts") from e
 
 
 def merge_known_hosts(
@@ -407,17 +384,17 @@ def main() -> None:
         else:
             ha_cluster_result["ha_cluster_cluster_present"] = False
         module.exit_json(**module_result)
-    except PcsJsonMissingKey as e:
+    except JsonMissingKey as e:
         module.fail_json(
-            msg=f"Missing key in pcs {e.data_desc} JSON output: {e.key}",
-            pcs_error=e.kwargs,
+            msg=f"Missing key {e.key} in pcs {e.data_desc} JSON output",
+            error_details=e.kwargs,
         )
-    except PcsCliJsonError as e:
+    except JsonParseError as e:
         module.fail_json(
-            msg="Error while parsing pcs JSON output", pcs_error=e.kwargs
+            msg="Error while parsing pcs JSON output", error_details=e.kwargs
         )
-    except PcsCliError as e:
-        module.fail_json(msg="Error while running pcs", pcs_error=e.kwargs)
+    except CliCommandError as e:
+        module.fail_json(msg="Error while running pcs", error_details=e.kwargs)
 
 
 if __name__ == "__main__":
