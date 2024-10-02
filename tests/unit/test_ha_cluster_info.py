@@ -110,7 +110,7 @@ class CallPcsCli(TestCase):
             "some stdout message",
             "some stderr message",
         )
-        with self.assertRaises(ha_cluster_info.PcsCliRunError) as cm:
+        with self.assertRaises(ha_cluster_info.CliCommandError) as cm:
             ha_cluster_info.call_pcs_cli(
                 self.module_mock, ["cluster", "config"]
             )
@@ -135,18 +135,17 @@ class CallPcsCli(TestCase):
             "not a json",
             "",
         )
-        with self.assertRaises(ha_cluster_info.PcsCliJsonError) as cm:
+        with self.assertRaises(ha_cluster_info.JsonParseError) as cm:
             ha_cluster_info.call_pcs_cli(
                 self.module_mock, ["cluster", "config"]
             )
         self.assertEqual(
             cm.exception.kwargs,
             dict(
-                json_error="Expecting value: line 1 column 1 (char 0)",
-                pcs_command=["pcs", "cluster", "config"],
-                stdout="not a json",
-                stderr="",
-                rc=0,
+                data="not a json",
+                data_desc="pcs cluster config",
+                error="Expecting value: line 1 column 1 (char 0)",
+                additional_info="",
             ),
         )
         self.module_mock.run_command.assert_called_once_with(
@@ -183,7 +182,7 @@ class ExportCorosyncConf(TestCase):
     def assert_missing_key(self, data: Dict[str, Any], key: str) -> None:
         self.module_mock.run_command.reset_mock()
         self.module_mock.run_command.return_value = (0, json.dumps(data), "")
-        with self.assertRaises(ha_cluster_info.PcsJsonMissingKey) as cm:
+        with self.assertRaises(ha_cluster_info.JsonMissingKey) as cm:
             ha_cluster_info.export_corosync_conf(self.module_mock)
         self.assertEqual(
             cm.exception.kwargs,
@@ -509,7 +508,7 @@ class ExportCorosyncConf(TestCase):
     ) -> None:
         self.module_mock.run_command.reset_mock()
         self.module_mock.run_command.return_value = (0, json.dumps(data), "")
-        with self.assertRaises(ha_cluster_info.PcsJsonMissingKey) as cm:
+        with self.assertRaises(ha_cluster_info.JsonMissingKey) as cm:
             ha_cluster_info.export_corosync_conf(self.module_mock)
         self.assertEqual(
             cm.exception.kwargs,
@@ -570,7 +569,7 @@ class LoadPcsdKnownHosts(TestCase):
         with mock.patch(
             "ha_cluster_info.open", mock.mock_open(read_data=mock_data)
         ) as mock_open:
-            with self.assertRaises(ha_cluster_info.PcsJsonParseError) as cm:
+            with self.assertRaises(ha_cluster_info.JsonParseError) as cm:
                 ha_cluster_info.load_pcsd_known_hosts()
             self.assertEqual(
                 cm.exception.kwargs,
@@ -578,6 +577,7 @@ class LoadPcsdKnownHosts(TestCase):
                     data="not logging data",
                     data_desc="known hosts",
                     error="Expecting value: line 1 column 1 (char 0)",
+                    additional_info=None,
                 ),
             )
             mock_open.assert_called_once_with(
