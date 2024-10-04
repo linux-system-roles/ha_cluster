@@ -31,4 +31,12 @@ plugins/modules/ha_cluster_info.py compile-3.5!skip
 plugins/modules/ha_cluster_info.py import-2.7!skip
 plugins/modules/ha_cluster_info.py import-3.5!skip
 plugins/modules/ha_cluster_info.py validate-modules:missing-gplv3-license
+plugins/module_utils/ha_cluster_lsr/info/exporter.py compile-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter.py compile-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter.py import-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/loader.py compile-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/loader.py compile-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/loader.py import-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/loader.py import-3.5!skip
 tests/ha_cluster/unit/test_ha_cluster_info.py shebang!skip
