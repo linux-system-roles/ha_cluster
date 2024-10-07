@@ -104,7 +104,11 @@ def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
     result: dict[str, Any] = dict()
     cmd_runner = get_cmd_runner(module)
 
-    result["ha_cluster_start_on_boot"] = loader.get_start_on_boot(cmd_runner)
+    corosync_enabled = loader.is_service_enabled(cmd_runner, "corosync")
+    pacemaker_enabled = loader.is_service_enabled(cmd_runner, "pacemaker")
+    result["ha_cluster_start_on_boot"] = exporter.export_start_on_boot(
+        corosync_enabled, pacemaker_enabled
+    )
 
     # Corosync config is availabe via CLI since pcs-0.10.8, via API v2 since
     # pcs-0.12.0 and pcs-0.11.9. For old pcs versions, CLI must be used, and
@@ -118,25 +122,23 @@ def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
     known_hosts_pcs = loader.get_pcsd_known_hosts()
 
     # Convert corosync config to role format
-    corosync_conf_role = exporter.export_corosync_options(corosync_conf_pcs)
-    for key in (
-        "ha_cluster_cluster_name",
-        "ha_cluster_transport",
-        "ha_cluster_totem",
-        "ha_cluster_quorum",
-    ):
-        if key in corosync_conf_role:
-            result[key] = corosync_conf_role[key]
+    result["ha_cluster_cluster_name"] = exporter.export_corosync_cluster_name(
+        corosync_conf_pcs
+    )
+    result["ha_cluster_transport"] = exporter.export_corosync_transport(
+        corosync_conf_pcs
+    )
+    exported_totem = exporter.export_corosync_totem(corosync_conf_pcs)
+    if exported_totem:
+        result["ha_cluster_totem"] = exported_totem
+    exported_quorum = exporter.export_corosync_quorum(corosync_conf_pcs)
+    if exported_quorum:
+        result["ha_cluster_quorum"] = exported_quorum
 
-    # Convert cluster definition to role format
-    try:
-        result["ha_cluster_node_options"] = exporter.export_cluster_nodes(
-            corosync_conf_pcs["nodes"], known_hosts_pcs
-        )
-    except KeyError as e:
-        raise exporter.JsonMissingKey(
-            e.args[0], corosync_conf_pcs, "corosync configuration"
-        ) from e
+    # Convert nodes definition to role format
+    result["ha_cluster_node_options"] = exporter.export_cluster_nodes(
+        corosync_conf_pcs, known_hosts_pcs
+    )
 
     return result
 

@@ -11,6 +11,7 @@
 import json
 import sys
 from importlib import import_module
+from typing import List
 from unittest import TestCase, mock
 
 sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
@@ -23,10 +24,28 @@ import ha_cluster_info
 class ExportClusterConfiguration(TestCase):
     maxDiff = None
 
-    @mock.patch("ha_cluster_info.loader.get_pcsd_known_hosts")
-    def test_export_minimal(
+    @staticmethod
+    def fixture_expected_runner_calls() -> List[mock._Call]:
+        common_args = dict(check_rc=False, environ_update={"LC_ALL": "C"})
+        return [
+            mock.call(
+                ["systemctl", "is-enabled", "corosync.service"], **common_args
+            ),
+            mock.call(
+                ["systemctl", "is-enabled", "pacemaker.service"], **common_args
+            ),
+            mock.call(
+                ["pcs", "cluster", "config", "--output-format=json"],
+                **common_args,
+            ),
+        ]
+
+    def assert_export_minimal(
         self,
         mock_load_pcsd_known_hosts: mock.Mock,
+        corosync_enabled: bool,
+        pacemaker_enabled: bool,
+        cluster_start_on_boot: bool,
     ) -> None:
         module_mock = mock.Mock()
         module_mock.run_command = mock.Mock()
@@ -50,7 +69,8 @@ class ExportClusterConfiguration(TestCase):
             ],
         )
         runner_mock.side_effect = [
-            (0, "", ""),
+            (0 if corosync_enabled else 1, "", ""),
+            (0 if pacemaker_enabled else 1, "", ""),
             (0, json.dumps(corosync_conf_data), ""),
         ]
 
@@ -59,7 +79,7 @@ class ExportClusterConfiguration(TestCase):
         self.assertEqual(
             ha_cluster_info.export_cluster_configuration(module_mock),
             dict(
-                ha_cluster_start_on_boot=True,
+                ha_cluster_start_on_boot=cluster_start_on_boot,
                 ha_cluster_cluster_name="my-cluster",
                 ha_cluster_transport=dict(type="knet"),
                 ha_cluster_node_options=[
@@ -71,20 +91,29 @@ class ExportClusterConfiguration(TestCase):
             ),
         )
 
-        common_args = dict(check_rc=False, environ_update={"LC_ALL": "C"})
-        expected_calls = [
-            mock.call(
-                ["systemctl", "is-enabled", "corosync.service"], **common_args
-            ),
-            mock.call(
-                ["pcs", "cluster", "config", "--output-format=json"],
-                **common_args,
-            ),
-        ]
+        expected_calls = self.fixture_expected_runner_calls()
         runner_mock.assert_has_calls(expected_calls)
         self.assertEqual(runner_mock.call_count, len(expected_calls))
 
         mock_load_pcsd_known_hosts.assert_called_once_with()
+
+    @mock.patch("ha_cluster_info.loader.get_pcsd_known_hosts")
+    def test_export_minimal_enabled(
+        self,
+        mock_load_pcsd_known_hosts: mock.Mock,
+    ) -> None:
+        self.assert_export_minimal(
+            mock_load_pcsd_known_hosts, True, False, True
+        )
+
+    @mock.patch("ha_cluster_info.loader.get_pcsd_known_hosts")
+    def test_export_minimal_disabled(
+        self,
+        mock_load_pcsd_known_hosts: mock.Mock,
+    ) -> None:
+        self.assert_export_minimal(
+            mock_load_pcsd_known_hosts, False, False, False
+        )
 
     @mock.patch("ha_cluster_info.loader.get_pcsd_known_hosts")
     def test_export(
@@ -118,6 +147,7 @@ class ExportClusterConfiguration(TestCase):
             ],
         )
         runner_mock.side_effect = [
+            (0, "", ""),
             (0, "", ""),
             (0, json.dumps(corosync_conf_data), ""),
         ]
@@ -157,16 +187,7 @@ class ExportClusterConfiguration(TestCase):
             ),
         )
 
-        common_args = dict(check_rc=False, environ_update={"LC_ALL": "C"})
-        expected_calls = [
-            mock.call(
-                ["systemctl", "is-enabled", "corosync.service"], **common_args
-            ),
-            mock.call(
-                ["pcs", "cluster", "config", "--output-format=json"],
-                **common_args,
-            ),
-        ]
+        expected_calls = self.fixture_expected_runner_calls()
         runner_mock.assert_has_calls(expected_calls)
         self.assertEqual(runner_mock.call_count, len(expected_calls))
 
@@ -193,6 +214,7 @@ class ExportClusterConfiguration(TestCase):
         )
         runner_mock.side_effect = [
             (0, "", ""),
+            (0, "", ""),
             (0, json.dumps(corosync_conf_data), ""),
         ]
 
@@ -212,16 +234,7 @@ class ExportClusterConfiguration(TestCase):
             ),
         )
 
-        common_args = dict(check_rc=False, environ_update={"LC_ALL": "C"})
-        expected_calls = [
-            mock.call(
-                ["systemctl", "is-enabled", "corosync.service"], **common_args
-            ),
-            mock.call(
-                ["pcs", "cluster", "config", "--output-format=json"],
-                **common_args,
-            ),
-        ]
+        expected_calls = self.fixture_expected_runner_calls()
         runner_mock.assert_has_calls(expected_calls)
         self.assertEqual(runner_mock.call_count, len(expected_calls))
 

@@ -85,7 +85,7 @@ class JsonParseError(Exception):
         )
 
 
-def _is_service_enabled(run_command: CommandRunner, service: str) -> bool:
+def is_service_enabled(run_command: CommandRunner, service: str) -> bool:
     """
     Check whether a specified service is enabled in the OS
 
@@ -100,15 +100,6 @@ def _is_service_enabled(run_command: CommandRunner, service: str) -> bool:
         ["systemctl", "is-enabled", f"{service}.service"], env
     )
     return rc == 0
-
-
-def get_start_on_boot(run_command: CommandRunner) -> bool:
-    """
-    Detect wheter a cluster is configured to start on boot
-    """
-    return _is_service_enabled(run_command, "corosync") or _is_service_enabled(
-        run_command, "pacemaker"
-    )
 
 
 def _call_pcs_cli(
