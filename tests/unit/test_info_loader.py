@@ -20,15 +20,12 @@ from ha_cluster_lsr.info import loader
 
 
 class IsServiceEnabled(TestCase):
-    # pylint: disable=protected-access
     def setUp(self) -> None:
         self.runner_mock = mock.Mock()
 
     def test_is_enabled(self) -> None:
         self.runner_mock.return_value = (0, "enabled", "")
-        self.assertTrue(
-            loader._is_service_enabled(self.runner_mock, "corosync")
-        )
+        self.assertTrue(loader.is_service_enabled(self.runner_mock, "corosync"))
         self.runner_mock.assert_called_once_with(
             ["systemctl", "is-enabled", "corosync.service"],
             {"LC_ALL": "C"},
@@ -37,7 +34,7 @@ class IsServiceEnabled(TestCase):
     def test_is_disabled(self) -> None:
         self.runner_mock.return_value = (1, "disabled", "")
         self.assertFalse(
-            loader._is_service_enabled(self.runner_mock, "pacemaker")
+            loader.is_service_enabled(self.runner_mock, "pacemaker")
         )
         self.runner_mock.assert_called_once_with(
             ["systemctl", "is-enabled", "pacemaker.service"],
@@ -46,28 +43,11 @@ class IsServiceEnabled(TestCase):
 
     def test_unexpected_output(self) -> None:
         self.runner_mock.return_value = (4, "not-found", "")
-        self.assertFalse(loader._is_service_enabled(self.runner_mock, "pcmk"))
+        self.assertFalse(loader.is_service_enabled(self.runner_mock, "pcmk"))
         self.runner_mock.assert_called_once_with(
             ["systemctl", "is-enabled", "pcmk.service"],
             {"LC_ALL": "C"},
         )
-
-
-class GetStartOnBoot(TestCase):
-    @mock.patch("ha_cluster_lsr.info.loader._is_service_enabled")
-    def test_main(self, mock_is_enabled: mock.Mock) -> None:
-        runner_mock = mock.Mock()
-        mock_is_enabled.side_effect = [False, False]
-        self.assertFalse(loader.get_start_on_boot(runner_mock))
-
-        mock_is_enabled.side_effect = [True, False]
-        self.assertTrue(loader.get_start_on_boot(runner_mock))
-
-        mock_is_enabled.side_effect = [False, True]
-        self.assertTrue(loader.get_start_on_boot(runner_mock))
-
-        mock_is_enabled.side_effect = [True, True]
-        self.assertTrue(loader.get_start_on_boot(runner_mock))
 
 
 class CallPcsCli(TestCase):
