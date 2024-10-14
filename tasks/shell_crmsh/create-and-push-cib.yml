@@ -27,23 +27,28 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-# Maintenance mode is required, because CIB version changes with cluster
-# status changes, resulting in shadow CIB outdated and unable to patch.
-# Sleep is implemented to ensure that cluster have enough time to freeze
-# to ensure CIB export consistency.
 # Meta-attrs is-managed will conflict with maintenance mode as well as
 # individual resource maintenance attributes. Expect will skip their deletion.
+# - name: Put cluster in maintenance mode to freeze cib changes
+#   ansible.builtin.expect:
+#     command: crm --force configure property maintenance-mode=true
+#     responses:
+#       ".*is-managed.*": "n"
+#       ".*already.*": "n"
+#   run_once: true  # noqa: run_once[task]
+#   check_mode: false
+#   changed_when: true
+
+# Maintenance mode is required, because CIB version changes with cluster
+# status changes, resulting in shadow CIB outdated and unable to patch.
 - name: Put cluster in maintenance mode to freeze cib changes
-  ansible.builtin.expect:
-    command: crm configure property maintenance-mode=true
-    responses:
-      ".*is-managed.*": "n"
-      ".*already.*": "n"
+  ansible.builtin.command:
+    cmd: crm --force configure property maintenance-mode=true
   run_once: true  # noqa: run_once[task]
   check_mode: false
   changed_when: true
 
-- name: Verify that maintenace-mode is true
+- name: Verify that maintenance-mode is true
   ansible.builtin.command:
     cmd: crm status
   register: __ha_cluster_crm_status_maint
@@ -116,12 +121,16 @@
 # Build the new CIB
 - name: Build the new CIB
   block:
-    ## Cluster properties
-    - name: Configure cluster properties
-      ansible.builtin.include_tasks: crm-cluster-properties.yml
-      vars:
-        properties_set: "{{ ha_cluster_cluster_properties[0] }}"
-      when: ha_cluster_cluster_properties[0].attrs | d([])
+    ## Ensure that stonith is disabled before executing crm configure.
+    ## This is usually disabled by running crm init.
+    ## Executing crm configure without stonith results in "config not valid".
+    - name: Set property stonith-enabled to false
+      ansible.builtin.command:
+        cmd: >-
+          crm -c {{ __ha_cluster_crm_shadow }}
+          configure property stonith-enabled=false
+      check_mode: false
+      changed_when: not ansible_check_mode
 
     ## Resource defaults
     - name: Configure resource defaults
@@ -229,6 +238,38 @@
         index_var: constraint_index
         loop_var: constraint
 
+    ## Cluster properties
+    - name: Configure cluster properties
+      ansible.builtin.include_tasks: crm-cluster-properties.yml
+      vars:
+        properties_set: "{{ ha_cluster_cluster_properties[0] }}"
+      when: ha_cluster_cluster_properties[0].attrs | d([])
+
+    # Verify CIB to ensure that there are no errors before applying.
+    - name: Verify shadow CIB
+      ansible.builtin.command:
+        cmd: >-
+          crm_verify -V -x
+          /var/lib/pacemaker/cib/shadow.{{ __ha_cluster_crm_shadow }}
+      register: __ha_cluster_crm_verify
+      ignore_errors: true
+      check_mode: false
+      changed_when: false
+
+    ## Fail execution if shadow CIB is not valid.
+    ## Example: No STONITH resources were defined while stonith-enabled is true
+    - name: Fail if shadow CIB is invalid
+      ansible.builtin.fail:
+        msg:
+          - "ERROR: Cluster configuration was invalid."
+          - Following errors have to be remediated before retrying.
+          - "{{ __ha_cluster_crm_verify.stdout_lines | d('') }}"
+          - "{{ __ha_cluster_crm_verify.stderr_lines | d('') }}"
+      when:
+        - __ha_cluster_crm_verify.rc != 0
+      check_mode: false
+
+
 # Push the new CIB into the cluster
 - name: Copy shadow cib to temp
   ansible.builtin.copy:
@@ -290,12 +331,19 @@
 
 # Meta-attrs is-managed will conflict with maintenance mode as well as
 # individual resource maintenance attributes. Expect will skip their deletion.
+# - name: Disable maintenance mode
+#   ansible.builtin.expect:
+#     command: crm --force configure property maintenance-mode=false
+#     responses:
+#       ".*is-managed.*": "n"
+#       ".*already.*": "n"
+#   check_mode: false
+#   changed_when: true
+#   run_once: true  # noqa: run_once[task]
+
 - name: Disable maintenance mode
-  ansible.builtin.expect:
-    command: crm configure property maintenance-mode=false
-    responses:
-      ".*is-managed.*": "n"
-      ".*already.*": "n"
+  ansible.builtin.command:
+    cmd: crm --force configure property maintenance-mode=false
   check_mode: false
   changed_when: true
   run_once: true  # noqa: run_once[task]

@@ -14,7 +14,7 @@
       __ha_cluster_role_essential_packages
       +
       ha_cluster_extra_packages }}"
-    state: present
+    state: latest
     use: "{{ (__ha_cluster_is_ostree | d(false)) |
              ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
@@ -73,7 +73,7 @@
             ternary(__ha_cluster_cloud_agents_packages, [])
           +
           ha_cluster_fence_agent_packages }}"
-        state: present
+        state: latest
         use: "{{ (__ha_cluster_is_ostree | d(false)) |
                  ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
