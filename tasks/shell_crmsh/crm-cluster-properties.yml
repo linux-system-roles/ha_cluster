@@ -1,11 +1,22 @@
 # SPDX-License-Identifier: MIT
 ---
+# stonith-enabled=true is required for clusters, but this task
+# allows for creation of cluster without stonith enabled.
+# It also ensures that stonith-enabled is always present.
+- name: Append stonith-enabled to ha_cluster_cluster_properties
+  ansible.builtin.set_fact:
+    __ha_cluster_property_attr: "{{
+      (properties_set.attrs + [{'name': 'stonith-enabled', 'value': 'true'}])
+      if properties_set.attrs | selectattr('name','equalto','stonith-enabled')
+       | list | length == 0
+      else properties_set.attrs }}"
+
 - name: Configure cluster properties set
   ansible.builtin.command:
     cmd: >-
-      crm -c {{ __ha_cluster_crm_shadow }}
+      crm --force -c {{ __ha_cluster_crm_shadow }}
       configure property {{ item.name | quote }}={{ item.value | quote }}
-  loop: "{{ properties_set.attrs }}"
+  loop: "{{ __ha_cluster_property_attr }}"
   # Pause ensures that cluster is consistent for further property changes.
   # Setting up crm properties without pause resulted in unstable cluster.
   loop_control:
@@ -13,3 +24,25 @@
   retries: 10
   check_mode: false
   changed_when: not ansible_check_mode
+
+# Get status of cluster properties for validation of stonith-enabled
+- name: Get status of cluster properties
+  ansible.builtin.command:
+    cmd: >-
+      crm --force -c {{ __ha_cluster_crm_shadow }}
+      configure show type:property
+  register: __ha_cluster_crm_show_property
+  check_mode: false
+  changed_when: false
+
+# Warning that stonith-enabled is false and it is not recommended.
+- name: Show warning if stonith-enabled=false
+  ansible.builtin.debug:
+    msg:
+      - "Warning: Property stonith-enabled is set to false."
+      - Property stonith-enabled should be always true for Live clusters!
+      - Set stonith-enabled as true in variable ha_cluster_cluster_properties.
+  when:
+    - __ha_cluster_crm_show_property is defined
+    - "'stonith-enabled=false'
+      in __ha_cluster_crm_show_property.stdout | lower"
