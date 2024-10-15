@@ -158,7 +158,7 @@ preferred for that, so that its default value is overridden.
 
 boolean, default: `false`
 
-If set to `true`, all packages will be installed with latest version.</br>
+If set to `true`, all packages will be installed with latest version.
 If set to `false`, existing packages will not be updated.
 
 #### `ha_cluster_hacluster_password`
