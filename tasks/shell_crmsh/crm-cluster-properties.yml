@@ -7,9 +7,8 @@
   ansible.builtin.set_fact:
     __ha_cluster_property_attr: "{{
       (properties_set.attrs + [{'name': 'stonith-enabled', 'value': 'true'}])
-      if properties_set.attrs | selectattr('name','equalto','stonith-enabled')
-       | list | length == 0
-      else properties_set.attrs }}"
+      if properties_set.attrs | selectattr('name', 'equalto', 'stonith-enabled') | list | length == 0
+      else properties_set.attrs }}"  # yamllint disable-line rule:line-length
 
 - name: Configure cluster properties set
   ansible.builtin.command:
