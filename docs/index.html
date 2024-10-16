@@ -165,6 +165,8 @@ id="toc-ha_cluster_install_cloud_agents"><code>ha_cluster_install_cloud_agents</
 id="toc-ha_cluster_fence_agent_packages"><code>ha_cluster_fence_agent_packages</code></a></li>
 <li><a href="#ha_cluster_extra_packages"
 id="toc-ha_cluster_extra_packages"><code>ha_cluster_extra_packages</code></a></li>
+<li><a href="#ha_cluster_use_latest_packages"
+id="toc-ha_cluster_use_latest_packages"><code>ha_cluster_use_latest_packages</code></a></li>
 <li><a href="#ha_cluster_hacluster_password"
 id="toc-ha_cluster_hacluster_password"><code>ha_cluster_hacluster_password</code></a></li>
 <li><a href="#ha_cluster_hacluster_qdevice_password"
@@ -317,7 +319,8 @@ Information</a></li>
 <li>Compatible OS
 <ul>
 <li>RHEL 8.3+, Fedora 31+</li>
-<li>SLES 15 SP5+ with HA extension, SLES4SAP 15 SP5+</li>
+<li>SUSE Linux Enterprise Server 15 with HA extension</li>
+<li>SUSE Linux Enterprise Server for SAP Applications 15</li>
 </ul></li>
 <li>Systems running RHEL are expected to be registered and have
 High-Availability repositories accessible, and ResilientStorage
@@ -452,6 +455,12 @@ agents.</p>
 <p>It is possible to specify fence agents here as well. However, <a
 href="#ha_cluster_fence_agent_packages"><code>ha_cluster_fence_agent_packages</code></a>
 is preferred for that, so that its default value is overridden.</p>
+<h3
+id="ha_cluster_use_latest_packages"><code>ha_cluster_use_latest_packages</code></h3>
+<p>boolean, default: <code>false</code></p>
+<p>If set to <code>true</code>, all packages will be installed with
+latest version. If set to <code>false</code>, existing packages will not
+be updated.</p>
 <h3
 id="ha_cluster_hacluster_password"><code>ha_cluster_hacluster_password</code></h3>
 <p>string, no default - must be specified</p>
