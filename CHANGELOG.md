@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.20.0] - 2024-10-30
+--------------------
+
+### New Features
+
+- feat: crmsh 4.6.0 support and stonith-enabled workflow update (#232)
+
+### Other Changes
+
+- ci: Add tags to TF workflow, allow more [citest bad] formats (#229)
+- docs: improve comments in SBD examples (#230)
+- ci: ansible-test action now requires ansible-core version (#233)
+- ci: add YAML header to github action workflow files (#234)
+- refactor: Use vars/RedHat_N.yml symlink for CentOS, Rocky, Alma wherever possible (#236)
+
 [1.19.2] - 2024-08-21
 --------------------
 
