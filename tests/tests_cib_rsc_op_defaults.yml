@@ -77,8 +77,14 @@
             name: linux-system-roles.ha_cluster
             public: true
 
+        - name: Fetch versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+
         - name: Verify resource defaults
           vars:
+            __test_rule_score: "{{
+              __test_pacemaker_version is version('3.0.0', '<')
+              | ternary(' score=INFINITY', '') }}"
             __test_expected_lines:
               - "Meta Attrs: rsc_defaults-meta_attributes"
               - "  rsc-key-1=rsc-val-1"
@@ -88,16 +94,16 @@
               - "  rsc-key-3=rsc-val-3"
               - "Meta Attrs: rsc_defaults-meta_attributes-2"
               - "  rsc-key-4=rsc-val-4"
-              - "  Rule: boolean-op=and score=INFINITY"
+              - "  Rule: boolean-op=and{{ __test_rule_score }}"
               - "    Expression: resource ocf:pacemaker:"
               - "Meta Attrs: without_attrs_rsc score=20"
-              - "  Rule: boolean-op=or score=INFINITY"
+              - "  Rule: boolean-op=or{{ __test_rule_score }}"
               - "    Expression: resource :pacemaker:"
               - "    Expression: resource :heartbeat:"
               - "Meta Attrs: all_options_rsc score=INFINITY"
               - "  rsc-key-5=rsc-val-5"
               - "  rsc-key-6=rsc-val-6"
-              - "  Rule: boolean-op=and score=INFINITY"
+              - "  Rule: boolean-op=and{{ __test_rule_score }}"
               - "    Expression: resource ocf:pacemaker:test"
           block:
             - name: Fetch resource defaults configuration from the cluster
@@ -122,6 +128,9 @@
 
         - name: Verify operation defaults
           vars:
+            __test_rule_score: "{{
+              __test_pacemaker_version is version('3.0.0', '<')
+              | ternary(' score=INFINITY', '') }}"
             __test_expected_lines:
               - "Meta Attrs: op_defaults-meta_attributes"
               - "  op-key-1=op-val-1"
@@ -131,16 +140,16 @@
               - "  op-key-3=op-val-3"
               - "Meta Attrs: op_defaults-meta_attributes-2"
               - "  op-key-4=op-val-4"
-              - "  Rule: boolean-op=and score=INFINITY"
+              - "  Rule: boolean-op=and{{ __test_rule_score }}"
               - "    Expression: resource ocf:pacemaker:"
               - "Meta Attrs: without_attrs_op score=20"
-              - "  Rule: boolean-op=or score=INFINITY"
+              - "  Rule: boolean-op=or{{ __test_rule_score }}"
               - "    Expression: resource :pacemaker:"
               - "    Expression: op monitor"
               - "Meta Attrs: all_options_op score=INFINITY"
               - "  op-key-5=op-val-5"
               - "  op-key-6=op-val-6"
-              - "  Rule: boolean-op=and score=INFINITY"
+              - "  Rule: boolean-op=and{{ __test_rule_score }}"
               - "    Expression: resource ocf:pacemaker:test"
           block:
             - name: Fetch operation defaults configuration from the cluster

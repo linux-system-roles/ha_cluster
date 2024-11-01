@@ -852,7 +852,9 @@
                                                 "in_effect": "UNKNOWN",
                                                 "options": {
                                                     "boolean-op": "or",
-                                                    "score": "0"
+                                                    {% if __test_pacemaker_version is version("3.0", "<") %}
+                                                      "score": "0"
+                                                    {% endif %}
                                                 },
                                                 "type": "RULE"
                                             }
@@ -938,7 +940,9 @@
                                                 "in_effect": "UNKNOWN",
                                                 "options": {
                                                     "boolean-op": "or",
-                                                    "score": "0"
+                                                    {% if __test_pacemaker_version is version("3.0", "<") %}
+                                                      "score": "0"
+                                                    {% endif %}
                                                 },
                                                 "type": "RULE"
                                             }
@@ -1235,7 +1239,9 @@
                                                 "in_effect": "UNKNOWN",
                                                 "options": {
                                                     "boolean-op": "or",
-                                                    "score": "0"
+                                                    {% if __test_pacemaker_version is version("3.0", "<") %}
+                                                      "score": "0"
+                                                    {% endif %}
                                                 },
                                                 "type": "RULE"
                                             },
@@ -1320,7 +1326,9 @@
                                                 "in_effect": "UNKNOWN",
                                                 "options": {
                                                     "boolean-op": "or",
-                                                    "score": "0"
+                                                    {% if __test_pacemaker_version is version("3.0", "<") %}
+                                                      "score": "0"
+                                                    {% endif %}
                                                 },
                                                 "type": "RULE"
                                             },
