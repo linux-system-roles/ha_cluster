@@ -53,6 +53,9 @@ jobs:
           # package per line.
           if [ -f .github/config/ubuntu-requirements.txt ]; then
             sudo apt-get install -y $(cat .github/config/ubuntu-requirements.txt)
+            # remove pcs which is installed as a dependency of pacemaker (since
+            # ubuntu 23.10) and conflicts with pcs built from source
+            sudo dpkg --force-depends --purge pcs
           fi
 
       - name: Clone pcs
