@@ -57,6 +57,8 @@
           include_tasks: tasks/fetch_versions.yml
 
         - name: Verify stonith levels
+          when:
+            - '"pcmk.stonith.levels.config.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_regexp_label: "{{
               __test_pcs_version is version('0.10.10', '>')
@@ -79,7 +81,7 @@
 
             - name: Print real stonith levels configuration
               debug:
-                var: __test_pcs_stonith_level_config
+                var: __test_pcs_stonith_level_config.stdout_lines
 
             - name: Print expected stonith levels configuration
               debug:
@@ -90,6 +92,76 @@
                 that:
                   - __test_pcs_stonith_level_config.stdout_lines
                     == __test_expected_lines | list
+
+        - name: Verify stonith levels
+          when:
+            - '"pcmk.stonith.levels.config.output-formats" in __test_pcs_capabilities'
+          vars:
+            __test_expected_lines: '
+                {
+                    "target_node": [
+                        {
+                            "id": "fl-{{ __test_first_node }}-1",
+                            "target": "{{ __test_first_node }}",
+                            "index": 1,
+                            "devices": [
+                                "fence1"
+                            ]
+                        }
+                    ],
+                    "target_regex": [
+                        {
+                            "id": "fl-node-d-2",
+                            "target_pattern": "node-\\d+",
+                            "index": 2,
+                            "devices": [
+                                "fence2"
+                            ]
+                        }
+                    ],
+                    "target_attribute": [
+                        {
+                            "id": "fl-some-name-3",
+                            "target_attribute": "some-name",
+                            "target_value": "",
+                            "index": 3,
+                            "devices": [
+                                "fence1",
+                                "fence2"
+                            ]
+                        },
+                        {
+                            "id": "fl-some-name-4",
+                            "target_attribute": "some-name",
+                            "target_value": "some-value",
+                            "index": 4,
+                            "devices": [
+                                "fence2",
+                                "fence1"
+                            ]
+                        }
+                    ]
+                }'
+          block:
+            - name: Fetch stonith levels configuration from the cluster
+              command:
+                cmd: pcs --output-format=json stonith level config
+              register: __test_pcs_stonith_level_config
+              changed_when: false
+
+            - name: Print real stonith levels configuration
+              debug:
+                var: __test_pcs_stonith_level_config.stdout | from_json
+
+            - name: Print expected stonith levels configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check stonith levels configuration
+              assert:
+                that:
+                  - __test_pcs_stonith_level_config.stdout | from_json
+                    == __test_expected_lines | from_json
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
