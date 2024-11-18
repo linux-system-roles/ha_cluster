@@ -5,6 +5,7 @@
   vars_files: vars/main.yml
   vars:
     ha_cluster_cluster_name: test-cluster
+    ha_cluster_get_info: true
 
   tasks:
     - name: Run test
@@ -112,15 +113,11 @@
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
 
-        - name: Export cluster configuration
-          ha_cluster_info:
-          register: __test_info
-
         - name: Check exported configuration
           vars:
             __test_exported_config: >
               {{
-                __test_info.ha_cluster | combine({
+                ha_cluster_facts | combine({
                   'ha_cluster_node_options': 'it depends on test environment'
                 })
               }}

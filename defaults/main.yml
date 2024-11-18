@@ -75,3 +75,5 @@ ha_cluster_qnetd:
   present: false
   regenerate_keys: false
   start_on_boot: true
+
+ha_cluster_get_info: false

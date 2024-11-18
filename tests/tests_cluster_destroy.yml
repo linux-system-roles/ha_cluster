@@ -3,6 +3,7 @@
 - name: Deconfigure cluster
   hosts: all
   vars:
+    ha_cluster_get_info: true
     ha_cluster_cluster_present: false
 
   tasks:
@@ -41,14 +42,10 @@
               - not stat_cib_xml.stat.exists
               - not stat_fence_xvm_key.stat.exists
 
-        - name: Export cluster configuration
-          ha_cluster_info:
-          register: test_info
-
         - name: Check exported configuration
           assert:
             that:
-              - test_info.ha_cluster == expected_configuration
+              - ha_cluster_facts == expected_configuration
           vars:
             expected_configuration:
               ha_cluster_cluster_present: false

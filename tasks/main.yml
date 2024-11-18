@@ -18,43 +18,47 @@
     use: "{{ (__ha_cluster_is_ostree | d(false)) |
              ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
-- name: Check and prepare role variables
-  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml  # yamllint disable-line rule:line-length
-
-# The user is created by installing pacemaker packages. We just need to set the
-# password.
-- name: Provide a password for the hacluster user
+- name: Preconfigure hosts
   when:
-    - ha_cluster_hacluster_password | string | length > 0
+    - ha_cluster_cluster_present is not none or ha_cluster_qnetd is not none
   block:
-    - name: Generate a password hash
-      # The arg `-6` means SHA512 based algorithms.
-      command:
-        cmd: >-
-          openssl passwd
-            -6
-            -salt {{ ansible_hostname.replace('-', 'x') | quote }}
-            {{ ha_cluster_hacluster_password | string | quote }}
-      register: __ha_cluster_openssl_call_result
-      changed_when: false
-      no_log: true
+    - name: Check and prepare role variables
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml  # yamllint disable-line rule:line-length
 
-    - name: Set hacluster password
-      user:
-        name: hacluster
-        password: "{{ __ha_cluster_openssl_call_result.stdout }}"
+    # The user is created by installing pacemaker packages. We just need to set
+    # the password.
+    - name: Provide a password for the hacluster user
+      when:
+        - ha_cluster_hacluster_password | string | length > 0
+      block:
+        - name: Generate a password hash
+          # The arg `-6` means SHA512 based algorithms.
+          command:
+            cmd: >-
+              openssl passwd
+                -6
+                -salt {{ ansible_hostname.replace('-', 'x') | quote }}
+                {{ ha_cluster_hacluster_password | string | quote }}
+          register: __ha_cluster_openssl_call_result
+          changed_when: false
+          no_log: true
 
-- name: Configure shell
-  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/configure-shell.yml  # yamllint disable-line rule:line-length
+        - name: Set hacluster password
+          user:
+            name: hacluster
+            password: "{{ __ha_cluster_openssl_call_result.stdout }}"
 
-- name: Configure firewall and selinux
-  when: ha_cluster_cluster_present | bool or ha_cluster_qnetd.present | d(false)
-  block:
-    - name: Configure firewall
-      include_tasks: firewall.yml
+    - name: Configure shell
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/configure-shell.yml
 
-    - name: Configure selinux
-      include_tasks: selinux.yml
+    - name: Configure firewall and selinux
+      when: ha_cluster_cluster_present | bool or ha_cluster_qnetd.present | d(false)  # yamllint disable-line rule:line-length
+      block:
+        - name: Configure firewall
+          include_tasks: firewall.yml
+
+        - name: Configure selinux
+          include_tasks: selinux.yml
 
 - name: Install and configure HA cluster
   when: ha_cluster_cluster_present | bool
@@ -112,7 +116,9 @@
       run_once: true
 
 - name: Remove cluster configuration
-  when: not ha_cluster_cluster_present
+  when:
+    - ha_cluster_cluster_present is not none
+    - not ha_cluster_cluster_present
   block:
     - name: Remove cluster configuration
       include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml  # yamllint disable-line rule:line-length
@@ -123,4 +129,18 @@
         state: absent
 
 - name: Configure qnetd
+  when: ha_cluster_qnetd is not none
   include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/pcs-qnetd.yml
+
+- name: Export configuration
+  when:
+    - ha_cluster_get_info | bool
+    - ha_cluster_pacemaker_shell == "pcs"
+  block:
+    - name: Fetch configuration
+      ha_cluster_info:
+      register: __ha_cluster_info
+
+    - name: Set configuration fact
+      set_fact:
+        ha_cluster_facts: "{{ __ha_cluster_info.ha_cluster }}"

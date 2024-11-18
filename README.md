@@ -31,8 +31,7 @@ An Ansible role for managing High Availability Clustering.
   * Pacemaker Access Control Lists (ACLs)
   * node and resource utilization
   * Pacemaker Alerts
-* The role provides `ha_cluster_info` module which exports current cluster
-  configuration. The module is capable of exporting:
+* The role is capable of exporting existing cluster configuration:
   * single-link or multi-link cluster
   * Corosync transport options including compression and encryption
   * Corosync totem options
@@ -64,6 +63,13 @@ ansible-galaxy collection install -r meta/collection-requirements.yml
 ## Role Variables
 
 ### Defined in `defaults/main.yml`
+
+#### `ha_cluster_get_info`
+
+boolean, default: `false`
+
+Export existing cluster configuration. See
+[Variables Exported by the Role](#variables-exported-by-the-role) for details.
 
 #### `ha_cluster_enable_repos`
 
@@ -125,7 +131,7 @@ boolean, default: `true`
 
 If set to `true`, HA cluster will be configured on the hosts according to other
 variables. If set to `false`, all HA Cluster configuration will be purged from
-target hosts.
+target hosts. If set to `null`, HA cluster configuration will not be changed.
 
 #### `ha_cluster_start_on_boot`
 
@@ -1462,6 +1468,9 @@ for clusters. The items are as follows:
 Note that you cannot run qnetd on a cluster node as fencing would disrupt qnetd
 operation.
 
+If you set `ha_cluster_qnetd: null`, then qnetd host configuration will not be
+changed.
+
 You may take a look at [an
 example](#configuring-a-cluster-using-a-quorum-device).
 
@@ -1551,9 +1560,9 @@ all:
   monitoring. Defaults to empty list if not set. Always refer to the devices
   using the long, stable device name (`/dev/disk/by-id/`).
 
-## Export current cluster configuration
+## Variables Exported by the Role
 
-The role provides `ha_cluster_info` module which exports current cluster
+The role contains `ha_cluster_info` module which exports current cluster
 configuration in a dictionary matching the structure of this role variables. If
 the role is run with these variables, it recreates the same cluster.
 
@@ -1590,25 +1599,49 @@ may not be present in the export.
     responsibility to decide if you want to use existing keys or generate new
     ones.
 
-To export current cluster configuration and store it in
-`ha_cluster_info_result` variable, write a task like this:
+To export current cluster configuration and store it in `ha_cluster_facts`
+variable, run the role with `ha_cluster_get_info: true`. This triggers the
+export once the role finishes configuring a cluster or a qnetd host. If you
+want to trigger the export without modifying existing configuration, run the
+role like this:
 
 ```yaml
-- name: Get current cluster configuration
-  linux-system-roles.ha_cluster.ha_cluster_info:
-  register: ha_cluster_info_result
+- hosts: node1
+  vars:
+    ha_cluster_cluster_present: null
+    ha_cluster_qnetd: null
+    ha_cluster_get_info: true
+
+  roles:
+    - linux-system-roles.ha_cluster
 ```
 
-Then you may use the `ha_cluster_info_result` variable in your playbook
-depending on your needs.
+**Note:** By default, `ha_cluster_cluster_present` is set to `true` and
+`ha_cluster_qnetd.present` is set to `false`. If you do not set the variables as
+show in the example above, the role will reconfigure your cluster on the
+specified hosts, remove qnetd configuration from the specified hosts, and then
+export configuration.
+
+You may use the `ha_cluster_facts` variable in your playbook depending on your
+needs.
 
 If you just want to see the content of the variable, use the ansible debug
 module like this:
 
 ```yaml
-- name: Print ha_cluster_info_result variable
-  debug:
-    var: ha_cluster_info_result
+- hosts: node1
+  vars:
+    ha_cluster_cluster_present: null
+    ha_cluster_qnetd: null
+    ha_cluster_get_info: true
+
+  roles:
+    - linux-system-roles.ha_cluster
+
+  tasks:
+    - name: Print ha_cluster_info_result variable
+      debug:
+        var: ha_cluster_facts
 ```
 
 Or you may want to save the configuration to a file on your controller node in
@@ -1616,12 +1649,21 @@ YAML format with a task similar to this one, so that you can write a playbook
 around it:
 
 ```yaml
-- name: Save current cluster configuration to a file
-  delegate_to: localhost
-  copy:
-    content: "{{
-      ha_cluster_info_result.ha_cluster | to_nice_yaml(sort_keys=false) }}"
-    dest: /path/to/file
+- hosts: node1
+  vars:
+    ha_cluster_cluster_present: null
+    ha_cluster_qnetd: null
+    ha_cluster_get_info: true
+
+  roles:
+    - linux-system-roles.ha_cluster
+
+  tasks:
+    - name: Save current cluster configuration to a file
+      delegate_to: localhost
+      copy:
+        content: "{{ ha_cluster_facts | to_nice_yaml(sort_keys=false) }}"
+        dest: /path/to/file
 ```
 
 ## Example Playbooks

@@ -1,0 +1,23 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Example ha_cluster role invocation - export cluster configuration
+  hosts: node1
+  vars:
+    ha_cluster_cluster_present: null
+    ha_cluster_qnetd: null
+    ha_cluster_get_info: true
+
+  roles:
+    - linux-system-roles.ha_cluster
+
+  tasks:
+    - name: Print ha_cluster_info_result variable
+      debug:
+        var: ha_cluster_facts
+
+    - name: Save current cluster configuration to a file
+      delegate_to: localhost
+      copy:
+        content: "{{ ha_cluster_facts | to_nice_yaml(sort_keys=false) }}"
+        dest: /path/to/file
+        mode: "0640"
