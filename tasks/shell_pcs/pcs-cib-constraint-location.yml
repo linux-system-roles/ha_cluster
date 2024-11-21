@@ -25,7 +25,14 @@
         {% for option in constraint.options | d([]) %}
           {{ option.name | quote }}={{ option.value | quote }}
         {% endfor %}
-        {{ constraint.rule }}
+        {% if
+          'pcmk.constraint.location.simple.rule.rule-as-one-argument'
+          in __ha_cluster_pcs_capabilities
+        %}
+          {{ constraint.rule | quote }}
+        {% else %}
+          {{ constraint.rule }}
+        {% endif %}
       {% elif
         (constraint.id | d())
         or (
@@ -42,9 +49,23 @@
         {% endif %}
         {{ constraint.node | quote }}
         {% for option in constraint.options | d([]) if option.name == 'score' %}
-          {{ option.value | quote }}
+          {% if
+            'pcmk.constraint.location.simple.options.score'
+            in __ha_cluster_pcs_capabilities
+          %}
+            {{ ('score=' ~ option.value) | quote }}
+          {% else %}
+            {{ option.value | quote }}
+          {% endif %}
         {% else %}
-          INFINITY
+          {% if
+            'pcmk.constraint.location.simple.options.score'
+            in __ha_cluster_pcs_capabilities
+          %}
+            score=INFINITY
+          {% else %}
+            INFINITY
+          {% endif %}
         {% endfor %}
         {% for option in constraint.options | d([]) if option.name != 'score' %}
           {{ option.name | quote }}={{ option.value | quote }}
