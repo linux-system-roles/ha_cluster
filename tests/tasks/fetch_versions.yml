@@ -25,3 +25,19 @@
         ansible_facts.packages['pacemaker'][0]['version']
       }}"
     __test_pcs_version: "{{ ansible_facts.packages['pcs'][0]['version'] }}"
+
+- name: CIB schema version
+  when: with_cib_schema_version | d(false)
+  block:
+    - name: Discover CIB schema version
+      command:
+        cmd: >
+          xmllint
+          --xpath 'substring-after(/cib/@validate-with, "pacemaker-")'
+          /var/lib/pacemaker/cib/cib.xml
+      register: __test_cib_validate_with_xpath
+      changed_when: false
+
+    - name: Extract versions of cluster components
+      set_fact:
+        __test_cib_validate_with: "{{ __test_cib_validate_with_xpath.stdout }}"

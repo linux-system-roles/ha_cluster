@@ -79,11 +79,16 @@
 
         - name: Fetch versions of cluster components
           include_tasks: tasks/fetch_versions.yml
+          vars:
+            with_cib_schema_version: true
 
         - name: Verify resource defaults
           vars:
             __test_rule_score: "{{
-              __test_pacemaker_version is version('3.0.0', '<')
+              (
+                __test_cib_validate_with is version('3.9', '<')
+                or __test_pcs_version is version('0.12', '<')
+              )
               | ternary(' score=INFINITY', '') }}"
             __test_expected_lines:
               - "Meta Attrs: rsc_defaults-meta_attributes"
@@ -129,7 +134,10 @@
         - name: Verify operation defaults
           vars:
             __test_rule_score: "{{
-              __test_pacemaker_version is version('3.0.0', '<')
+              (
+                __test_cib_validate_with is version('3.9', '<')
+                or __test_pcs_version is version('0.12', '<')
+              )
               | ternary(' score=INFINITY', '') }}"
             __test_expected_lines:
               - "Meta Attrs: op_defaults-meta_attributes"
