@@ -56,11 +56,7 @@ variables:
   - PYENV_PACKAGES="${PYENV_ROOT}/lib/python${PYTHON_VER}/site-packages"
   - PCS_DIR=$(rpm -ql pcs | grep 'site-packages/pcs$')
   - PCS_PYTHON_VER=$(echo "$PCS_DIR" | sed -e 's@.*/python\([0-9\.]\+\)/.*@\1@')
-  - PCS_EGG=$(rpm -ql pcs | grep 'site-packages/pcs.*\.egg-info$')
-  - PCS_EGG_NAME=$(basename "$PCS_EGG")
   - if [ "x$PYTHON_VER" != "x$PCS_PYTHON_VER" ]; then ln -s "${PCS_DIR}" "${PYENV_PACKAGES}/pcs"; fi
-  - if [ "x$PYTHON_VER" != "x$PCS_PYTHON_VER" ]; then ln -s "${PCS_EGG}" "${PYENV_PACKAGES}/${PCS_EGG_NAME}"; fi
-  - if [ "x$PYTHON_VER" != "x$PCS_PYTHON_VER" ]; then pushd .; cd "${PYENV_PACKAGES}"; rename --verbose "${PCS_PYTHON_VER}" "${PYTHON_VER}" pcs-*.egg-info; popd; fi
   - ls -l "$PYENV_PACKAGES"
 
 .convert_role_to_collection: &convert_role_to_collection

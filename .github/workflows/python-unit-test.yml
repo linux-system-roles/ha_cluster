@@ -18,14 +18,20 @@ jobs:
   python:
     strategy:
       matrix:
-        os:
-          - ubuntu-22.04
-          - ubuntu-latest
-        pcs_version:
-          - v0.11.4
-          - v0.11.5
-          - v0.11.6
-          - main
+        include:
+          - os: ubuntu-22.04
+            pcs_version: v0.11.4
+          - os: ubuntu-22.04
+            pcs_version: v0.11.5
+          - os: ubuntu-22.04
+            pcs_version: v0.11.6
+          - os: ubuntu-22.04
+            pcs_version: v0.11.7
+          - os: ubuntu-22.04
+            pcs_version: v0.11.8
+          - os: ubuntu-24.04
+            pcs_version: main
+          # pcs_version 0.12.x will go to ubuntu 24.04 only
     runs-on: ${{ matrix.os }}
     steps:
       - name: Update git
@@ -47,6 +53,9 @@ jobs:
           # package per line.
           if [ -f .github/config/ubuntu-requirements.txt ]; then
             sudo apt-get install -y $(cat .github/config/ubuntu-requirements.txt)
+            # remove pcs which is installed as a dependency of pacemaker (since
+            # ubuntu 23.10) and conflicts with pcs built from source
+            sudo dpkg --force-depends --purge pcs
           fi
 
       - name: Clone pcs
@@ -60,7 +69,7 @@ jobs:
         run: |
           set -euxo pipefail
           pcs_dir="${RUNNER_TEMP}/pcs"
-          mkdir -p pcs_dir
+          mkdir -p "$pcs_dir"
           cd pcs-upstream
           if [ "x${{ matrix.pcs_version }}" == "xmain" ]; then
             echo "0.0.1+ci" > .tarball-version
