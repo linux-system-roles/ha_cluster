@@ -74,7 +74,8 @@ jobs:
           if [ "x${{ matrix.pcs_version }}" == "xmain" ]; then
             echo "0.0.1+ci" > .tarball-version
           fi
-          ./autogen.sh && ./configure --prefix "$pcs_dir" && make && make install
+          # pip adds "/local" so ensure make looks in the right directory when installing
+          ./autogen.sh && ./configure --prefix "$pcs_dir" && make && make prefix="$pcs_dir/local" install
           cd ..
           rm -rf pcs-upstream
           site_pkgs_dir=`python -m site --user-site`
@@ -96,4 +97,4 @@ jobs:
           TOXENV="$toxenvs" lsr_ci_runtox
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
