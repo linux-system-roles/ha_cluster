@@ -74,8 +74,7 @@ jobs:
           if [ "x${{ matrix.pcs_version }}" == "xmain" ]; then
             echo "0.0.1+ci" > .tarball-version
           fi
-          # pip adds "/local" so ensure make looks in the right directory when installing
-          ./autogen.sh && ./configure --prefix "$pcs_dir" && make && make prefix="$pcs_dir/local" install
+          ./autogen.sh && ./configure --prefix "$pcs_dir" && make && make install
           cd ..
           rm -rf pcs-upstream
           site_pkgs_dir=`python -m site --user-site`
