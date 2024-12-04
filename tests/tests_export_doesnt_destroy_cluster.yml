@@ -42,7 +42,7 @@
           vars:
             ha_cluster_cluster_present: null
             ha_cluster_qnetd: null
-            ha_cluster_get_info: true
+            ha_cluster_export_configuration: true
 
         - name: Compare expected and exported configuration 1
           assert:
@@ -57,7 +57,7 @@
           vars:
             ha_cluster_cluster_present: null
             ha_cluster_qnetd: null
-            ha_cluster_get_info: true
+            ha_cluster_export_configuration: true
 
         - name: Compare expected and exported configuration 2
           assert:

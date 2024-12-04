@@ -5,7 +5,7 @@
   vars:
     ha_cluster_cluster_present: null
     ha_cluster_qnetd: null
-    ha_cluster_get_info: true
+    ha_cluster_export_configuration: true
 
   roles:
     - linux-system-roles.ha_cluster

@@ -64,7 +64,7 @@ ansible-galaxy collection install -r meta/collection-requirements.yml
 
 ### Defined in `defaults/main.yml`
 
-#### `ha_cluster_get_info`
+#### `ha_cluster_export_configuration`
 
 boolean, default: `false`
 
@@ -1600,17 +1600,17 @@ may not be present in the export.
     ones.
 
 To export current cluster configuration and store it in `ha_cluster_facts`
-variable, run the role with `ha_cluster_get_info: true`. This triggers the
-export once the role finishes configuring a cluster or a qnetd host. If you
-want to trigger the export without modifying existing configuration, run the
-role like this:
+variable, run the role with `ha_cluster_export_configuration: true`. This
+triggers the export once the role finishes configuring a cluster or a qnetd
+host. If you want to trigger the export without modifying existing
+configuration, run the role like this:
 
 ```yaml
 - hosts: node1
   vars:
     ha_cluster_cluster_present: null
     ha_cluster_qnetd: null
-    ha_cluster_get_info: true
+    ha_cluster_export_configuration: true
 
   roles:
     - linux-system-roles.ha_cluster
@@ -1618,7 +1618,7 @@ role like this:
 
 **Note:** By default, `ha_cluster_cluster_present` is set to `true` and
 `ha_cluster_qnetd.present` is set to `false`. If you do not set the variables as
-show in the example above, the role will reconfigure your cluster on the
+shown in the example above, the role will reconfigure your cluster on the
 specified hosts, remove qnetd configuration from the specified hosts, and then
 export configuration.
 
@@ -1633,7 +1633,7 @@ module like this:
   vars:
     ha_cluster_cluster_present: null
     ha_cluster_qnetd: null
-    ha_cluster_get_info: true
+    ha_cluster_export_configuration: true
 
   roles:
     - linux-system-roles.ha_cluster
@@ -1653,7 +1653,7 @@ around it:
   vars:
     ha_cluster_cluster_present: null
     ha_cluster_qnetd: null
-    ha_cluster_get_info: true
+    ha_cluster_export_configuration: true
 
   roles:
     - linux-system-roles.ha_cluster

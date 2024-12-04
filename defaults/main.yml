@@ -76,4 +76,4 @@ ha_cluster_qnetd:
   regenerate_keys: false
   start_on_boot: true
 
-ha_cluster_get_info: false
+ha_cluster_export_configuration: false

@@ -6,7 +6,7 @@
   vars:
     ha_cluster_cluster_name: test-cluster
     ha_cluster_start_on_boot: false
-    ha_cluster_get_info: true
+    ha_cluster_export_configuration: true
 
   tasks:
     - name: Run test

@@ -134,7 +134,7 @@
 
 - name: Export configuration
   when:
-    - ha_cluster_get_info | bool
+    - ha_cluster_export_configuration | bool
     - ha_cluster_pacemaker_shell == "pcs"
   block:
     - name: Fetch configuration

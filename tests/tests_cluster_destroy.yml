@@ -3,7 +3,7 @@
 - name: Deconfigure cluster
   hosts: all
   vars:
-    ha_cluster_get_info: true
+    ha_cluster_export_configuration: true
     ha_cluster_cluster_present: false
 
   tasks:
