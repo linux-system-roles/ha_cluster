@@ -12,13 +12,31 @@ __ha_cluster_repos:
     name: Resilient Storage
 
 __ha_cluster_cloud_agents_packages:
-  - resource-agents-cloud
-  - fence-agents-aliyun
-  - fence-agents-aws
-  - fence-agents-azure-arm
-  - fence-agents-compute
-  - fence-agents-gce
-  - fence-agents-ibm-powervs
-  - fence-agents-ibm-vpc
-  - fence-agents-kubevirt
-  - fence-agents-openstack
+  x86_64:
+    - resource-agents-cloud
+    - fence-agents-aliyun
+    - fence-agents-aws
+    - fence-agents-azure-arm
+    - fence-agents-compute
+    - fence-agents-gce
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+    - fence-agents-kubevirt
+    - fence-agents-openstack
+  aarch64:
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+    - fence-agents-kubevirt
+  ppc64le:
+    - fence-agents-compute
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+    - fence-agents-kubevirt
+    - fence-agents-openstack
+  s390x:
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+    - fence-agents-kubevirt
+  noarch:
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc

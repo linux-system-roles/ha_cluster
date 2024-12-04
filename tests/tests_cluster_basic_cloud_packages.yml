@@ -7,24 +7,16 @@
   vars:
     ha_cluster_cluster_name: test-cluster
     ha_cluster_install_cloud_agents: true
+    # Only agents available on all architectures are listed so that we don't
+    # need a special case for each architecture.
     __test_agents_rhel_8:
-      - resource-agents-aliyun
-      - resource-agents-gcp
-      - fence-agents-aliyun
       - fence-agents-aws
       - fence-agents-azure-arm
       - fence-agents-gce
+    # RHEL 10 has the same agents as RHEL 9
     __test_agents_rhel_9:
-      - resource-agents-cloud
-      - fence-agents-aliyun
-      - fence-agents-aws
-      - fence-agents-azure-arm
-      - fence-agents-compute
-      - fence-agents-gce
       - fence-agents-ibm-powervs
       - fence-agents-ibm-vpc
-      - fence-agents-kubevirt
-      - fence-agents-openstack
     __test_agents: "{{ (ansible_facts['distribution_major_version'] == '8') |
       ternary(__test_agents_rhel_8, __test_agents_rhel_9) }}"
     __test_eligible: "{{
