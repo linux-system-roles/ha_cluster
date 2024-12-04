@@ -74,7 +74,9 @@
           ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
           +
           ha_cluster_install_cloud_agents |
-            ternary(__ha_cluster_cloud_agents_packages, [])
+            ternary(__ha_cluster_cloud_agents_packages[ansible_architecture]
+                | d(__ha_cluster_cloud_agents_packages['noarch'] | d([])),
+              [])
           +
           ha_cluster_fence_agent_packages }}"
         state: "{{ 'latest' if ha_cluster_use_latest_packages else 'present' }}"
