@@ -1,0 +1,65 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure that exporting cluster configuration doesn't modify the cluster
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      vars:
+        ha_cluster_cluster_name: test-cluster
+        __test_exported_config: >
+          {{
+            ha_cluster_facts | combine({
+              'ha_cluster_node_options': 'it depends on test environment'
+            })
+          }}
+        __test_expected_config:
+          ha_cluster_cluster_present: true
+          ha_cluster_cluster_name: test-cluster
+          ha_cluster_start_on_boot: true
+          ha_cluster_transport:
+            type: udp
+          ha_cluster_node_options: "it depends on test environment"
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        # Create a cluster with a non-default configuration (default is knet)
+        - name: Run the role to create a cluster
+          include_role:
+            name: linux-system-roles.ha_cluster
+          vars:
+            ha_cluster_transport:
+              type: udp
+
+        # Export and compare cluster configuration
+        - name: Run the role to export the cluster config 1
+          include_role:
+            name: linux-system-roles.ha_cluster
+          vars:
+            ha_cluster_cluster_present: null
+            ha_cluster_qnetd: null
+            ha_cluster_export_configuration: true
+
+        - name: Compare expected and exported configuration 1
+          assert:
+            that:
+              - __test_exported_config == __test_expected_config
+
+        # Export again to check that previous export didn't change the cluster
+        # If it was modified, it would have transport 'knet' instead of 'udp'
+        - name: Run the role to export the cluster config 2
+          include_role:
+            name: linux-system-roles.ha_cluster
+          vars:
+            ha_cluster_cluster_present: null
+            ha_cluster_qnetd: null
+            ha_cluster_export_configuration: true
+
+        - name: Compare expected and exported configuration 2
+          assert:
+            that:
+              - __test_exported_config == __test_expected_config

@@ -1,0 +1,47 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Ensure cluster_present and qnetd_present are both set or both null
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Test cluster_present==true and qnetd_present==null
+          block:
+            - name: Run the role
+              include_role:
+                name: linux-system-roles.ha_cluster
+              vars:
+                ha_cluster_qnetd: null
+
+          rescue:
+            - name: Check errors
+              assert:
+                that: ansible_failed_result.msg == expected_msg
+              vars:
+                expected_msg: >
+                  Both 'ha_cluster_cluster_present' and 'ha_cluster_qnetd'
+                  must be either defined or set to null
+
+        - name: Test cluster_present==null and qnetd_present==true
+          block:
+            - name: Run the role
+              include_role:
+                name: linux-system-roles.ha_cluster
+              vars:
+                ha_cluster_cluster_present: null
+
+          rescue:
+            - name: Check errors
+              assert:
+                that: ansible_failed_result.msg == expected_msg
+              vars:
+                expected_msg: >
+                  Both 'ha_cluster_cluster_present' and 'ha_cluster_qnetd'
+                  must be either defined or set to null

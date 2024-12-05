@@ -3,6 +3,7 @@
 - name: Deconfigure cluster
   hosts: all
   vars:
+    ha_cluster_export_configuration: true
     ha_cluster_cluster_present: false
 
   tasks:
@@ -40,3 +41,11 @@
               - not stat_corosync_conf.stat.exists
               - not stat_cib_xml.stat.exists
               - not stat_fence_xvm_key.stat.exists
+
+        - name: Check exported configuration
+          assert:
+            that:
+              - ha_cluster_facts == expected_configuration
+          vars:
+            expected_configuration:
+              ha_cluster_cluster_present: false

@@ -4,6 +4,7 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
+    ha_cluster_export_configuration: true
     ha_cluster_cluster_name: test-cluster
     ha_cluster_transport:
       crypto:
@@ -61,3 +62,33 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
+        - name: Check exported configuration
+          vars:
+            __test_exported_config: >
+              {{
+                ha_cluster_facts | combine({
+                  'ha_cluster_node_options': 'it depends on test environment'
+                })
+              }}
+            __test_expected_config:
+              ha_cluster_cluster_present: true
+              ha_cluster_cluster_name: test-cluster
+              ha_cluster_start_on_boot: true
+              ha_cluster_transport:
+                type: knet
+                crypto: "{{ ha_cluster_transport.crypto }}"
+              ha_cluster_node_options: "it depends on test environment"
+          block:
+            - name: Print exported configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config

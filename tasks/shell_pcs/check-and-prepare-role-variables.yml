@@ -1,5 +1,15 @@
 # SPDX-License-Identifier: MIT
 ---
+- name: Fail if 'cluster present' and 'qnetd present' are inconsistent
+  fail:
+    msg: >
+      Both 'ha_cluster_cluster_present' and 'ha_cluster_qnetd' must be either
+      defined or set to null
+  when: >
+    (ha_cluster_cluster_present is none and ha_cluster_qnetd is not none)
+    or
+    (ha_cluster_cluster_present is not none and ha_cluster_qnetd is none)
+
 - name: Discover cluster node names
   set_fact:
     __ha_cluster_node_name: "{{ ha_cluster.node_name | d(inventory_hostname) }}"

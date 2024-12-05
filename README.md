@@ -31,6 +31,11 @@ An Ansible role for managing High Availability Clustering.
   * Pacemaker Access Control Lists (ACLs)
   * node and resource utilization
   * Pacemaker Alerts
+* The role is capable of exporting existing cluster configuration:
+  * single-link or multi-link cluster
+  * Corosync transport options including compression and encryption
+  * Corosync totem options
+  * Corosync quorum options
 
 ## Requirements
 
@@ -58,6 +63,13 @@ ansible-galaxy collection install -r meta/collection-requirements.yml
 ## Role Variables
 
 ### Defined in `defaults/main.yml`
+
+#### `ha_cluster_export_configuration`
+
+boolean, default: `false`
+
+Export existing cluster configuration. See
+[Variables Exported by the Role](#variables-exported-by-the-role) for details.
 
 #### `ha_cluster_enable_repos`
 
@@ -119,7 +131,7 @@ boolean, default: `true`
 
 If set to `true`, HA cluster will be configured on the hosts according to other
 variables. If set to `false`, all HA Cluster configuration will be purged from
-target hosts.
+target hosts. If set to `null`, HA cluster configuration will not be changed.
 
 #### `ha_cluster_start_on_boot`
 
@@ -1456,6 +1468,9 @@ for clusters. The items are as follows:
 Note that you cannot run qnetd on a cluster node as fencing would disrupt qnetd
 operation.
 
+If you set `ha_cluster_qnetd: null`, then qnetd host configuration will not be
+changed.
+
 You may take a look at [an
 example](#configuring-a-cluster-using-a-quorum-device).
 
@@ -1544,6 +1559,112 @@ all:
 * `sbd_devices` (optional) - Devices to use for exchanging SBD messages and for
   monitoring. Defaults to empty list if not set. Always refer to the devices
   using the long, stable device name (`/dev/disk/by-id/`).
+
+## Variables Exported by the Role
+
+The role contains `ha_cluster_info` module which exports current cluster
+configuration in a dictionary matching the structure of this role variables. If
+the role is run with these variables, it recreates the same cluster.
+
+Note that the dictionary of variables may not be complete and manual
+modification of it is expected. Most notably, you need to set
+[`ha_cluster_hacluster_password`](#ha_cluster_hacluster_password).
+
+Note that depending on pcs version installed on managed nodes, certain variables
+may not be present in the export.
+
+* Following variables are present in the export:
+  * [`ha_cluster_cluster_present`](#ha_cluster_cluster_present)
+  * [`ha_cluster_start_on_boot`](#ha_cluster_start_on_boot)
+  * [`ha_cluster_cluster_name`](#ha_cluster_cluster_name)
+  * [`ha_cluster_transport`](#ha_cluster_transport)
+  * [`ha_cluster_totem`](#ha_cluster_totem)
+  * [`ha_cluster_quorum`](#ha_cluster_quorum)
+  * [`ha_cluster_node_options`](#ha_cluster_node_options) - currently only
+    `node_name`, `corosync_addresses` and `pcs_address` are present
+
+* Following variables are never present in the export (consult the role
+  documentation for impact of the variables missing when running the role):
+  * [`ha_cluster_hacluster_password`](#ha_cluster_hacluster_password) - This is
+    a mandatory variable for the role but it cannot be extracted from existing
+    clusters.
+  * [`ha_cluster_corosync_key_src`](#ha_cluster_corosync_key_src),
+    [`ha_cluster_pacemaker_key_src`](#ha_cluster_pacemaker_key_src) and
+    [`ha_cluster_fence_virt_key_src`](#ha_cluster_fence_virt_key_src) - These
+    are supposed to contain paths to files with the keys. Since the keys
+    themselves are not exported, these variables are not present in the export
+    either. Corosync and pacemaker keys are supposed to be unique for each
+    cluster.
+  * [`ha_cluster_regenerate_keys`](#ha_cluster_regenerate_keys) - It is your
+    responsibility to decide if you want to use existing keys or generate new
+    ones.
+
+To export current cluster configuration and store it in `ha_cluster_facts`
+variable, run the role with `ha_cluster_export_configuration: true`. This
+triggers the export once the role finishes configuring a cluster or a qnetd
+host. If you want to trigger the export without modifying existing
+configuration, run the role like this:
+
+```yaml
+- hosts: node1
+  vars:
+    ha_cluster_cluster_present: null
+    ha_cluster_qnetd: null
+    ha_cluster_export_configuration: true
+
+  roles:
+    - linux-system-roles.ha_cluster
+```
+
+**Note:** By default, `ha_cluster_cluster_present` is set to `true` and
+`ha_cluster_qnetd.present` is set to `false`. If you do not set the variables as
+shown in the example above, the role will reconfigure your cluster on the
+specified hosts, remove qnetd configuration from the specified hosts, and then
+export configuration.
+
+You may use the `ha_cluster_facts` variable in your playbook depending on your
+needs.
+
+If you just want to see the content of the variable, use the ansible debug
+module like this:
+
+```yaml
+- hosts: node1
+  vars:
+    ha_cluster_cluster_present: null
+    ha_cluster_qnetd: null
+    ha_cluster_export_configuration: true
+
+  roles:
+    - linux-system-roles.ha_cluster
+
+  tasks:
+    - name: Print ha_cluster_info_result variable
+      debug:
+        var: ha_cluster_facts
+```
+
+Or you may want to save the configuration to a file on your controller node in
+YAML format with a task similar to this one, so that you can write a playbook
+around it:
+
+```yaml
+- hosts: node1
+  vars:
+    ha_cluster_cluster_present: null
+    ha_cluster_qnetd: null
+    ha_cluster_export_configuration: true
+
+  roles:
+    - linux-system-roles.ha_cluster
+
+  tasks:
+    - name: Save current cluster configuration to a file
+      delegate_to: localhost
+      copy:
+        content: "{{ ha_cluster_facts | to_nice_yaml(sort_keys=false) }}"
+        dest: /path/to/file
+```
 
 ## Example Playbooks
 
