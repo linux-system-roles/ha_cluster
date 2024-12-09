@@ -1,6 +1,24 @@
 Changelog
 =========
 
+[1.21.0] - 2024-12-09
+--------------------
+
+### New Features
+
+- feat: export corosync configuration (#231)
+
+### Bug Fixes
+
+- fix: list cloud agent packages by architecture (#244)
+
+### Other Changes
+
+- ci: tests update for pcs-0.12 and pacemaker-3 (#238)
+- ci: bump codecov/codecov-action from 4 to 5 (#239)
+- ci: Use Fedora 41, drop Fedora 39 (#242)
+- ci: Use Fedora 41, drop Fedora 39 - part two (#243)
+
 [1.20.0] - 2024-10-30
 --------------------
 
