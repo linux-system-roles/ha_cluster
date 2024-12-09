@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.21.1] - 2024-12-09
+--------------------
+
+### Bug Fixes
+
+- fix: update constraints commands syntax for pcs-0.12 (#245)
+
 [1.21.0] - 2024-12-09
 --------------------
 
