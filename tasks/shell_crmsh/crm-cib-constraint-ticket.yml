@@ -38,35 +38,36 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-# Expect module is used to combat crmsh freezing when asking for user input
+
+# Yes command will skip all prompts, resulting in rc>0
+# exit $? reveals return code of crm, which is masked by yes
 - name: Configure ticket constraint {{ __ha_cluster_constraint_id }}
-  ansible.builtin.expect:
-    command: |
-      crm -c {{ __ha_cluster_crm_shadow }}
-      configure rsc_ticket {{ __ha_cluster_constraint_id }}
-      {{ constraint.ticket | quote }}:
+  ansible.builtin.shell:
+    cmd: |
+      yes 'n' | crm -c {{ __ha_cluster_crm_shadow }} configure rsc_ticket \
+      {{ __ha_cluster_constraint_id }} {{ constraint.ticket | quote }}: \
       {% if constraint.resource.role | d() and
         constraint.resource.role | lower in __ha_cluster_crmsh_roles %}
         {{ constraint.resource.id | quote }}:{{
-          constraint.resource.role | lower | capitalize | quote }}
+          constraint.resource.role | lower | capitalize | quote }} \
       {% else %}
-        {{ constraint.resource.id | quote }}
+        {{ constraint.resource.id | quote }} \
       {% endif %}
       {% for option in constraint.options | d([]) %}
-        {{ option.name | quote }}={{ option.value | quote }}
+        {{ option.name | quote }}={{ option.value | quote }} \
       {% endfor %}
-    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
-    responses:
-      ".*ERROR.*": "n"
-      ".*y/n*": "n"
+      ;exit $?
   check_mode: false
   changed_when: not ansible_check_mode
   ignore_errors: true
   register: __ha_cluster_crmsh_output
 
+
 - name: Display crm command error details
   ansible.builtin.fail:
-    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+    msg:
+      - "{{ __ha_cluster_crmsh_output.stderr_lines }}"
+      - "{{ __ha_cluster_crmsh_output.stdout_lines }}" 
   when:
     - __ha_cluster_crmsh_output is defined
     - __ha_cluster_crmsh_output.rc != 0

@@ -2,3 +2,40 @@
 
 # Variables for SLES set in ansible_facts['distribution'] and
 # 15 set in ansible_facts['distribution_major_version']
+
+# Variables specific to following versions:
+# - SUSE Linux Enterprise Server for SAP Applications 15
+# - SUSE Linux Enterprise Server 15
+
+# ClusterTools2 removed because it is SLES4SAP specific
+# patterns-ha-ha_sles requires SLES 15 SP5+ or SLES4SAP 15
+__ha_cluster_role_essential_packages:
+  - 'patterns-ha-ha_sles'
+  - 'cluster-glue'
+  - 'openssl'
+#  - 'libxml2-tools'
+
+# Pattern patterns-ha-ha_sles includes all important packages for cluster on SLES
+# Pattern is available only as part of SUSE Linux Enterprise High Availability Extension
+# - 'conntrack-tools'
+# - 'corosync'
+# - 'crmsh'
+# - 'csync2'
+# - 'ctdb'
+# - 'drbd'
+# - 'drbd-utils'
+# - 'fence-agents'
+# - 'ha-cluster-bootstrap'
+# - 'ha-cluster-webui'
+# - 'ldirectord'
+# - 'lvm2-lockd'
+# - 'ocfs2-tools'
+# - 'pacemaker'
+# - 'python3-dateutil'
+# - 'release-notes-ha'
+# - 'resource-agents'
+# - 'sbd'
+# - 'yast2-cluster'
+# - 'yast2-drbd'
+# - 'yast2-iplb'
+# - 'chrony'

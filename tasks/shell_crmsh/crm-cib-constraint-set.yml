@@ -1,15 +1,15 @@
 # SPDX-License-Identifier: MIT
 ---
 # Verify if resources in sets exist
-- name: Verify set resources presence
+- name: Verify presence of resources in resource_ids lists
   ansible.builtin.command:
     cmd: >-
       crm -c {{ __ha_cluster_crm_shadow }}
-      configure show {% for set in constraint.resource_sets %}
-        {% for resource in set.resource_ids %}
-          {{ resource | quote }}
-        {% endfor %}
-      {% endfor %}
+      configure show {{ item.resource_ids | join(' ') }}
+  loop: "{{ constraint.resource_sets }}"
+  loop_control:
+    index_var: resource_ids_index
+    label: "resource_ids_{{ resource_ids_index }}"
   register: __ha_cluster_constraint_resource_set
   changed_when: false
   failed_when:
@@ -42,58 +42,74 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-# Expect module is used to combat crmsh freezing when asking for user input
+- name: Empty list of resources in set
+  ansible.builtin.set_fact:
+    __ha_cluster_resource_ids_string: ''
+
+# All resource_ids lists are combined together into one string per set.
+# Example: (rsc1 rsc2 sequential=false) (rsc3 rsc4 rsc5 require-all=true)
+- name: Create list of resources in set
+  ansible.builtin.set_fact:
+    __ha_cluster_resource_ids_string:
+      "{{ __ha_cluster_resource_ids_string | d('') ~ ' ' ~ __resource_ids }}"
+  loop: "{{ constraint.resource_sets }}"
+  loop_control:
+    index_var: resource_ids_index
+    label: "resource_ids_{{ resource_ids_index }}"
+  vars:
+    __resource_ids: >-
+      \({{ item.resource_ids | join(' ') }}
+      {%- for option in item.options | d([]) if option.name != 'score' %}
+        {{ option.name | quote }}={{ option.value | quote }}
+      {%- endfor %}\)
+
+
+# Yes command will skip all prompts, resulting in rc>0
+# exit $? reveals return code of crm, which is masked by yes
 - name: Configure {{ constraint_type }} constraint set '{{
     __ha_cluster_constraint_id }}'  # noqa name[template]
-  ansible.builtin.expect:
-    command: |
-      crm -c {{ __ha_cluster_crm_shadow }} configure
+  ansible.builtin.shell:
+    cmd: >-
+      yes 'n' | crm -c {{ __ha_cluster_crm_shadow }} configure
       {{ constraint_type if constraint_type != 'ticket' else 'rsc_ticket' }}
       {{ __ha_cluster_constraint_id }}
-      {% if constraint_type != 'ticket' %}
-        {% if constraint_type == 'order' %}
-          {% for option in constraint.options | d([])
+      {%- if constraint_type != 'ticket' %}
+        {%- if constraint_type == 'order' %}
+          {%- for option in constraint.options | d([])
             if option.name == 'kind' %}
             {{ option.value | quote }}:
-          {% else %}
+          {%- else %}
             Mandatory:
-          {% endfor %}
-        {% elif constraint_type == 'colocation' %}
-          {% for option in constraint.options | d([])
+          {%- endfor %}
+        {%- elif constraint_type == 'colocation' %}
+          {%- for option in constraint.options | d([])
             if option.name == 'score' %}
             {{ option.value | lower | replace('infinity', 'inf') | quote }}:
-          {% else %}
+          {%- else %}
             inf:
-          {% endfor %}
-        {% endif %}
-        {% for set in constraint.resource_sets %}
-            ({% for resource in set.resource_ids %}
-              {{ resource | quote }}
-            {% endfor %})
-        {% endfor %}
-      {% else %}
-        {% for set in constraint.resource_sets %}
-          {{ constraint.ticket | quote }}:
-          {% for resource in set.resource_ids %}
-            {{ resource | quote }}
-          {% endfor %}
-        {% endfor %}
-      {% endif %}
-      {% for option in constraint.options | d([]) %}
-        {{ option.name | quote }}={{ option.value | quote }}
-      {% endfor %}
-    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
-    responses:
-      ".*ERROR.*": "n"
-      ".*y/n*": "n"
+          {%- endfor %}
+        {%- endif %}
+        {{ __ha_cluster_resource_ids_string }}
+      {%- else %}
+        {%- for set in constraint.resource_sets %}
+          {{ constraint.ticket | quote }}: {{ __ha_cluster_resource_ids_string }}
+        {%- endfor %}
+      {%- endif %}
+        ;exit $?
   check_mode: false
   changed_when: not ansible_check_mode
   ignore_errors: true
   register: __ha_cluster_crmsh_output
+  when:
+    - __ha_cluster_resource_ids_string is defined
+    - __ha_cluster_resource_ids_string | length > 0
+
 
 - name: Display crm command error details
   ansible.builtin.fail:
-    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+    msg:
+      - "{{ __ha_cluster_crmsh_output.stderr_lines }}"
+      - "{{ __ha_cluster_crmsh_output.stdout_lines }}"
   when:
     - __ha_cluster_crmsh_output is defined
     - __ha_cluster_crmsh_output.rc != 0
