@@ -11,7 +11,7 @@
   failed_when:
     - "'does not exist' in __ha_cluster_constraint_resource_leader.stderr"
 
-# Verify if constraint.resourceresource_follower_leader.id exists
+# Verify if constraint.resource_follower_leader.id exists
 - name: Verify resource_follower presence {{ constraint.resource_follower.id }}
   ansible.builtin.command:
     cmd: >-
@@ -49,46 +49,48 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-# Expect module is used to combat crmsh freezing when asking for user input
+
+# Yes command will skip all prompts, resulting in rc>0
+# exit $? reveals return code of crm, which is masked by yes
 - name: Configure colocation constraint {{ __ha_cluster_constraint_id }}
-  ansible.builtin.expect:
-    command: |
-      crm -c {{ __ha_cluster_crm_shadow }}
-      configure colocation {{ __ha_cluster_constraint_id }}
+  ansible.builtin.shell:
+    cmd: |
+      yes 'n' | crm -c {{ __ha_cluster_crm_shadow }} \
+      configure colocation {{ __ha_cluster_constraint_id }} \
       {% for option in constraint.options | d([]) if option.name == 'score' %}
-        {{ option.value | lower | replace('infinity', 'inf') | quote }}:
+        {{ option.value | lower | replace('infinity', 'inf') | quote }}: \
       {% else %}
-        inf:
+        inf: \
       {% endfor %}
       {% if constraint.resource_follower.role | d() and
       constraint.resource_follower.role | lower in __ha_cluster_crmsh_roles %}
         {{ constraint.resource_follower.id | quote }}:{{
-          constraint.resource_follower.role | lower | capitalize | quote }}
+          constraint.resource_follower.role | lower | capitalize | quote }} \
       {% else %}
-        {{ constraint.resource_follower.id | quote }}
+        {{ constraint.resource_follower.id | quote }} \
       {% endif %}
       {% if constraint.resource_leader.role | d() and
         constraint.resource_leader.role | lower in __ha_cluster_crmsh_roles %}
         {{ constraint.resource_leader.id | quote }}:{{
-          constraint.resource_leader.role | lower | capitalize | quote }}
+          constraint.resource_leader.role | lower | capitalize | quote }} \
       {% else %}
-        {{ constraint.resource_leader.id | quote }}
+        {{ constraint.resource_leader.id | quote }} \
       {% endif %}
       {% for option in constraint.options | d([]) if option.name != 'score' %}
-        {{ option.name | quote }}={{ option.value | quote }}
+        {{ option.name | quote }}={{ option.value | quote }} \
       {% endfor %}
-    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
-    responses:
-      ".*ERROR.*": "n"
-      ".*y/n*": "n"
+      ;exit $?
   check_mode: false
   changed_when: not ansible_check_mode
   ignore_errors: true
   register: __ha_cluster_crmsh_output
 
+
 - name: Display crm command error details
   ansible.builtin.fail:
-    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+    msg:
+      - "{{ __ha_cluster_crmsh_output.stderr_lines }}"
+      - "{{ __ha_cluster_crmsh_output.stdout_lines }}" 
   when:
     - __ha_cluster_crmsh_output is defined
     - __ha_cluster_crmsh_output.rc != 0

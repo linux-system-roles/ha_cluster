@@ -27,18 +27,6 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-# Meta-attrs is-managed will conflict with maintenance mode as well as
-# individual resource maintenance attributes. Expect will skip their deletion.
-# - name: Put cluster in maintenance mode to freeze cib changes
-#   ansible.builtin.expect:
-#     command: crm --force configure property maintenance-mode=true
-#     responses:
-#       ".*is-managed.*": "n"
-#       ".*already.*": "n"
-#   run_once: true  # noqa: run_once[task]
-#   check_mode: false
-#   changed_when: true
-
 # Maintenance mode is required, because CIB version changes with cluster
 # status changes, resulting in shadow CIB outdated and unable to patch.
 - name: Put cluster in maintenance mode to freeze cib changes
@@ -124,6 +112,7 @@
     ## Ensure that stonith is disabled before executing crm configure.
     ## This is usually disabled by running crm init.
     ## Executing crm configure without stonith results in "config not valid".
+    ## This results in Blind Faith: not fencing unseen nodes warning
     - name: Set property stonith-enabled to false
       ansible.builtin.command:
         cmd: >-
@@ -328,18 +317,6 @@
   ignore_errors: true
   when: __ha_cluster_cib_diff.rc == 1
   run_once: true  # noqa: run_once[task]
-
-# Meta-attrs is-managed will conflict with maintenance mode as well as
-# individual resource maintenance attributes. Expect will skip their deletion.
-# - name: Disable maintenance mode
-#   ansible.builtin.expect:
-#     command: crm --force configure property maintenance-mode=false
-#     responses:
-#       ".*is-managed.*": "n"
-#       ".*already.*": "n"
-#   check_mode: false
-#   changed_when: true
-#   run_once: true  # noqa: run_once[task]
 
 - name: Disable maintenance mode
   ansible.builtin.command:
