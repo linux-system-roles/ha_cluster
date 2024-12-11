@@ -18,50 +18,48 @@
   check_mode: false
   changed_when: not ansible_check_mode
 
-# Expect module is used to combat crmsh freezing when asking for user input
+
+# Yes command will skip all prompts, resulting in rc>0
+# exit $? reveals return code of crm, which is masked by yes
 - name: Configure resource primitive {{ resource.id }}
-  ansible.builtin.expect:  # noqa jinja[spacing]
-    command: |
-      crm -c {{ __ha_cluster_crm_shadow }} configure primitive
+  ansible.builtin.shell:  # noqa jinja[spacing]
+    cmd: |
+      yes 'n' | crm -c {{ __ha_cluster_crm_shadow }} configure primitive \
         {{ resource.id | quote }} {{ resource.agent | quote }} \
       {% if resource.instance_attrs[0].attrs | default(False) %}
-        params
-        {% for attr in resource.instance_attrs[0].attrs -%}
-          {{ attr.name | quote }}={{ attr.value | quote }}
+        params {% for attr in resource.instance_attrs[0].attrs -%}
+          {{ attr.name | quote }}={{ attr.value | quote }} \
         {% endfor %}
-      {% endif %}\
+      {% endif %}
       {% if resource.meta_attrs[0].attrs | default(False) %}
-        meta
-        {% for attr in resource.meta_attrs[0].attrs -%}
-          {{ attr.name | quote }}={{ attr.value | quote }}
+        meta {% for attr in resource.meta_attrs[0].attrs -%}
+          {{ attr.name | quote }}={{ attr.value | quote }} \
         {% endfor %}
       {% endif %}
       {% if resource.operations | default(False) %}\
         {% for operation in resource.operations %}
           {% if operation.action | default(False) %}
-            op {{ operation.action | quote }}
+            op {{ operation.action | quote }} \
             {% if operation.attrs | default(False) %}
               {%- for attr in operation.attrs -%}
-                {{ attr.name | quote }}={{ attr.value | quote }}
+                {{ attr.name | quote }}={{ attr.value | quote }} \
               {% endfor %}
-              {% if not loop.last %}\
-              {% endif %}
             {% endif %}
           {% endif %}
         {% endfor %}
       {% endif %}
-    # ERROR and "Do you still want to commit (y/n)?" trigger response "n".
-    responses:
-      ".*ERROR.*": "n"
-      ".*y/n*": "n"
+      ;exit $?
   check_mode: false
   changed_when: not ansible_check_mode
   ignore_errors: true
   register: __ha_cluster_crmsh_output
 
+
 - name: Display crm command error details
   ansible.builtin.fail:
-    msg: "{{ __ha_cluster_crmsh_output.stdout_lines }}"
+    msg:
+      - "{{ __ha_cluster_crmsh_output.stderr_lines }}"
+      - "{{ __ha_cluster_crmsh_output.stdout_lines }}" 
   when:
     - __ha_cluster_crmsh_output is defined
     - __ha_cluster_crmsh_output.rc != 0

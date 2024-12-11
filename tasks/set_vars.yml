@@ -22,6 +22,14 @@
   loop:
     - "{{ ansible_facts['os_family'] }}.yml"
     - "{{ ansible_facts['distribution'] }}.yml"
+    # Enables loading of shared vars between SLES and SLES_SAP
+    - >-
+      {{ ansible_facts['distribution'].split("_")[0] ~ '_' ~
+      ansible_facts['distribution_major_version'] }}.yml
+    - >-
+      {{ ansible_facts['distribution'].split("_")[0] ~ '_' ~
+      ansible_facts['distribution_version'] }}.yml
+
     - >-
       {{ ansible_facts['distribution'] ~ '_' ~
       ansible_facts['distribution_major_version'] }}.yml

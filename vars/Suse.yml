@@ -12,14 +12,7 @@ __ha_cluster_role_essential_packages:
   - 'corosync'
   - 'crmsh'
   - 'fence-agents'
-  - 'ha-cluster-bootstrap'
-  - 'patterns-ha-ha_sles'
   - 'resource-agents'
-  - 'cluster-glue'
-  - 'socat'
-  - 'libxml2-tools'
-  - 'rsyslog'
-  - 'openssl'
 
 __ha_cluster_fullstack_node_packages: []
 
