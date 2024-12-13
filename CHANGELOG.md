@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.22.0] - 2024-12-13
+--------------------
+
+### New Features
+
+- feat: Remove python expect dependency in crmsh (#249)
+
 [1.21.1] - 2024-12-09
 --------------------
 
