@@ -80,7 +80,7 @@
   ansible.builtin.fail:
     msg:
       - "{{ __ha_cluster_crmsh_output.stderr_lines }}"
-      - "{{ __ha_cluster_crmsh_output.stdout_lines }}" 
+      - "{{ __ha_cluster_crmsh_output.stdout_lines }}"
   when:
     - __ha_cluster_crmsh_output is defined
     - __ha_cluster_crmsh_output.rc != 0
