@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.22.1] - 2025-01-09
+--------------------
+
+### Other Changes
+
+- style: fix ansible-lint issues introduced in 7771830 (#251)
+
 [1.22.0] - 2024-12-13
 --------------------
 
