@@ -68,7 +68,7 @@ def export_corosync_cluster_name(corosync_conf_dict: Dict[str, Any]) -> str:
 
 
 def export_corosync_transport(
-    corosync_conf_dict: Dict[str, Any]
+    corosync_conf_dict: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
     Export transport options in role format from corosync config in pcs format
@@ -115,7 +115,7 @@ def export_corosync_totem(corosync_conf_dict: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def export_corosync_quorum(
-    corosync_conf_dict: Dict[str, Any]
+    corosync_conf_dict: Dict[str, Any],
 ) -> Dict[str, Any]:
     """
     Export quorum options in role format from corosync config in pcs format
