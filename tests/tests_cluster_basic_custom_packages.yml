@@ -38,4 +38,4 @@
         - name: Check installed packages
           assert:
             that:
-              - "'{{ __test_extra_package }}' in ansible_facts.packages"
+              - __test_extra_package in ansible_facts.packages
