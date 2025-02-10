@@ -16,6 +16,9 @@
     cmd: pcs -- quorum device status
   register: __test_quorum_device_status
   changed_when: false
+  retries: 6
+  delay: 10
+  until: "'State:\t\t\tConnected' in __test_quorum_device_status.stdout"  # noqa no-tabs
 
 # yamllint disable rule:line-length
 - name: Assert qdevice connected
