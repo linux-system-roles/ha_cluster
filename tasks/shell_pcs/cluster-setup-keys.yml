@@ -61,10 +61,10 @@
       {{ ha_cluster_cluster_name | quote }}
       {{ __ha_cluster_qdevice_host | quote }}
   check_mode: false
-  register: __ha_cluster_qdevice_certs
+  register: __ha_cluster_qdevice_certs_cli
   changed_when:
-    - __ha_cluster_qdevice_certs.rc == 0
-    - __ha_cluster_qdevice_certs.stdout_lines[-1]
+    - __ha_cluster_qdevice_certs_cli.rc == 0
+    - __ha_cluster_qdevice_certs_cli.stdout_lines[-1]
       != "** certificate already present **"
   when:
     - __ha_cluster_qdevice_in_use
@@ -76,6 +76,7 @@
   pcs_qdevice_certs:
     qnetd_host: "{{ __ha_cluster_qdevice_host }}"
     cluster_name: "{{ ha_cluster_cluster_name }}"
+  register: __ha_cluster_qdevice_certs_api
   when:
     - __ha_cluster_qdevice_in_use
     - __ha_cluster_qdevice_model == "net"
