@@ -39,7 +39,7 @@ variables:
   rules:
     - if: $BASE_IMAGE_NAME !~ /^LsrRhel8.*/
 
-# Linting / code formating that either works the same on all images or using
+# Linting / code formatting that either works the same on all images or using
 # the newest linter / formatter is desired
 # Rhel9 can be dropped once Rhel10 is stable
 .job_generic_linter:

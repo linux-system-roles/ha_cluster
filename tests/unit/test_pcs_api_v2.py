@@ -26,7 +26,7 @@ from . import fixture
 
 class Pcs(TestCase):
     cmd_name = "some pcs command"
-    cmd_params = dict(some="option", another=["opti", "ons"])
+    cmd_params = dict(some="option", another=["opti", "owns"])
     cmd_options = CommandOptionsDto(request_timeout=60)
     cmd_dto = CommandDto(cmd_name, cmd_params, cmd_options)
 
