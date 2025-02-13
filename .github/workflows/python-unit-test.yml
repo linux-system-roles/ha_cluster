@@ -29,6 +29,8 @@ jobs:
             pcs_version: v0.11.7
           - os: ubuntu-22.04
             pcs_version: v0.11.8
+          - os: ubuntu-22.04
+            pcs_version: v0.11.9
           - os: ubuntu-24.04
             pcs_version: main
           # pcs_version 0.12.x will go to ubuntu 24.04 only
