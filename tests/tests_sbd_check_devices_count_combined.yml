@@ -42,7 +42,7 @@
 
         # Generate an "inventory" variable for each node.
         # Number of SBD devices is the same for all nodes. This is expected to
-        # be overriden with the play variable in the role.
+        # be overridden with the play variable in the role.
         - name: Set SBD devices variable
           set_fact:
             ha_cluster:

@@ -110,7 +110,7 @@ def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
         corosync_enabled, pacemaker_enabled
     )
 
-    # Corosync config is availabe via CLI since pcs-0.10.8, via API v2 since
+    # Corosync config is available via CLI since pcs-0.10.8, via API v2 since
     # pcs-0.12.0 and pcs-0.11.9. For old pcs versions, CLI must be used, and
     # there is no benefit in implementing access via API on top of that.
     # No need to check pcs capabilities. If this is not supported by pcs,

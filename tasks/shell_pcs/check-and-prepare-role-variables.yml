@@ -79,7 +79,7 @@
           | map('length') | unique | length > 1
       run_once: true
 
-    # Running a qnetd on a cluster node does't make sense, fencing would make
+    # Running a qnetd on a cluster node doesn't make sense, fencing would make
     # the qnetd unavailable, even if temporarily.
     - name: Fail if configuring qnetd on a cluster node
       fail:
