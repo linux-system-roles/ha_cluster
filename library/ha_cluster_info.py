@@ -49,8 +49,12 @@ ha_cluster:
           certain variables may not be exported.
         - HORIZONTALLINE
         - Following variables are present in the output
+        - ha_cluster_enable_repos
+        - ha_cluster_enable_repos_resilient_storage
         - ha_cluster_cluster_present
         - ha_cluster_start_on_boot
+        - ha_cluster_install_cloud_agents
+        - ha_cluster_pcs_permission_list
         - ha_cluster_cluster_name
         - ha_cluster_transport
         - ha_cluster_totem
@@ -64,9 +68,15 @@ ha_cluster:
         - HORIZONTALLINE
         - Following variables are never present in this module output (consult
           the role documentation for impact of the variables missing)
+        - ha_cluster_fence_agent_packages
+        - ha_cluster_extra_packages
+        - ha_cluster_use_latest_packages
+        - ha_cluster_hacluster_qdevice_password
         - ha_cluster_corosync_key_src
         - ha_cluster_pacemaker_key_src
         - ha_cluster_fence_virt_key_src
+        - ha_cluster_pcsd_public_key_src
+        - ha_cluster_pcsd_private_key_src
         - ha_cluster_regenerate_keys
         - HORIZONTALLINE
 """
@@ -92,6 +102,67 @@ def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
         )
 
     return runner
+
+
+def export_os_configuration(module: AnsibleModule) -> Dict[str, Any]:
+    """
+    Export OS configuration managed by the role
+    """
+    result: dict[str, Any] = dict()
+    cmd_runner = get_cmd_runner(module)
+
+    # The role only enables repos on RHEL and SLES, this part is for RHEL.
+    if loader.is_rhel_or_clone():
+        result["ha_cluster_enable_repos"] = loader.is_rhel_repo_enabled(
+            cmd_runner, ("highavailability", "HighAvailability")
+        )
+        result["ha_cluster_enable_repos_resilient_storage"] = (
+            loader.is_rhel_repo_enabled(cmd_runner, ("resilientstorage",))
+        )
+
+    # Cloud agent packages are only handled on RHEL.
+    if loader.is_rhel_or_clone():
+        # List of cloud agent packages is taken from vars/RedHat_*.yml and
+        # vars/CentOS_*.yml
+        # They are hardcoded here to avoid dependency on pyyaml which may or
+        # may not be available.
+        # We don't need to check for architecture - a package not available for
+        # an architecture will never be listed as installed on that
+        # architecture.
+        cloud_agent_packages = {
+            "fence-agents-aliyun",
+            "fence-agents-aws",
+            "fence-agents-azure-arm",
+            "fence-agents-compute",
+            "fence-agents-gce",
+            "fence-agents-ibm-powervs",
+            "fence-agents-ibm-vpc",
+            "fence-agents-kubevirt",
+            "fence-agents-openstack",
+            "resource-agents-aliyun",
+            "resource-agents-cloud",
+            "resource-agents-gcp",
+        }
+        result["ha_cluster_install_cloud_agents"] = bool(
+            cloud_agent_packages.intersection(
+                loader.list_rhel_installed_packages(cmd_runner)
+            )
+        )
+
+    return result
+
+
+def export_pcsd_configuration() -> Dict[str, Any]:
+    """
+    Export pcsd configuration managed by the role
+    """
+    result: dict[str, Any] = dict()
+
+    pcs_permissions = loader.get_pcsd_local_cluster_permissions()
+    if pcs_permissions is not None:
+        result["ha_cluster_pcs_permission_list"] = pcs_permissions
+
+    return result
 
 
 def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
@@ -156,9 +227,13 @@ def main() -> None:
 
     try:
         if loader.has_corosync_conf():
+            ha_cluster_result.update(**export_os_configuration(module))
+            ha_cluster_result.update(**export_pcsd_configuration())
             ha_cluster_result.update(**export_cluster_configuration(module))
             ha_cluster_result["ha_cluster_cluster_present"] = True
         else:
+            # Exporting qnetd configuration will be added later here. It will
+            # probably call export_os and export_pcsd.
             ha_cluster_result["ha_cluster_cluster_present"] = False
         module.exit_json(**module_result)
     except exporter.JsonMissingKey as e:

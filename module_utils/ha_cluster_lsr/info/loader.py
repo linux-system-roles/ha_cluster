@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 COROSYNC_CONF_PATH = "/etc/corosync/corosync.conf"
 KNOWN_HOSTS_PATH = "/var/lib/pcsd/known-hosts"
+PCSD_SETTINGS_PATH = "/var/lib/pcsd/pcs_settings.conf"
 
 CommandRunner = Callable[
     # parameters: args, environ_update
@@ -83,6 +84,52 @@ class JsonParseError(Exception):
             data_desc=self.data_desc,
             additional_info=self.additional_info,
         )
+
+
+def is_rhel_or_clone() -> bool:
+    """
+    Check whether current OS is RHEL or its clone
+    """
+    # Check https://github.com/chef/os_release/ to see os-release content for
+    # various distros.
+    searched_lines = [
+        f'PLATFORM_ID="platform:{platform}"'
+        for platform in ("el8", "el9", "el10")
+    ]
+    try:
+        with open(
+            "/etc/os-release", "r", encoding="utf-8", errors="replace"
+        ) as os_release_file:
+            for file_line in os_release_file:
+                if file_line.strip() in searched_lines:
+                    return True
+    except OSError:
+        return False
+    return False
+
+
+def is_rhel_repo_enabled(
+    run_command: CommandRunner, repo_strings: Tuple[str, ...]
+) -> bool:
+    """
+    Check whether a dnf repo specified by its ID or name is enabled
+
+    repo_id -- substring of repo ID or name
+    """
+    # wokeignore:rule=dummy
+    rc, stdout, dummy_stderr = run_command(["dnf", "repolist"], {})
+    return rc == 0 and any(repo in stdout for repo in repo_strings)
+
+
+def list_rhel_installed_packages(run_command: CommandRunner) -> List[str]:
+    """
+    Return names of packages installed on a RHEL system
+    """
+    # wokeignore:rule=dummy
+    rc, stdout, dummy_stderr = run_command(
+        ["rpm", "--query", "--all", "--queryformat", "%{NAME}\\n"], {}
+    )
+    return stdout.splitlines() if rc == 0 else []
 
 
 def is_service_enabled(run_command: CommandRunner, service: str) -> bool:
@@ -171,3 +218,44 @@ def get_pcsd_known_hosts() -> Dict[str, str]:
     except json.JSONDecodeError as e:
         # cannot show actual data as they contain sensitive information - tokens
         raise JsonParseError(str(e), "not logging data", "known hosts") from e
+
+
+def get_pcsd_local_cluster_permissions() -> Optional[List[Dict[str, Any]]]:
+    """
+    Load pcsd local cluster permissions
+    """
+    # There is no pcs interface for the file yet, so we parse the file directly.
+    if not os.path.exists(PCSD_SETTINGS_PATH):
+        return None
+
+    result: List[Dict[str, Any]] = []
+    try:
+        with open(
+            PCSD_SETTINGS_PATH, "r", encoding="utf-8"
+        ) as pcsd_settings_file:
+            pcsd_settings = json.load(pcsd_settings_file)
+        permission_dict = pcsd_settings.get("permissions")
+        if not isinstance(permission_dict, dict):
+            return result
+        permission_list = permission_dict.get("local_cluster")
+        if not isinstance(permission_list, list):
+            return result
+        for permission_item in permission_list:
+            if (
+                "type" not in permission_item
+                or "name" not in permission_item
+                or "allow" not in permission_item
+                or not isinstance(permission_item["allow"], list)
+            ):
+                continue
+            result.append(
+                {
+                    "type": permission_item["type"],
+                    "name": permission_item["name"],
+                    "allow_list": list(permission_item["allow"]),
+                }
+            )
+        return result
+    except json.JSONDecodeError as e:
+        # cannot show actual data as they contain sensitive information
+        raise JsonParseError(str(e), "not logging data", "pcsd settings") from e

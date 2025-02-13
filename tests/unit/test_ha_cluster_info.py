@@ -11,7 +11,8 @@
 import json
 import sys
 from importlib import import_module
-from typing import List
+from textwrap import dedent
+from typing import Any, Dict, List, Tuple
 from unittest import TestCase, mock
 
 sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
@@ -239,3 +240,157 @@ class ExportClusterConfiguration(TestCase):
         self.assertEqual(runner_mock.call_count, len(expected_calls))
 
         mock_load_pcsd_known_hosts.assert_called_once_with()
+
+
+class ExportOsConfiguration(TestCase):
+    maxDiff = None
+
+    def assert_rhel_export(
+        self,
+        runner_mock_side_effect: List[Tuple[int, str, str]],
+        expected_export: Dict[str, Any],
+    ) -> None:
+        module_mock = mock.Mock()
+        module_mock.run_command = mock.Mock()
+        runner_mock = module_mock.run_command
+        runner_mock.side_effect = runner_mock_side_effect
+
+        self.assertEqual(
+            ha_cluster_info.export_os_configuration(module_mock),
+            expected_export,
+        )
+        self.assertEqual(runner_mock.call_count, len(runner_mock_side_effect))
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
+    def test_rhel_1(self) -> None:
+        dnf_repolist = dedent(
+            """\
+            repo1id           Repository 1
+            highavailability  Repository HA Addon
+            repo2id           Repository 2
+            """
+        )
+        rpm_packages = dedent(
+            """\
+            package1
+            package2
+            """
+        )
+        self.assert_rhel_export(
+            [
+                (0, dnf_repolist, ""),
+                (0, dnf_repolist, ""),
+                (0, rpm_packages, ""),
+            ],
+            {
+                "ha_cluster_enable_repos": True,
+                "ha_cluster_enable_repos_resilient_storage": False,
+                "ha_cluster_install_cloud_agents": False,
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
+    def test_rhel_2(self) -> None:
+        dnf_repolist = dedent(
+            """\
+            repo1id           Repository 1
+            resilientstorage  RS repository
+            repo2id           Repository 2
+            """
+        )
+        rpm_packages = dedent(
+            """\
+            package1
+            resource-agents-cloud
+            package2
+            """
+        )
+        self.assert_rhel_export(
+            [
+                (0, dnf_repolist, ""),
+                (0, dnf_repolist, ""),
+                (0, rpm_packages, ""),
+            ],
+            {
+                "ha_cluster_enable_repos": False,
+                "ha_cluster_enable_repos_resilient_storage": True,
+                "ha_cluster_install_cloud_agents": True,
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
+    def test_rhel_errors(self) -> None:
+        self.assert_rhel_export(
+            [
+                (1, "some output", "an error"),
+                (1, "some output", "an error"),
+                (1, "some output", "an error"),
+            ],
+            {
+                "ha_cluster_enable_repos": False,
+                "ha_cluster_enable_repos_resilient_storage": False,
+                "ha_cluster_install_cloud_agents": False,
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
+    def test_non_rhel(self) -> None:
+        module_mock = mock.Mock()
+        module_mock.run_command = mock.Mock()
+        runner_mock = module_mock.run_command
+
+        self.assertEqual(
+            ha_cluster_info.export_os_configuration(module_mock),
+            {},
+        )
+        runner_mock.assert_not_called()
+
+
+class ExportPcsdConfiguration(TestCase):
+    maxDiff = None
+
+    @mock.patch("ha_cluster_info.loader.get_pcsd_local_cluster_permissions")
+    def test_no_permissions(self, mock_load_pcsd_permisions: mock.Mock) -> None:
+        mock_load_pcsd_permisions.return_value = None
+
+        self.assertEqual(
+            ha_cluster_info.export_pcsd_configuration(),
+            {},
+        )
+
+    @mock.patch("ha_cluster_info.loader.get_pcsd_local_cluster_permissions")
+    def test_permissions_defined(
+        self, mock_load_pcsd_permisions: mock.Mock
+    ) -> None:
+        mock_load_pcsd_permisions.return_value = [
+            {
+                "type": "group",
+                "name": "haclient",
+                "allow": ["grant", "read", "write"],
+            },
+            {
+                "type": "user",
+                "name": "admin",
+                "allow": ["full"],
+            },
+        ]
+
+        self.assertEqual(
+            ha_cluster_info.export_pcsd_configuration(),
+            {
+                "ha_cluster_pcs_permission_list": mock_load_pcsd_permisions.return_value,
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.get_pcsd_local_cluster_permissions")
+    def test_empty_permissions_defined(
+        self, mock_load_pcsd_permisions: mock.Mock
+    ) -> None:
+        mock_load_pcsd_permisions.return_value = []
+
+        self.assertEqual(
+            ha_cluster_info.export_pcsd_configuration(),
+            {
+                "ha_cluster_pcs_permission_list": [],
+            },
+        )

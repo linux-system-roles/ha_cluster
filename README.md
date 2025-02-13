@@ -1574,8 +1574,14 @@ Note that depending on pcs version installed on managed nodes, certain variables
 may not be present in the export.
 
 * Following variables are present in the export:
+  * [`ha_cluster_enable_repos`](#ha_cluster_enable_repos) - RHEL and CentOS only
+  * [`ha_cluster_enable_repos_resilient_storage`](#ha_cluster_enable_repos_resilient_storage) -
+    RHEL and CentOS only
   * [`ha_cluster_cluster_present`](#ha_cluster_cluster_present)
   * [`ha_cluster_start_on_boot`](#ha_cluster_start_on_boot)
+  * [`ha_cluster_install_cloud_agents`](#ha_cluster_install_cloud_agents) -
+    RHEL and CentOS only
+  * [`ha_cluster_pcs_permission_list`](#ha_cluster_pcs_permission_list)
   * [`ha_cluster_cluster_name`](#ha_cluster_cluster_name)
   * [`ha_cluster_transport`](#ha_cluster_transport)
   * [`ha_cluster_totem`](#ha_cluster_totem)
@@ -1588,6 +1594,14 @@ may not be present in the export.
   * [`ha_cluster_hacluster_password`](#ha_cluster_hacluster_password) - This is
     a mandatory variable for the role but it cannot be extracted from existing
     clusters.
+  * [`ha_cluster_hacluster_qdevice_password`](#ha_cluster_hacluster_qdevice_password) -
+    Cannot be extracted from existing clusters.
+  * [`ha_cluster_fence_agent_packages`](#ha_cluster_fence_agent_packages)
+  * [`ha_cluster_extra_packages`](#ha_cluster_extra_packages) - Cannot be
+    extracted from existing clusters.
+  * [`ha_cluster_use_latest_packages`](#ha_cluster_use_latest_packages) - It is
+    your responsibility to decide if you want to upgrade cluster packages to
+    their latest version.
   * [`ha_cluster_corosync_key_src`](#ha_cluster_corosync_key_src),
     [`ha_cluster_pacemaker_key_src`](#ha_cluster_pacemaker_key_src) and
     [`ha_cluster_fence_virt_key_src`](#ha_cluster_fence_virt_key_src) - These
@@ -1595,6 +1609,10 @@ may not be present in the export.
     themselves are not exported, these variables are not present in the export
     either. Corosync and pacemaker keys are supposed to be unique for each
     cluster.
+  * [`ha_cluster_pcsd_public_key_src` and `ha_cluster_pcsd_private_key_src`](#ha_cluster_pcsd_public_key_src-ha_cluster_pcsd_private_key_src) -
+    These are supposed to contain paths to files with TLS certificate and
+    private key for pcsd. Since the certificate and key themselves are not
+    exported, these variables are not present in the export either.
   * [`ha_cluster_regenerate_keys`](#ha_cluster_regenerate_keys) - It is your
     responsibility to decide if you want to use existing keys or generate new
     ones.
