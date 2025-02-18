@@ -17,7 +17,7 @@ sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
     "ha_cluster_lsr"
 )
 
-from typing import Any, List
+from typing import Any
 
 from ha_cluster_lsr.info import loader
 
@@ -69,8 +69,8 @@ class IsRhelOrClone(TestCase):
             self.assertEqual(loader.is_rhel_or_clone(), False)
 
 
-class IsRhelRepoEnabled(TestCase):
-    def test_enabled(self) -> None:
+class GetDnfRepolist(TestCase):
+    def test_success(self) -> None:
         # pylint: disable=line-too-long
         dnf_output = dedent(
             """\
@@ -83,48 +83,24 @@ class IsRhelRepoEnabled(TestCase):
         )
         runner_mock = mock.Mock()
         runner_mock.return_value = (0, dnf_output, "")
-        self.assertTrue(
-            loader.is_rhel_repo_enabled(
-                runner_mock, ("HighAvailability", "highavailability")
-            )
-        )
+
+        self.assertEqual(loader.get_dnf_repolist(runner_mock), dnf_output)
         runner_mock.assert_called_once_with(["dnf", "repolist"], {})
 
-    def test_not_enabled(self) -> None:
-        dnf_output = dedent(
-            """\
-            repo id                repo name
-            fedora                 Fedora 41 - x86_64
-            fedora-cisco-openh264  Fedora 41 openh264 (From Cisco) - x86_64
-            updates                Fedora 41 - x86_64 - Updates
-            """
-        )
+    def test_error(self) -> None:
         runner_mock = mock.Mock()
-        runner_mock.return_value = (0, dnf_output, "")
-        self.assertFalse(
-            loader.is_rhel_repo_enabled(
-                runner_mock, ("HighAvailability", "highavailability")
-            )
-        )
-        runner_mock.assert_called_once_with(["dnf", "repolist"], {})
+        runner_mock.return_value = (1, "some output", "some error")
 
-    def test_dnf_error(self) -> None:
-        runner_mock = mock.Mock()
-        runner_mock.return_value = (1, "", "an error")
-        self.assertFalse(
-            loader.is_rhel_repo_enabled(
-                runner_mock, ("HighAvailability", "highavailability")
-            )
-        )
+        self.assertIsNone(loader.get_dnf_repolist(runner_mock))
         runner_mock.assert_called_once_with(["dnf", "repolist"], {})
 
 
-class ListRhelInstalledPackages(TestCase):
+class GetRpmInstalledPackages(TestCase):
     def _assert_packages(
-        self, runner_mock: Any, expected_packages: List[str]
+        self, runner_mock: Any, expected_packages: Any
     ) -> None:
         self.assertEqual(
-            loader.list_rhel_installed_packages(runner_mock),
+            loader.get_rpm_installed_packages(runner_mock),
             expected_packages,
         )
         runner_mock.assert_called_once_with(
@@ -151,7 +127,7 @@ class ListRhelInstalledPackages(TestCase):
         rpm_output = "\n".join(package_list)
         runner_mock = mock.Mock()
         runner_mock.return_value = (1, rpm_output, "an error")
-        self._assert_packages(runner_mock, [])
+        self._assert_packages(runner_mock, None)
 
 
 class IsServiceEnabled(TestCase):

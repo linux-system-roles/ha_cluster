@@ -111,43 +111,23 @@ def export_os_configuration(module: AnsibleModule) -> Dict[str, Any]:
     result: dict[str, Any] = dict()
     cmd_runner = get_cmd_runner(module)
 
-    # The role only enables repos on RHEL and SLES, this part is for RHEL.
     if loader.is_rhel_or_clone():
-        result["ha_cluster_enable_repos"] = loader.is_rhel_repo_enabled(
-            cmd_runner, ("highavailability", "HighAvailability")
-        )
-        result["ha_cluster_enable_repos_resilient_storage"] = (
-            loader.is_rhel_repo_enabled(cmd_runner, ("resilientstorage",))
-        )
-
-    # Cloud agent packages are only handled on RHEL.
-    if loader.is_rhel_or_clone():
-        # List of cloud agent packages is taken from vars/RedHat_*.yml and
-        # vars/CentOS_*.yml
-        # They are hardcoded here to avoid dependency on pyyaml which may or
-        # may not be available.
-        # We don't need to check for architecture - a package not available for
-        # an architecture will never be listed as installed on that
-        # architecture.
-        cloud_agent_packages = {
-            "fence-agents-aliyun",
-            "fence-agents-aws",
-            "fence-agents-azure-arm",
-            "fence-agents-compute",
-            "fence-agents-gce",
-            "fence-agents-ibm-powervs",
-            "fence-agents-ibm-vpc",
-            "fence-agents-kubevirt",
-            "fence-agents-openstack",
-            "resource-agents-aliyun",
-            "resource-agents-cloud",
-            "resource-agents-gcp",
-        }
-        result["ha_cluster_install_cloud_agents"] = bool(
-            cloud_agent_packages.intersection(
-                loader.list_rhel_installed_packages(cmd_runner)
+        # The role only enables repos on RHEL and SLES.
+        dnf_repolist = loader.get_dnf_repolist(cmd_runner)
+        if dnf_repolist is not None:
+            result["ha_cluster_enable_repos"] = exporter.export_enable_repos_ha(
+                dnf_repolist
             )
-        )
+            result["ha_cluster_enable_repos_resilient_storage"] = (
+                exporter.export_enable_repos_rs(dnf_repolist)
+            )
+
+        # Cloud agent packages are only handled on RHEL.
+        installed_packages = loader.get_rpm_installed_packages(cmd_runner)
+        if installed_packages is not None:
+            result["ha_cluster_install_cloud_agents"] = (
+                exporter.export_install_cloud_agents(installed_packages)
+            )
 
     return result
 

@@ -108,28 +108,26 @@ def is_rhel_or_clone() -> bool:
     return False
 
 
-def is_rhel_repo_enabled(
-    run_command: CommandRunner, repo_strings: Tuple[str, ...]
-) -> bool:
+def get_dnf_repolist(run_command: CommandRunner) -> Optional[str]:
     """
-    Check whether a dnf repo specified by its ID or name is enabled
-
-    repo_id -- substring of repo ID or name
+    Get list of enabled repositories or None on error
     """
     # wokeignore:rule=dummy
     rc, stdout, dummy_stderr = run_command(["dnf", "repolist"], {})
-    return rc == 0 and any(repo in stdout for repo in repo_strings)
+    return stdout if rc == 0 else None
 
 
-def list_rhel_installed_packages(run_command: CommandRunner) -> List[str]:
+def get_rpm_installed_packages(
+    run_command: CommandRunner,
+) -> Optional[List[str]]:
     """
-    Return names of packages installed on a RHEL system
+    Return names of installed packages or None on error
     """
     # wokeignore:rule=dummy
     rc, stdout, dummy_stderr = run_command(
         ["rpm", "--query", "--all", "--queryformat", "%{NAME}\\n"], {}
     )
-    return stdout.splitlines() if rc == 0 else []
+    return stdout.splitlines() if rc == 0 else None
 
 
 def is_service_enabled(run_command: CommandRunner, service: str) -> bool:

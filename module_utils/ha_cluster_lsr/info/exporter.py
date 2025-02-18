@@ -48,6 +48,55 @@ def _handle_missing_key(data: Dict[str, Any], data_desc: str) -> Iterator[None]:
         raise JsonMissingKey(e.args[0], data, data_desc) from e
 
 
+def export_enable_repos_ha(dnf_repolist: str) -> bool:
+    """
+    Check whether high availability repository is enabled based on dnf repolist
+
+    dnf_repolist -- text output of 'dnf repolist'
+    """
+    repo_strings = ["highavailability", "HighAvailability"]
+    return any(repo in dnf_repolist for repo in repo_strings)
+
+
+def export_enable_repos_rs(dnf_repolist: str) -> bool:
+    """
+    Check whether resilient storage repository is enabled based on dnf repolist
+
+    dnf_repolist -- text output of 'dnf repolist'
+    """
+    repo_strings = ["resilientstorage"]
+    return any(repo in dnf_repolist for repo in repo_strings)
+
+
+def export_install_cloud_agents(installed_packages: List[str]) -> bool:
+    """
+    Check whether cloud agent packages are installed
+
+    installed packages -- list of names of installed packages
+    """
+    # List of cloud agent packages is taken from vars/RedHat_*.yml and
+    # vars/CentOS_*.yml
+    # They are hardcoded here to avoid dependency on pyyaml which may or may
+    # not be available.
+    # We don't need to check for architecture - a package not available for an
+    # architecture will never be listed as installed on that architecture.
+    cloud_agent_packages = {
+        "fence-agents-aliyun",
+        "fence-agents-aws",
+        "fence-agents-azure-arm",
+        "fence-agents-compute",
+        "fence-agents-gce",
+        "fence-agents-ibm-powervs",
+        "fence-agents-ibm-vpc",
+        "fence-agents-kubevirt",
+        "fence-agents-openstack",
+        "resource-agents-aliyun",
+        "resource-agents-cloud",
+        "resource-agents-gcp",
+    }
+    return bool(cloud_agent_packages.intersection(installed_packages))
+
+
 def export_start_on_boot(
     corosync_enabled: bool, pacemaker_enabled: bool
 ) -> bool:

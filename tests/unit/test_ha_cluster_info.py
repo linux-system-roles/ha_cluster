@@ -279,7 +279,6 @@ class ExportOsConfiguration(TestCase):
         self.assert_rhel_export(
             [
                 (0, dnf_repolist, ""),
-                (0, dnf_repolist, ""),
                 (0, rpm_packages, ""),
             ],
             {
@@ -308,7 +307,6 @@ class ExportOsConfiguration(TestCase):
         self.assert_rhel_export(
             [
                 (0, dnf_repolist, ""),
-                (0, dnf_repolist, ""),
                 (0, rpm_packages, ""),
             ],
             {
@@ -319,17 +317,41 @@ class ExportOsConfiguration(TestCase):
         )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
-    def test_rhel_errors(self) -> None:
+    def test_rhel_error_repolist(self) -> None:
+        rpm_packages = dedent(
+            """\
+            package1
+            resource-agents-cloud
+            package2
+            """
+        )
         self.assert_rhel_export(
             [
                 (1, "some output", "an error"),
-                (1, "some output", "an error"),
+                (0, rpm_packages, ""),
+            ],
+            {
+                "ha_cluster_install_cloud_agents": True,
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
+    def test_rhel_error_pkglist(self) -> None:
+        dnf_repolist = dedent(
+            """\
+            repo1id           Repository 1
+            highavailability  Repository HA Addon
+            repo2id           Repository 2
+            """
+        )
+        self.assert_rhel_export(
+            [
+                (0, dnf_repolist, ""),
                 (1, "some output", "an error"),
             ],
             {
-                "ha_cluster_enable_repos": False,
+                "ha_cluster_enable_repos": True,
                 "ha_cluster_enable_repos_resilient_storage": False,
-                "ha_cluster_install_cloud_agents": False,
             },
         )
 
