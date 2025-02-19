@@ -364,13 +364,14 @@ class GetPcsdKnownHosts(TestCase):
         mock_exists.assert_called_once_with(self.file_path)
 
 
-class GetPcsdLocalClusterPermissions(TestCase):
+class GetPcsdSettingsConf(TestCase):
+    maxDiff = None
     file_path = "/var/lib/pcsd/pcs_settings.conf"
 
     @mock.patch("ha_cluster_lsr.info.loader.os.path.exists")
     def test_file_not_present(self, mock_exists: mock.Mock) -> None:
         mock_exists.return_value = False
-        self.assertEqual(loader.get_pcsd_local_cluster_permissions(), None)
+        self.assertEqual(loader.get_pcsd_settings_conf(), None)
         mock_exists.assert_called_once_with(self.file_path)
 
     @mock.patch("ha_cluster_lsr.info.loader.os.path.exists")
@@ -382,11 +383,11 @@ class GetPcsdLocalClusterPermissions(TestCase):
             mock.mock_open(read_data=mock_data),
         ) as mock_open:
             with self.assertRaises(loader.JsonParseError) as cm:
-                loader.get_pcsd_local_cluster_permissions()
+                loader.get_pcsd_settings_conf()
             self.assertEqual(
                 cm.exception.kwargs,
                 dict(
-                    data="not logging data",
+                    data=mock_data,
                     data_desc="pcsd settings",
                     error="Expecting value: line 1 column 1 (char 0)",
                     additional_info=None,
@@ -398,52 +399,27 @@ class GetPcsdLocalClusterPermissions(TestCase):
         mock_exists.assert_called_once_with(self.file_path)
 
     @mock.patch("ha_cluster_lsr.info.loader.os.path.exists")
-    def test_json_missing_key_or_bad_value(
-        self, mock_exists: mock.Mock
-    ) -> None:
-        mock_exists.return_value = True
-        mock_data_list = [
-            "{}",
-            '{"permissions": {}}',
-            '{"permissions": "foobar"}',
-            '{"permissions": {"local_cluster": []}}',
-            '{"permissions": {"local_cluster": null}}',
-        ]
-        for mock_data in mock_data_list:
-            with self.subTest(mock_data=mock_data):
-                mock_exists.reset_mock()
-                with mock.patch(
-                    "ha_cluster_lsr.info.loader.open",
-                    mock.mock_open(read_data=mock_data),
-                ) as mock_open:
-                    self.assertEqual(
-                        loader.get_pcsd_local_cluster_permissions(),
-                        [],
-                    )
-                    mock_open.assert_called_once_with(
-                        self.file_path, "r", encoding="utf-8"
-                    )
-                mock_exists.assert_called_once_with(self.file_path)
-
-    @mock.patch("ha_cluster_lsr.info.loader.os.path.exists")
-    def test_json_extract_permission(self, mock_exists: mock.Mock) -> None:
+    def test_success(self, mock_exists: mock.Mock) -> None:
         mock_exists.return_value = True
         mock_data = """
             {
-                "permissions": {
-                    "local_cluster": [
-                        {},
-                        {"name": "test1"},
-                        {"name": "test2", "type": "user"},
-                        {"type": "group"},
-                        {"name": "test3", "allow": ["read"]},
-                        {"type": "group", "allow": ["write"]},
-                        {"name": "test4", "type": "user", "allow": []},
-                        {"name": "test5", "type": "user", "allow": ["write"]},
-                        {"name": "test6", "type": "group", "allow": ["write", "grant"]},
-                        {"name": "test7", "type": "group", "allow": null}
-                    ]
+              "format_version": 2,
+              "data_version": 3,
+              "clusters": [
+                {
+                  "name": "rh100",
+                  "nodes": ["rh100-node1"]
                 }
+              ],
+              "permissions": {
+                "local_cluster": [
+                  {
+                    "type": "group",
+                    "name": "haclient",
+                    "allow": ["grant", "read", "write"]
+                  }
+                ]
+              }
             }
         """
         with mock.patch(
@@ -451,16 +427,21 @@ class GetPcsdLocalClusterPermissions(TestCase):
             mock.mock_open(read_data=mock_data),
         ) as mock_open:
             self.assertEqual(
-                loader.get_pcsd_local_cluster_permissions(),
-                [
-                    {"name": "test4", "type": "user", "allow_list": []},
-                    {"name": "test5", "type": "user", "allow_list": ["write"]},
-                    {
-                        "name": "test6",
-                        "type": "group",
-                        "allow_list": ["write", "grant"],
+                loader.get_pcsd_settings_conf(),
+                {
+                    "format_version": 2,
+                    "data_version": 3,
+                    "clusters": [{"name": "rh100", "nodes": ["rh100-node1"]}],
+                    "permissions": {
+                        "local_cluster": [
+                            {
+                                "type": "group",
+                                "name": "haclient",
+                                "allow": ["grant", "read", "write"],
+                            }
+                        ]
                     },
-                ],
+                },
             )
             mock_open.assert_called_once_with(
                 self.file_path, "r", encoding="utf-8"

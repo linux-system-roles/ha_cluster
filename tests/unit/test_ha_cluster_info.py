@@ -371,8 +371,66 @@ class ExportOsConfiguration(TestCase):
 class ExportPcsdConfiguration(TestCase):
     maxDiff = None
 
-    @mock.patch("ha_cluster_info.loader.get_pcsd_local_cluster_permissions")
-    def test_no_permissions(self, mock_load_pcsd_permisions: mock.Mock) -> None:
+    @mock.patch("ha_cluster_info.loader.get_pcsd_settings_conf")
+    def test_permissions_defined(
+        self, mock_load_pcsd_permisions: mock.Mock
+    ) -> None:
+        mock_load_pcsd_permisions.return_value = {
+            "permissions": {
+                "local_cluster": [
+                    {
+                        "type": "group",
+                        "name": "haclient",
+                        "allow": ["grant", "read", "write"],
+                    },
+                    {
+                        "type": "user",
+                        "name": "admin",
+                        "allow": ["full"],
+                    },
+                ]
+            }
+        }
+
+        self.assertEqual(
+            ha_cluster_info.export_pcsd_configuration(),
+            {
+                "ha_cluster_pcs_permission_list": [
+                    {
+                        "type": "group",
+                        "name": "haclient",
+                        "allow_list": ["grant", "read", "write"],
+                    },
+                    {
+                        "type": "user",
+                        "name": "admin",
+                        "allow_list": ["full"],
+                    },
+                ]
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.get_pcsd_settings_conf")
+    def test_empty_permissions_defined(
+        self, mock_load_pcsd_permisions: mock.Mock
+    ) -> None:
+        mock_load_pcsd_permisions.return_value = {
+            "permissions": {
+                "local_cluster": [],
+            }
+        }
+
+        self.assertEqual(
+            ha_cluster_info.export_pcsd_configuration(),
+            {
+                "ha_cluster_pcs_permission_list": [],
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.get_pcsd_settings_conf")
+    def test_permission_load_error(
+        self, mock_load_pcsd_permisions: mock.Mock
+    ) -> None:
         mock_load_pcsd_permisions.return_value = None
 
         self.assertEqual(
@@ -380,39 +438,29 @@ class ExportPcsdConfiguration(TestCase):
             {},
         )
 
-    @mock.patch("ha_cluster_info.loader.get_pcsd_local_cluster_permissions")
-    def test_permissions_defined(
+    @mock.patch("ha_cluster_info.loader.get_pcsd_settings_conf")
+    def test_permission_load_bad_format(
         self, mock_load_pcsd_permisions: mock.Mock
     ) -> None:
-        mock_load_pcsd_permisions.return_value = [
-            {
-                "type": "group",
-                "name": "haclient",
-                "allow": ["grant", "read", "write"],
-            },
-            {
-                "type": "user",
-                "name": "admin",
-                "allow": ["full"],
-            },
-        ]
+        mock_load_pcsd_permisions.return_value = {
+            "permissions": {
+                "local": [
+                    {
+                        "type": "group",
+                        "name": "haclient",
+                        "allow": ["grant", "read", "write"],
+                    },
+                ]
+            }
+        }
 
+        with self.assertRaises(ha_cluster_info.exporter.JsonMissingKey) as cm:
+            ha_cluster_info.export_pcsd_configuration()
         self.assertEqual(
-            ha_cluster_info.export_pcsd_configuration(),
-            {
-                "ha_cluster_pcs_permission_list": mock_load_pcsd_permisions.return_value,
-            },
-        )
-
-    @mock.patch("ha_cluster_info.loader.get_pcsd_local_cluster_permissions")
-    def test_empty_permissions_defined(
-        self, mock_load_pcsd_permisions: mock.Mock
-    ) -> None:
-        mock_load_pcsd_permisions.return_value = []
-
-        self.assertEqual(
-            ha_cluster_info.export_pcsd_configuration(),
-            {
-                "ha_cluster_pcs_permission_list": [],
-            },
+            cm.exception.kwargs,
+            dict(
+                data=mock_load_pcsd_permisions.return_value,
+                key="local_cluster",
+                data_desc="pcs_settings.conf",
+            ),
         )

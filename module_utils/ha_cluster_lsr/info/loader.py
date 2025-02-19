@@ -218,42 +218,19 @@ def get_pcsd_known_hosts() -> Dict[str, str]:
         raise JsonParseError(str(e), "not logging data", "known hosts") from e
 
 
-def get_pcsd_local_cluster_permissions() -> Optional[List[Dict[str, Any]]]:
+def get_pcsd_settings_conf() -> Optional[Dict[str, Any]]:
     """
-    Load pcsd local cluster permissions
+    Load pcsd config file pcs_settings.conf
     """
     # There is no pcs interface for the file yet, so we parse the file directly.
     if not os.path.exists(PCSD_SETTINGS_PATH):
         return None
 
-    result: List[Dict[str, Any]] = []
     try:
         with open(
             PCSD_SETTINGS_PATH, "r", encoding="utf-8"
         ) as pcsd_settings_file:
-            pcsd_settings = json.load(pcsd_settings_file)
-        permission_dict = pcsd_settings.get("permissions")
-        if not isinstance(permission_dict, dict):
-            return result
-        permission_list = permission_dict.get("local_cluster")
-        if not isinstance(permission_list, list):
-            return result
-        for permission_item in permission_list:
-            if (
-                "type" not in permission_item
-                or "name" not in permission_item
-                or "allow" not in permission_item
-                or not isinstance(permission_item["allow"], list)
-            ):
-                continue
-            result.append(
-                {
-                    "type": permission_item["type"],
-                    "name": permission_item["name"],
-                    "allow_list": list(permission_item["allow"]),
-                }
-            )
-        return result
+            file_data = pcsd_settings_file.read()
+            return json.loads(file_data)
     except json.JSONDecodeError as e:
-        # cannot show actual data as they contain sensitive information
-        raise JsonParseError(str(e), "not logging data", "pcsd settings") from e
+        raise JsonParseError(str(e), file_data, "pcsd settings") from e

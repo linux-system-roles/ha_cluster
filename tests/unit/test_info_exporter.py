@@ -540,3 +540,87 @@ class ExportClusterNodes(TestCase):
                 ),
             ],
         )
+
+
+class ExportPcsPermissionList(TestCase):
+    maxDiff = None
+
+    def test_minimal(self) -> None:
+        pcs_settings_dict: Dict[str, Any] = {
+            "permissions": {
+                "local_cluster": [],
+            }
+        }
+
+        self.assertEqual(
+            exporter.export_pcs_permission_list(pcs_settings_dict),
+            [],
+        )
+
+    def test_success(self) -> None:
+        pcs_settings_dict: Dict[str, Any] = {
+            "permissions": {
+                "local_cluster": [
+                    {"name": "test1", "type": "user", "allow": []},
+                    {"name": "test2", "type": "user", "allow": ["read"]},
+                    {
+                        "name": "test3",
+                        "type": "group",
+                        "allow": ["write", "grant"],
+                    },
+                ]
+            }
+        }
+
+        self.assertEqual(
+            exporter.export_pcs_permission_list(pcs_settings_dict),
+            [
+                {"name": "test1", "type": "user", "allow_list": []},
+                {"name": "test2", "type": "user", "allow_list": ["read"]},
+                {
+                    "name": "test3",
+                    "type": "group",
+                    "allow_list": ["write", "grant"],
+                },
+            ],
+        )
+
+    def assert_missing_key(
+        self, pcs_settings_dict: Dict[str, Any], key: str
+    ) -> None:
+        with self.assertRaises(exporter.JsonMissingKey) as cm:
+            exporter.export_pcs_permission_list(pcs_settings_dict)
+        self.assertEqual(
+            cm.exception.kwargs,
+            dict(
+                data=pcs_settings_dict,
+                key=key,
+                data_desc="pcs_settings.conf",
+            ),
+        )
+
+    def test_missing_key(self) -> None:
+        self.assert_missing_key(
+            dict(),
+            "permissions",
+        )
+        self.assert_missing_key(
+            dict(permissions=dict()),
+            "local_cluster",
+        )
+        self.assert_missing_key(
+            dict(permissions=dict(local_cluster=[dict()])),
+            "type",
+        )
+        self.assert_missing_key(
+            dict(permissions=dict(local_cluster=[dict(type="user")])),
+            "name",
+        )
+        self.assert_missing_key(
+            dict(
+                permissions=dict(
+                    local_cluster=[dict(type="user", name="user1")]
+                )
+            ),
+            "allow",
+        )

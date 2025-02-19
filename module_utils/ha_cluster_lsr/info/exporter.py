@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from contextlib import contextmanager
-from typing import Any, Dict, Iterator, List
+from typing import Any, Dict, Iterator, List, Optional
 
 
 class JsonMissingKey(Exception):
@@ -216,3 +216,32 @@ def export_cluster_nodes(
             # finish one node export
             node_list.append(one_node)
         return node_list
+
+
+def export_pcs_permission_list(
+    pcs_settings_conf_dict: Dict[str, Any],
+) -> Optional[List[Dict[str, Any]]]:
+    """
+    Extract local cluster permissions from pcs_settings config or None on error
+
+    pcs_settings -- JSON parsed pcs_settings.conf
+    """
+    # Currently, only format version 2 is in use, so we don't check for file
+    # format version
+    result: List[Dict[str, Any]] = []
+    with _handle_missing_key(pcs_settings_conf_dict, "pcs_settings.conf"):
+        permission_dict = pcs_settings_conf_dict["permissions"]
+        if not isinstance(permission_dict, dict):
+            return None
+        permission_list = permission_dict["local_cluster"]
+        if not isinstance(permission_list, list):
+            return None
+        for permission_item in permission_list:
+            result.append(
+                {
+                    "type": permission_item["type"],
+                    "name": permission_item["name"],
+                    "allow_list": list(permission_item["allow"]),
+                }
+            )
+        return result
