@@ -19,19 +19,49 @@ jobs:
     strategy:
       matrix:
         include:
+          # pcs_version 0.11.x - ubuntu 22.04 only
+          # pcs_version 0.12.x - ubuntu 24.04 only
+          # pcs_dir_local:
+          #   Since Ubuntu 24.04, python forces pcs being installed into local/
+          #   and it cannot be persuaded not to do that. This is covered by
+          #   pcs_dir_local variable.
+          # pcs_site_packages:
+          #   pcs-0.11 was installed by pcs install scripts into site-packages,
+          #   while pcs-0.12 is installed into the correct dir dist-packages
           - os: ubuntu-22.04
             pcs_version: v0.11.4
+            pcs_dir_local: ''
+            pcs_site_packages: site-packages
           - os: ubuntu-22.04
             pcs_version: v0.11.5
+            pcs_dir_local: ''
+            pcs_site_packages: site-packages
           - os: ubuntu-22.04
             pcs_version: v0.11.6
+            pcs_dir_local: ''
+            pcs_site_packages: site-packages
           - os: ubuntu-22.04
             pcs_version: v0.11.7
+            pcs_dir_local: ''
+            pcs_site_packages: site-packages
           - os: ubuntu-22.04
             pcs_version: v0.11.8
+            pcs_dir_local: ''
+            pcs_site_packages: site-packages
+          - os: ubuntu-22.04
+            pcs_version: v0.11.9
+            pcs_dir_local: ''
+            pcs_site_packages: site-packages
+          - os: ubuntu-24.04
+            # v0.12.0 contains a bug preventing it being build in CI
+            # v0.12.0-lsr-ci fixes that bug while not adding any other changes
+            pcs_version: v0.12.0-lsr-ci
+            pcs_dir_local: '/local'
+            pcs_site_packages: dist-packages
           - os: ubuntu-24.04
             pcs_version: main
-          # pcs_version 0.12.x will go to ubuntu 24.04 only
+            pcs_dir_local: '/local'
+            pcs_site_packages: dist-packages
     runs-on: ${{ matrix.os }}
     steps:
       - name: Update git
@@ -79,7 +109,7 @@ jobs:
           rm -rf pcs-upstream
           site_pkgs_dir=`python -m site --user-site`
           pyver=$(python -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')
-          echo "${pcs_dir}/lib/python${pyver}/site-packages/" > "${site_pkgs_dir}/pcs.pth"
+          echo "${pcs_dir}${{ matrix.pcs_dir_local }}/lib/python${pyver}/${{ matrix.pcs_site_packages }}/" > "${site_pkgs_dir}/pcs.pth"
           python -c 'from pcs import settings; print(settings.pcs_version)'
 
       - name: Run unit tests
