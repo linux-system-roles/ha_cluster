@@ -21,6 +21,8 @@ sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
 
 import ha_cluster_info
 
+from .firewall_mock import get_fw_mock
+
 
 class ExportClusterConfiguration(TestCase):
     maxDiff = None
@@ -262,7 +264,9 @@ class ExportOsConfiguration(TestCase):
         self.assertEqual(runner_mock.call_count, len(runner_mock_side_effect))
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
-    def test_rhel_1(self) -> None:
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", False)
+    def test_packages_rhel_1(self) -> None:
         dnf_repolist = dedent(
             """\
             repo1id           Repository 1
@@ -289,7 +293,9 @@ class ExportOsConfiguration(TestCase):
         )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
-    def test_rhel_2(self) -> None:
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", False)
+    def test_packages_rhel_2(self) -> None:
         dnf_repolist = dedent(
             """\
             repo1id           Repository 1
@@ -317,7 +323,9 @@ class ExportOsConfiguration(TestCase):
         )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
-    def test_rhel_error_repolist(self) -> None:
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", False)
+    def test_packages_rhel_error_repolist(self) -> None:
         rpm_packages = dedent(
             """\
             package1
@@ -336,7 +344,9 @@ class ExportOsConfiguration(TestCase):
         )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
-    def test_rhel_error_pkglist(self) -> None:
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", False)
+    def test_packages_rhel_error_pkglist(self) -> None:
         dnf_repolist = dedent(
             """\
             repo1id           Repository 1
@@ -356,7 +366,9 @@ class ExportOsConfiguration(TestCase):
         )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
-    def test_non_rhel(self) -> None:
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", False)
+    def test_packages_non_rhel(self) -> None:
         module_mock = mock.Mock()
         module_mock.run_command = mock.Mock()
         runner_mock = module_mock.run_command
@@ -366,6 +378,104 @@ class ExportOsConfiguration(TestCase):
             {},
         )
         runner_mock.assert_not_called()
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", True)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", False)
+    def test_firewall_true(self) -> None:
+        module_mock = mock.Mock()
+        with mock.patch("ha_cluster_info.FirewallClient") as fw_class_mock:
+            fw_class_mock.return_value = get_fw_mock(["high-availability"], [])
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                {"ha_cluster_manage_firewall": True},
+            )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", True)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", False)
+    def test_firewall_false(self) -> None:
+        module_mock = mock.Mock()
+        with mock.patch("ha_cluster_info.FirewallClient") as fw_class_mock:
+            fw_class_mock.return_value = get_fw_mock([], [])
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                {"ha_cluster_manage_firewall": False},
+            )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", True)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", False)
+    def test_firewall_not_available(self) -> None:
+        module_mock = mock.Mock()
+        with mock.patch("ha_cluster_info.FirewallClient") as fw_class_mock:
+            fw_class_mock.return_value = get_fw_mock([], [], exception=True)
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                {},
+            )
+
+    def assert_manage_selinux(
+        self, selinux_ports_mock: mock.Mock, expected_export: Dict[str, bool]
+    ) -> None:
+        module_mock = mock.Mock()
+        with mock.patch(
+            "ha_cluster_info.FirewallClient"
+        ) as fw_class_mock, mock.patch(
+            "ha_cluster_info.SelinuxPortRecords"
+        ) as selinux_class_mock:
+            fw_class_mock.return_value = get_fw_mock(["high-availability"], [])
+            selinux_class_mock.return_value = selinux_ports_mock
+
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                expected_export,
+            )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", True)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", True)
+    def test_selinux_true(self) -> None:
+        selinux_ports_mock = mock.Mock()
+        selinux_ports_mock.get_all_by_type.return_value = {
+            ("cluster_port_t", "tcp"): ["5403"],
+        }
+        self.assert_manage_selinux(
+            selinux_ports_mock,
+            {
+                "ha_cluster_manage_firewall": True,
+                "ha_cluster_manage_selinux": True,
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", True)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", True)
+    def test_selinux_false(self) -> None:
+        selinux_ports_mock = mock.Mock()
+        selinux_ports_mock.get_all_by_type.return_value = {
+            ("cluster_port_t", "tcp"): ["5149"],
+        }
+        self.assert_manage_selinux(
+            selinux_ports_mock,
+            {
+                "ha_cluster_manage_firewall": True,
+                "ha_cluster_manage_selinux": False,
+            },
+        )
+
+    @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
+    @mock.patch("ha_cluster_info.HAS_FIREWALL", True)
+    @mock.patch("ha_cluster_info.HAS_SELINUX", True)
+    def test_selinux_not_available(self) -> None:
+        selinux_ports_mock = mock.Mock()
+        selinux_ports_mock.get_all_by_type.side_effect = Exception
+        self.assert_manage_selinux(
+            selinux_ports_mock,
+            {
+                "ha_cluster_manage_firewall": True,
+            },
+        )
 
 
 class ExportPcsdConfiguration(TestCase):

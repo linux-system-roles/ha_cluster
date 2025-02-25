@@ -106,6 +106,61 @@ class ExportInstallCloudAgents(TestCase):
         self.assertTrue(exporter.export_install_cloud_agents(rpm_packages))
 
 
+class ExportManageFirewall(TestCase):
+    def test_true_by_service(self) -> None:
+        self.assertTrue(
+            exporter.export_manage_firewall(
+                {
+                    "services": ["service1", "high-availability"],
+                    "ports": [],
+                }
+            )
+        )
+
+    def test_true_by_port(self) -> None:
+        self.assertTrue(
+            exporter.export_manage_firewall(
+                {
+                    "services": ["service1"],
+                    "ports": [("1229", "tcp")],
+                }
+            )
+        )
+
+    def test_false(self) -> None:
+        self.assertFalse(
+            exporter.export_manage_firewall(
+                {
+                    "services": ["service1", "availability"],
+                    "ports": [("1229", "udp")],
+                }
+            )
+        )
+
+
+class ExportManageSelinux(TestCase):
+    def test_true_by_tcp(self) -> None:
+        firewall_ports = [("3456", "tcp"), ("45670", "udp")]
+        selinux_ports = (["2345", "3456"], ["4567", "5678"])
+        self.assertTrue(
+            exporter.export_manage_selinux(firewall_ports, selinux_ports)
+        )
+
+    def test_true_by_udp(self) -> None:
+        firewall_ports = [("34560", "tcp"), ("4567", "udp")]
+        selinux_ports = (["2345", "3456"], ["4567", "5678"])
+        self.assertTrue(
+            exporter.export_manage_selinux(firewall_ports, selinux_ports)
+        )
+
+    def test_false(self) -> None:
+        firewall_ports = [("34560", "tcp"), ("45670", "udp")]
+        selinux_ports = (["2345", "3456"], ["4567", "5678"])
+        self.assertFalse(
+            exporter.export_manage_selinux(firewall_ports, selinux_ports)
+        )
+
+
 class ExportStartOnBoot(TestCase):
     def test_main(self) -> None:
         self.assertFalse(exporter.export_start_on_boot(False, False))

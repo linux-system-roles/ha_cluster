@@ -1577,6 +1577,10 @@ may not be present in the export.
   * [`ha_cluster_enable_repos`](#ha_cluster_enable_repos) - RHEL and CentOS only
   * [`ha_cluster_enable_repos_resilient_storage`](#ha_cluster_enable_repos_resilient_storage) -
     RHEL and CentOS only
+  * [`ha_cluster_manage_firewall`](#ha_cluster_manage_firewall) (requires
+    `python3-firewall` to be installed on managed nodes)
+  * [`ha_cluster_manage_selinux`](#ha_cluster_manage_selinux) (requires
+    `python3-policycoreutils` to be installed on managed nodes)
   * [`ha_cluster_cluster_present`](#ha_cluster_cluster_present)
   * [`ha_cluster_start_on_boot`](#ha_cluster_start_on_boot)
   * [`ha_cluster_install_cloud_agents`](#ha_cluster_install_cloud_agents) -
@@ -1613,6 +1617,10 @@ may not be present in the export.
     These are supposed to contain paths to files with TLS certificate and
     private key for pcsd. Since the certificate and key themselves are not
     exported, these variables are not present in the export either.
+  * [`ha_cluster_pcsd_certificates`](#ha_cluster_pcsd_certificates) - The value
+    of this variable is set to the variable `certificate_requests` in the
+    `certificate` role. See the `certificate` role documentation to check if it
+    provides any means for exporting configuration.
   * [`ha_cluster_regenerate_keys`](#ha_cluster_regenerate_keys) - It is your
     responsibility to decide if you want to use existing keys or generate new
     ones.

@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from contextlib import contextmanager
-from typing import Any, Dict, Iterator, List, Optional
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 
 class JsonMissingKey(Exception):
@@ -104,6 +104,35 @@ def export_start_on_boot(
     Transform cluster servis status to start_on_boot
     """
     return corosync_enabled or pacemaker_enabled
+
+
+def export_manage_firewall(zone_config: Dict[str, Any]) -> bool:
+    """
+    Export whether HA cluster is enabled in firewall
+
+    zone_config -- configuration of a firewall zone
+    """
+    return (
+        "high-availability" in zone_config["services"]
+        or ("1229", "tcp") in zone_config["ports"]
+    )
+
+
+def export_manage_selinux(
+    ha_ports_used: List[Tuple[str, str]],
+    ha_ports_selinux: Tuple[List[str], List[str]],
+) -> bool:
+    """
+    Export whether HA cluster ports are managed by selinux
+
+    ha_ports_used -- ports used by HA cluster
+    ha_ports_selinux -- ports labelled for HA cluster in selinux
+    """
+    # convert selinux ports to the same format as used ports
+    ports_selinux_tuples = [(port, "tcp") for port in ha_ports_selinux[0]] + [
+        (port, "udp") for port in ha_ports_selinux[1]
+    ]
+    return bool(frozenset(ports_selinux_tuples) & frozenset(ha_ports_used))
 
 
 def export_corosync_cluster_name(corosync_conf_dict: Dict[str, Any]) -> str:

@@ -1,17 +1,19 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Cluster with knet transport, transport type not specified
+# The role is limited to *adding* ports in firewall and selinux and cannot be
+# used for *removing* ports. If the underlying system is already configured
+# with HA cluster services and ports in firewall and selinux, the role would
+# not change that even if run with ha_cluster_manage_firewall=False. Hence,
+# only ha_cluster_manage_firewall=true is tested. The same applies to
+# ha_cluster_manage_selinux.
+- name: Exporting manage_firewall and manage_selinux variables
   hosts: all
   vars_files: vars/main.yml
   vars:
-    ha_cluster_export_configuration: true
     ha_cluster_cluster_name: test-cluster
-    ha_cluster_transport:
-      crypto:
-        - name: cipher
-          value: none
-        - name: hash
-          value: none
+    ha_cluster_export_configuration: true
+    ha_cluster_manage_firewall: true
+    ha_cluster_manage_selinux: true
 
   tasks:
     - name: Run test
@@ -22,40 +24,17 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
+        - name: Ensure required packages are installed
+          package:
+            name:
+              - firewalld
+              - python3-firewall
+            state: present
+
         - name: Run HA Cluster role
           include_role:
             name: linux-system-roles.ha_cluster
             public: true
-
-        - name: Fetch cluster versions of cluster components
-          include_tasks: tasks/fetch_versions.yml
-
-        - name: Check corosync
-          include_tasks: tasks/assert_corosync_config.yml
-          vars:
-            # noqa jinja[spacing]
-            __test_expected_lines:
-              - 'totem {'
-              - '    version: 2'
-              - '    cluster_name: {{ ha_cluster_cluster_name }}'
-              - '    transport: knet'
-              - '    crypto_cipher: none'
-              - '    crypto_hash: none'
-              - '}'
-              - 'nodelist {'
-              - '}'
-              - 'quorum {'
-              - '    provider: corosync_votequorum'
-              - "{{ (ansible_play_hosts_all | length == 2) | ternary(
-                '    two_node: 1',
-                '') }}"
-              - '}'
-              - 'logging {'
-              - '    to_logfile: yes'
-              - '    logfile: /var/log/cluster/corosync.log'
-              - '    to_syslog: yes'
-              - '    timestamp: on'
-              - '}'
 
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml
@@ -70,27 +49,29 @@
                 ha_cluster_facts | combine({
                   'ha_cluster_enable_repos': 'it depends on test environment',
                   'ha_cluster_enable_repos_resilient_storage': 'it depends on test environment',
-                  'ha_cluster_manage_firewall': 'it depends on test environment',
-                  'ha_cluster_manage_selinux': 'it depends on test environment',
                   'ha_cluster_install_cloud_agents': 'it depends on test environment',
                   'ha_cluster_node_options': 'it depends on test environment'
                 })
               }}
             __test_expected_config:
               ha_cluster_cluster_present: true
+              ha_cluster_manage_firewall: true
+              ha_cluster_manage_selinux: true
               ha_cluster_cluster_name: test-cluster
               ha_cluster_start_on_boot: true
               ha_cluster_transport:
                 type: knet
-                crypto: "{{ ha_cluster_transport.crypto }}"
+                crypto:
+                  - name: cipher
+                    value: aes256
+                  - name: hash
+                    value: sha256
               ha_cluster_pcs_permission_list:
                 - name: haclient
                   type: group
                   allow_list: ["grant", "read", "write"]
               ha_cluster_enable_repos: "it depends on test environment"
               ha_cluster_enable_repos_resilient_storage: "it depends on test environment"
-              ha_cluster_manage_firewall: "it depends on test environment"
-              ha_cluster_manage_selinux: "it depends on test environment"
               ha_cluster_install_cloud_agents: "it depends on test environment"
               ha_cluster_node_options: "it depends on test environment"
           block:

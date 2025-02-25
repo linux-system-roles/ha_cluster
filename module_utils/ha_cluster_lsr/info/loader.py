@@ -147,6 +147,67 @@ def is_service_enabled(run_command: CommandRunner, service: str) -> bool:
     return rc == 0
 
 
+def get_firewall_config(
+    fw: Any,  # firewall module doesn't provide type hints
+) -> Optional[Dict[str, Any]]:
+    """
+    Get simplified firewall config of a given zone or None on error
+
+    fw -- firewall client instance
+    """
+    try:
+        settings = fw.config().getZoneByName(fw.getDefaultZone()).getSettings()
+        return {
+            "services": settings.getServices(),
+            "ports": settings.getPorts(),
+        }
+    # pylint: disable=broad-exception-caught
+    # catch any exception, firewall is not installed or not running, etc.
+    except Exception:
+        return None
+
+
+def get_firewall_ha_cluster_ports(
+    fw: Any,  # firewall module doesn't provide type hints
+) -> Optional[List[Tuple[str, str]]]:
+    """
+    Get ports used by HA cluster or None on error
+
+    fw -- firewall client instance
+    """
+    try:
+        return (
+            fw.config()
+            .getServiceByName("high-availability")
+            .getSettings()
+            .getPorts()
+        )
+    # pylint: disable=broad-exception-caught
+    # catch any exception, firewall is not installed or not running, etc.
+    except Exception:
+        return None
+
+
+def get_selinux_ha_cluster_ports(
+    selinux_ports: Any,  # selinux module doesn't provide type hints
+) -> Optional[Tuple[List[str], List[str]]]:
+    """
+    Get TCP and UDP ports labelled for HA cluster in selinux or None on error
+
+    selinux_ports -- selinux port records instance
+    """
+    try:
+        all_ports = selinux_ports.get_all_by_type()
+        return (
+            all_ports.get(("cluster_port_t", "tcp"), []),
+            all_ports.get(("cluster_port_t", "udp"), []),
+        )
+    # pylint: disable=broad-exception-caught
+    # catch any exception, selinux not available, etc.
+    except Exception:
+        return None
+
+
 def _call_pcs_cli(
     run_command: CommandRunner, command: List[str]
 ) -> Dict[str, Any]:

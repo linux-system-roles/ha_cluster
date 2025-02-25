@@ -21,6 +21,8 @@ from typing import Any
 
 from ha_cluster_lsr.info import loader
 
+from .firewall_mock import get_fw_mock
+
 
 class IsRhelOrClone(TestCase):
     file_path = "/etc/os-release"
@@ -128,6 +130,83 @@ class GetRpmInstalledPackages(TestCase):
         runner_mock = mock.Mock()
         runner_mock.return_value = (1, rpm_output, "an error")
         self._assert_packages(runner_mock, None)
+
+
+class GetFirewallConfig(TestCase):
+    def test_success(self) -> None:
+        services = ["service1", "service2"]
+        ports = [("12345", "tcp"), ("23456", "udp")]
+        fw_mock = get_fw_mock(services, ports)
+
+        self.assertEqual(
+            loader.get_firewall_config(fw_mock),
+            {"services": services, "ports": ports},
+        )
+
+    def test_error(self) -> None:
+        fw_mock = get_fw_mock([], [], exception=True)
+        self.assertIsNone(
+            loader.get_firewall_config(fw_mock),
+        )
+
+
+class GetFirewallHaClusterPorts(TestCase):
+    maxDiff = None
+
+    def test_success(self) -> None:
+        fw_mock = get_fw_mock([], [])
+
+        self.assertEqual(
+            loader.get_firewall_ha_cluster_ports(fw_mock),
+            [
+                ("2224", "tcp"),
+                ("3121", "tcp"),
+                ("5403", "tcp"),
+                ("5404", "udp"),
+                ("5405-5412", "udp"),
+                ("9929", "tcp"),
+                ("9929", "udp"),
+                ("21064", "tcp"),
+            ],
+        )
+
+    def test_error(self) -> None:
+        fw_mock = get_fw_mock([], [], exception=True)
+        self.assertIsNone(loader.get_firewall_ha_cluster_ports(fw_mock))
+
+
+class GetSelinuxHaClusterPorts(TestCase):
+    def test_success(self) -> None:
+        ports_tcp = ["2345", "3456"]
+        ports_udp = ["4567", "5678"]
+        ports_mock = mock.Mock(spec=["get_all_by_type"])
+        ports_mock.get_all_by_type.return_value = {
+            ("cluster_port_t", "tcp"): ports_tcp,
+            ("cluster_port_t", "udp"): ports_udp,
+        }
+
+        self.assertEqual(
+            loader.get_selinux_ha_cluster_ports(ports_mock),
+            (ports_tcp, ports_udp),
+        )
+
+    def test_error(self) -> None:
+        ports_mock = mock.Mock(spec=["get_all_by_type"])
+        ports_mock.get_all_by_type.side_effect = Exception
+
+        self.assertIsNone(loader.get_selinux_ha_cluster_ports(ports_mock))
+
+    def test_no_ports(self) -> None:
+        ports_mock = mock.Mock(spec=["get_all_by_type"])
+        ports_mock.get_all_by_type.return_value = {
+            ("some_port_t", "tcp"): ["2345"],
+            ("other_port_t", "udp"): ["3456"],
+        }
+
+        self.assertEqual(
+            loader.get_selinux_ha_cluster_ports(ports_mock),
+            ([], []),
+        )
 
 
 class IsServiceEnabled(TestCase):
