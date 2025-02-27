@@ -118,6 +118,11 @@
             __test_exported_config: >
               {{
                 ha_cluster_facts | combine({
+                  'ha_cluster_enable_repos': 'it depends on test environment',
+                  'ha_cluster_enable_repos_resilient_storage': 'it depends on test environment',
+                  'ha_cluster_manage_firewall': 'it depends on test environment',
+                  'ha_cluster_manage_selinux': 'it depends on test environment',
+                  'ha_cluster_install_cloud_agents': 'it depends on test environment',
                   'ha_cluster_node_options': 'it depends on test environment'
                 })
               }}
@@ -132,6 +137,15 @@
                     value: aes256
                   - name: hash
                     value: sha256
+              ha_cluster_pcs_permission_list:
+                - name: haclient
+                  type: group
+                  allow_list: ["grant", "read", "write"]
+              ha_cluster_enable_repos: "it depends on test environment"
+              ha_cluster_enable_repos_resilient_storage: "it depends on test environment"
+              ha_cluster_manage_firewall: "it depends on test environment"
+              ha_cluster_manage_selinux: "it depends on test environment"
+              ha_cluster_install_cloud_agents: "it depends on test environment"
               ha_cluster_node_options: "it depends on test environment"
           block:
             - name: Print exported configuration

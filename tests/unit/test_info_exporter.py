@@ -9,6 +9,7 @@
 
 import sys
 from importlib import import_module
+from textwrap import dedent
 from typing import Any, Dict
 from unittest import TestCase
 
@@ -37,6 +38,126 @@ class DictToNvList(TestCase):
         self.assertEqual(
             exporter._dict_to_nv_list(dict(one="1", two="2")),
             [dict(name="one", value="1"), dict(name="two", value="2")],
+        )
+
+
+class ExportEnableReposHa(TestCase):
+    def test_enabled(self) -> None:
+        # pylint: disable=line-too-long
+        dnf_repolist = dedent(
+            """\
+            Updating Subscription Management repositories.
+            repo id                                  repo name
+            rhel-10-for-x86_64-appstream-rpms        Red Hat Enterprise Linux 10 for x86_64 - AppStream (RPMs)
+            rhel-10-for-x86_64-baseos-rpms           Red Hat Enterprise Linux 10 for x86_64 - BaseOS (RPMs)
+            rhel-10-for-x86_64-highavailability-rpms Red Hat Enterprise Linux 10 for x86_64 - High Availability (RPMs)
+            """
+        )
+        self.assertTrue(exporter.export_enable_repos_ha(dnf_repolist))
+
+    def test_not_enabled(self) -> None:
+        dnf_repolist = dedent(
+            """\
+            repo id                repo name
+            fedora                 Fedora 41 - x86_64
+            fedora-cisco-openh264  Fedora 41 openh264 (From Cisco) - x86_64
+            updates                Fedora 41 - x86_64 - Updates
+            """
+        )
+        self.assertFalse(exporter.export_enable_repos_ha(dnf_repolist))
+
+
+class ExportEnableReposRs(TestCase):
+    def test_enabled(self) -> None:
+        # pylint: disable=line-too-long
+        dnf_repolist = dedent(
+            """\
+            Updating Subscription Management repositories.
+            repo id                                  repo name
+            rhel-9-for-x86_64-appstream-rpms         Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)
+            rhel-9-for-x86_64-baseos-rpms            Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs)
+            rhel-9-for-x86_64-highavailability-rpms  Red Hat Enterprise Linux 9 for x86_64 - High Availability (RPMs)
+            rhel-9-for-x86_64-resilientstorage-rpms  Red Hat Enterprise Linux 9 for x86_64 - Resilient Storage (RPMs)
+            """
+        )
+        self.assertTrue(exporter.export_enable_repos_rs(dnf_repolist))
+
+    def test_not_enabled(self) -> None:
+        # pylint: disable=line-too-long
+        dnf_repolist = dedent(
+            """\
+            Updating Subscription Management repositories.
+            repo id                                  repo name
+            rhel-10-for-x86_64-appstream-rpms        Red Hat Enterprise Linux 10 for x86_64 - AppStream (RPMs)
+            rhel-10-for-x86_64-baseos-rpms           Red Hat Enterprise Linux 10 for x86_64 - BaseOS (RPMs)
+            rhel-10-for-x86_64-highavailability-rpms Red Hat Enterprise Linux 10 for x86_64 - High Availability (RPMs)
+            """
+        )
+        self.assertFalse(exporter.export_enable_repos_rs(dnf_repolist))
+
+
+class ExportInstallCloudAgents(TestCase):
+    def test_not_installed(self) -> None:
+        rpm_packages = ["package1", "package2"]
+        self.assertFalse(exporter.export_install_cloud_agents(rpm_packages))
+
+    def test_installed(self) -> None:
+        rpm_packages = ["package1", "package2", "resource-agents-cloud"]
+        self.assertTrue(exporter.export_install_cloud_agents(rpm_packages))
+
+
+class ExportManageFirewall(TestCase):
+    def test_true_by_service(self) -> None:
+        self.assertTrue(
+            exporter.export_manage_firewall(
+                {
+                    "services": ["service1", "high-availability"],
+                    "ports": [],
+                }
+            )
+        )
+
+    def test_true_by_port(self) -> None:
+        self.assertTrue(
+            exporter.export_manage_firewall(
+                {
+                    "services": ["service1"],
+                    "ports": [("1229", "tcp")],
+                }
+            )
+        )
+
+    def test_false(self) -> None:
+        self.assertFalse(
+            exporter.export_manage_firewall(
+                {
+                    "services": ["service1", "availability"],
+                    "ports": [("1229", "udp")],
+                }
+            )
+        )
+
+
+class ExportManageSelinux(TestCase):
+    def test_true_by_tcp(self) -> None:
+        firewall_ports = [("3456", "tcp"), ("45670", "udp")]
+        selinux_ports = (["2345", "3456"], ["4567", "5678"])
+        self.assertTrue(
+            exporter.export_manage_selinux(firewall_ports, selinux_ports)
+        )
+
+    def test_true_by_udp(self) -> None:
+        firewall_ports = [("34560", "tcp"), ("4567", "udp")]
+        selinux_ports = (["2345", "3456"], ["4567", "5678"])
+        self.assertTrue(
+            exporter.export_manage_selinux(firewall_ports, selinux_ports)
+        )
+
+    def test_false(self) -> None:
+        firewall_ports = [("34560", "tcp"), ("45670", "udp")]
+        selinux_ports = (["2345", "3456"], ["4567", "5678"])
+        self.assertFalse(
+            exporter.export_manage_selinux(firewall_ports, selinux_ports)
         )
 
 
@@ -473,4 +594,88 @@ class ExportClusterNodes(TestCase):
                     corosync_addresses=["node2addr"],
                 ),
             ],
+        )
+
+
+class ExportPcsPermissionList(TestCase):
+    maxDiff = None
+
+    def test_minimal(self) -> None:
+        pcs_settings_dict: Dict[str, Any] = {
+            "permissions": {
+                "local_cluster": [],
+            }
+        }
+
+        self.assertEqual(
+            exporter.export_pcs_permission_list(pcs_settings_dict),
+            [],
+        )
+
+    def test_success(self) -> None:
+        pcs_settings_dict: Dict[str, Any] = {
+            "permissions": {
+                "local_cluster": [
+                    {"name": "test1", "type": "user", "allow": []},
+                    {"name": "test2", "type": "user", "allow": ["read"]},
+                    {
+                        "name": "test3",
+                        "type": "group",
+                        "allow": ["write", "grant"],
+                    },
+                ]
+            }
+        }
+
+        self.assertEqual(
+            exporter.export_pcs_permission_list(pcs_settings_dict),
+            [
+                {"name": "test1", "type": "user", "allow_list": []},
+                {"name": "test2", "type": "user", "allow_list": ["read"]},
+                {
+                    "name": "test3",
+                    "type": "group",
+                    "allow_list": ["write", "grant"],
+                },
+            ],
+        )
+
+    def assert_missing_key(
+        self, pcs_settings_dict: Dict[str, Any], key: str
+    ) -> None:
+        with self.assertRaises(exporter.JsonMissingKey) as cm:
+            exporter.export_pcs_permission_list(pcs_settings_dict)
+        self.assertEqual(
+            cm.exception.kwargs,
+            dict(
+                data=pcs_settings_dict,
+                key=key,
+                data_desc="pcs_settings.conf",
+            ),
+        )
+
+    def test_missing_key(self) -> None:
+        self.assert_missing_key(
+            dict(),
+            "permissions",
+        )
+        self.assert_missing_key(
+            dict(permissions=dict()),
+            "local_cluster",
+        )
+        self.assert_missing_key(
+            dict(permissions=dict(local_cluster=[dict()])),
+            "type",
+        )
+        self.assert_missing_key(
+            dict(permissions=dict(local_cluster=[dict(type="user")])),
+            "name",
+        )
+        self.assert_missing_key(
+            dict(
+                permissions=dict(
+                    local_cluster=[dict(type="user", name="user1")]
+                )
+            ),
+            "allow",
         )

@@ -17,6 +17,7 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 COROSYNC_CONF_PATH = "/etc/corosync/corosync.conf"
 KNOWN_HOSTS_PATH = "/var/lib/pcsd/known-hosts"
+PCSD_SETTINGS_PATH = "/var/lib/pcsd/pcs_settings.conf"
 
 CommandRunner = Callable[
     # parameters: args, environ_update
@@ -85,6 +86,50 @@ class JsonParseError(Exception):
         )
 
 
+def is_rhel_or_clone() -> bool:
+    """
+    Check whether current OS is RHEL or its clone
+    """
+    # Check https://github.com/chef/os_release/ to see os-release content for
+    # various distros.
+    searched_lines = [
+        f'PLATFORM_ID="platform:{platform}"'
+        for platform in ("el8", "el9", "el10")
+    ]
+    try:
+        with open(
+            "/etc/os-release", "r", encoding="utf-8", errors="replace"
+        ) as os_release_file:
+            for file_line in os_release_file:
+                if file_line.strip() in searched_lines:
+                    return True
+    except OSError:
+        return False
+    return False
+
+
+def get_dnf_repolist(run_command: CommandRunner) -> Optional[str]:
+    """
+    Get list of enabled repositories or None on error
+    """
+    # wokeignore:rule=dummy
+    rc, stdout, dummy_stderr = run_command(["dnf", "repolist"], {})
+    return stdout if rc == 0 else None
+
+
+def get_rpm_installed_packages(
+    run_command: CommandRunner,
+) -> Optional[List[str]]:
+    """
+    Return names of installed packages or None on error
+    """
+    # wokeignore:rule=dummy
+    rc, stdout, dummy_stderr = run_command(
+        ["rpm", "--query", "--all", "--queryformat", "%{NAME}\\n"], {}
+    )
+    return stdout.splitlines() if rc == 0 else None
+
+
 def is_service_enabled(run_command: CommandRunner, service: str) -> bool:
     """
     Check whether a specified service is enabled in the OS
@@ -100,6 +145,67 @@ def is_service_enabled(run_command: CommandRunner, service: str) -> bool:
         ["systemctl", "is-enabled", f"{service}.service"], env
     )
     return rc == 0
+
+
+def get_firewall_config(
+    fw: Any,  # firewall module doesn't provide type hints
+) -> Optional[Dict[str, Any]]:
+    """
+    Get simplified firewall config of a given zone or None on error
+
+    fw -- firewall client instance
+    """
+    try:
+        settings = fw.config().getZoneByName(fw.getDefaultZone()).getSettings()
+        return {
+            "services": settings.getServices(),
+            "ports": settings.getPorts(),
+        }
+    # pylint: disable=broad-exception-caught
+    # catch any exception, firewall is not installed or not running, etc.
+    except Exception:
+        return None
+
+
+def get_firewall_ha_cluster_ports(
+    fw: Any,  # firewall module doesn't provide type hints
+) -> Optional[List[Tuple[str, str]]]:
+    """
+    Get ports used by HA cluster or None on error
+
+    fw -- firewall client instance
+    """
+    try:
+        return (
+            fw.config()
+            .getServiceByName("high-availability")
+            .getSettings()
+            .getPorts()
+        )
+    # pylint: disable=broad-exception-caught
+    # catch any exception, firewall is not installed or not running, etc.
+    except Exception:
+        return None
+
+
+def get_selinux_ha_cluster_ports(
+    selinux_ports: Any,  # selinux module doesn't provide type hints
+) -> Optional[Tuple[List[str], List[str]]]:
+    """
+    Get TCP and UDP ports labelled for HA cluster in selinux or None on error
+
+    selinux_ports -- selinux port records instance
+    """
+    try:
+        all_ports = selinux_ports.get_all_by_type()
+        return (
+            all_ports.get(("cluster_port_t", "tcp"), []),
+            all_ports.get(("cluster_port_t", "udp"), []),
+        )
+    # pylint: disable=broad-exception-caught
+    # catch any exception, selinux not available, etc.
+    except Exception:
+        return None
 
 
 def _call_pcs_cli(
@@ -171,3 +277,21 @@ def get_pcsd_known_hosts() -> Dict[str, str]:
     except json.JSONDecodeError as e:
         # cannot show actual data as they contain sensitive information - tokens
         raise JsonParseError(str(e), "not logging data", "known hosts") from e
+
+
+def get_pcsd_settings_conf() -> Optional[Dict[str, Any]]:
+    """
+    Load pcsd config file pcs_settings.conf
+    """
+    # There is no pcs interface for the file yet, so we parse the file directly.
+    if not os.path.exists(PCSD_SETTINGS_PATH):
+        return None
+
+    try:
+        with open(
+            PCSD_SETTINGS_PATH, "r", encoding="utf-8"
+        ) as pcsd_settings_file:
+            file_data = pcsd_settings_file.read()
+            return json.loads(file_data)
+    except json.JSONDecodeError as e:
+        raise JsonParseError(str(e), file_data, "pcsd settings") from e

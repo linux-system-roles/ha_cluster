@@ -27,6 +27,8 @@ author:
 requirements:
     - pcs-0.10.8 or newer installed on managed nodes
     - pcs-0.10.8 or newer for exporting corosync configuration
+    - python3-firewall for exporting ha_cluster_manage_firewall
+    - python3-policycoreutils for exporting ha_cluster_manage_selinux
     - python 3.6 or newer
 """
 
@@ -49,8 +51,14 @@ ha_cluster:
           certain variables may not be exported.
         - HORIZONTALLINE
         - Following variables are present in the output
+        - ha_cluster_enable_repos
+        - ha_cluster_enable_repos_resilient_storage
+        - ha_cluster_manage_firewall
+        - ha_cluster_manage_selinux
         - ha_cluster_cluster_present
         - ha_cluster_start_on_boot
+        - ha_cluster_install_cloud_agents
+        - ha_cluster_pcs_permission_list
         - ha_cluster_cluster_name
         - ha_cluster_transport
         - ha_cluster_totem
@@ -64,9 +72,16 @@ ha_cluster:
         - HORIZONTALLINE
         - Following variables are never present in this module output (consult
           the role documentation for impact of the variables missing)
+        - ha_cluster_fence_agent_packages
+        - ha_cluster_extra_packages
+        - ha_cluster_use_latest_packages
+        - ha_cluster_hacluster_qdevice_password
         - ha_cluster_corosync_key_src
         - ha_cluster_pacemaker_key_src
         - ha_cluster_fence_virt_key_src
+        - ha_cluster_pcsd_public_key_src
+        - ha_cluster_pcsd_private_key_src
+        - ha_cluster_pcsd_certificates
         - ha_cluster_regenerate_keys
         - HORIZONTALLINE
 """
@@ -77,6 +92,34 @@ from ansible.module_utils.basic import AnsibleModule
 
 # pylint: disable=no-name-in-module
 from ansible.module_utils.ha_cluster_lsr.info import exporter, loader
+
+try:
+    # firewall module doesn't provide type hints
+    from firewall.client import FirewallClient  # type:ignore
+
+    HAS_FIREWALL = True
+except ImportError:
+    # create the class so it can be replaced by a mock in unit tests
+    class FirewallClient:  # type: ignore
+        # pylint: disable=missing-class-docstring
+        # pylint: disable=too-few-public-methods
+        pass
+
+    HAS_FIREWALL = False
+
+try:
+    # selinux module doesn't provide type hints
+    from seobject import portRecords as SelinuxPortRecords  # type: ignore
+
+    HAS_SELINUX = True
+except ImportError:
+    # create the class so it can be replaced by a mock in unit tests
+    class SelinuxPortRecords:  # type: ignore
+        # pylint: disable=missing-class-docstring
+        # pylint: disable=too-few-public-methods
+        pass
+
+    HAS_SELINUX = False
 
 
 def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
@@ -92,6 +135,74 @@ def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
         )
 
     return runner
+
+
+def export_os_configuration(module: AnsibleModule) -> Dict[str, Any]:
+    """
+    Export OS configuration managed by the role
+    """
+    result: dict[str, Any] = dict()
+    cmd_runner = get_cmd_runner(module)
+
+    if loader.is_rhel_or_clone():
+        # The role only enables repos on RHEL and SLES.
+        dnf_repolist = loader.get_dnf_repolist(cmd_runner)
+        if dnf_repolist is not None:
+            result["ha_cluster_enable_repos"] = exporter.export_enable_repos_ha(
+                dnf_repolist
+            )
+            result["ha_cluster_enable_repos_resilient_storage"] = (
+                exporter.export_enable_repos_rs(dnf_repolist)
+            )
+
+        # Cloud agent packages are only handled on RHEL.
+        installed_packages = loader.get_rpm_installed_packages(cmd_runner)
+        if installed_packages is not None:
+            result["ha_cluster_install_cloud_agents"] = (
+                exporter.export_install_cloud_agents(installed_packages)
+            )
+
+    if HAS_FIREWALL:
+        fw_client = FirewallClient()
+        fw_config = loader.get_firewall_config(fw_client)
+        manage_firewall = False
+        if fw_config is not None:
+            manage_firewall = exporter.export_manage_firewall(fw_config)
+            result["ha_cluster_manage_firewall"] = manage_firewall
+
+        # ha_cluster_manage_selinux is irrelevant when running the role if
+        # ha_cluster_manage_firewall is not True
+        if HAS_SELINUX and manage_firewall:
+            selinux_ports = SelinuxPortRecords()
+            ha_ports_firewall = loader.get_firewall_ha_cluster_ports(fw_client)
+            ha_ports_selinux = loader.get_selinux_ha_cluster_ports(
+                selinux_ports
+            )
+            if ha_ports_firewall is not None and ha_ports_selinux is not None:
+                result["ha_cluster_manage_selinux"] = (
+                    exporter.export_manage_selinux(
+                        ha_ports_firewall, ha_ports_selinux
+                    )
+                )
+
+    return result
+
+
+def export_pcsd_configuration() -> Dict[str, Any]:
+    """
+    Export pcsd configuration managed by the role
+    """
+    result: dict[str, Any] = dict()
+
+    pcsd_settings_dict = loader.get_pcsd_settings_conf()
+    if pcsd_settings_dict is not None:
+        pcs_permissions = exporter.export_pcs_permission_list(
+            pcsd_settings_dict
+        )
+        if pcs_permissions is not None:
+            result["ha_cluster_pcs_permission_list"] = pcs_permissions
+
+    return result
 
 
 def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
@@ -156,9 +267,13 @@ def main() -> None:
 
     try:
         if loader.has_corosync_conf():
+            ha_cluster_result.update(**export_os_configuration(module))
+            ha_cluster_result.update(**export_pcsd_configuration())
             ha_cluster_result.update(**export_cluster_configuration(module))
             ha_cluster_result["ha_cluster_cluster_present"] = True
         else:
+            # Exporting qnetd configuration will be added later here. It will
+            # probably call export_os and export_pcsd.
             ha_cluster_result["ha_cluster_cluster_present"] = False
         module.exit_json(**module_result)
     except exporter.JsonMissingKey as e:

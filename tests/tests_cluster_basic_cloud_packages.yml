@@ -7,6 +7,7 @@
   vars:
     ha_cluster_cluster_name: test-cluster
     ha_cluster_install_cloud_agents: true
+    ha_cluster_export_configuration: true
     # Only agents available on all architectures are listed so that we don't
     # need a special case for each architecture.
     __test_agents_rhel_8:
@@ -57,6 +58,53 @@
 
         - name: Check cluster status
           include_tasks: tasks/assert_cluster_running.yml
+
+        - name: Check exported configuration
+          vars:
+            __test_exported_config: >
+              {{
+                ha_cluster_facts | combine({
+                  'ha_cluster_enable_repos': 'it depends on test environment',
+                  'ha_cluster_enable_repos_resilient_storage': 'it depends on test environment',
+                  'ha_cluster_manage_firewall': 'it depends on test environment',
+                  'ha_cluster_manage_selinux': 'it depends on test environment',
+                  'ha_cluster_node_options': 'it depends on test environment'
+                })
+              }}
+            __test_expected_config:
+              ha_cluster_install_cloud_agents: true
+              ha_cluster_cluster_present: true
+              ha_cluster_cluster_name: test-cluster
+              ha_cluster_start_on_boot: true
+              ha_cluster_transport:
+                type: knet
+                crypto:
+                  - name: cipher
+                    value: aes256
+                  - name: hash
+                    value: sha256
+              ha_cluster_pcs_permission_list:
+                - name: haclient
+                  type: group
+                  allow_list: ["grant", "read", "write"]
+              ha_cluster_enable_repos: "it depends on test environment"
+              ha_cluster_enable_repos_resilient_storage: "it depends on test environment"
+              ha_cluster_manage_firewall: "it depends on test environment"
+              ha_cluster_manage_selinux: "it depends on test environment"
+              ha_cluster_node_options: "it depends on test environment"
+          block:
+            - name: Print exported configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config
 
     - name: Message
       debug:

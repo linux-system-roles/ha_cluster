@@ -10,13 +10,203 @@
 import json
 import sys
 from importlib import import_module
+from textwrap import dedent
 from unittest import TestCase, mock
 
 sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
     "ha_cluster_lsr"
 )
 
+from typing import Any
+
 from ha_cluster_lsr.info import loader
+
+from .firewall_mock import get_fw_mock
+
+
+class IsRhelOrClone(TestCase):
+    file_path = "/etc/os-release"
+
+    def _assert_is_rhel(self, mock_data: str, is_rhel: bool) -> None:
+        with mock.patch(
+            "ha_cluster_lsr.info.loader.open",
+            mock.mock_open(read_data=mock_data),
+        ) as mock_open:
+            self.assertEqual(loader.is_rhel_or_clone(), is_rhel)
+            mock_open.assert_called_once_with(
+                self.file_path, "r", encoding="utf-8", errors="replace"
+            )
+
+    def test_is_rhel(self) -> None:
+        platform_list = [
+            "platform:el8",
+            "platform:el9",
+            "platform:el10",
+        ]
+        for platform in platform_list:
+            with self.subTest(platform=platform):
+                mock_data = f'PLATFORM_ID="{platform}"\n'
+                self._assert_is_rhel(mock_data, True)
+
+    def test_is_not_rhel(self) -> None:
+        platform_list = [
+            "platform:f42",
+            "",
+        ]
+        for platform in platform_list:
+            with self.subTest(platform=platform):
+                mock_data = f'PLATFORM_ID="{platform}"\n'
+                self._assert_is_rhel(mock_data, False)
+
+    def test_missing_platform_id_line(self) -> None:
+        mock_data = 'NAME="Debian GNU/Linux"\nID=debian\n'
+        self._assert_is_rhel(mock_data, False)
+
+    def test_unable_to_read_os_release_file(self) -> None:
+        with mock.patch(
+            "ha_cluster_lsr.info.loader.open",
+            mock.mock_open(),
+        ) as mock_open:
+            mock_open.side_effect = FileNotFoundError
+            self.assertEqual(loader.is_rhel_or_clone(), False)
+
+
+class GetDnfRepolist(TestCase):
+    def test_success(self) -> None:
+        # pylint: disable=line-too-long
+        dnf_output = dedent(
+            """\
+            Updating Subscription Management repositories.
+            repo id                                  repo name
+            rhel-10-for-x86_64-appstream-rpms        Red Hat Enterprise Linux 10 for x86_64 - AppStream (RPMs)
+            rhel-10-for-x86_64-baseos-rpms           Red Hat Enterprise Linux 10 for x86_64 - BaseOS (RPMs)
+            rhel-10-for-x86_64-highavailability-rpms Red Hat Enterprise Linux 10 for x86_64 - High Availability (RPMs)
+            """
+        )
+        runner_mock = mock.Mock()
+        runner_mock.return_value = (0, dnf_output, "")
+
+        self.assertEqual(loader.get_dnf_repolist(runner_mock), dnf_output)
+        runner_mock.assert_called_once_with(["dnf", "repolist"], {})
+
+    def test_error(self) -> None:
+        runner_mock = mock.Mock()
+        runner_mock.return_value = (1, "some output", "some error")
+
+        self.assertIsNone(loader.get_dnf_repolist(runner_mock))
+        runner_mock.assert_called_once_with(["dnf", "repolist"], {})
+
+
+class GetRpmInstalledPackages(TestCase):
+    def _assert_packages(
+        self, runner_mock: Any, expected_packages: Any
+    ) -> None:
+        self.assertEqual(
+            loader.get_rpm_installed_packages(runner_mock),
+            expected_packages,
+        )
+        runner_mock.assert_called_once_with(
+            ["rpm", "--query", "--all", "--queryformat", "%{NAME}\\n"], {}
+        )
+
+    def test_success(self) -> None:
+        package_list = [
+            "package_1",
+            "package_2",
+            "package_3",
+        ]
+        rpm_output = "\n".join(package_list)
+        runner_mock = mock.Mock()
+        runner_mock.return_value = (0, rpm_output, "")
+        self._assert_packages(runner_mock, package_list)
+
+    def test_rpm_error(self) -> None:
+        package_list = [
+            "package_1",
+            "package_2",
+            "package_3",
+        ]
+        rpm_output = "\n".join(package_list)
+        runner_mock = mock.Mock()
+        runner_mock.return_value = (1, rpm_output, "an error")
+        self._assert_packages(runner_mock, None)
+
+
+class GetFirewallConfig(TestCase):
+    def test_success(self) -> None:
+        services = ["service1", "service2"]
+        ports = [("12345", "tcp"), ("23456", "udp")]
+        fw_mock = get_fw_mock(services, ports)
+
+        self.assertEqual(
+            loader.get_firewall_config(fw_mock),
+            {"services": services, "ports": ports},
+        )
+
+    def test_error(self) -> None:
+        fw_mock = get_fw_mock([], [], exception=True)
+        self.assertIsNone(
+            loader.get_firewall_config(fw_mock),
+        )
+
+
+class GetFirewallHaClusterPorts(TestCase):
+    maxDiff = None
+
+    def test_success(self) -> None:
+        fw_mock = get_fw_mock([], [])
+
+        self.assertEqual(
+            loader.get_firewall_ha_cluster_ports(fw_mock),
+            [
+                ("2224", "tcp"),
+                ("3121", "tcp"),
+                ("5403", "tcp"),
+                ("5404", "udp"),
+                ("5405-5412", "udp"),
+                ("9929", "tcp"),
+                ("9929", "udp"),
+                ("21064", "tcp"),
+            ],
+        )
+
+    def test_error(self) -> None:
+        fw_mock = get_fw_mock([], [], exception=True)
+        self.assertIsNone(loader.get_firewall_ha_cluster_ports(fw_mock))
+
+
+class GetSelinuxHaClusterPorts(TestCase):
+    def test_success(self) -> None:
+        ports_tcp = ["2345", "3456"]
+        ports_udp = ["4567", "5678"]
+        ports_mock = mock.Mock(spec=["get_all_by_type"])
+        ports_mock.get_all_by_type.return_value = {
+            ("cluster_port_t", "tcp"): ports_tcp,
+            ("cluster_port_t", "udp"): ports_udp,
+        }
+
+        self.assertEqual(
+            loader.get_selinux_ha_cluster_ports(ports_mock),
+            (ports_tcp, ports_udp),
+        )
+
+    def test_error(self) -> None:
+        ports_mock = mock.Mock(spec=["get_all_by_type"])
+        ports_mock.get_all_by_type.side_effect = Exception
+
+        self.assertIsNone(loader.get_selinux_ha_cluster_ports(ports_mock))
+
+    def test_no_ports(self) -> None:
+        ports_mock = mock.Mock(spec=["get_all_by_type"])
+        ports_mock.get_all_by_type.return_value = {
+            ("some_port_t", "tcp"): ["2345"],
+            ("other_port_t", "udp"): ["3456"],
+        }
+
+        self.assertEqual(
+            loader.get_selinux_ha_cluster_ports(ports_mock),
+            ([], []),
+        )
 
 
 class IsServiceEnabled(TestCase):
@@ -246,6 +436,91 @@ class GetPcsdKnownHosts(TestCase):
                     node7="[2001:db8::7]:10007",
                     node8="192.0.2.8:10008",
                 ),
+            )
+            mock_open.assert_called_once_with(
+                self.file_path, "r", encoding="utf-8"
+            )
+        mock_exists.assert_called_once_with(self.file_path)
+
+
+class GetPcsdSettingsConf(TestCase):
+    maxDiff = None
+    file_path = "/var/lib/pcsd/pcs_settings.conf"
+
+    @mock.patch("ha_cluster_lsr.info.loader.os.path.exists")
+    def test_file_not_present(self, mock_exists: mock.Mock) -> None:
+        mock_exists.return_value = False
+        self.assertEqual(loader.get_pcsd_settings_conf(), None)
+        mock_exists.assert_called_once_with(self.file_path)
+
+    @mock.patch("ha_cluster_lsr.info.loader.os.path.exists")
+    def test_json_error(self, mock_exists: mock.Mock) -> None:
+        mock_exists.return_value = True
+        mock_data = "not a json"
+        with mock.patch(
+            "ha_cluster_lsr.info.loader.open",
+            mock.mock_open(read_data=mock_data),
+        ) as mock_open:
+            with self.assertRaises(loader.JsonParseError) as cm:
+                loader.get_pcsd_settings_conf()
+            self.assertEqual(
+                cm.exception.kwargs,
+                dict(
+                    data=mock_data,
+                    data_desc="pcsd settings",
+                    error="Expecting value: line 1 column 1 (char 0)",
+                    additional_info=None,
+                ),
+            )
+            mock_open.assert_called_once_with(
+                self.file_path, "r", encoding="utf-8"
+            )
+        mock_exists.assert_called_once_with(self.file_path)
+
+    @mock.patch("ha_cluster_lsr.info.loader.os.path.exists")
+    def test_success(self, mock_exists: mock.Mock) -> None:
+        mock_exists.return_value = True
+        mock_data = """
+            {
+              "format_version": 2,
+              "data_version": 3,
+              "clusters": [
+                {
+                  "name": "rh100",
+                  "nodes": ["rh100-node1"]
+                }
+              ],
+              "permissions": {
+                "local_cluster": [
+                  {
+                    "type": "group",
+                    "name": "haclient",
+                    "allow": ["grant", "read", "write"]
+                  }
+                ]
+              }
+            }
+        """
+        with mock.patch(
+            "ha_cluster_lsr.info.loader.open",
+            mock.mock_open(read_data=mock_data),
+        ) as mock_open:
+            self.assertEqual(
+                loader.get_pcsd_settings_conf(),
+                {
+                    "format_version": 2,
+                    "data_version": 3,
+                    "clusters": [{"name": "rh100", "nodes": ["rh100-node1"]}],
+                    "permissions": {
+                        "local_cluster": [
+                            {
+                                "type": "group",
+                                "name": "haclient",
+                                "allow": ["grant", "read", "write"],
+                            }
+                        ]
+                    },
+                },
             )
             mock_open.assert_called_once_with(
                 self.file_path, "r", encoding="utf-8"

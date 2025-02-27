@@ -1,17 +1,27 @@
 # SPDX-License-Identifier: MIT
 ---
-- name: Cluster with knet transport, transport type not specified
+- name: Configure pcsd permissions
   hosts: all
   vars_files: vars/main.yml
   vars:
+    ha_cluster_cluster_present: true
+    ha_cluster_pcs_permission_list:
+      - type: group
+        name: haclient
+        allow_list:
+          - grant
+          - read
+          - write
+      - type: user
+        name: full_access
+        allow_list:
+          - full
+      - type: group
+        name: operator
+        allow_list:
+          - read
+          - write
     ha_cluster_export_configuration: true
-    ha_cluster_cluster_name: test-cluster
-    ha_cluster_transport:
-      crypto:
-        - name: cipher
-          value: none
-        - name: hash
-          value: none
 
   tasks:
     - name: Run test
@@ -26,42 +36,6 @@
           include_role:
             name: linux-system-roles.ha_cluster
             public: true
-
-        - name: Fetch cluster versions of cluster components
-          include_tasks: tasks/fetch_versions.yml
-
-        - name: Check corosync
-          include_tasks: tasks/assert_corosync_config.yml
-          vars:
-            # noqa jinja[spacing]
-            __test_expected_lines:
-              - 'totem {'
-              - '    version: 2'
-              - '    cluster_name: {{ ha_cluster_cluster_name }}'
-              - '    transport: knet'
-              - '    crypto_cipher: none'
-              - '    crypto_hash: none'
-              - '}'
-              - 'nodelist {'
-              - '}'
-              - 'quorum {'
-              - '    provider: corosync_votequorum'
-              - "{{ (ansible_play_hosts_all | length == 2) | ternary(
-                '    two_node: 1',
-                '') }}"
-              - '}'
-              - 'logging {'
-              - '    to_logfile: yes'
-              - '    logfile: /var/log/cluster/corosync.log'
-              - '    to_syslog: yes'
-              - '    timestamp: on'
-              - '}'
-
-        - name: Check cluster status
-          include_tasks: tasks/assert_cluster_running.yml
-
-        - name: Check firewall and selinux state
-          include_tasks: tasks/check_firewall_selinux.yml
 
         - name: Check exported configuration
           vars:
@@ -78,15 +52,16 @@
               }}
             __test_expected_config:
               ha_cluster_cluster_present: true
-              ha_cluster_cluster_name: test-cluster
+              ha_cluster_cluster_name: my-cluster
               ha_cluster_start_on_boot: true
               ha_cluster_transport:
                 type: knet
-                crypto: "{{ ha_cluster_transport.crypto }}"
-              ha_cluster_pcs_permission_list:
-                - name: haclient
-                  type: group
-                  allow_list: ["grant", "read", "write"]
+                crypto:
+                  - name: cipher
+                    value: aes256
+                  - name: hash
+                    value: sha256
+              ha_cluster_pcs_permission_list: "{{ ha_cluster_pcs_permission_list }}"
               ha_cluster_enable_repos: "it depends on test environment"
               ha_cluster_enable_repos_resilient_storage: "it depends on test environment"
               ha_cluster_manage_firewall: "it depends on test environment"

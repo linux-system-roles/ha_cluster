@@ -12,7 +12,7 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 from contextlib import contextmanager
-from typing import Any, Dict, Iterator, List
+from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 
 class JsonMissingKey(Exception):
@@ -48,6 +48,55 @@ def _handle_missing_key(data: Dict[str, Any], data_desc: str) -> Iterator[None]:
         raise JsonMissingKey(e.args[0], data, data_desc) from e
 
 
+def export_enable_repos_ha(dnf_repolist: str) -> bool:
+    """
+    Check whether high availability repository is enabled based on dnf repolist
+
+    dnf_repolist -- text output of 'dnf repolist'
+    """
+    repo_strings = ["highavailability", "HighAvailability"]
+    return any(repo in dnf_repolist for repo in repo_strings)
+
+
+def export_enable_repos_rs(dnf_repolist: str) -> bool:
+    """
+    Check whether resilient storage repository is enabled based on dnf repolist
+
+    dnf_repolist -- text output of 'dnf repolist'
+    """
+    repo_strings = ["resilientstorage"]
+    return any(repo in dnf_repolist for repo in repo_strings)
+
+
+def export_install_cloud_agents(installed_packages: List[str]) -> bool:
+    """
+    Check whether cloud agent packages are installed
+
+    installed packages -- list of names of installed packages
+    """
+    # List of cloud agent packages is taken from vars/RedHat_*.yml and
+    # vars/CentOS_*.yml
+    # They are hardcoded here to avoid dependency on pyyaml which may or may
+    # not be available.
+    # We don't need to check for architecture - a package not available for an
+    # architecture will never be listed as installed on that architecture.
+    cloud_agent_packages = {
+        "fence-agents-aliyun",
+        "fence-agents-aws",
+        "fence-agents-azure-arm",
+        "fence-agents-compute",
+        "fence-agents-gce",
+        "fence-agents-ibm-powervs",
+        "fence-agents-ibm-vpc",
+        "fence-agents-kubevirt",
+        "fence-agents-openstack",
+        "resource-agents-aliyun",
+        "resource-agents-cloud",
+        "resource-agents-gcp",
+    }
+    return bool(cloud_agent_packages.intersection(installed_packages))
+
+
 def export_start_on_boot(
     corosync_enabled: bool, pacemaker_enabled: bool
 ) -> bool:
@@ -55,6 +104,35 @@ def export_start_on_boot(
     Transform cluster servis status to start_on_boot
     """
     return corosync_enabled or pacemaker_enabled
+
+
+def export_manage_firewall(zone_config: Dict[str, Any]) -> bool:
+    """
+    Export whether HA cluster is enabled in firewall
+
+    zone_config -- configuration of a firewall zone
+    """
+    return (
+        "high-availability" in zone_config["services"]
+        or ("1229", "tcp") in zone_config["ports"]
+    )
+
+
+def export_manage_selinux(
+    ha_ports_used: List[Tuple[str, str]],
+    ha_ports_selinux: Tuple[List[str], List[str]],
+) -> bool:
+    """
+    Export whether HA cluster ports are managed by selinux
+
+    ha_ports_used -- ports used by HA cluster
+    ha_ports_selinux -- ports labelled for HA cluster in selinux
+    """
+    # convert selinux ports to the same format as used ports
+    ports_selinux_tuples = [(port, "tcp") for port in ha_ports_selinux[0]] + [
+        (port, "udp") for port in ha_ports_selinux[1]
+    ]
+    return bool(frozenset(ports_selinux_tuples) & frozenset(ha_ports_used))
 
 
 def export_corosync_cluster_name(corosync_conf_dict: Dict[str, Any]) -> str:
@@ -167,3 +245,32 @@ def export_cluster_nodes(
             # finish one node export
             node_list.append(one_node)
         return node_list
+
+
+def export_pcs_permission_list(
+    pcs_settings_conf_dict: Dict[str, Any],
+) -> Optional[List[Dict[str, Any]]]:
+    """
+    Extract local cluster permissions from pcs_settings config or None on error
+
+    pcs_settings -- JSON parsed pcs_settings.conf
+    """
+    # Currently, only format version 2 is in use, so we don't check for file
+    # format version
+    result: List[Dict[str, Any]] = []
+    with _handle_missing_key(pcs_settings_conf_dict, "pcs_settings.conf"):
+        permission_dict = pcs_settings_conf_dict["permissions"]
+        if not isinstance(permission_dict, dict):
+            return None
+        permission_list = permission_dict["local_cluster"]
+        if not isinstance(permission_list, list):
+            return None
+        for permission_item in permission_list:
+            result.append(
+                {
+                    "type": permission_item["type"],
+                    "name": permission_item["name"],
+                    "allow_list": list(permission_item["allow"]),
+                }
+            )
+        return result
