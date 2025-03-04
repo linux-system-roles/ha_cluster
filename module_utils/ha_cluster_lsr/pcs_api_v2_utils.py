@@ -214,6 +214,8 @@ def call_api_raw(
     """
     response, info = fetch_url(
         module,
+        # never use a proxy when connecting to a local unix socket (RHEL-81918)
+        use_proxy=False,
         force=True,  # do not get a cached response
         unix_socket=PCSD_SOCKET,
         url=API_ENDPOINT,
