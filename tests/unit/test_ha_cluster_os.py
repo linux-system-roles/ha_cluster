@@ -9,31 +9,21 @@
 # pylint: disable=missing-function-docstring
 
 from textwrap import dedent
-from typing import Any, Dict, List, Tuple
+from typing import Dict
 from unittest import TestCase, mock
 
 from .firewall_mock import get_fw_mock
-from .ha_cluster_info import ha_cluster_info
+from .ha_cluster_info import ha_cluster_info, mocked_module
+
+OPTIONS = dict(environ_update={}, check_rc=False)
+CMD_DNF_REPORTLIST = mock.call(["dnf", "repolist"], **OPTIONS)
+CMD_RPM_INSTALLED = mock.call(
+    ["rpm", "--query", "--all", "--queryformat", "%{NAME}\\n"], **OPTIONS
+)
 
 
 class ExportOsConfiguration(TestCase):
     maxDiff = None
-
-    def assert_rhel_export(
-        self,
-        runner_mock_side_effect: List[Tuple[int, str, str]],
-        expected_export: Dict[str, Any],
-    ) -> None:
-        module_mock = mock.Mock()
-        module_mock.run_command = mock.Mock()
-        runner_mock = module_mock.run_command
-        runner_mock.side_effect = runner_mock_side_effect
-
-        self.assertEqual(
-            ha_cluster_info.export_os_configuration(module_mock),
-            expected_export,
-        )
-        self.assertEqual(runner_mock.call_count, len(runner_mock_side_effect))
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
@@ -52,17 +42,20 @@ class ExportOsConfiguration(TestCase):
             package2
             """
         )
-        self.assert_rhel_export(
+        with mocked_module(
             [
-                (0, dnf_repolist, ""),
-                (0, rpm_packages, ""),
+                (CMD_DNF_REPORTLIST, (0, dnf_repolist, "")),
+                (CMD_RPM_INSTALLED, (0, rpm_packages, "")),
             ],
-            {
-                "ha_cluster_enable_repos": True,
-                "ha_cluster_enable_repos_resilient_storage": False,
-                "ha_cluster_install_cloud_agents": False,
-            },
-        )
+        ) as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                {
+                    "ha_cluster_enable_repos": True,
+                    "ha_cluster_enable_repos_resilient_storage": False,
+                    "ha_cluster_install_cloud_agents": False,
+                },
+            )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
@@ -82,17 +75,20 @@ class ExportOsConfiguration(TestCase):
             package2
             """
         )
-        self.assert_rhel_export(
+        with mocked_module(
             [
-                (0, dnf_repolist, ""),
-                (0, rpm_packages, ""),
+                (CMD_DNF_REPORTLIST, (0, dnf_repolist, "")),
+                (CMD_RPM_INSTALLED, (0, rpm_packages, "")),
             ],
-            {
-                "ha_cluster_enable_repos": False,
-                "ha_cluster_enable_repos_resilient_storage": True,
-                "ha_cluster_install_cloud_agents": True,
-            },
-        )
+        ) as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                {
+                    "ha_cluster_enable_repos": False,
+                    "ha_cluster_enable_repos_resilient_storage": True,
+                    "ha_cluster_install_cloud_agents": True,
+                },
+            )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
@@ -105,15 +101,18 @@ class ExportOsConfiguration(TestCase):
             package2
             """
         )
-        self.assert_rhel_export(
+        with mocked_module(
             [
-                (1, "some output", "an error"),
-                (0, rpm_packages, ""),
+                (CMD_DNF_REPORTLIST, (1, "some output", "an error")),
+                (CMD_RPM_INSTALLED, (0, rpm_packages, "")),
             ],
-            {
-                "ha_cluster_install_cloud_agents": True,
-            },
-        )
+        ) as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                {
+                    "ha_cluster_install_cloud_agents": True,
+                },
+            )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: True)
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
@@ -126,30 +125,29 @@ class ExportOsConfiguration(TestCase):
             repo2id           Repository 2
             """
         )
-        self.assert_rhel_export(
+        with mocked_module(
             [
-                (0, dnf_repolist, ""),
-                (1, "some output", "an error"),
+                (CMD_DNF_REPORTLIST, (0, dnf_repolist, "")),
+                (CMD_RPM_INSTALLED, (1, "some output", "an error")),
             ],
-            {
-                "ha_cluster_enable_repos": True,
-                "ha_cluster_enable_repos_resilient_storage": False,
-            },
-        )
+        ) as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                {
+                    "ha_cluster_enable_repos": True,
+                    "ha_cluster_enable_repos_resilient_storage": False,
+                },
+            )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
     @mock.patch("ha_cluster_info.HAS_SELINUX", False)
     def test_packages_non_rhel(self) -> None:
-        module_mock = mock.Mock()
-        module_mock.run_command = mock.Mock()
-        runner_mock = module_mock.run_command
-
-        self.assertEqual(
-            ha_cluster_info.export_os_configuration(module_mock),
-            {},
-        )
-        runner_mock.assert_not_called()
+        with mocked_module() as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_os_configuration(module_mock),
+                {},
+            )
 
     @mock.patch("ha_cluster_info.loader.is_rhel_or_clone", lambda: False)
     @mock.patch("ha_cluster_info.HAS_FIREWALL", True)
