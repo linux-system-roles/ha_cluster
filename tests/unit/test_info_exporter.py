@@ -7,17 +7,11 @@
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 
-import sys
-from importlib import import_module
 from textwrap import dedent
 from typing import Any, Dict
 from unittest import TestCase
 
-sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
-    "ha_cluster_lsr"
-)
-
-from ha_cluster_lsr.info import exporter
+from .ha_cluster_info import exporter
 
 
 class DictToNvList(TestCase):
