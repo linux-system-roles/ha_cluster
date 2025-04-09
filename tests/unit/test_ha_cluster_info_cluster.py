@@ -9,30 +9,25 @@
 # pylint: disable=missing-function-docstring
 
 import json
-from typing import List
 from unittest import TestCase, mock
 
-from .ha_cluster_info import ha_cluster_info
+from .ha_cluster_info import ha_cluster_info, mocked_module
+
+CMD_OPTIONS = dict(environ_update={"LC_ALL": "C"}, check_rc=False)
+
+CMD_ENABLED_COROSYNC = mock.call(
+    ["systemctl", "is-enabled", "corosync.service"], **CMD_OPTIONS
+)
+CMD_ENABLED_PCMK = mock.call(
+    ["systemctl", "is-enabled", "pacemaker.service"], **CMD_OPTIONS
+)
+CMD_CLUSTER_CONF = mock.call(
+    ["pcs", "cluster", "config", "--output-format=json"], **CMD_OPTIONS
+)
 
 
 class ExportClusterConfiguration(TestCase):
     maxDiff = None
-
-    @staticmethod
-    def fixture_expected_runner_calls() -> List[mock._Call]:
-        common_args = dict(check_rc=False, environ_update={"LC_ALL": "C"})
-        return [
-            mock.call(
-                ["systemctl", "is-enabled", "corosync.service"], **common_args
-            ),
-            mock.call(
-                ["systemctl", "is-enabled", "pacemaker.service"], **common_args
-            ),
-            mock.call(
-                ["pcs", "cluster", "config", "--output-format=json"],
-                **common_args,
-            ),
-        ]
 
     def assert_export_minimal(
         self,
@@ -41,10 +36,6 @@ class ExportClusterConfiguration(TestCase):
         pacemaker_enabled: bool,
         cluster_start_on_boot: bool,
     ) -> None:
-        module_mock = mock.Mock()
-        module_mock.run_command = mock.Mock()
-        runner_mock = module_mock.run_command
-
         corosync_conf_data = dict(
             cluster_name="my-cluster",
             transport="KNET",
@@ -62,32 +53,28 @@ class ExportClusterConfiguration(TestCase):
                 ),
             ],
         )
-        runner_mock.side_effect = [
-            (0 if corosync_enabled else 1, "", ""),
-            (0 if pacemaker_enabled else 1, "", ""),
-            (0, json.dumps(corosync_conf_data), ""),
-        ]
-
         mock_load_pcsd_known_hosts.return_value = dict()
-
-        self.assertEqual(
-            ha_cluster_info.export_cluster_configuration(module_mock),
-            dict(
-                ha_cluster_start_on_boot=cluster_start_on_boot,
-                ha_cluster_cluster_name="my-cluster",
-                ha_cluster_transport=dict(type="knet"),
-                ha_cluster_node_options=[
-                    dict(
-                        node_name="node1",
-                        corosync_addresses=["node1addr"],
-                    ),
-                ],
-            ),
-        )
-
-        expected_calls = self.fixture_expected_runner_calls()
-        runner_mock.assert_has_calls(expected_calls)
-        self.assertEqual(runner_mock.call_count, len(expected_calls))
+        with mocked_module(
+            [
+                (CMD_ENABLED_COROSYNC, (0 if corosync_enabled else 1, "", "")),
+                (CMD_ENABLED_PCMK, (0 if pacemaker_enabled else 1, "", "")),
+                (CMD_CLUSTER_CONF, (0, json.dumps(corosync_conf_data), "")),
+            ]
+        ) as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_cluster_configuration(module_mock),
+                dict(
+                    ha_cluster_start_on_boot=cluster_start_on_boot,
+                    ha_cluster_cluster_name="my-cluster",
+                    ha_cluster_transport=dict(type="knet"),
+                    ha_cluster_node_options=[
+                        dict(
+                            node_name="node1",
+                            corosync_addresses=["node1addr"],
+                        ),
+                    ],
+                ),
+            )
 
         mock_load_pcsd_known_hosts.assert_called_once_with()
 
@@ -114,10 +101,6 @@ class ExportClusterConfiguration(TestCase):
         self,
         mock_load_pcsd_known_hosts: mock.Mock,
     ) -> None:
-        module_mock = mock.Mock()
-        module_mock.run_command = mock.Mock()
-        runner_mock = module_mock.run_command
-
         corosync_conf_data = dict(
             cluster_name="my-cluster",
             transport="KNET",
@@ -140,50 +123,50 @@ class ExportClusterConfiguration(TestCase):
                 ),
             ],
         )
-        runner_mock.side_effect = [
-            (0, "", ""),
-            (0, "", ""),
-            (0, json.dumps(corosync_conf_data), ""),
-        ]
 
         mock_load_pcsd_known_hosts.return_value = dict(
             node1="node1pcs",
             node2="node2pcs",
         )
 
-        self.assertEqual(
-            ha_cluster_info.export_cluster_configuration(module_mock),
-            dict(
-                ha_cluster_start_on_boot=True,
-                ha_cluster_cluster_name="my-cluster",
-                ha_cluster_transport=dict(
-                    type="knet",
-                    options=[dict(name="transport_key", value="transport_val")],
-                ),
-                ha_cluster_totem=dict(
-                    options=[dict(name="totem_key", value="totem_val")],
-                ),
-                ha_cluster_quorum=dict(
-                    options=[dict(name="quorum_key", value="quorum_val")],
-                ),
-                ha_cluster_node_options=[
-                    dict(
-                        node_name="node1",
-                        corosync_addresses=["node1addr"],
-                        pcs_address="node1pcs",
+        with mocked_module(
+            [
+                (CMD_ENABLED_COROSYNC, (0, "", "")),
+                (CMD_ENABLED_PCMK, (0, "", "")),
+                (CMD_CLUSTER_CONF, (0, json.dumps(corosync_conf_data), "")),
+            ]
+        ) as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_cluster_configuration(module_mock),
+                dict(
+                    ha_cluster_start_on_boot=True,
+                    ha_cluster_cluster_name="my-cluster",
+                    ha_cluster_transport=dict(
+                        type="knet",
+                        options=[
+                            dict(name="transport_key", value="transport_val")
+                        ],
                     ),
-                    dict(
-                        node_name="node2",
-                        corosync_addresses=["node2addr"],
-                        pcs_address="node2pcs",
+                    ha_cluster_totem=dict(
+                        options=[dict(name="totem_key", value="totem_val")],
                     ),
-                ],
-            ),
-        )
-
-        expected_calls = self.fixture_expected_runner_calls()
-        runner_mock.assert_has_calls(expected_calls)
-        self.assertEqual(runner_mock.call_count, len(expected_calls))
+                    ha_cluster_quorum=dict(
+                        options=[dict(name="quorum_key", value="quorum_val")],
+                    ),
+                    ha_cluster_node_options=[
+                        dict(
+                            node_name="node1",
+                            corosync_addresses=["node1addr"],
+                            pcs_address="node1pcs",
+                        ),
+                        dict(
+                            node_name="node2",
+                            corosync_addresses=["node2addr"],
+                            pcs_address="node2pcs",
+                        ),
+                    ],
+                ),
+            )
 
         mock_load_pcsd_known_hosts.assert_called_once_with()
 
@@ -192,10 +175,6 @@ class ExportClusterConfiguration(TestCase):
         self,
         mock_load_pcsd_known_hosts: mock.Mock,
     ) -> None:
-        module_mock = mock.Mock()
-        module_mock.run_command = mock.Mock()
-        runner_mock = module_mock.run_command
-
         corosync_conf_data = dict(
             cluster_name="my-cluster",
             transport="KNET",
@@ -206,18 +185,22 @@ class ExportClusterConfiguration(TestCase):
             totem_options=dict(),
             quorum_options=dict(),
         )
-        runner_mock.side_effect = [
-            (0, "", ""),
-            (0, "", ""),
-            (0, json.dumps(corosync_conf_data), ""),
-        ]
 
         mock_load_pcsd_known_hosts.return_value = dict(
             node1="node1pcs",
             node2="node2pcs",
         )
 
-        with self.assertRaises(ha_cluster_info.exporter.JsonMissingKey) as cm:
+        with (
+            self.assertRaises(ha_cluster_info.exporter.JsonMissingKey) as cm,
+            mocked_module(
+                [
+                    (CMD_ENABLED_COROSYNC, (0, "", "")),
+                    (CMD_ENABLED_PCMK, (0, "", "")),
+                    (CMD_CLUSTER_CONF, (0, json.dumps(corosync_conf_data), "")),
+                ]
+            ) as module_mock,
+        ):
             ha_cluster_info.export_cluster_configuration(module_mock)
         self.assertEqual(
             cm.exception.kwargs,
@@ -227,9 +210,5 @@ class ExportClusterConfiguration(TestCase):
                 data_desc="corosync configuration",
             ),
         )
-
-        expected_calls = self.fixture_expected_runner_calls()
-        runner_mock.assert_has_calls(expected_calls)
-        self.assertEqual(runner_mock.call_count, len(expected_calls))
 
         mock_load_pcsd_known_hosts.assert_called_once_with()
