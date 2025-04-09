@@ -8,20 +8,12 @@
 # pylint: disable=missing-function-docstring
 
 import json
-import sys
-from importlib import import_module
 from textwrap import dedent
+from typing import Any
 from unittest import TestCase, mock
 
-sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
-    "ha_cluster_lsr"
-)
-
-from typing import Any
-
-from ha_cluster_lsr.info import loader
-
 from .firewall_mock import get_fw_mock
+from .ha_cluster_info import loader
 
 
 class IsRhelOrClone(TestCase):
