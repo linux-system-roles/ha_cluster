@@ -45,7 +45,13 @@
                       - attrs:
                           - name: timeout
                             value: 20s
+
+        - name: Fetch versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+
         - name: Verify alerts
+          when:
+            - '"pcmk.alert.config.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_expected_lines:
               - "Alerts:"
@@ -78,6 +84,105 @@
                 that:
                   - _test_pcs_alerts_config.stdout_lines
                     == __test_expected_lines | list
+
+        - name: Verify alerts
+          when:
+            - '"pcmk.alert.config.output-formats" in __test_pcs_capabilities'
+          vars:
+            __test_expected_lines: '
+              {
+                "alerts": [
+                  {
+                    "id": "alert1",
+                    "path": "/path/to/somewhere",
+                    "description": "Alert1 description",
+                    "recipients": [
+                      {
+                        "id": "recipient1",
+                        "value": "recipient-value",
+                        "description": "Recipient1 description",
+                        "meta_attributes": [
+                          {
+                            "id": "recipient1-meta_attributes",
+                            "options": {},
+                            "rule": null,
+                            "nvpairs": [
+                              {
+                                "id": "recipient1-meta_attributes-timeout",
+                                "name": "timeout",
+                                "value": "20s"
+                              }
+                            ]
+                          }
+                        ],
+                        "instance_attributes": [
+                          {
+                            "id": "recipient1-instance_attributes",
+                            "options": {},
+                            "rule": null,
+                            "nvpairs": [
+                              {
+                                "id": "recipient1-instance_attributes-debug",
+                                "name": "debug",
+                                "value": "true"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ],
+                    "select": null,
+                    "meta_attributes": [
+                      {
+                        "id": "alert1-meta_attributes",
+                        "options": {},
+                        "rule": null,
+                        "nvpairs": [
+                          {
+                            "id": "alert1-meta_attributes-timeout",
+                            "name": "timeout",
+                            "value": "15s"
+                          }
+                        ]
+                      }
+                    ],
+                    "instance_attributes": [
+                      {
+                        "id": "alert1-instance_attributes",
+                        "options": {},
+                        "rule": null,
+                        "nvpairs": [
+                          {
+                            "id": "alert1-instance_attributes-debug",
+                            "name": "debug",
+                            "value": "false"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }'
+          block:
+            - name: Fetch alerts configuration from the cluster
+              command:
+                cmd: pcs --output-format=json alert
+              register: _test_pcs_alerts_config
+              changed_when: false
+
+            - name: Print real alerts configuration
+              debug:
+                var: _test_pcs_alerts_config.stdout | from_json
+
+            - name: Print expected alerts configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            - name: Check alerts configuration
+              assert:
+                that:
+                  - _test_pcs_alerts_config.stdout | from_json
+                    == __test_expected_lines | from_json
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
