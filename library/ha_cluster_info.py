@@ -276,9 +276,13 @@ def main() -> None:
             # probably call export_os and export_pcsd.
             ha_cluster_result["ha_cluster_cluster_present"] = False
         module.exit_json(**module_result)
-    except exporter.JsonMissingKey as e:
+    except exporter.InvalidSrc as e:
+        issue_location = f" ({e.issue_location})" if e.issue_location else ""
         module.fail_json(
-            msg=f"Missing key {e.key} in pcs {e.data_desc} JSON output",
+            msg=(
+                f"Invalid data in pcs {e.data_desc} JSON output{issue_location}"
+                f": {e.issue_desc}"
+            ),
             error_details=e.kwargs,
         )
     except loader.JsonParseError as e:

@@ -99,13 +99,14 @@ class ExportPcsdConfiguration(TestCase):
             }
         }
 
-        with self.assertRaises(ha_cluster_info.exporter.JsonMissingKey) as cm:
+        with self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm:
             ha_cluster_info.export_pcsd_configuration()
         self.assertEqual(
             cm.exception.kwargs,
             dict(
-                data=mock_load_pcsd_permisions.return_value,
-                key="local_cluster",
                 data_desc="pcs_settings.conf",
+                data=mock_load_pcsd_permisions.return_value,
+                issue_location="",
+                issue_desc="Missing key 'local_cluster'",
             ),
         )

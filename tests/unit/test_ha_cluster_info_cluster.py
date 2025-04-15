@@ -192,7 +192,7 @@ class ExportClusterConfiguration(TestCase):
         )
 
         with (
-            self.assertRaises(ha_cluster_info.exporter.JsonMissingKey) as cm,
+            self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm,
             mocked_module(
                 [
                     (CMD_ENABLED_COROSYNC, (0, "", "")),
@@ -205,9 +205,10 @@ class ExportClusterConfiguration(TestCase):
         self.assertEqual(
             cm.exception.kwargs,
             dict(
-                data=corosync_conf_data,
-                key="nodes",
                 data_desc="corosync configuration",
+                data=corosync_conf_data,
+                issue_location="",
+                issue_desc="Missing key 'nodes'",
             ),
         )
 
