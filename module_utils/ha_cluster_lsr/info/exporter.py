@@ -15,22 +15,34 @@ from contextlib import contextmanager
 from typing import Any, Dict, Iterator, List, Optional, Tuple
 
 
-class JsonMissingKey(Exception):
+class InvalidSrc(Exception):
     """
-    A key is not present in pcs JSON output
+    Cannot extract result from sources
     """
 
-    def __init__(self, key: str, data: Dict[str, Any], data_desc: str):
-        self.key = key
+    def __init__(
+        self,
+        data_desc: str,
+        data: Dict[str, Any],
+        issue_location: str,
+        issue_desc: str,
+    ):
         self.data = data
         self.data_desc = data_desc
+        self.issue_location = issue_location
+        self.issue_desc = issue_desc
 
     @property
     def kwargs(self) -> Dict[str, Any]:
         """
         Arguments given to the constructor
         """
-        return dict(key=self.key, data=self.data, data_desc=self.data_desc)
+        return dict(
+            data=self.data,
+            data_desc=self.data_desc,
+            issue_location=self.issue_location,
+            issue_desc=self.issue_desc,
+        )
 
 
 def _dict_to_nv_list(input_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -41,11 +53,18 @@ def _dict_to_nv_list(input_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 
 @contextmanager
-def _handle_missing_key(data: Dict[str, Any], data_desc: str) -> Iterator[None]:
+def _handle_missing_key(
+    data: Dict[str, Any], data_desc: str, issue_location: str = ""
+) -> Iterator[None]:
     try:
         yield
     except KeyError as e:
-        raise JsonMissingKey(e.args[0], data, data_desc) from e
+        raise InvalidSrc(
+            data_desc,
+            data,
+            issue_location,
+            f"Missing key '{e.args[0]}'",
+        ) from e
 
 
 def export_enable_repos_ha(dnf_repolist: str) -> bool:
@@ -227,7 +246,8 @@ def export_cluster_nodes(
             # corosync node configuration
             with _handle_missing_key(
                 corosync_conf_dict,
-                f"corosync configuration for node on index {index}",
+                "corosync configuration",
+                f"/node/{index}",
             ):
                 one_node = dict(
                     node_name=node_dict["name"],

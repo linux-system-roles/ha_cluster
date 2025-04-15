@@ -168,14 +168,15 @@ class ExportCorosyncClusterName(TestCase):
 
     def test_missing_key(self) -> None:
         corosync_data: Dict[str, Any] = dict()
-        with self.assertRaises(exporter.JsonMissingKey) as cm:
+        with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_corosync_cluster_name(corosync_data)
         self.assertEqual(
             cm.exception.kwargs,
             dict(
-                data=corosync_data,
-                key="cluster_name",
                 data_desc="corosync configuration",
+                data=corosync_data,
+                issue_location="",
+                issue_desc="Missing key 'cluster_name'",
             ),
         )
 
@@ -193,12 +194,15 @@ class ExportCorosyncTransport(TestCase):
     def assert_missing_key(
         self, corosync_data: Dict[str, Any], key: str
     ) -> None:
-        with self.assertRaises(exporter.JsonMissingKey) as cm:
+        with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_corosync_transport(corosync_data)
         self.assertEqual(
             cm.exception.kwargs,
             dict(
-                data=corosync_data, key=key, data_desc="corosync configuration"
+                data_desc="corosync configuration",
+                data=corosync_data,
+                issue_location="",
+                issue_desc=f"Missing key '{key}'",
             ),
         )
 
@@ -339,14 +343,15 @@ class ExportCorosyncTotem(TestCase):
 
     def test_missing_key(self) -> None:
         corosync_data: Dict[str, Any] = dict()
-        with self.assertRaises(exporter.JsonMissingKey) as cm:
+        with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_corosync_totem(corosync_data)
         self.assertEqual(
             cm.exception.kwargs,
             dict(
                 data=corosync_data,
-                key="totem_options",
                 data_desc="corosync configuration",
+                issue_location="",
+                issue_desc="Missing key 'totem_options'",
             ),
         )
 
@@ -378,14 +383,15 @@ class ExportCorosyncQuorum(TestCase):
 
     def test_missing_key(self) -> None:
         corosync_data: Dict[str, Any] = dict()
-        with self.assertRaises(exporter.JsonMissingKey) as cm:
+        with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_corosync_quorum(corosync_data)
         self.assertEqual(
             cm.exception.kwargs,
             dict(
-                data=corosync_data,
-                key="quorum_options",
                 data_desc="corosync configuration",
+                data=corosync_data,
+                issue_location="",
+                issue_desc="Missing key 'quorum_options'",
             ),
         )
 
@@ -418,27 +424,29 @@ class ExportClusterNodes(TestCase):
     def assert_missing_node_key(
         self, corosync_data: Dict[str, Any], key: str, index: int = 0
     ) -> None:
-        with self.assertRaises(exporter.JsonMissingKey) as cm:
+        with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_cluster_nodes(corosync_data, {})
         self.assertEqual(
             cm.exception.kwargs,
             dict(
+                data_desc="corosync configuration",
                 data=corosync_data,
-                key=key,
-                data_desc=f"corosync configuration for node on index {index}",
+                issue_location=f"/node/{index}",
+                issue_desc=f"Missing key '{key}'",
             ),
         )
 
     def test_missing_key(self) -> None:
         corosync_data: Dict[str, Any] = dict()
-        with self.assertRaises(exporter.JsonMissingKey) as cm:
+        with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_cluster_nodes(corosync_data, {})
         self.assertEqual(
             cm.exception.kwargs,
             dict(
-                data=corosync_data,
-                key="nodes",
                 data_desc="corosync configuration",
+                data=corosync_data,
+                issue_location="",
+                issue_desc="Missing key 'nodes'",
             ),
         )
 
@@ -637,14 +645,15 @@ class ExportPcsPermissionList(TestCase):
     def assert_missing_key(
         self, pcs_settings_dict: Dict[str, Any], key: str
     ) -> None:
-        with self.assertRaises(exporter.JsonMissingKey) as cm:
+        with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_pcs_permission_list(pcs_settings_dict)
         self.assertEqual(
             cm.exception.kwargs,
             dict(
-                data=pcs_settings_dict,
-                key=key,
                 data_desc="pcs_settings.conf",
+                data=pcs_settings_dict,
+                issue_location="",
+                issue_desc=f"Missing key '{key}'",
             ),
         )
 
