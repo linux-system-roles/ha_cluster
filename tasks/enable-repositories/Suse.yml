@@ -9,8 +9,8 @@
   when: ansible_distribution.split("_")[0] == 'SLES'
   block:
 
-    - name: Query package sle-ha-release
-      ansible.builtin.shell:
+    - name: Query package sle-ha-release  # noqa command-instead-of-module
+      ansible.builtin.command:
         cmd: rpm -q sle-ha-release
       register: __ha_cluster_sle_ha_release
       changed_when: false
