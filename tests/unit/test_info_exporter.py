@@ -657,6 +657,36 @@ class ExportPcsPermissionList(TestCase):
             ),
         )
 
+    def test_raises_when_permissions_not_dict(self) -> None:
+        data = dict(permissions="perm1,perm2")
+        with self.assertRaises(exporter.InvalidSrc) as cm:
+            exporter.export_pcs_permission_list(data)
+        self.assertEqual(
+            cm.exception.kwargs,
+            dict(
+                data_desc="pcs_settings.conf",
+                data=data,
+                issue_location="/permissions",
+                issue_desc=(
+                    "Expected dict with key 'local_cluster' but got 'str'"
+                ),
+            ),
+        )
+
+    def test_raises_when_local_cluster_not_list(self) -> None:
+        data = dict(permissions=dict(local_cluster=None))
+        with self.assertRaises(exporter.InvalidSrc) as cm:
+            exporter.export_pcs_permission_list(data)
+        self.assertEqual(
+            cm.exception.kwargs,
+            dict(
+                data_desc="pcs_settings.conf",
+                data=data,
+                issue_location="/permissions/local_cluster",
+                issue_desc=("Expected iterable but got 'NoneType'"),
+            ),
+        )
+
     def test_missing_key(self) -> None:
         self.assert_missing_key(
             dict(),

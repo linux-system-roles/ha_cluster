@@ -196,11 +196,9 @@ def export_pcsd_configuration() -> Dict[str, Any]:
 
     pcsd_settings_dict = loader.get_pcsd_settings_conf()
     if pcsd_settings_dict is not None:
-        pcs_permissions = exporter.export_pcs_permission_list(
-            pcsd_settings_dict
+        result["ha_cluster_pcs_permission_list"] = (
+            exporter.export_pcs_permission_list(pcsd_settings_dict)
         )
-        if pcs_permissions is not None:
-            result["ha_cluster_pcs_permission_list"] = pcs_permissions
 
     return result
 

@@ -281,10 +281,21 @@ def export_pcs_permission_list(
     with _handle_missing_key(pcs_settings_conf_dict, "pcs_settings.conf"):
         permission_dict = pcs_settings_conf_dict["permissions"]
         if not isinstance(permission_dict, dict):
-            return None
+            raise InvalidSrc(
+                "pcs_settings.conf",
+                pcs_settings_conf_dict,
+                "/permissions",
+                "Expected dict with key 'local_cluster'"
+                f" but got '{type(permission_dict).__name__}'",
+            )
         permission_list = permission_dict["local_cluster"]
         if not isinstance(permission_list, list):
-            return None
+            raise InvalidSrc(
+                "pcs_settings.conf",
+                pcs_settings_conf_dict,
+                "/permissions/local_cluster",
+                f"Expected iterable but got '{type(permission_list).__name__}'",
+            )
         for permission_item in permission_list:
             result.append(
                 {
