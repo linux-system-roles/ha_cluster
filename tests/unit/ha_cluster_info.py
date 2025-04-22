@@ -21,6 +21,7 @@ sys.modules["ansible.module_utils.ha_cluster_lsr.info"] = import_module(
 ha_cluster_info = import_module("ha_cluster_info")
 exporter = getattr(import_module("ha_cluster_lsr.info"), "exporter")
 loader = getattr(import_module("ha_cluster_lsr.info"), "loader")
+wrap_src = getattr(import_module("ha_cluster_lsr.info"), "wrap_src")
 
 
 # pylint: disable=missing-function-docstring
