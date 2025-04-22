@@ -106,7 +106,7 @@ class ExportPcsdConfiguration(TestCase):
             dict(
                 data_desc="pcs_settings.conf",
                 data=mock_load_pcsd_permisions.return_value,
-                issue_location="",
+                issue_location="/permissions",
                 issue_desc="Missing key 'local_cluster'",
             ),
         )

@@ -422,7 +422,7 @@ class ExportClusterNodes(TestCase):
     maxDiff = None
 
     def assert_missing_node_key(
-        self, corosync_data: Dict[str, Any], key: str, index: int = 0
+        self, corosync_data: Dict[str, Any], key: str, issue_location: str
     ) -> None:
         with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_cluster_nodes(corosync_data, {})
@@ -431,7 +431,7 @@ class ExportClusterNodes(TestCase):
             dict(
                 data_desc="corosync configuration",
                 data=corosync_data,
-                issue_location=f"/node/{index}",
+                issue_location=issue_location,
                 issue_desc=f"Missing key '{key}'",
             ),
         )
@@ -458,18 +458,18 @@ class ExportClusterNodes(TestCase):
 
     def test_corosync_nodes_missing_keys(self) -> None:
         corosync_data: Dict[str, Any] = dict(nodes=[dict()])
-        self.assert_missing_node_key(corosync_data, "name")
+        self.assert_missing_node_key(corosync_data, "name", "/nodes/0")
 
         corosync_data = dict(nodes=[dict(name="nodename")])
-        self.assert_missing_node_key(corosync_data, "addrs")
+        self.assert_missing_node_key(corosync_data, "addrs", "/nodes/0")
 
         corosync_data = dict(nodes=[dict(name="nodename", addrs=[dict()])])
-        self.assert_missing_node_key(corosync_data, "link")
+        self.assert_missing_node_key(corosync_data, "link", "/nodes/0/addrs/0")
 
         corosync_data = dict(
             nodes=[dict(name="nodename", addrs=[dict(link="0")])]
         )
-        self.assert_missing_node_key(corosync_data, "addr")
+        self.assert_missing_node_key(corosync_data, "addr", "/nodes/0/addrs/0")
 
         corosync_data = dict(
             nodes=[
@@ -477,7 +477,7 @@ class ExportClusterNodes(TestCase):
                 dict(name="node2"),
             ]
         )
-        self.assert_missing_node_key(corosync_data, "addrs", 1)
+        self.assert_missing_node_key(corosync_data, "addrs", "/nodes/1")
 
     def test_corosync_nodes_one_link(self) -> None:
         corosync_data: Dict[str, Any] = dict(
@@ -643,7 +643,10 @@ class ExportPcsPermissionList(TestCase):
         )
 
     def assert_missing_key(
-        self, pcs_settings_dict: Dict[str, Any], key: str
+        self,
+        pcs_settings_dict: Dict[str, Any],
+        key: str,
+        issue_location: str = "",
     ) -> None:
         with self.assertRaises(exporter.InvalidSrc) as cm:
             exporter.export_pcs_permission_list(pcs_settings_dict)
@@ -652,7 +655,7 @@ class ExportPcsPermissionList(TestCase):
             dict(
                 data_desc="pcs_settings.conf",
                 data=pcs_settings_dict,
-                issue_location="",
+                issue_location=issue_location,
                 issue_desc=f"Missing key '{key}'",
             ),
         )
@@ -695,14 +698,17 @@ class ExportPcsPermissionList(TestCase):
         self.assert_missing_key(
             dict(permissions=dict()),
             "local_cluster",
+            issue_location="/permissions",
         )
         self.assert_missing_key(
             dict(permissions=dict(local_cluster=[dict()])),
             "type",
+            issue_location="/permissions/local_cluster/0",
         )
         self.assert_missing_key(
             dict(permissions=dict(local_cluster=[dict(type="user")])),
             "name",
+            issue_location="/permissions/local_cluster/0",
         )
         self.assert_missing_key(
             dict(
@@ -711,4 +717,5 @@ class ExportPcsPermissionList(TestCase):
                 )
             ),
             "allow",
+            issue_location="/permissions/local_cluster/0",
         )
