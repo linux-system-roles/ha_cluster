@@ -1,6 +1,34 @@
 Changelog
 =========
 
+[1.23.0] - 2025-04-23
+--------------------
+
+### New Features
+
+- feat: export pcsd and OS configuration (#264)
+- feat: crmsh remove python3-rpm dependency (#270)
+
+### Bug Fixes
+
+- fix: restart qdevice when its certificates have been regenerated (#262)
+- fix: disable proxy when connecting to pcsd local socket (#265)
+
+### Other Changes
+
+- ci: update pcs test matrix (#253)
+- ci: ansible-plugin-scan is disabled for now (#256)
+- ci: bump ansible-lint to v25; provide collection requirements for ansible-lint (#259)
+- refactor: fix python black formatting (#260)
+- ci: Check spelling with codespell (#261)
+- ci: Add test plan that runs CI tests and customize it for each role (#263)
+- ci: In test plans, prefix all relate variables with SR_ (#266)
+- ci: Fix bug with ARTIFACTS_URL after prefixing with SR_ (#267)
+- ci: several changes related to new qemu test, ansible-lint, python versions, ubuntu versions (#268)
+- test: update alerts test for new pcs (#269)
+- ci: use tox-lsr 3.6.0; improve qemu test logging (#271)
+- ci: skip storage scsi, nvme tests in github qemu ci (#272)
+
 [1.22.2] - 2025-01-27
 --------------------
 
