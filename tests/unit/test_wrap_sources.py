@@ -26,21 +26,22 @@ def _wrap(data: wrap_src.CleanSrc) -> wrap_src._WrapSrc:
     return wrap_src._wrap_src(data, wrap_src._Context(data, DESC))
 
 
+def _access_path(data, path):  # type: ignore
+    for key in path:
+        data = data[key]
+    return data
+
+
 class TestWrapSources(TestCase):
     # pylint: disable=protected-access
     # Checks without need to assign (testing exceptions), so:
     # pylint: disable=expression-not-assigned, pointless-statement
     # pylint: disable=too-many-public-methods
 
-    def access_path(self, data, path):  # type: ignore
-        for key in path:
-            data = data[key]
-        return data
-
     def assert_wrap_eq(self, data, path):  # type: ignore
         self.assertEqual(
-            self.access_path(data, path),
-            wrap_src._cleanup_wrap(self.access_path(_wrap(data), path)),
+            _access_path(data, path),
+            wrap_src._cleanup_wrap(_access_path(_wrap(data), path)),
         )
 
     @contextmanager
@@ -278,6 +279,13 @@ class TestWrapSources(TestCase):
         ):
             sorted(_wrap(data)["a"])
 
+    def test_none_compare(self) -> None:
+        data = {"a": None, "b": "some"}
+        self.assertTrue(wrap_src.is_none(None))
+        self.assertTrue(wrap_src.is_none(_wrap(data)["a"]))
+        self.assertFalse(wrap_src.is_none("some"))
+        self.assertFalse(wrap_src.is_none(_wrap(data)["b"]))
+
     def test_bool_comparison(self) -> None:
         data = {"a": True}
         with self.assert_invalid_src(
@@ -288,3 +296,12 @@ class TestWrapSources(TestCase):
             issue_location="/a",
         ):
             _wrap(data)["a"] ^ "a"
+
+    def test_can_run_other_invalid_src_exception(self) -> None:
+        data = {"a": {"b": "invalid"}}
+        with self.assert_invalid_src(
+            data,
+            issue_desc=("Ad hoc err"),
+            issue_location="/a/b",
+        ):
+            raise wrap_src.invalid_part(_wrap(data)["a"]["b"], "Ad hoc err")

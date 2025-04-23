@@ -292,3 +292,12 @@ def get_pcsd_settings_conf() -> Optional[Dict[str, Any]]:
             return json.loads(file_data)
     except json.JSONDecodeError as e:
         raise JsonParseError(str(e), file_data, "pcsd settings") from e
+
+
+def get_resources_configuration(run_command: CommandRunner) -> Dict[str, Any]:
+    """
+    Get resources, groups, clones, bundles configuration from pcs
+    """
+    return _call_pcs_cli(
+        run_command, ["resource", "config", "--output-format=json"]
+    )

@@ -15,7 +15,13 @@ from typing import Any, Dict, List, Tuple
 
 # This module is exports InvalidSrc
 # pylint: disable=unused-import
-from .wrap_src import InvalidSrc, SrcDict, wrap_src_for_rich_report
+from .wrap_src import (
+    InvalidSrc,
+    SrcDict,
+    invalid_part,
+    is_none,
+    wrap_src_for_rich_report,
+)
 
 
 def _dict_to_nv_list(input_dict: SrcDict) -> List[Dict[str, Any]]:
@@ -248,4 +254,94 @@ def export_pcs_permission_list(
                 "allow_list": list(permission["allow"]),
             }
         )
+    return result
+
+
+_PRIMITIVE_OPERATION_NON_ATTR_KEYS = [
+    "id",
+    "name",
+    "meta_attributes",
+    "instance_attributes",
+]
+
+
+def _nvsets_to_attrs(nvsets: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return (
+        [
+            dict(
+                name=nvpair_src["name"],
+                value=nvpair_src["value"],
+            )
+            for nvpair_src in nvsets[0]["nvpairs"]
+        ]
+        if nvsets and len(nvsets) > 0
+        else []
+    )
+
+
+@wrap_src_for_rich_report("resources", data_desc="resources configuration")
+def export_primitive_list(resources: SrcDict) -> List[Dict[str, Any]]:
+    """
+    Extract primitive resources from `pcs resource configuration` output
+    """
+    result = []
+    for primitive_src in resources["primitives"]:
+        agent_src = primitive_src["agent_name"]
+        primitive = dict(
+            id=primitive_src["id"],
+            # Use just operation taken from CIB
+            copy_operations_from_agent=False,
+            agent=(
+                ":".join(
+                    [
+                        agent_src["standard"],
+                        agent_src["provider"],
+                        agent_src["type"],
+                    ]
+                    if agent_src["provider"]
+                    else [
+                        agent_src["standard"],
+                        agent_src["type"],
+                    ]
+                )
+            ),
+        )
+
+        # instance attrs
+        instance_attrs = _nvsets_to_attrs(
+            primitive_src.get("instance_attributes", [])
+        )
+        if instance_attrs:
+            primitive["instance_attrs"] = [dict(attrs=instance_attrs)]
+
+        # meta attrs
+        meta_attrs = _nvsets_to_attrs(primitive_src.get("meta_attributes", []))
+        if meta_attrs:
+            primitive["meta_attrs"] = [dict(attrs=meta_attrs)]
+
+        # utilization
+        utilization = _nvsets_to_attrs(primitive_src.get("utilization", []))
+        if utilization:
+            primitive["utilization"] = [dict(attrs=utilization)]
+
+        # operations
+        operation_list = []
+        for operation_src in primitive_src.get("operations", []):
+            attrs = _dict_to_nv_list(
+                {
+                    key: value
+                    for key, value in operation_src.items()
+                    if key not in _PRIMITIVE_OPERATION_NON_ATTR_KEYS
+                    and not is_none(value)
+                }
+            )
+            if not attrs:
+                raise invalid_part(operation_src, "No attributes in operation")
+            operation_list.append(
+                dict(action=operation_src["name"], attrs=attrs)
+            )
+        if operation_list:
+            primitive["operations"] = operation_list
+
+        result.append(primitive)
     return result
