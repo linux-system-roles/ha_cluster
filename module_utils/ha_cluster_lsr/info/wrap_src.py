@@ -125,7 +125,7 @@ class _Context:
         return _wrap_src(data, context)
 
 
-class _WrapSrc:  # pylint: disable=too-few-public-methods
+class _WrapSrc:
     """Base class for all wrappers"""
 
     _data: CleanSrc
@@ -174,6 +174,10 @@ class _WrapSrc:  # pylint: disable=too-few-public-methods
     def unwrap(self) -> Any:
         """Returns the original, unwrapped data."""
         return self._data
+
+    def invalid_part(self, reason: str) -> Exception:
+        """Returns exception that this particullar part is invalid."""
+        return self._invalid_src(reason)
 
 
 class _WrapScalar(_WrapSrc):
@@ -458,3 +462,20 @@ def _cleanup_wrap(maybe_wrapped: Union[CleanSrc, _WrapSrc]) -> CleanSrc:
         return [_cleanup_wrap(item) for item in top_clean]
 
     return top_clean
+
+
+def invalid_part(wrapped_data: _WrapSrc, reason: str) -> Exception:
+    """Returns exception that wrapped_data is invalid."""
+    return wrapped_data.invalid_part(reason)
+
+
+def is_none(maybe_none: Union[CleanSrc, _WrapSrc]) -> bool:
+    """
+    Returns if the maybe_none value represents None
+
+    Unfortunately, python does not give an opportunity to capture `is None` in
+    any `__*__` method.
+    """
+    if isinstance(maybe_none, _WrapSrc):
+        maybe_none = maybe_none.unwrap()
+    return maybe_none is None

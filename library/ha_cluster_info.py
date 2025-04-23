@@ -252,6 +252,21 @@ def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
     return result
 
 
+def export_resources_configuration(module: AnsibleModule) -> Dict[str, Any]:
+    """
+    Export existing HA cluster resources
+    """
+
+    cmd_runner = get_cmd_runner(module)
+    resources = loader.get_resources_configuration(cmd_runner)
+    primitives = exporter.export_primitive_list(resources)
+
+    result: dict[str, Any] = dict()
+    if primitives:
+        result["ha_cluster_resource_primitives"] = primitives
+    return result
+
+
 def main() -> None:
     """
     Top level module function
@@ -268,6 +283,7 @@ def main() -> None:
             ha_cluster_result.update(**export_os_configuration(module))
             ha_cluster_result.update(**export_pcsd_configuration())
             ha_cluster_result.update(**export_cluster_configuration(module))
+            ha_cluster_result.update(**export_resources_configuration(module))
             ha_cluster_result["ha_cluster_cluster_present"] = True
         else:
             # Exporting qnetd configuration will be added later here. It will
