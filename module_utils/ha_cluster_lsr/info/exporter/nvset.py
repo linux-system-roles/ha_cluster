@@ -11,6 +11,13 @@ from __future__ import absolute_import, division, print_function
 # pylint: disable=invalid-name
 __metaclass__ = type
 
-from . import exporter, loader
+from typing import Any, Dict, List
 
-__all__ = ["exporter", "loader"]
+from .wrap_src import SrcDict
+
+
+def dict_to_nv_list(input_dict: SrcDict) -> List[Dict[str, Any]]:
+    """
+    Convert a dict to a list of dicts with keys 'name' and 'value'
+    """
+    return [dict(name=name, value=value) for name, value in input_dict.items()]
