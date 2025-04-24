@@ -16,12 +16,14 @@ from contextlib import contextmanager
 from typing import Generator
 from unittest import TestCase
 
-from .ha_cluster_info import wrap_src
+from .ha_cluster_info import exporter
+
+wrap_src = exporter.wrap_src
 
 DESC = "Desc"
 
 
-def _wrap(data: wrap_src.CleanSrc) -> wrap_src._WrapSrc:
+def _wrap(data):  # type: ignore
     # pylint: disable=protected-access
     return wrap_src._wrap_src(data, wrap_src._Context(data, DESC))
 

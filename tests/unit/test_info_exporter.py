@@ -18,19 +18,19 @@ class DictToNvList(TestCase):
     # pylint: disable=protected-access
     def test_no_item(self) -> None:
         self.assertEqual(
-            exporter._dict_to_nv_list(dict()),
+            exporter.nvset.dict_to_nv_list(dict()),
             [],
         )
 
     def test_one_item(self) -> None:
         self.assertEqual(
-            exporter._dict_to_nv_list(dict(one="1")),
+            exporter.nvset.dict_to_nv_list(dict(one="1")),
             [dict(name="one", value="1")],
         )
 
     def test_two_items(self) -> None:
         self.assertEqual(
-            exporter._dict_to_nv_list(dict(one="1", two="2")),
+            exporter.nvset.dict_to_nv_list(dict(one="1", two="2")),
             [dict(name="one", value="1"), dict(name="two", value="2")],
         )
 
