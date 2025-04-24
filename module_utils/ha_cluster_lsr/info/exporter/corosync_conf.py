@@ -94,7 +94,9 @@ def export_corosync_quorum(corosync_conf_dict: SrcDict) -> Dict[str, Any]:
 
 
 @wrap_src_for_rich_report(
-    "corosync_conf_dict", "pcs_node_addr", data_desc="corosync configuration"
+    "corosync_conf_dict",
+    "pcs_node_addr",
+    data_desc=["corosync configuration", "known hosts configuration"],
 )
 def export_cluster_nodes(
     corosync_conf_dict: SrcDict, pcs_node_addr: Dict[str, str]
