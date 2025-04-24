@@ -65,7 +65,7 @@ class InvalidSrc(Exception):
 
 
 def wrap_src_for_rich_report(
-    *param_names: str, data_desc: str
+    *param_names: str, data_desc: Union[str, List[str]]
 ) -> Callable[[Func], Func]:
     """
     Decorator to wrap specified parameters as _WrapSrc objects.
@@ -79,6 +79,15 @@ def wrap_src_for_rich_report(
     data_desc -- Description of the data for use in error messages.
     """
 
+    if isinstance(data_desc, str):
+        data_desc = [data_desc]
+
+    if len(data_desc) != len(param_names):
+        raise ValueError(
+            "Every source of wrap_src_for_rich_report needs description"
+            f" (sources: {len(param_names)}, descriptions: {len(data_desc)})"
+        )
+
     def decorator(func: Func) -> Func:
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> CleanSrc:
@@ -88,12 +97,12 @@ def wrap_src_for_rich_report(
             bound = sig.bind(*args, **kwargs)
             # For not given arguments use it's default values. Just be complete.
             bound.apply_defaults()
-            for param in param_names:
+            for param, desc in zip(param_names, data_desc):
                 if param in bound.arguments:
                     # Wrap agruments mentioned as `param_names`
                     bound.arguments[param] = _wrap_src(
                         bound.arguments[param],
-                        _Context(bound.arguments[param], data_desc),
+                        _Context(bound.arguments[param], desc),
                     )
             return _cleanup_wrap(func(*bound.args, **bound.kwargs))
 
