@@ -206,6 +206,12 @@ class TestWrapSources(TestCase):
     def test_list_slice_works_correctly(self) -> None:
         self.assertEqual(_wrap(["a", "b", "c"])[:-1].unwrap(), ["a", "b"])
 
+    def test_list_add_works_correctly(self) -> None:
+        self.assertEqual(
+            (_wrap(["a", "b", "c"]) + _wrap(["d"])).unwrap(),
+            ["a", "b", "c", "d"],
+        )
+
     def test_dict_accept_wrapped_indexes(self) -> None:
         self.assertEqual(_wrap(["a", "b"])[_wrap(1)].unwrap(), "b")
 
@@ -269,6 +275,9 @@ class TestWrapSources(TestCase):
 
     def test_string_slice_works_correctly(self) -> None:
         self.assertEqual(_wrap("abc")[:-1].unwrap(), "ab")
+
+    def test_string_add_works_correctly(self) -> None:
+        self.assertEqual((_wrap("abc") + _wrap("d")).unwrap(), "abcd")
 
     def test_none_sorting(self) -> None:
         data = {"a": [1, 2, None]}
