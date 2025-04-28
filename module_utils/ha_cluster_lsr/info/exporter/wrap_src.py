@@ -346,6 +346,11 @@ class _WrapSeq(_WrapSrc):
     def _iter(self) -> Iterator:
         return (self._wrap(v, i) for i, v in enumerate(self._data))
 
+    def _add(self, other: Any) -> Any:
+        if isinstance(other, self.__class__):
+            other = other.unwrap()
+        return self._wrap(self._data + other)
+
     def keys(self) -> Any:  # pylint: disable=missing-function-docstring
         raise self._expected_dict()
 
@@ -370,6 +375,9 @@ class _WrapStr(str, _WrapSeq):
     def __iter__(self) -> Iterator:
         return self._iter()
 
+    def __add__(self, other: Any) -> "_WrapStr":
+        return self._add(other)
+
 
 class _WrapList(list, _WrapSeq):
     _data: list
@@ -383,6 +391,9 @@ class _WrapList(list, _WrapSeq):
 
     def __iter__(self) -> Iterator:
         return self._iter()
+
+    def __add__(self, other: Any) -> "_WrapList":
+        return self._add(other)
 
 
 class _WrapDict(dict, _WrapSrc):
