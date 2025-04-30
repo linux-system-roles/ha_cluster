@@ -1,0 +1,75 @@
+{
+	"primitives": [
+		{
+			"id": "F1",
+			"agent_name": {
+				"standard": "stonith",
+				"provider": null,
+				"type": "fence_xvm"
+			},
+			"description": null,
+			"operations": [
+				{
+					"id": "F1-monitor-interval-60s",
+					"name": "monitor",
+					"interval": "60s",
+					"description": null,
+					"start_delay": null,
+					"interval_origin": null,
+					"timeout": null,
+					"enabled": null,
+					"record_pending": null,
+					"role": null,
+					"on_fail": null,
+					"meta_attributes": [],
+					"instance_attributes": []
+				}
+			],
+			"meta_attributes": [
+				{
+					"id": "F1-meta_attributes",
+					"options": {},
+					"rule": null,
+					"nvpairs": [
+						{
+							"id": "F1-meta_attributes-target-role",
+							"name": "target-role",
+							"value": "Stopped"
+						}
+					]
+				}
+			],
+			"instance_attributes": [
+				{
+					"id": "F1-instance_attributes",
+					"options": {},
+					"rule": null,
+					"nvpairs": [
+						{
+							"id": "F1-instance_attributes-timeout",
+							"name": "timeout",
+							"value": "35"
+						}
+					]
+				}
+			],
+			"utilization": [
+				{
+					"id": "F1-utilization",
+					"options": {},
+					"rule": null,
+					"nvpairs": [
+						{
+							"id": "F1-utilization-ram",
+							"name": "ram",
+							"value": "1024"
+						}
+					]
+				}
+			]
+		}
+	],
+	"clones": [],
+	"groups": [],
+	"bundles": []
+}

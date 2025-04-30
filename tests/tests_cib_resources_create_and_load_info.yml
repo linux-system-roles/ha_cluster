@@ -1,0 +1,178 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Create resources in a cluster and load them to info
+  hosts: all
+  gather_facts: true  # needs facts
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_export_configuration: true
+    # Make cluster not try starting any resources. Due to missing resource
+    # daemons, container services and images, the cluster would get stuck
+    # otherwise.
+    ha_cluster_cluster_properties:
+      - attrs:
+          - name: maintenance-mode
+            value: "true"
+          - name: stonith-enabled
+            value: "false"
+          - name: stop-all-resources
+            value: "true"
+    # To be able compare created and exported resources it is better to use
+    # normalized data definition than trying to align data definition with data
+    # gained from cluster
+    ha_cluster_resource_primitives:
+      - id: A
+        agent: "ocf:pacemaker:Stateful"
+        copy_operations_from_agent: false
+        operations:
+          - action: "monitor"
+            attrs:
+              - name: "interval"
+                value: "10s"
+              - name: "timeout"
+                value: "20s"
+
+          - action: "reload-agent"
+            attrs:
+              - name: "interval"
+                value: "0s"
+              - name: "timeout"
+                value: "20s"
+
+          - action: "start"
+            attrs:
+              - name: "interval"
+                value: "0s"
+              - name: "timeout"
+                value: "20s"
+
+          - action: "stop"
+            attrs:
+              - name: "interval"
+                value: "0s"
+              - name: "timeout"
+                value: "20s"
+        instance_attrs:
+          - attrs:
+              - name: "notify_delay"
+                value: "2"
+        meta_attrs:
+          - attrs:
+              - name: "target-role"
+                value: "Stopped"
+        utilization:
+          - attrs:
+              - name: "cpu"
+                value: "1"
+      - id: B
+        agent: "systemd:crond"
+        copy_operations_from_agent: false
+        operations:
+          - action: "monitor"
+            attrs:
+              - name: "interval"
+                value: "60s"
+              - name: "timeout"
+                value: "100s"
+          - action: "start"
+            attrs:
+              - name: "interval"
+                value: "0s"
+              - name: "timeout"
+                value: "100s"
+          - action: "stop"
+            attrs:
+              - name: "interval"
+                value: "0s"
+              - name: "timeout"
+                value: "100s"
+      - id: F1
+        agent: "stonith:fence_xvm"
+        copy_operations_from_agent: false
+        instance_attrs:
+          - attrs:
+              - name: "timeout"
+                value: "35"
+        meta_attrs:
+          - attrs:
+              - name: "target-role"
+                value: "Stopped"
+        operations:
+          - action: "monitor"
+            attrs:
+              - name: "interval"
+                value: "60s"
+
+    # ha_cluster_resource_groups:
+
+    # ha_cluster_resource_clones:
+
+    # ha_cluster_resource_bundles:
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Fetch cluster versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+
+        # yamllint disable rule:line-length
+        - name: Check exported resources configuration
+          vars:
+            __test_expected:
+              primitives: >-
+                {{
+                  ha_cluster_resource_primitives | sort(attribute='id')
+                }}
+            __test_got:
+              primitives: >-
+                {{
+                  ha_cluster_facts.ha_cluster_resource_primitives
+                  | sort(attribute='id')
+                }}
+          block:
+            - name: Print exported configuration
+              debug:
+                var: __test_got
+
+            - name: Print expected configuration
+              debug:
+                var: __test_expected
+
+            - name: Create a temporary directory
+              tempfile:
+                state: directory
+                suffix: ansible-diff
+              register: tmpdir
+
+            - name: Write expected.json
+              copy:
+                content: "{{ __test_expected | to_nice_json }}"
+                dest: "{{ tmpdir.path }}/expected.json"
+                mode: "0600"
+
+            - name: Write got.json
+              copy:
+                content: "{{ __test_got | to_nice_json }}"
+                dest: "{{ tmpdir.path }}/got.json"
+                mode: "0600"
+
+            - name: Show diff command
+              debug:
+                msg: ">>> nvim -d {{ tmpdir.path }}/expected.json {{ tmpdir.path }}/got.json"
+
+            - name: Compare expected and exported configuration
+              assert:
+                that:
+                  - __test_got == __test_expected

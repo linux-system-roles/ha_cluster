@@ -20,6 +20,9 @@ CMD_OPTIONS = dict(environ_update={"LC_ALL": "C"}, check_rc=False)
 CMD_RESOURCE_CONF = mock.call(
     ["pcs", "resource", "config", "--output-format=json"], **CMD_OPTIONS
 )
+CMD_STONITH_CONF = mock.call(
+    ["pcs", "stonith", "config", "--output-format=json"], **CMD_OPTIONS
+)
 
 
 class ExportResourcesConfiguration(TestCase):
@@ -31,10 +34,18 @@ class ExportResourcesConfiguration(TestCase):
             clones=[],
             bundles=[],
         )
+        stonith_data = dict(  # type: ignore
+            groups=[],
+            clones=[],
+            bundles=[],
+        )
         with (
             self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm,
             mocked_module(
-                [(CMD_RESOURCE_CONF, (0, json.dumps(resource_data), ""))]
+                [
+                    (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
+                    (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
+                ]
             ) as module_mock,
         ):
             ha_cluster_info.export_resources_configuration(module_mock)
@@ -81,10 +92,19 @@ class ExportResourcesConfiguration(TestCase):
             clones=[],
             bundles=[],
         )
+        stonith_data = dict(  # type: ignore
+            primitives=[],
+            groups=[],
+            clones=[],
+            bundles=[],
+        )
         with (
             self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm,
             mocked_module(
-                [(CMD_RESOURCE_CONF, (0, json.dumps(resource_data), ""))]
+                [
+                    (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
+                    (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
+                ]
             ) as module_mock,
         ):
             ha_cluster_info.export_resources_configuration(module_mock)
@@ -105,8 +125,17 @@ class ExportResourcesConfiguration(TestCase):
             clones=[],
             bundles=[],
         )
+        stonith_data = dict(  # type: ignore
+            primitives=[],
+            groups=[],
+            clones=[],
+            bundles=[],
+        )
         with mocked_module(
-            [(CMD_RESOURCE_CONF, (0, json.dumps(resource_data), ""))]
+            [
+                (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
+                (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
+            ]
         ) as module_mock:
             self.assertEqual(
                 ha_cluster_info.export_resources_configuration(module_mock),
@@ -118,8 +147,14 @@ class ExportResourcesConfiguration(TestCase):
             open(
                 os.path.join(CURRENT_DIR, "primitives.json"), encoding="utf-8"
             ) as resources_json,
+            open(
+                os.path.join(CURRENT_DIR, "stonith.json"), encoding="utf-8"
+            ) as stonith_json,
             mocked_module(
-                [(CMD_RESOURCE_CONF, (0, resources_json.read(), ""))]
+                [
+                    (CMD_RESOURCE_CONF, (0, resources_json.read(), "")),
+                    (CMD_STONITH_CONF, (0, stonith_json.read(), "")),
+                ]
             ) as module_mock,
         ):
             self.assertEqual(
@@ -233,6 +268,32 @@ class ExportResourcesConfiguration(TestCase):
                                     "attrs": [
                                         {"name": "interval", "value": "0s"},
                                         {"name": "timeout", "value": "100s"},
+                                    ],
+                                },
+                            ],
+                        ),
+                        dict(
+                            id="F1",
+                            agent="stonith:fence_xvm",
+                            copy_operations_from_agent=False,
+                            instance_attrs=[
+                                {"attrs": [{"name": "timeout", "value": "35"}]}
+                            ],
+                            meta_attrs=[
+                                {
+                                    "attrs": [
+                                        {
+                                            "name": "target-role",
+                                            "value": "Stopped",
+                                        }
+                                    ]
+                                }
+                            ],
+                            operations=[
+                                {
+                                    "action": "monitor",
+                                    "attrs": [
+                                        {"name": "interval", "value": "60s"},
                                     ],
                                 },
                             ],

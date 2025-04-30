@@ -301,3 +301,12 @@ def get_resources_configuration(run_command: CommandRunner) -> Dict[str, Any]:
     return _call_pcs_cli(
         run_command, ["resource", "config", "--output-format=json"]
     )
+
+
+def get_stonith_configuration(run_command: CommandRunner) -> Dict[str, Any]:
+    """
+    Get resources, groups, clones, bundles configuration from pcs
+    """
+    return _call_pcs_cli(
+        run_command, ["stonith", "config", "--output-format=json"]
+    )
