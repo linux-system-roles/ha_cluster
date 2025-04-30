@@ -259,7 +259,8 @@ def export_resources_configuration(module: AnsibleModule) -> Dict[str, Any]:
 
     cmd_runner = get_cmd_runner(module)
     resources = loader.get_resources_configuration(cmd_runner)
-    primitives = exporter.export_primitive_list(resources)
+    stonith = loader.get_stonith_configuration(cmd_runner)
+    primitives = exporter.export_primitive_list(resources, stonith)
 
     result: dict[str, Any] = dict()
     if primitives:

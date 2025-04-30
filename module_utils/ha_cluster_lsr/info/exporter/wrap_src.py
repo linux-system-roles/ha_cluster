@@ -484,9 +484,12 @@ def _cleanup_wrap(maybe_wrapped: Union[CleanSrc, _WrapSrc]) -> CleanSrc:
     return top_clean
 
 
-def invalid_part(wrapped_data: _WrapSrc, reason: str) -> Exception:
+def invalid_part(data: Union[_WrapSrc, CleanSrc], reason: str) -> Exception:
     """Returns exception that wrapped_data is invalid."""
-    return wrapped_data.invalid_part(reason)
+    if not isinstance(data, _WrapSrc):
+        # should not happen...
+        return TypeError(reason)
+    return data.invalid_part(reason)
 
 
 def is_none(maybe_none: Union[CleanSrc, _WrapSrc]) -> bool:
