@@ -260,11 +260,14 @@ def export_resources_configuration(module: AnsibleModule) -> Dict[str, Any]:
     cmd_runner = get_cmd_runner(module)
     resources = loader.get_resources_configuration(cmd_runner)
     stonith = loader.get_stonith_configuration(cmd_runner)
-    primitives = exporter.export_primitive_list(resources, stonith)
+    primitives = exporter.export_resource_primitive_list(resources, stonith)
+    groups = exporter.export_resource_group_list(resources)
 
     result: dict[str, Any] = dict()
     if primitives:
         result["ha_cluster_resource_primitives"] = primitives
+    if groups:
+        result["ha_cluster_resource_groups"] = groups
     return result
 
 
