@@ -118,7 +118,7 @@ def _primitive(
     "stonith",
     data_desc=["resources configuration", "stonith configuration"],
 )
-def export_primitive_list(
+def export_resource_primitive_list(
     resources: SrcDict, stonith: SrcDict
 ) -> List[Dict[str, Any]]:
     """Export primitive resources from `pcs resource configuration` output"""
@@ -128,4 +128,20 @@ def export_primitive_list(
 
     for primitive_src in stonith["primitives"]:
         result.append(_primitive(primitive_src, use_utilization=False))
+    return result
+
+
+@wrap_src_for_rich_report("resources", data_desc="resources configuration")
+def export_resource_group_list(resources: SrcDict) -> List[Dict[str, Any]]:
+    """Export resource groups from `pcs resource configuration` output"""
+    result = []
+    for group_src in resources["groups"]:
+        group = dict(
+            id=group_src["id"],
+            resource_ids=group_src["member_ids"],
+        )
+        meta_attrs = _attrs(group_src.get("meta_attributes", []))
+        if meta_attrs:
+            group["meta_attrs"] = meta_attrs
+        result.append(group)
     return result

@@ -1,0 +1,664 @@
+{
+    "primitives": [
+        {
+            "id": "A",
+            "agent_name": {
+                "standard": "ocf",
+                "provider": "pacemaker",
+                "type": "Stateful"
+            },
+            "description": null,
+            "operations": [
+                {
+                    "id": "A-migrate_from-interval-0s",
+                    "name": "migrate_from",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "A-migrate_to-interval-0s",
+                    "name": "migrate_to",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "A-monitor-interval-10s",
+                    "name": "monitor",
+                    "interval": "10s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "A-reload-interval-0s",
+                    "name": "reload",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "A-reload-agent-interval-0s",
+                    "name": "reload-agent",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "A-start-interval-0s",
+                    "name": "start",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "A-stop-interval-0s",
+                    "name": "stop",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                }
+            ],
+            "meta_attributes": [
+                {
+                    "id": "A-meta_attributes",
+                    "options": {},
+                    "rule": null,
+                    "nvpairs": [
+                        {
+                            "id": "A-meta_attributes-target-role",
+                            "name": "target-role",
+                            "value": "Stopped"
+                        }
+                    ]
+                }
+            ],
+            "instance_attributes": [
+                {
+                    "id": "A-instance_attributes",
+                    "options": {},
+                    "rule": null,
+                    "nvpairs": [
+                        {
+                            "id": "A-instance_attributes-fake",
+                            "name": "fake",
+                            "value": "some-value"
+                        }
+                    ]
+                }
+            ],
+            "utilization": [
+                {
+                    "id": "A-utilization",
+                    "options": {},
+                    "rule": null,
+                    "nvpairs": [
+                        {
+                            "id": "A-utilization-cpu",
+                            "name": "cpu",
+                            "value": "1"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "B",
+            "agent_name": {
+                "standard": "systemd",
+                "provider": null,
+                "type": "crond"
+            },
+            "description": null,
+            "operations": [
+                {
+                    "id": "B-monitor-interval-60s",
+                    "name": "monitor",
+                    "interval": "60s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "100s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "B-start-interval-0s",
+                    "name": "start",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "100s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "B-stop-interval-0s",
+                    "name": "stop",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "100s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                }
+            ],
+            "meta_attributes": [],
+            "instance_attributes": [],
+            "utilization": []
+        },
+        {
+            "id": "C",
+            "agent_name": {
+                "standard": "ocf",
+                "provider": "pacemaker",
+                "type": "Stateful"
+            },
+            "description": null,
+            "operations": [
+                {
+                    "id": "C-demote-interval-0s",
+                    "name": "demote",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "C-monitor-interval-10s",
+                    "name": "monitor",
+                    "interval": "10s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": "Promoted",
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "C-monitor-interval-11s",
+                    "name": "monitor",
+                    "interval": "11s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": "Unpromoted",
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "C-notify-interval-0s",
+                    "name": "notify",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "5s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "C-promote-interval-0s",
+                    "name": "promote",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "C-reload-agent-interval-0s",
+                    "name": "reload-agent",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "C-start-interval-0s",
+                    "name": "start",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "C-stop-interval-0s",
+                    "name": "stop",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                }
+            ],
+            "meta_attributes": [],
+            "instance_attributes": [],
+            "utilization": []
+        },
+        {
+            "id": "D",
+            "agent_name": {
+                "standard": "ocf",
+                "provider": "pacemaker",
+                "type": "Stateful"
+            },
+            "description": null,
+            "operations": [
+                {
+                    "id": "D-demote-interval-0s",
+                    "name": "demote",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "D-monitor-interval-10s",
+                    "name": "monitor",
+                    "interval": "10s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": "Promoted",
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "D-monitor-interval-11s",
+                    "name": "monitor",
+                    "interval": "11s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": "Unpromoted",
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "D-notify-interval-0s",
+                    "name": "notify",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "5s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "D-promote-interval-0s",
+                    "name": "promote",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "D-reload-agent-interval-0s",
+                    "name": "reload-agent",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "D-start-interval-0s",
+                    "name": "start",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "D-stop-interval-0s",
+                    "name": "stop",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                }
+            ],
+            "meta_attributes": [],
+            "instance_attributes": [],
+            "utilization": []
+        },
+        {
+            "id": "E",
+            "agent_name": {
+                "standard": "ocf",
+                "provider": "pacemaker",
+                "type": "Stateful"
+            },
+            "description": null,
+            "operations": [
+                {
+                    "id": "E-demote-interval-0s",
+                    "name": "demote",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "E-monitor-interval-10s",
+                    "name": "monitor",
+                    "interval": "10s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": "Promoted",
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "E-monitor-interval-11s",
+                    "name": "monitor",
+                    "interval": "11s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": "Unpromoted",
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "E-notify-interval-0s",
+                    "name": "notify",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "5s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "E-promote-interval-0s",
+                    "name": "promote",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "E-reload-agent-interval-0s",
+                    "name": "reload-agent",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "E-start-interval-0s",
+                    "name": "start",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "E-stop-interval-0s",
+                    "name": "stop",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                }
+            ],
+            "meta_attributes": [],
+            "instance_attributes": [],
+            "utilization": []
+        }
+    ],
+    "clones": [],
+    "groups": [
+        {
+            "id": "G1",
+            "description": null,
+            "member_ids": [
+                "C",
+                "D"
+            ],
+            "meta_attributes": [
+                {
+                    "id": "G1-meta_attributes",
+                    "options": {},
+                    "rule": null,
+                    "nvpairs": [
+                        {
+                            "id": "G1-meta_attributes-is-managed",
+                            "name": "is-managed",
+                            "value": "true"
+                        },
+                        {
+                            "id": "G1-meta_attributes-target-role",
+                            "name": "target-role",
+                            "value": "Started"
+                        }
+                    ]
+                }
+            ],
+            "instance_attributes": []
+        },
+        {
+            "id": "G2",
+            "description": null,
+            "member_ids": [
+                "E"
+            ],
+            "meta_attributes": [],
+            "instance_attributes": []
+        }
+    ],
+    "bundles": []
+}
