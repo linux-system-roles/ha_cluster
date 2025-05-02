@@ -161,9 +161,8 @@ def get_firewall_config(
             "services": settings.getServices(),
             "ports": settings.getPorts(),
         }
-    # pylint: disable=broad-exception-caught
     # catch any exception, firewall is not installed or not running, etc.
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         return None
 
 
@@ -182,9 +181,8 @@ def get_firewall_ha_cluster_ports(
             .getSettings()
             .getPorts()
         )
-    # pylint: disable=broad-exception-caught
     # catch any exception, firewall is not installed or not running, etc.
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         return None
 
 
@@ -202,9 +200,8 @@ def get_selinux_ha_cluster_ports(
             all_ports.get(("cluster_port_t", "tcp"), []),
             all_ports.get(("cluster_port_t", "udp"), []),
         )
-    # pylint: disable=broad-exception-caught
     # catch any exception, selinux not available, etc.
-    except Exception:
+    except Exception:  # pylint: disable=broad-except
         return None
 
 
