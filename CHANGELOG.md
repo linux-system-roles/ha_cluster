@@ -1,6 +1,14 @@
 Changelog
 =========
 
+[1.23.1] - 2025-05-05
+--------------------
+
+### Other Changes
+
+- ci: bump sclorg/testing-farm-as-github-action from 3 to 4 (#274)
+- refactor: use single line pylint disable broad-except (#275)
+
 [1.23.0] - 2025-04-23
 --------------------
 
