@@ -145,3 +145,20 @@ def export_resource_group_list(resources: SrcDict) -> List[Dict[str, Any]]:
             group["meta_attrs"] = meta_attrs
         result.append(group)
     return result
+
+
+@wrap_src_for_rich_report("resources", data_desc="resources configuration")
+def export_resource_clone_list(resources: SrcDict) -> List[Dict[str, Any]]:
+    """Export resource groups from `pcs resource configuration` output"""
+    result = []
+    for clone_src in resources["clones"]:
+        clone = dict(
+            id=clone_src["id"],
+            resource_id=clone_src["member_id"],
+        )
+        meta_attrs = _attrs(clone_src.get("meta_attributes", []))
+        if meta_attrs:
+            clone["meta_attrs"] = meta_attrs
+        result.append(clone)
+
+    return result

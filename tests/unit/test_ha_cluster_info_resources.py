@@ -468,6 +468,136 @@ class ExportResourcesConfiguration(TestCase):
                             ],
                         ),
                         dict(
+                            id="F",
+                            agent="ocf:pacemaker:Stateful",
+                            copy_operations_from_agent=False,
+                            operations=[
+                                {
+                                    "action": "demote",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "10s"},
+                                    ],
+                                },
+                                {
+                                    "action": "monitor",
+                                    "attrs": [
+                                        {"name": "interval", "value": "10s"},
+                                        {"name": "timeout", "value": "20s"},
+                                        {"name": "role", "value": "Promoted"},
+                                    ],
+                                },
+                                {
+                                    "action": "monitor",
+                                    "attrs": [
+                                        {"name": "interval", "value": "11s"},
+                                        {"name": "timeout", "value": "20s"},
+                                        {"name": "role", "value": "Unpromoted"},
+                                    ],
+                                },
+                                {
+                                    "action": "notify",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "5s"},
+                                    ],
+                                },
+                                {
+                                    "action": "promote",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "10s"},
+                                    ],
+                                },
+                                {
+                                    "action": "reload-agent",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "10s"},
+                                    ],
+                                },
+                                {
+                                    "action": "start",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "20s"},
+                                    ],
+                                },
+                                {
+                                    "action": "stop",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "20s"},
+                                    ],
+                                },
+                            ],
+                        ),
+                        dict(
+                            id="G",
+                            agent="ocf:pacemaker:Stateful",
+                            copy_operations_from_agent=False,
+                            operations=[
+                                {
+                                    "action": "demote",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "10s"},
+                                    ],
+                                },
+                                {
+                                    "action": "monitor",
+                                    "attrs": [
+                                        {"name": "interval", "value": "10s"},
+                                        {"name": "timeout", "value": "20s"},
+                                        {"name": "role", "value": "Promoted"},
+                                    ],
+                                },
+                                {
+                                    "action": "monitor",
+                                    "attrs": [
+                                        {"name": "interval", "value": "11s"},
+                                        {"name": "timeout", "value": "20s"},
+                                        {"name": "role", "value": "Unpromoted"},
+                                    ],
+                                },
+                                {
+                                    "action": "notify",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "5s"},
+                                    ],
+                                },
+                                {
+                                    "action": "promote",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "10s"},
+                                    ],
+                                },
+                                {
+                                    "action": "reload-agent",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "10s"},
+                                    ],
+                                },
+                                {
+                                    "action": "start",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "20s"},
+                                    ],
+                                },
+                                {
+                                    "action": "stop",
+                                    "attrs": [
+                                        {"name": "interval", "value": "0s"},
+                                        {"name": "timeout", "value": "20s"},
+                                    ],
+                                },
+                            ],
+                        ),
+                        dict(
                             id="F1",
                             agent="stonith:fence_xvm",
                             copy_operations_from_agent=False,
@@ -516,6 +646,30 @@ class ExportResourcesConfiguration(TestCase):
                         dict(
                             id="G2",
                             resource_ids=["E"],
+                        ),
+                        dict(
+                            id="G3",
+                            resource_ids=["G"],
+                        ),
+                    ],
+                    ha_cluster_resource_clones=[
+                        dict(
+                            id="F-clone",
+                            resource_id="F",
+                            meta_attrs=[
+                                {
+                                    "attrs": [
+                                        {
+                                            "name": "promotable",
+                                            "value": "true",
+                                        },
+                                    ]
+                                }
+                            ],
+                        ),
+                        dict(
+                            id="G3-clone",
+                            resource_id="G3",
                         ),
                     ],
                 ),
