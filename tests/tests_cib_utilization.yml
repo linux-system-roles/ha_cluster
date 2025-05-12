@@ -58,7 +58,12 @@
                 # wokeignore:rule=dummy
                 agent: 'ocf:pacemaker:Dummy'
 
+        - name: Fetch versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+
         - name: Verify node utilization
+          when:
+            - '"node.utilization.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_expected_lines:
               - "Node Utilization:"
@@ -83,6 +88,63 @@
                 that:
                   - __test_pcs_node_utilization_config.stdout_lines
                     == __test_expected_lines | list
+
+        - name: Verify node utilization
+          when:
+            - '"node.utilization.output-formats" in __test_pcs_capabilities'
+          vars:
+            # Only check the first node. The json output contains all nodes,
+            # but the number of nodes depends on the test environment.
+            __test_expected_lines: '
+              {
+                  "description": null,
+                  "id": "1",
+                  "instance_attributes": [],
+                  "score": null,
+                  "type": null,
+                  "uname": "{{ __test_first_node }}",
+                  "utilization": [
+                      {
+                          "id": "nodes-1-utilization",
+                          "nvpairs": [
+                              {
+                                  "id": "nodes-1-utilization-cpu",
+                                  "name": "cpu",
+                                  "value": "2"
+                              },
+                              {
+                                  "id": "nodes-1-utilization-memory",
+                                  "name": "memory",
+                                  "value": "4096"
+                              }
+                          ],
+                          "options": {},
+                          "rule": null
+                      }
+                  ]
+              }'
+          block:
+            - name: Fetch node utilization configuration from the cluster
+              command:
+                cmd: pcs --output-format=json node utilization
+              register: __test_pcs_node_utilization_config
+              changed_when: false
+
+            - name: Print real node utilization configuration
+              debug:
+                var: __test_pcs_node_utilization_config.stdout | from_json
+
+            - name: Print expected node utilization configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            # yamllint disable rule:line-length
+            - name: Check node utilization configuration
+              assert:
+                that:
+                  - (__test_pcs_node_utilization_config.stdout | from_json)["nodes"][0]
+                    == __test_expected_lines | from_json
+            # yamllint enable rule:line-length
 
         - name: Verify resource utilization
           vars:

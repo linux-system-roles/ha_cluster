@@ -36,7 +36,12 @@
                       - name: attr2
                         value: val2
 
+        - name: Fetch versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+
         - name: Verify node attributes
+          when:
+            - '"node.attributes.output-formats" not in __test_pcs_capabilities'
           vars:
             __test_expected_lines:
               - "Node Attributes:"
@@ -61,6 +66,63 @@
                 that:
                   - __test_pcs_node_attribute_config.stdout_lines
                     == __test_expected_lines | list
+
+        - name: Verify node attributes
+          when:
+            - '"node.attributes.output-formats" in __test_pcs_capabilities'
+          vars:
+            # Only check the first node. The json output contains all nodes,
+            # but the number of nodes depends on the test environment.
+            __test_expected_lines: '
+              {
+                  "description": null,
+                  "id": "1",
+                  "instance_attributes": [
+                      {
+                          "id": "nodes-1",
+                          "nvpairs": [
+                              {
+                                  "id": "nodes-1-attr1",
+                                  "name": "attr1",
+                                  "value": "val1"
+                              },
+                              {
+                                  "id": "nodes-1-attr2",
+                                  "name": "attr2",
+                                  "value": "val2"
+                              }
+                          ],
+                          "options": {},
+                          "rule": null
+                      }
+                  ],
+                  "score": null,
+                  "type": null,
+                  "uname": "{{ __test_first_node }}",
+                  "utilization": []
+              }'
+          block:
+            - name: Fetch node attributes configuration from the cluster
+              command:
+                cmd: pcs --output-format=json node attribute
+              register: __test_pcs_node_attribute_config
+              changed_when: false
+
+            - name: Print real node attributes configuration
+              debug:
+                var: __test_pcs_node_attribute_config.stdout | from_json
+
+            - name: Print expected node attributes configuration
+              debug:
+                var: __test_expected_lines | from_json
+
+            # yamllint disable rule:line-length
+            - name: Check node attributes configuration
+              assert:
+                that:
+                  - (__test_pcs_node_attribute_config.stdout | from_json)["nodes"][0]
+                    == __test_expected_lines | from_json
+            # yamllint enable rule:line-length
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
