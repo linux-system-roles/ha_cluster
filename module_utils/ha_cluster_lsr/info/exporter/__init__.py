@@ -19,6 +19,7 @@ from .corosync_conf import (
     export_corosync_transport,
 )
 from .resources import (
+    export_resource_bundle_list,
     export_resource_clone_list,
     export_resource_group_list,
     export_resource_primitive_list,
@@ -46,6 +47,7 @@ __all__ = [
     "export_manage_firewall",
     "export_manage_selinux",
     "export_pcs_permission_list",
+    "export_resource_bundle_list",
     "export_resource_clone_list",
     "export_resource_group_list",
     "export_resource_primitive_list",

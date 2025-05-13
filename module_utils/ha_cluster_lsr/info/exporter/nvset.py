@@ -13,10 +13,8 @@ __metaclass__ = type
 
 from typing import Any, Dict, List
 
-from .wrap_src import SrcDict
 
-
-def dict_to_nv_list(input_dict: SrcDict) -> List[Dict[str, Any]]:
+def dict_to_nv_list(input_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Convert a dict to a list of dicts with keys 'name' and 'value'
     """

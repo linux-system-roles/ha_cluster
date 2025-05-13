@@ -263,6 +263,7 @@ def export_resources_configuration(module: AnsibleModule) -> Dict[str, Any]:
     primitives = exporter.export_resource_primitive_list(resources, stonith)
     groups = exporter.export_resource_group_list(resources)
     clones = exporter.export_resource_clone_list(resources)
+    bundles = exporter.export_resource_bundle_list(resources)
 
     result: dict[str, Any] = dict()
     if primitives:
@@ -271,6 +272,8 @@ def export_resources_configuration(module: AnsibleModule) -> Dict[str, Any]:
         result["ha_cluster_resource_groups"] = groups
     if clones:
         result["ha_cluster_resource_clones"] = clones
+    if bundles:
+        result["ha_cluster_resource_bundles"] = bundles
     return result
 
 

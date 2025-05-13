@@ -886,6 +886,140 @@
             "meta_attributes": [],
             "instance_attributes": [],
             "utilization": []
+        },
+        {
+            "id": "H",
+            "agent_name": {
+                "standard": "ocf",
+                "provider": "pacemaker",
+                "type": "Stateful"
+            },
+            "description": null,
+            "operations": [
+                {
+                    "id": "H-demote-interval-0s",
+                    "name": "demote",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "H-monitor-interval-10s",
+                    "name": "monitor",
+                    "interval": "10s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": "Promoted",
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "H-monitor-interval-11s",
+                    "name": "monitor",
+                    "interval": "11s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": "Unpromoted",
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "H-notify-interval-0s",
+                    "name": "notify",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "5s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "H-promote-interval-0s",
+                    "name": "promote",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "H-reload-agent-interval-0s",
+                    "name": "reload-agent",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "10s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "H-start-interval-0s",
+                    "name": "start",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                },
+                {
+                    "id": "H-stop-interval-0s",
+                    "name": "stop",
+                    "interval": "0s",
+                    "description": null,
+                    "start_delay": null,
+                    "interval_origin": null,
+                    "timeout": "20s",
+                    "enabled": null,
+                    "record_pending": null,
+                    "role": null,
+                    "on_fail": null,
+                    "meta_attributes": [],
+                    "instance_attributes": []
+                }
+            ],
+            "meta_attributes": [],
+            "instance_attributes": [],
+            "utilization": []
         }
     ],
     "clones": [
@@ -965,5 +1099,151 @@
             "instance_attributes": []
         }
     ],
-    "bundles": []
+    "bundles": [
+        {
+            "id": "B-without-primitive",
+            "description": null,
+            "member_id": null,
+            "container_type": "docker",
+            "container_options": {
+                "image": "my:image1",
+                "replicas": 2,
+                "replicas_per_host": null,
+                "promoted_max": null,
+                "run_command": null,
+                "network": null,
+                "options": null
+            },
+            "network": {
+                "ip_range_start": null,
+                "control_port": 3121,
+                "host_interface": null,
+                "host_netmask": 32,
+                "add_host": null
+            },
+            "port_mappings": [
+                {
+                    "id": "B-without-primitive-port-map-23456",
+                    "port": 23456,
+                    "internal_port": null,
+                    "range": null
+                },
+                {
+                    "id": "B-without-primitive-port-map-34567",
+                    "port": 34567,
+                    "internal_port": 45678,
+                    "range": null
+                }
+            ],
+            "storage_mappings": [
+                {
+                    "id": "B-without-primitive-storage-map",
+                    "source_dir": "/tmp/source1",
+                    "source_dir_root": null,
+                    "target_dir": "/tmp/target1",
+                    "options": null
+                },
+                {
+                    "id": "B-without-primitive-storage-map-1",
+                    "source_dir": "/tmp/source2",
+                    "source_dir_root": null,
+                    "target_dir": "/tmp/target2",
+                    "options": null
+                }
+            ],
+            "meta_attributes": [
+                {
+                    "id": "B-without-primitive-meta_attributes",
+                    "options": {},
+                    "rule": null,
+                    "nvpairs": [
+                        {
+                            "id": "B-without-primitive-meta_attributes-an-attr",
+                            "name": "an-attr",
+                            "value": "a value"
+                        },
+                        {
+                            "id": "B-without-primitive-meta_attributes-target-role",
+                            "name": "target-role",
+                            "value": "Stopped"
+                        }
+                    ]
+                }
+            ],
+            "instance_attributes": []
+        },
+        {
+            "id": "B-with-primitive",
+            "description": null,
+            "member_id": "H",
+            "container_type": "docker",
+            "container_options": {
+                "image": "my:image2",
+                "replicas": 2,
+                "replicas_per_host": 2,
+                "promoted_max": 1,
+                "run_command": "/bin/true",
+                "network": "extra_network_settings",
+                "options": "extra_options"
+            },
+            "network": {
+                "ip_range_start": "192.168.100.200",
+                "control_port": 3122,
+                "host_interface": "eth0",
+                "host_netmask": 32,
+                "add_host": true
+            },
+            "port_mappings": [
+                {
+                    "id": "B-with-primitive-port-map-33456",
+                    "port": 33456,
+                    "internal_port": null,
+                    "range": null
+                },
+                {
+                    "id": "B-with-primitive-port-map-44567",
+                    "port": 44567,
+                    "internal_port": 55678,
+                    "range": null
+                },
+                {
+                    "id": "B-with-primitive-port-map-33457-33459",
+                    "port": null,
+                    "internal_port": null,
+                    "range": "33457-33459"
+                }
+            ],
+            "storage_mappings": [
+                {
+                    "id": "B-with-primitive-storage-map",
+                    "source_dir": "/tmp/source3",
+                    "source_dir_root": null,
+                    "target_dir": "/tmp/target3",
+                    "options": null
+                },
+                {
+                    "id": "B-with-primitive-storage-map-1",
+                    "source_dir": null,
+                    "source_dir_root": "/tmp/source4",
+                    "target_dir": "/tmp/target4",
+                    "options": "extra_options"
+                }
+            ],
+            "meta_attributes": [
+                {
+                    "id": "B-with-primitive-meta_attributes",
+                    "options": {},
+                    "rule": null,
+                    "nvpairs": [
+                        {
+                            "id": "B-with-primitive-meta_attributes-target-role",
+                            "name": "target-role",
+                            "value": "Stopped"
+                        }
+                    ]
+                }
+            ],
+            "instance_attributes": []
+        }
+    ]
 }
