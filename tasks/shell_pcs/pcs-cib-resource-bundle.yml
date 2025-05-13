@@ -15,7 +15,10 @@
       {% if resource_bundle.network_options | d([]) %}
         network
         {% for option in resource_bundle.network_options | d([]) %}
-          {{ option.name | quote }}={{ option.value | quote }}
+          {# Unfortunately, pcs currently does not support add-host option #}
+          {% if option.name != "add-host" %}
+            {{ option.name | quote }}={{ option.value | quote }}
+          {% endif %}
         {% endfor %}
       {% endif %}
 

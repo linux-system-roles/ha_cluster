@@ -1,0 +1,639 @@
+{
+  "ha_cluster_resource_primitives": [
+    {
+      "id": "A",
+      "copy_operations_from_agent": false,
+      "agent": "ocf:pacemaker:Stateful",
+      "instance_attrs": [
+        {
+          "attrs": [{ "name": "fake", "value": "some-value" }]
+        }
+      ],
+      "meta_attrs": [
+        {
+          "attrs": [{ "name": "target-role", "value": "Stopped" }]
+        }
+      ],
+      "utilization": [
+        {
+          "attrs": [{ "name": "cpu", "value": "1" }]
+        }
+      ],
+      "operations": [
+        {
+          "action": "migrate_from",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "migrate_to",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "10s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "reload",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "reload-agent",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "start",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "stop",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "copy_operations_from_agent": false,
+      "agent": "systemd:crond",
+      "operations": [
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "60s" },
+            { "name": "timeout", "value": "100s" }
+          ]
+        },
+        {
+          "action": "start",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "100s" }
+          ]
+        },
+        {
+          "action": "stop",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "100s" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C",
+      "copy_operations_from_agent": false,
+      "agent": "ocf:pacemaker:Stateful",
+      "operations": [
+        {
+          "action": "demote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "10s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Promoted" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "11s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Unpromoted" }
+          ]
+        },
+        {
+          "action": "notify",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "5s" }
+          ]
+        },
+        {
+          "action": "promote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "reload-agent",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "start",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "stop",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D",
+      "copy_operations_from_agent": false,
+      "agent": "ocf:pacemaker:Stateful",
+      "operations": [
+        {
+          "action": "demote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "10s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Promoted" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "11s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Unpromoted" }
+          ]
+        },
+        {
+          "action": "notify",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "5s" }
+          ]
+        },
+        {
+          "action": "promote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "reload-agent",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "start",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "stop",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "E",
+      "copy_operations_from_agent": false,
+      "agent": "ocf:pacemaker:Stateful",
+      "operations": [
+        {
+          "action": "demote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "10s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Promoted" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "11s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Unpromoted" }
+          ]
+        },
+        {
+          "action": "notify",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "5s" }
+          ]
+        },
+        {
+          "action": "promote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "reload-agent",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "start",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "stop",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F",
+      "copy_operations_from_agent": false,
+      "agent": "ocf:pacemaker:Stateful",
+      "operations": [
+        {
+          "action": "demote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "10s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Promoted" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "11s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Unpromoted" }
+          ]
+        },
+        {
+          "action": "notify",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "5s" }
+          ]
+        },
+        {
+          "action": "promote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "reload-agent",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "start",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "stop",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G",
+      "copy_operations_from_agent": false,
+      "agent": "ocf:pacemaker:Stateful",
+      "operations": [
+        {
+          "action": "demote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "10s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Promoted" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "11s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Unpromoted" }
+          ]
+        },
+        {
+          "action": "notify",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "5s" }
+          ]
+        },
+        {
+          "action": "promote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "reload-agent",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "start",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "stop",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "H",
+      "copy_operations_from_agent": false,
+      "agent": "ocf:pacemaker:Stateful",
+      "operations": [
+        {
+          "action": "demote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "10s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Promoted" }
+          ]
+        },
+        {
+          "action": "monitor",
+          "attrs": [
+            { "name": "interval", "value": "11s" },
+            { "name": "timeout", "value": "20s" },
+            { "name": "role", "value": "Unpromoted" }
+          ]
+        },
+        {
+          "action": "notify",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "5s" }
+          ]
+        },
+        {
+          "action": "promote",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "reload-agent",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "10s" }
+          ]
+        },
+        {
+          "action": "start",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        },
+        {
+          "action": "stop",
+          "attrs": [
+            { "name": "interval", "value": "0s" },
+            { "name": "timeout", "value": "20s" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "F1",
+      "copy_operations_from_agent": false,
+      "agent": "stonith:fence_xvm",
+      "instance_attrs": [
+        {
+          "attrs": [{ "name": "timeout", "value": "35" }]
+        }
+      ],
+      "meta_attrs": [
+        {
+          "attrs": [{ "name": "target-role", "value": "Stopped" }]
+        }
+      ],
+      "operations": [
+        {
+          "action": "monitor",
+          "attrs": [{ "name": "interval", "value": "60s" }]
+        }
+      ]
+    }
+  ],
+  "ha_cluster_resource_groups": [
+    {
+      "id": "G1",
+      "resource_ids": ["C", "D"],
+      "meta_attrs": [
+        {
+          "attrs": [
+            { "name": "is-managed", "value": "true" },
+            { "name": "target-role", "value": "Started" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "G2",
+      "resource_ids": ["E"]
+    },
+    {
+      "id": "G3",
+      "resource_ids": ["G"]
+    }
+  ],
+  "ha_cluster_resource_clones": [
+    {
+      "id": "F-clone",
+      "resource_id": "F",
+      "meta_attrs": [
+        {
+          "attrs": [{ "name": "promotable", "value": "true" }]
+        }
+      ]
+    },
+    {
+      "id": "G3-clone",
+      "resource_id": "G3"
+    }
+  ],
+  "ha_cluster_resource_bundles": [
+    {
+      "id": "B-without-primitive",
+      "container": {
+        "type": "docker",
+        "options": [
+          { "name": "image", "value": "my:image1" },
+          { "name": "replicas", "value": 2 }
+        ]
+      },
+      "network_options": [
+        { "name": "control-port", "value": 3121 },
+        { "name": "host-netmask", "value": 32 }
+      ],
+      "port_map": [
+        [{ "name": "port", "value": 23456 }],
+        [
+          { "name": "port", "value": 34567 },
+          { "name": "internal-port", "value": 45678 }
+        ]
+      ],
+      "storage_map": [
+        [
+          { "name": "source-dir", "value": "/tmp/source1" },
+          { "name": "target-dir", "value": "/tmp/target1" }
+        ],
+        [
+          { "name": "source-dir", "value": "/tmp/source2" },
+          { "name": "target-dir", "value": "/tmp/target2" }
+        ]
+      ],
+      "meta_attrs": [
+        {
+          "attrs": [
+            { "name": "an-attr", "value": "a value" },
+            { "name": "target-role", "value": "Stopped" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B-with-primitive",
+      "resource_id": "H",
+      "container": {
+        "type": "docker",
+        "options": [
+          { "name": "image", "value": "my:image2" },
+          { "name": "replicas", "value": 2 },
+          { "name": "replicas-per-host", "value": 2 },
+          { "name": "promoted-max", "value": 1 },
+          { "name": "run-command", "value": "/bin/true" },
+          { "name": "network", "value": "extra_network_settings" },
+          { "name": "options", "value": "extra_options" }
+        ]
+      },
+      "network_options": [
+        { "name": "ip-range-start", "value": "192.168.100.200" },
+        { "name": "control-port", "value": 3122 },
+        { "name": "host-interface", "value": "eth0" },
+        { "name": "host-netmask", "value": 32 },
+        { "name": "add-host", "value": true }
+      ],
+      "port_map": [
+        [{ "name": "port", "value": 33456 }],
+        [
+          { "name": "port", "value": 44567 },
+          { "name": "internal-port", "value": 55678 }
+        ],
+        [{ "name": "range", "value": "33457-33459" }]
+      ],
+      "storage_map": [
+        [
+          { "name": "source-dir", "value": "/tmp/source3" },
+          { "name": "target-dir", "value": "/tmp/target3" }
+        ],
+        [
+          { "name": "source-dir-root", "value": "/tmp/source4" },
+          { "name": "target-dir", "value": "/tmp/target4" },
+          { "name": "options", "value": "extra_options" }
+        ]
+      ],
+      "meta_attrs": [
+        {
+          "attrs": [{ "name": "target-role", "value": "Stopped" }]
+        }
+      ]
+    }
+  ]
+}
