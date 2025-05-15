@@ -1,6 +1,14 @@
 Changelog
 =========
 
+[1.23.2] - 2025-05-15
+--------------------
+
+### Other Changes
+
+- ci: bump tox-lsr to 3.8.0; rename qemu/kvm tests (#277)
+- test: update attributes and utilization tests for new pcs (#278)
+
 [1.23.1] - 2025-05-05
 --------------------
 
