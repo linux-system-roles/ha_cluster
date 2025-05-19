@@ -27,6 +27,7 @@ author:
 requirements:
     - pcs-0.10.8 or newer installed on managed nodes
     - pcs-0.10.8 or newer for exporting corosync configuration
+    - pcs-0.10.14 or pcs-0.11.3 or newer for exporting resources configuration
     - python3-firewall for exporting ha_cluster_manage_firewall
     - python3-policycoreutils for exporting ha_cluster_manage_selinux
     - python 3.6 or newer
@@ -65,6 +66,10 @@ ha_cluster:
         - ha_cluster_quorum
         - ha_cluster_node_options - currently only node_name,
           corosync_addresses and pcs_address are present
+        - ha_cluster_resource_primitives
+        - ha_cluster_resource_groups
+        - ha_cluster_resource_clones
+        - ha_cluster_resource_bundles
         - HORIZONTALLINE
         - Following variables are required for running ha_cluster role but are
           never present in this module output
@@ -120,6 +125,8 @@ except ImportError:
         pass
 
     HAS_SELINUX = False
+
+_CAPABILITY_RESOURCE_OUTPUT = "pcmk.resource.config.output-formats"
 
 
 def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
@@ -252,10 +259,15 @@ def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
     return result
 
 
-def export_resources_configuration(module: AnsibleModule) -> Dict[str, Any]:
+def export_resources_configuration(
+    module: AnsibleModule, pcs_capabilities: List[str]
+) -> Dict[str, Any]:
     """
     Export existing HA cluster resources
     """
+
+    if _CAPABILITY_RESOURCE_OUTPUT not in pcs_capabilities:
+        return dict()
 
     cmd_runner = get_cmd_runner(module)
     resources = loader.get_resources_configuration(cmd_runner)
@@ -277,6 +289,14 @@ def export_resources_configuration(module: AnsibleModule) -> Dict[str, Any]:
     return result
 
 
+def get_pcs_capabilities(module: AnsibleModule) -> List[str]:
+    """
+    Extract pcsd pcs_capabilities from pcs version info
+    """
+    _version, capabilities = loader.get_pcs_version_info(get_cmd_runner(module))
+    return capabilities
+
+
 def main() -> None:
     """
     Top level module function
@@ -288,12 +308,16 @@ def main() -> None:
     ha_cluster_result: Dict[str, Any] = dict()
     module_result["ha_cluster"] = ha_cluster_result
 
+    pcs_capabilities = get_pcs_capabilities(module)
+
     try:
         if loader.has_corosync_conf():
             ha_cluster_result.update(**export_os_configuration(module))
             ha_cluster_result.update(**export_pcsd_configuration())
             ha_cluster_result.update(**export_cluster_configuration(module))
-            ha_cluster_result.update(**export_resources_configuration(module))
+            ha_cluster_result.update(
+                **export_resources_configuration(module, pcs_capabilities)
+            )
             ha_cluster_result["ha_cluster_cluster_present"] = True
         else:
             # Exporting qnetd configuration will be added later here. It will

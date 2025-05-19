@@ -310,3 +310,19 @@ def get_stonith_configuration(run_command: CommandRunner) -> Dict[str, Any]:
     return _call_pcs_cli(
         run_command, ["stonith", "config", "--output-format=json"]
     )
+
+
+def get_pcs_version_info(run_command: CommandRunner) -> Tuple[str, List[str]]:
+    """
+    Get pcs version and list of capabilities
+    """
+    env = {
+        # make sure to get output of external processes in English and ASCII
+        "LC_ALL": "C",
+    }
+    command = ["pcs", "--version", "--full"]
+    rc, stdout, stderr = run_command(command, env)
+    if rc != 0:
+        raise CliCommandError(command, rc, stdout, stderr)
+    lines = stdout.splitlines() + [""]  # empty line for case without 2. line
+    return (lines[0], lines[1].split())

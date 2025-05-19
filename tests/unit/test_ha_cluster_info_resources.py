@@ -24,6 +24,8 @@ CMD_STONITH_CONF = mock.call(
     ["pcs", "stonith", "config", "--output-format=json"], **CMD_OPTIONS
 )
 
+FIXTURE_CAPABILITIES = ["pcmk.resource.config.output-formats"]
+
 FIXTURE_EMPTY_RESOURCES = {  # type: ignore
     "primitives": [],
     "groups": [],
@@ -55,7 +57,9 @@ class ExportResourcesConfiguration(TestCase):
                 ]
             ) as module_mock,
         ):
-            ha_cluster_info.export_resources_configuration(module_mock)
+            ha_cluster_info.export_resources_configuration(
+                module_mock, FIXTURE_CAPABILITIES
+            )
         self.assertEqual(
             cm.exception.kwargs,
             dict(
@@ -109,7 +113,9 @@ class ExportResourcesConfiguration(TestCase):
                 ]
             ) as module_mock,
         ):
-            ha_cluster_info.export_resources_configuration(module_mock)
+            ha_cluster_info.export_resources_configuration(
+                module_mock, FIXTURE_CAPABILITIES
+            )
         self.assertEqual(
             cm.exception.kwargs,
             dict(
@@ -130,7 +136,9 @@ class ExportResourcesConfiguration(TestCase):
             ]
         ) as module_mock:
             self.assertEqual(
-                ha_cluster_info.export_resources_configuration(module_mock),
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, FIXTURE_CAPABILITIES
+                ),
                 {},
             )
 
@@ -170,7 +178,9 @@ class ExportResourcesConfiguration(TestCase):
             ]
         ) as module_mock:
             self.assertEqual(
-                ha_cluster_info.export_resources_configuration(module_mock),
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, FIXTURE_CAPABILITIES
+                ),
                 {
                     "ha_cluster_resource_primitives": [
                         {
@@ -223,13 +233,24 @@ class ExportResourcesConfiguration(TestCase):
             ]
         ) as module_mock:
             self.assertEqual(
-                ha_cluster_info.export_resources_configuration(module_mock),
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, FIXTURE_CAPABILITIES
+                ),
                 {
                     "ha_cluster_resource_bundles": [
                         {"id": "B 1", "container": {"type": "docker"}},
                         {"id": "B 2", "container": {"type": "docker"}},
                     ]
                 },
+            )
+
+    def test_no_capabilities(self) -> None:
+        with mocked_module([]) as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, pcs_capabilities=[]
+                ),
+                {},
             )
 
     def test_max_features(self) -> None:
@@ -248,6 +269,17 @@ class ExportResourcesConfiguration(TestCase):
             ) as module_mock,
         ):
             self.assertEqual(
-                ha_cluster_info.export_resources_configuration(module_mock),
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, FIXTURE_CAPABILITIES
+                ),
                 json.load(expected_export),
+            )
+
+    def test_no_capabilites(self) -> None:
+        with mocked_module([]) as module_mock:
+            self.assertEqual(
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, pcs_capabilities=[]
+                ),
+                {},
             )
