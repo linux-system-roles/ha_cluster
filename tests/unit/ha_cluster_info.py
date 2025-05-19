@@ -53,8 +53,8 @@ def mocked_module(
     if module_mock.run_command.call_count != len(runner_calls):
         raise AssertionError(
             f"AnsibleModule.run_command expected to be run"
-            f" {module_mock.run_command.call_count} times"
-            f" but actually ran {len(runner_calls)} times"
+            f" {len(runner_calls)} times"
+            f" but actually ran {module_mock.run_command.call_count} times"
         )
 
     module_mock.run_command.assert_has_calls([call[0] for call in runner_calls])
