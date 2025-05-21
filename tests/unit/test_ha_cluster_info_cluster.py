@@ -191,17 +191,15 @@ class ExportClusterConfiguration(TestCase):
             node2="node2pcs",
         )
 
-        with (
-            self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm,
-            mocked_module(
+        with self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm:
+            with mocked_module(
                 [
                     (CMD_ENABLED_COROSYNC, (0, "", "")),
                     (CMD_ENABLED_PCMK, (0, "", "")),
                     (CMD_CLUSTER_CONF, (0, json.dumps(corosync_conf_data), "")),
                 ]
-            ) as module_mock,
-        ):
-            ha_cluster_info.export_cluster_configuration(module_mock)
+            ) as module_mock:
+                ha_cluster_info.export_cluster_configuration(module_mock)
         self.assertEqual(
             cm.exception.kwargs,
             dict(

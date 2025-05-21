@@ -48,18 +48,16 @@ class ExportResourcesConfiguration(TestCase):
             "clones": [],
             "bundles": [],
         }
-        with (
-            self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm,
-            mocked_module(
+        with self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm:
+            with mocked_module(
                 [
                     (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
                     (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
                 ]
-            ) as module_mock,
-        ):
-            ha_cluster_info.export_resources_configuration(
-                module_mock, FIXTURE_CAPABILITIES
-            )
+            ) as module_mock:
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, FIXTURE_CAPABILITIES
+                )
         self.assertEqual(
             cm.exception.kwargs,
             dict(
@@ -104,18 +102,16 @@ class ExportResourcesConfiguration(TestCase):
             "bundles": [],
         }
         stonith_data = FIXTURE_EMPTY_RESOURCES
-        with (
-            self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm,
-            mocked_module(
+        with self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm:
+            with mocked_module(
                 [
                     (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
                     (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
                 ]
-            ) as module_mock,
-        ):
-            ha_cluster_info.export_resources_configuration(
-                module_mock, FIXTURE_CAPABILITIES
-            )
+            ) as module_mock:
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, FIXTURE_CAPABILITIES
+                )
         self.assertEqual(
             cm.exception.kwargs,
             dict(
@@ -254,25 +250,21 @@ class ExportResourcesConfiguration(TestCase):
             )
 
     def test_max_features(self) -> None:
-        def open_file(file_name: str):  # type: ignore
-            return open(os.path.join(CURRENT_DIR, file_name), encoding="utf-8")
+        def read_file(fname: str) -> str:
+            with open(os.path.join(CURRENT_DIR, fname), encoding="utf-8") as f:
+                return f.read()
 
-        with (
-            open_file("resources.json") as resources_json,
-            open_file("stonith.json") as stonith_json,
-            open_file("resources-export.json") as expected_export,
-            mocked_module(
-                [
-                    (CMD_RESOURCE_CONF, (0, resources_json.read(), "")),
-                    (CMD_STONITH_CONF, (0, stonith_json.read(), "")),
-                ]
-            ) as module_mock,
-        ):
+        with mocked_module(
+            [
+                (CMD_RESOURCE_CONF, (0, read_file("resources.json"), "")),
+                (CMD_STONITH_CONF, (0, read_file("stonith.json"), "")),
+            ]
+        ) as module_mock:
             self.assertEqual(
                 ha_cluster_info.export_resources_configuration(
                     module_mock, FIXTURE_CAPABILITIES
                 ),
-                json.load(expected_export),
+                json.loads(read_file("resources-export.json")),
             )
 
     def test_no_capabilites(self) -> None:
