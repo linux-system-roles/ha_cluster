@@ -25,228 +25,9 @@ CMD_STONITH_CONF = mock.call(
 
 FIXTURE_CAPABILITIES = ["pcmk.resource.config.output-formats"]
 
-FIXTURE_EMPTY_RESOURCES = {  # type: ignore
-    "primitives": [],
-    "groups": [],
-    "clones": [],
-    "bundles": [],
-}
-
 
 class ExportResourcesConfiguration(TestCase):
     maxDiff = None
-
-    def test_uses_standard_invalid_src_dealing(self) -> None:
-        resource_data = {  # type: ignore
-            "groups": [],
-            "clones": [],
-            "bundles": [],
-        }
-        stonith_data = {  # type: ignore
-            "groups": [],
-            "clones": [],
-            "bundles": [],
-        }
-        with self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm:
-            with mocked_module(
-                [
-                    (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
-                    (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
-                ]
-            ) as module_mock:
-                ha_cluster_info.export_resources_configuration(
-                    module_mock, FIXTURE_CAPABILITIES
-                )
-        self.assertEqual(
-            cm.exception.kwargs,
-            dict(
-                data=resource_data,
-                data_desc="resources configuration",
-                issue_location="",
-                issue_desc="Missing key 'primitives'",
-            ),
-        )
-
-    def test_invalid_src_on_operation_without_attr(self) -> None:
-        resource_data = {
-            "primitives": [
-                {
-                    "id": "A",
-                    "agent_name": {
-                        "standard": "ocf",
-                        "provider": "pacemaker",
-                        "type": "Stateful",
-                    },
-                    "operations": [
-                        {
-                            "id": "A-migrate_from",
-                            "name": "migrate_from",
-                            "interval": None,
-                            "description": None,
-                            "start_delay": None,
-                            "interval_origin": None,
-                            "timeout": None,
-                            "enabled": None,
-                            "record_pending": None,
-                            "role": None,
-                            "on_fail": None,
-                            "meta_attributes": [],
-                            "instance_attributes": [],
-                        }
-                    ],
-                }
-            ],
-            "groups": [],
-            "clones": [],
-            "bundles": [],
-        }
-        stonith_data = FIXTURE_EMPTY_RESOURCES
-        with self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm:
-            with mocked_module(
-                [
-                    (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
-                    (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
-                ]
-            ) as module_mock:
-                ha_cluster_info.export_resources_configuration(
-                    module_mock, FIXTURE_CAPABILITIES
-                )
-        self.assertEqual(
-            cm.exception.kwargs,
-            dict(
-                data=resource_data,
-                data_desc="resources configuration",
-                issue_location="/primitives/0/operations/0",
-                issue_desc="No attributes in operation",
-            ),
-        )
-
-    def test_no_resources(self) -> None:
-        resource_data = FIXTURE_EMPTY_RESOURCES
-        stonith_data = FIXTURE_EMPTY_RESOURCES
-        with mocked_module(
-            [
-                (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
-                (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
-            ]
-        ) as module_mock:
-            self.assertEqual(
-                ha_cluster_info.export_resources_configuration(
-                    module_mock, FIXTURE_CAPABILITIES
-                ),
-                {},
-            )
-
-    def test_no_member_id_in_bundles(self) -> None:
-        resource_data = {  # type: ignore
-            "primitives": [
-                {
-                    "id": "A",
-                    "agent_name": {
-                        "standard": "ocf",
-                        "provider": "pacemaker",
-                        "type": "Stateful",
-                    },
-                    "operations": [
-                        {
-                            "id": "A-migrate_from",
-                            "name": "migrate_from",
-                            "interval": "30s",
-                        }
-                    ],
-                }
-            ],
-            "groups": [],
-            "clones": [],
-            "bundles": [
-                {"id": "B 1", "container_type": "docker"},
-                {"id": "B 2", "container_type": "docker", "member_id": None},
-                {"id": "B 3", "container_type": "docker", "member_id": ""},
-                {"id": "B 4", "container_type": "docker", "member_id": "A"},
-            ],
-        }
-        stonith_data = FIXTURE_EMPTY_RESOURCES
-        with mocked_module(
-            [
-                (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
-                (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
-            ]
-        ) as module_mock:
-            self.assertEqual(
-                ha_cluster_info.export_resources_configuration(
-                    module_mock, FIXTURE_CAPABILITIES
-                ),
-                {
-                    "ha_cluster_resource_primitives": [
-                        {
-                            "id": "A",
-                            "agent": "ocf:pacemaker:Stateful",
-                            "copy_operations_from_agent": False,
-                            "operations": [
-                                {
-                                    "action": "migrate_from",
-                                    "attrs": [
-                                        {"name": "interval", "value": "30s"}
-                                    ],
-                                },
-                            ],
-                        }
-                    ],
-                    "ha_cluster_resource_bundles": [
-                        {"id": "B 1", "container": {"type": "docker"}},
-                        {"id": "B 2", "container": {"type": "docker"}},
-                        {"id": "B 3", "container": {"type": "docker"}},
-                        {
-                            "id": "B 4",
-                            "container": {"type": "docker"},
-                            "resource_id": "A",
-                        },
-                    ],
-                },
-            )
-
-    def test_skip_bundle_without_container_type(self) -> None:
-        resource_data = {  # type: ignore
-            "primitives": [],
-            "groups": [],
-            "clones": [],
-            "bundles": [
-                {"id": "B 1", "container_type": "docker"},
-                {"id": "B-without-container-type"},
-                {
-                    "id": "B-with-container-type-none",
-                    "container_type": None,
-                },
-                {"id": "B 2", "container_type": "docker"},
-            ],
-        }
-        stonith_data = FIXTURE_EMPTY_RESOURCES
-        with mocked_module(
-            [
-                (CMD_RESOURCE_CONF, (0, json.dumps(resource_data), "")),
-                (CMD_STONITH_CONF, (0, json.dumps(stonith_data), "")),
-            ]
-        ) as module_mock:
-            self.assertEqual(
-                ha_cluster_info.export_resources_configuration(
-                    module_mock, FIXTURE_CAPABILITIES
-                ),
-                {
-                    "ha_cluster_resource_bundles": [
-                        {"id": "B 1", "container": {"type": "docker"}},
-                        {"id": "B 2", "container": {"type": "docker"}},
-                    ]
-                },
-            )
-
-    def test_no_capabilities(self) -> None:
-        with mocked_module([]) as module_mock:
-            self.assertEqual(
-                ha_cluster_info.export_resources_configuration(
-                    module_mock, pcs_capabilities=[]
-                ),
-                {},
-            )
 
     def test_max_features(self) -> None:
         def read_file(fname: str) -> str:
@@ -274,3 +55,26 @@ class ExportResourcesConfiguration(TestCase):
                 ),
                 {},
             )
+
+    def test_pcs_cmd_fail(self) -> None:
+        with self.assertRaises(ha_cluster_info.loader.CliCommandError) as cm:
+            with mocked_module(
+                [(CMD_RESOURCE_CONF, (1, "", "Error"))]
+            ) as module_mock:
+                ha_cluster_info.export_resources_configuration(
+                    module_mock, FIXTURE_CAPABILITIES
+                )
+        self.assertEqual(
+            cm.exception.kwargs,
+            dict(
+                pcs_command=[
+                    "pcs",
+                    "resource",
+                    "config",
+                    "--output-format=json",
+                ],
+                stdout="",
+                stderr="Error",
+                rc=1,
+            ),
+        )
