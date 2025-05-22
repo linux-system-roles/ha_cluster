@@ -5,6 +5,7 @@
   gather_facts: true  # needs facts
   vars_files: vars/main.yml
   vars:
+    __required_capability: pcmk.resource.config.output-formats
     __old_distro: >-
       {{
         (
@@ -566,6 +567,8 @@
 
         # yamllint disable rule:line-length
         - name: Check exported resources configuration
+          when:
+            - __required_capability in __test_pcs_capabilities
           vars:
             __test_expected:
               primitives: >-
@@ -614,3 +617,9 @@
               assert:
                 that:
                   - __test_got == __test_expected
+
+        - name: Warn about skipped test
+          when:
+            - __required_capability not in __test_pcs_capabilities
+          debug:
+            msg: This test needs pcs with {{ __required_capability }} capability
