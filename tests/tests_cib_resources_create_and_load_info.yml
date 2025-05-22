@@ -33,13 +33,6 @@
               - name: "timeout"
                 value: "20s"
 
-          - action: "reload-agent"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
-
           - action: "start"
             attrs:
               - name: "interval"
@@ -125,12 +118,6 @@
                 value: "0s"
               - name: "timeout"
                 value: "10s"
-          - action: "reload-agent"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
           - action: "start"
             attrs:
               - name: "interval"
@@ -176,12 +163,6 @@
               - name: "timeout"
                 value: "5s"
           - action: "promote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
-          - action: "reload-agent"
             attrs:
               - name: "interval"
                 value: "0s"
@@ -237,12 +218,6 @@
                 value: "0s"
               - name: "timeout"
                 value: "10s"
-          - action: "reload-agent"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
           - action: "start"
             attrs:
               - name: "interval"
@@ -288,12 +263,6 @@
               - name: "timeout"
                 value: "5s"
           - action: "promote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
-          - action: "reload-agent"
             attrs:
               - name: "interval"
                 value: "0s"
@@ -349,12 +318,6 @@
                 value: "0s"
               - name: "timeout"
                 value: "10s"
-          - action: "reload-agent"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
           - action: "start"
             attrs:
               - name: "interval"
@@ -400,12 +363,6 @@
               - name: timeout
                 value: 5s
           - action: promote
-            attrs:
-              - name: interval
-                value: 0s
-              - name: timeout
-                value: 10s
-          - action: reload-agent
             attrs:
               - name: interval
                 value: 0s
