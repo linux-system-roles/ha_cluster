@@ -178,7 +178,15 @@ unit_tests_rhel8:
     - dnf install -y pcs
     - *symlink_pcs_to_pyenv
     - pcs --version
-    - PYTHONPATH="./library:./module_utils:$PYTHONPATH" python -m unittest --verbose tests/unit/test_ha_cluster_info.py
+    - PYTHONPATH="./library:./module_utils:$PYTHONPATH" python -m unittest --verbose
+      tests/unit/test_ha_cluster_info_cluster.py
+      tests/unit/test_ha_cluster_info_pcsd.py
+      tests/unit/test_ha_cluster_info.py
+      tests/unit/test_ha_cluster_info_resources.py
+      tests/unit/test_ha_cluster_os.py
+      tests/unit/test_info_exporter.py
+      tests/unit/test_info_exporter_resources.py
+      tests/unit/test_wrap_sources.py
 
 # tier 1
 build_tier1_ci_yml:
