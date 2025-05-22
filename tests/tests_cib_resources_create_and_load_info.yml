@@ -5,6 +5,20 @@
   gather_facts: true  # needs facts
   vars_files: vars/main.yml
   vars:
+    __old_distro: >-
+      {{
+        (
+          ansible_facts['distribution'] in ['RedHat', 'CentOS']
+          and
+          ansible_facts['distribution_major_version'] == '8'
+        ) | bool
+      }}
+    # wokeignore:rule=master
+    __mstr: Master
+    # wokeignore:rule=slave
+    __slv: Slave
+    __promoted: "{{ __old_distro | ternary(__mstr, 'Promoted') }}"
+    __unpromoted: "{{ __old_distro | ternary(__slv, 'Unpromoted') }}"
     ha_cluster_cluster_name: test-cluster
     ha_cluster_export_configuration: true
     # Make cluster not try starting any resources. Due to missing resource
@@ -97,7 +111,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Promoted"
+                value: "{{ __promoted }}"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -105,7 +119,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Unpromoted"
+                value: "{{ __unpromoted }}"
           - action: "notify"
             attrs:
               - name: "interval"
@@ -147,7 +161,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Promoted"
+                value: "{{ __promoted }}"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -155,7 +169,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Unpromoted"
+                value: "{{ __unpromoted }}"
           - action: "notify"
             attrs:
               - name: "interval"
@@ -197,7 +211,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Promoted"
+                value: "{{ __promoted }}"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -205,7 +219,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Unpromoted"
+                value: "{{ __unpromoted }}"
           - action: "notify"
             attrs:
               - name: "interval"
@@ -247,7 +261,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Promoted"
+                value: "{{ __promoted }}"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -255,7 +269,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Unpromoted"
+                value: "{{ __unpromoted }}"
           - action: "notify"
             attrs:
               - name: "interval"
@@ -297,7 +311,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Promoted"
+                value: "{{ __promoted }}"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -305,7 +319,7 @@
               - name: "timeout"
                 value: "20s"
               - name: "role"
-                value: "Unpromoted"
+                value: "{{ __unpromoted }}"
           - action: "notify"
             attrs:
               - name: "interval"
@@ -347,7 +361,7 @@
               - name: timeout
                 value: 20s
               - name: role
-                value: Promoted
+                value: "{{ __promoted }}"
           - action: monitor
             attrs:
               - name: interval
@@ -355,7 +369,7 @@
               - name: timeout
                 value: 20s
               - name: role
-                value: Unpromoted
+                value: "{{ __unpromoted }}"
           - action: notify
             attrs:
               - name: interval
