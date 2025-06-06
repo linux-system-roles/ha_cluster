@@ -11,7 +11,7 @@ from __future__ import absolute_import, division, print_function
 # pylint: disable=invalid-name
 __metaclass__ = type
 
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional
 
 from .nvset import dict_to_nv_list
 
@@ -57,8 +57,8 @@ _BUNDLE_STORAGE_MAP_KEY_MAP = {
 
 def _nv_list(
     input_dict: Dict[str, Any],
-    skip_keys: Union[List[str], None] = None,
-    key_map: Union[Dict[str, str], None] = None,
+    skip_keys: Optional[List[str]] = None,
+    key_map: Optional[Dict[str, str]] = None,
 ) -> List[Dict[str, Any]]:
     if key_map is None:
         key_map = {}
