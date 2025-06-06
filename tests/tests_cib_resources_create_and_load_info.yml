@@ -532,8 +532,8 @@
           - attrs:
               - name: target-role
                 value: Stopped
-    # Even though `add-host` option is not propagated to CIB (bug in pcs does
-    # not allow it) we use it in definition to check that it does not break the
+    # Even though `add-host` option is not propagated to CIB (pcs does not
+    # support it yet) we use it in definition to check that it does not break the
     # role. So, we extend bundles by this option.
     ha_cluster_resource_bundles: >-
       {%- set result = [] -%}

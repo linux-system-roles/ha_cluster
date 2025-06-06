@@ -197,7 +197,7 @@ def export_resource_group_list(resources: SrcDict) -> List[Dict[str, Any]]:
 
 @wrap_src_for_rich_report("resources", data_desc="resources configuration")
 def export_resource_clone_list(resources: SrcDict) -> List[Dict[str, Any]]:
-    """Export resource groups from `pcs resource configuration` output"""
+    """Export resource clones from `pcs resource configuration` output"""
     result = []
     for clone_src in resources["clones"]:
         clone = dict(
@@ -214,7 +214,7 @@ def export_resource_clone_list(resources: SrcDict) -> List[Dict[str, Any]]:
 
 @wrap_src_for_rich_report("resources", data_desc="resources configuration")
 def export_resource_bundle_list(resources: SrcDict) -> List[Dict[str, Any]]:
-    """Export resource groups from `pcs resource configuration` output"""
+    """Export resource bundles from `pcs resource configuration` output"""
     result = []
     for bundle_src in resources["bundles"]:
         # Theoretically, in CIB can be a bundle with a container type that is

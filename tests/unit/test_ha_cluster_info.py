@@ -17,7 +17,7 @@ CMD_VERSION = mock.call(PCS_CMD_VERSION, **CMD_OPTIONS)
 
 
 class GetPcsCapabilities(TestCase):
-    def test_suceess(self) -> None:
+    def test_success(self) -> None:
         capabilities = [
             "pcmk.resource.config.output-formats",
             "pcmk.resource.refresh",

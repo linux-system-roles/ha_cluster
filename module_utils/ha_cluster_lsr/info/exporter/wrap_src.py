@@ -99,7 +99,7 @@ def wrap_src_for_rich_report(
             bound.apply_defaults()
             for param, desc in zip(param_names, data_desc):
                 if param in bound.arguments:
-                    # Wrap agruments mentioned as `param_names`
+                    # Wrap arguments mentioned as `param_names`
                     bound.arguments[param] = _wrap_src(
                         bound.arguments[param],
                         _Context(bound.arguments[param], desc),
