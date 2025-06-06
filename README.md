@@ -36,7 +36,7 @@ An Ansible role for managing High Availability Clustering.
   * Corosync transport options including compression and encryption
   * Corosync totem options
   * Corosync quorum options
-  * Primitive resources
+  * Primitive resources (including stonith)
   * Resource groups
   * Resource clones
   * Resource bundles

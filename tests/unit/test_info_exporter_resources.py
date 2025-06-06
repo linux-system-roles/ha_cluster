@@ -99,7 +99,7 @@ class ExportResources(TestCase):
             [],
         )
 
-    def test_no_member_id_in_bundles(self) -> None:
+    def test_member_id_in_bundles(self) -> None:
         resource_data = {  # type: ignore
             "primitives": [
                 {
