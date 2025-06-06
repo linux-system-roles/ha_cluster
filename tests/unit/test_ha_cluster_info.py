@@ -31,14 +31,14 @@ class GetPcsCapabilities(TestCase):
             ]
         ) as module_mock:
             self.assertEqual(
-                ha_cluster_info.get_pcs_capabilities((module_mock)),
+                ha_cluster_info.get_pcs_capabilities(module_mock),
                 capabilities,
             )
 
     def test_raises_on_cmd_fail(self) -> None:
         with self.assertRaises(loader.CliCommandError) as cm:
             with mocked_module([(CMD_VERSION, (1, "", ""))]) as module_mock:
-                ha_cluster_info.get_pcs_capabilities((module_mock))
+                ha_cluster_info.get_pcs_capabilities(module_mock)
         self.assertEqual(
             cm.exception.kwargs,
             dict(pcs_command=PCS_CMD_VERSION, rc=1, stdout="", stderr=""),
@@ -47,6 +47,6 @@ class GetPcsCapabilities(TestCase):
     def test_no_capabilities_on_only_version(self) -> None:
         with mocked_module([(CMD_VERSION, (0, "0.12.0", ""))]) as module_mock:
             self.assertEqual(
-                ha_cluster_info.get_pcs_capabilities((module_mock)),
+                ha_cluster_info.get_pcs_capabilities(module_mock),
                 [],
             )
