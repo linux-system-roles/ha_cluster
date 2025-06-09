@@ -4,6 +4,44 @@
 # Author: Tomas Jelinek <tojeline@redhat.com>
 # SPDX-License-Identifier: MIT
 
+"""
+This module addresses the following issue:
+When exporting the current cluster configuration, configuration data is loaded
+from various sources, and the cluster configuration is built from this source
+data in the appropriate format. If the source data does not conform to the
+expected format (e.g., a missing key, a string instead of an object), an
+exception is raised. However, source data can be quite extensive and nested,
+making it difficult to locate the issue based on the brief information from
+built-in exceptions.
+
+To resolve this, a set of wrappers is introduced for every Python type that
+can be obtained from JSON format (i.e., str, int, float, dict, list, bool,
+None). Non-JSON sources are loaded into JSON-compatible types. These wrappers
+track the current position within the source data and propagate this
+information if an exception needs to be raised.
+
+Since it's necessary to work with elements (e.g., normalizing a string with
+`.lower()`), the wrappers must support all operations the wrapped type can
+perform. However, the interface of these types is extensive. Therefore, where
+possible, wrapper classes inherit directly from the type they wrap. In such
+cases, the wrapped data is stored in two places: in the `_data` attribute and
+passed to the constructor of the built-in type. Where inheritance from a
+built-in type is not possible (e.g., Python does not allow inheriting from
+`bool`), a different approach is applied.
+
+Wrapper classes also provide methods to detect and report misuse of a
+particular type. This allows for handling the most common unmet expectations
+(e.g., when an integer is provided where a dictionary is expected, and an
+attempt is made to iterate over it).
+
+Non-scalar types are wrapped entirely, and their individual parts are wrapped
+lazily, on demand.
+
+This module does not cover situations where, for example, a string is expected
+but a dictionary is found instead, and the caller unwittingly uses this
+"expected" string directly in the output.
+"""
+
 # make ansible-test happy, even though the module requires Python 3
 from __future__ import absolute_import, division, print_function
 
@@ -27,7 +65,8 @@ from typing import (
 try:
     from typing import SupportsIndex
 except ImportError:
-    SupportsIndex = Union[int, Any]  # type: ignore
+    # For compatibility with older Python versions
+    SupportsIndex = Any  # type: ignore
 
 
 SrcDict = Dict[str, Any]
@@ -39,7 +78,7 @@ ItemAccess = Union[str, SupportsIndex, slice]
 
 
 class InvalidSrc(Exception):
-    """Cannot extract result from sources"""
+    """Raised when JSON source data cannot be interpreted as expected."""
 
     def __init__(
         self,
@@ -48,14 +87,14 @@ class InvalidSrc(Exception):
         issue_location: str,
         issue_desc: str,
     ):
-        self.data = data
-        self.data_desc = data_desc
-        self.issue_location = issue_location
-        self.issue_desc = issue_desc
+        self.data = data  # Original source dictionary
+        self.data_desc = data_desc  # Description for the user
+        self.issue_location = issue_location  # Path within the JSON
+        self.issue_desc = issue_desc  # What went wrong
 
     @property
     def kwargs(self) -> Dict[str, Any]:
-        """Arguments given to the constructor"""
+        """Original arguments passed to this exception."""
         return dict(
             data=self.data,
             data_desc=self.data_desc,
@@ -68,12 +107,13 @@ def wrap_src_for_rich_report(
     *param_names: str, data_desc: Union[str, List[str]]
 ) -> Callable[[Func], Func]:
     """
-    Decorator to wrap specified parameters as _WrapSrc objects.
+    Decorator factory to automatically wrap specified parameters
+    with rich-context-aware wrappers (_WrapSrc family).
 
-    The idea is to wrap every element in JSON sources with object containing
-    context, catch common cases of invalid sources and provide to a user helpful
-    error messages to identify where a discrepancy between the expected and the
-    actual source structure is.
+    The idea is to wrap every element in JSON sources with an object containing
+    the element's context, catch common cases of invalid sources, and provide
+    helpful error messages to the user to identify where a discrepancy between
+    the expected and the actual source structure lies.
 
     param_names -- Names of parameters that should be wrapped.
     data_desc -- Description of the data for use in error messages.
@@ -84,7 +124,7 @@ def wrap_src_for_rich_report(
 
     if len(data_desc) != len(param_names):
         raise ValueError(
-            "Every source of wrap_src_for_rich_report needs description"
+            "Every source for wrap_src_for_rich_report needs a description"
             f" (sources: {len(param_names)}, descriptions: {len(data_desc)})"
         )
 
@@ -92,14 +132,19 @@ def wrap_src_for_rich_report(
         @functools.wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> CleanSrc:
             sig = signature(func)
-            # Combine function signature and given arguments. Get dict: keys are
-            # argument names and values are values passed to wrapper.
+            # We don't know the interface of decorated function so, we must
+            # deduce it from signature.
+            # This fills the parameters of the decorated function with the
+            # values with which the decorated function was called.
+            # Method `bind` returns a dict: keys are argument names from
+            # signature of the decorated function and values are values passed
+            # to the decorated function.
             bound = sig.bind(*args, **kwargs)
-            # For not given arguments use it's default values. Just be complete.
+            # For args not provided, use their default values. Just be complete.
             bound.apply_defaults()
             for param, desc in zip(param_names, data_desc):
                 if param in bound.arguments:
-                    # Wrap arguments mentioned as `param_names`
+                    # Wrap arguments mentioned in `param_names`
                     bound.arguments[param] = _wrap_src(
                         bound.arguments[param],
                         _Context(bound.arguments[param], desc),
@@ -112,13 +157,23 @@ def wrap_src_for_rich_report(
 
 
 class _Context:
+    """
+    Holds contextual metadata to produce informative exceptions when extraction
+    fails.
+    """
+
     def __init__(self, src: SrcDict, desc: str, path: Path = None) -> None:
+        """
+        src -- original source
+        desc -- description of the original source
+        path -- path within nested structures, accumulates keys/indices
+        """
         self._src = src
         self._desc = desc
         self._path = path if path is not None else []
 
-    def invalid_src(self, issue_desc: str) -> Exception:
-        """Returns InvalidSrc exception"""
+    def invalid_src(self, issue_desc: str) -> InvalidSrc:
+        """Constructs an InvalidSrc for a given problem description."""
         return InvalidSrc(
             self._desc,
             self._src,
@@ -126,8 +181,8 @@ class _Context:
             issue_desc,
         )
 
-    def wrap(self, data: Any, key: Union[str, int] = "") -> Any:
-        """Returns a wraped source part bound to this context"""
+    def wrap(self, data: Any, key: Union[str, int] = "") -> "_WrapSrc":
+        """Wrap a nested piece of data, extending the path with `key`."""
         context = _Context(
             self._src, self._desc, self._path + ([key] if key != "" else [])
         )
@@ -135,7 +190,7 @@ class _Context:
 
 
 class _WrapSrc:
-    """Base class for all wrappers"""
+    """Abstract base for all wrappers"""
 
     _data: CleanSrc
     _context: _Context
@@ -146,24 +201,29 @@ class _WrapSrc:
 
     @property
     def _type(self) -> str:
-        return type(self._data).__name__
+        return type(self._data).__name__  # e.g. 'dict', 'list', 'int'
 
-    def _invalid_src(self, issue_desc: str) -> Exception:
+    def _invalid_src(self, issue_desc: str) -> InvalidSrc:
         return self._context.invalid_src(issue_desc)
 
-    def _index_out_of_range(self, index: SupportsIndex) -> Exception:
+    def _index_out_of_range(self, index: SupportsIndex) -> InvalidSrc:
         return self._invalid_src(f"Index '{index}' out of range")
 
-    def _expected_dict(self, key: Optional[str] = None) -> Exception:
+    def _expected_dict(self, key: Optional[str] = None) -> InvalidSrc:
         key_desc = f" with key '{key}'" if key else ""
         return self._invalid_src(
             f"Expected dict{key_desc} but got '{self._type}'"
         )
 
-    def _invalid_access(self, i: ItemAccess) -> Exception:
+    def _expected_list(self, key: int) -> InvalidSrc:
+        return self._invalid_src(
+            f"Expected list with index '{key}' but got '{self._type}'"
+        )
+
+    def _invalid_access(self, i: ItemAccess) -> InvalidSrc:
         return self._invalid_src(f"Invalid access by '{i}' to '{self._type}'")
 
-    def _unsupported_access(self, key: ItemAccess) -> Exception:
+    def _unsupported_access(self, key: ItemAccess) -> InvalidSrc:
         if isinstance(key, _WrapSrc):
             key = key.unwrap()
 
@@ -171,28 +231,33 @@ class _WrapSrc:
             return self._expected_dict(key)
 
         if isinstance(key, int):
-            return self._invalid_src(
-                f"Expected list with index '{key}' but got '{self._type}'",
-            )
+            # Dict can be indexed by int as well but not in JSON.
+            return self._expected_list(key)
 
         return self._invalid_access(key)
 
-    def _wrap(self, data: Any, key: Union[str, int] = "") -> Any:
+    def _wrap(self, data: Any, key: Union[str, int] = "") -> "_WrapSrc":
         return self._context.wrap(data, key)
 
     def unwrap(self) -> Any:
         """Returns the original, unwrapped data."""
         return self._data
 
-    def invalid_part(self, reason: str) -> Exception:
-        """Returns exception that this particullar part is invalid."""
+    def invalid_part(self, reason: str) -> InvalidSrc:
+        """Returns an exception indicating that this specific part is invalid."""
         return self._invalid_src(reason)
 
 
 class _WrapScalar(_WrapSrc):
+    """
+    Abstract base for scalar types (bool, int, float, None).
+
+    Methods report attempts to use scalar types as str, list or dict.
+    """
+
     _data: Scalar
 
-    def __getitem__(self, key: ItemAccess) -> Any:
+    def __getitem__(self, key: ItemAccess) -> _WrapSrc:
         raise self._unsupported_access(key)
 
     def __contains__(self, key: Union[str, int]) -> bool:
@@ -201,13 +266,13 @@ class _WrapScalar(_WrapSrc):
     def __iter__(self) -> Iterator:
         raise self._invalid_src(f"Expected iterable but got '{self._type}'")
 
-    def keys(self) -> Any:  # pylint: disable=missing-function-docstring
+    def keys(self) -> _WrapSrc:  # pylint: disable=missing-function-docstring
         raise self._expected_dict()
 
-    def values(self) -> Any:  # pylint: disable=missing-function-docstring
+    def values(self) -> _WrapSrc:  # pylint: disable=missing-function-docstring
         raise self._expected_dict()
 
-    def items(self) -> Any:  # pylint: disable=missing-function-docstring
+    def items(self) -> _WrapSrc:  # pylint: disable=missing-function-docstring
         raise self._expected_dict()
 
 
@@ -215,6 +280,7 @@ class _WrapInt(int, _WrapScalar):
     _data: int
 
     def __new__(cls, data: int, context: _Context) -> "_WrapInt":
+        # __new__ because int is immutable and __init__ is called post-create.
         instance = super().__new__(cls, data)
         _WrapSrc.__init__(instance, data, context)
         return instance
@@ -224,29 +290,39 @@ class _WrapFloat(float, _WrapScalar):
     _data: float
 
     def __new__(cls, data: float, context: _Context) -> "_WrapFloat":
+        # __new__ because float is immutable and __init__ is called post-create.
         instance = super().__new__(cls, data)
         _WrapSrc.__init__(instance, data, context)
         return instance
 
 
-class _WrapBool(int, _WrapScalar):  # Cannot inherit form bool
+class _WrapBool(int, _WrapScalar):
+    # Cannot inherit from bool but can emulate its interface.. Try it in shell.
+    # See: https://mail.python.org/pipermail/python-dev/2002-March/020822.html
+    # And: https://peps.python.org/pep-0285/
+    # This class adds improved error reporting => it makes sense to extend bool
     _data: bool
 
     def __new__(cls, data: bool, context: _Context) -> "_WrapBool":
+        # __new__ because int is immutable and __init__ is called post-create.
         instance = super().__new__(cls, bool(data))
         _WrapSrc.__init__(instance, data, context)
         return instance
 
     def __repr__(self) -> str:
+        # Provide a clearer repr than the inherited int(bool) repr
         return f"<WrappedJsonBool {bool(self)!r}>"
 
     def __bool__(self) -> bool:
         return bool(int(self))
 
     def _safe_cmp(self, op: Any, other: object, reverse: bool = False) -> bool:
+        # Method encapsulates common handling for comparison.
         if isinstance(other, _WrapSrc):
+            # The comparison can be with another wrapped src.
             other = other.unwrap()
         try:
+            # For right operand - reverse
             return op(other, bool(self)) if reverse else op(bool(self), other)
         except TypeError as e:
             raise self._invalid_src(
@@ -276,14 +352,18 @@ class _WrapBool(int, _WrapScalar):  # Cannot inherit form bool
         return self._safe_cmp(operator.xor, other, reverse=True)
 
 
-class _WrapNone(_WrapScalar):  # Cannot inherit from None
+class _WrapNone(_WrapScalar):
+    # Cannot inherit from None (similar to bool), so its interface is emulated.
     _data: None
 
     def __init__(self, context: Any) -> None:
+        # Only context matters; data is always None
         super().__init__(None, context)
 
     def _safe_cmp(self, op: Any, other: object) -> bool:
+        # Method encapsulates common handling for comparison.
         if isinstance(other, _WrapSrc):
+            # The comparison can be with another wrapped source.
             other = other.unwrap()
         try:
             return op(None, other)
@@ -297,6 +377,7 @@ class _WrapNone(_WrapScalar):  # Cannot inherit from None
         return False
 
     def __eq__(self, other: object) -> bool:
+        # None equals only None or another WrapNone
         return other is None or isinstance(other, _WrapNone)
 
     def __ne__(self, other: object) -> bool:
@@ -322,6 +403,12 @@ class _WrapNone(_WrapScalar):  # Cannot inherit from None
 
 
 class _WrapSeq(_WrapSrc):
+    """
+    Abstract base for sequence types (list and str).
+
+    Methods report attempts to use list/string types as a dict.
+    """
+
     _data: Union[list, str]
 
     def _get_item(
@@ -329,13 +416,17 @@ class _WrapSeq(_WrapSrc):
         get_item: Callable[[Any], Any],
         index: ItemAccess,
     ) -> Any:
+        # Deduplicates __getitem__ logic for both lists and strings.
+
         if isinstance(index, self.__class__):
             index = index.unwrap()
 
         if isinstance(index, str):
+            # Reject string index and report attempt to use list/str as dict.
             raise self._expected_dict(index)
 
         if isinstance(index, slice):
+            # Return wrapped subsequence for slicing
             return self._wrap(get_item(index))
 
         try:
@@ -344,20 +435,22 @@ class _WrapSeq(_WrapSrc):
             raise self._index_out_of_range(index) from e
 
     def _iter(self) -> Iterator:
+        # Yield wrapped elements with their indices
         return (self._wrap(v, i) for i, v in enumerate(self._data))
 
     def _add(self, other: Any) -> Any:
         if isinstance(other, self.__class__):
             other = other.unwrap()
+        # Support concatenation for lists and strings
         return self._wrap(self._data + other)
 
-    def keys(self) -> Any:  # pylint: disable=missing-function-docstring
+    def keys(self) -> _WrapSrc:  # pylint: disable=missing-function-docstring
         raise self._expected_dict()
 
-    def values(self) -> Any:  # pylint: disable=missing-function-docstring
+    def values(self) -> _WrapSrc:  # pylint: disable=missing-function-docstring
         raise self._expected_dict()
 
-    def items(self) -> Any:  # pylint: disable=missing-function-docstring
+    def items(self) -> _WrapSrc:  # pylint: disable=missing-function-docstring
         raise self._expected_dict()
 
 
@@ -365,6 +458,7 @@ class _WrapStr(str, _WrapSeq):
     _data: str
 
     def __new__(cls, data: str, context: _Context) -> "_WrapStr":
+        # __new__ because str is immutable and __init__ is called post-create.
         instance = super().__new__(cls, data)
         _WrapSrc.__init__(instance, data, context)
         return instance
@@ -403,11 +497,13 @@ class _WrapDict(dict, _WrapSrc):
         super().__init__(data)
         _WrapSrc.__init__(self, data, context)
 
-    def __getitem__(self, key: ItemAccess) -> Any:
+    def __getitem__(self, key: ItemAccess) -> _WrapSrc:
         if isinstance(key, _WrapSrc):
+            # Key could be gained from src (e.g. node name) and thus wrapped.
             key = key.unwrap()
 
         if not isinstance(key, str):
+            # Only string keys allowed for a dict representing a JSON object.
             raise self._unsupported_access(key)
 
         try:
@@ -416,19 +512,21 @@ class _WrapDict(dict, _WrapSrc):
             raise self._invalid_src(f"Missing key '{key}'") from e
 
     def __iter__(self) -> Iterator:
-        # Why wrap keys? We can access keys as objects, when we got dict where
-        # we expect e.g. list of dict.
+        # Why wrap keys? If we have this dict but expected a list of dicts,
+        # and call something like `key["key_of_expected_dict"]`, we wouldn't get
+        # an InvalidSrc with an unwrapped key.
         return (self._wrap(key) for key in iter(self._data))
 
     def get(self, key: str, default: Any = None) -> Any:
-        """Overwrites dict's get"""
+        """Overrides dict's get method."""
         if key in self._data:
             return self._wrap(self._data[key], key)
-        # Don't wrap! Inappropriate use of this does not mean invalid source.
+        # Do not wrap! Inappropriate use of this does not mean an invalid src.
+        # The src is actually the caller itself.
         return default
 
-    # We don't appreciate reflection of the dict change provided by dict view
-    # since we don't plan change sources. Let's use simpler Iterator here.
+    # We don't need the reflection of dict changes provided by dict views since
+    # we don't plan to change the sources. Let's use a simpler Iterator here.
     def keys(self) -> Iterator:  # type: ignore[override]
         return (self._wrap(key) for key in self._data.keys())
 
@@ -458,14 +556,15 @@ def _wrap_src(data: CleanSrc, context: _Context) -> _WrapSrc:
         list: _WrapList,
         dict: _WrapDict,
     }
-    for data_type, wraper in wrap_map.items():
+    for data_type, wrapper in wrap_map.items():
         if isinstance(data, data_type):
-            return wraper(data, context)
+            return wrapper(data, context)
 
     return _WrapNone(context)
 
 
 def _cleanup_wrap(maybe_wrapped: Union[CleanSrc, _WrapSrc]) -> CleanSrc:
+    """Recursively unwraps any wrapped values into pure Python types."""
     top_clean = (
         maybe_wrapped.unwrap()
         if isinstance(maybe_wrapped, _WrapSrc)
@@ -485,18 +584,21 @@ def _cleanup_wrap(maybe_wrapped: Union[CleanSrc, _WrapSrc]) -> CleanSrc:
 
 
 def invalid_part(data: Union[_WrapSrc, CleanSrc], reason: str) -> Exception:
-    """Returns exception that wrapped_data is invalid."""
+    """
+    Returns an exception indicating that the wrapped data was detected as
+    invalid, even though it has the correct structure.
+    """
     if not isinstance(data, _WrapSrc):
-        # should not happen...
+        # This should not happen...
         return TypeError(reason)
     return data.invalid_part(reason)
 
 
 def is_none(maybe_none: Union[CleanSrc, _WrapSrc]) -> bool:
     """
-    Returns if the maybe_none value represents None
+    Returns True if the `maybe_none` value represents None.
 
-    Unfortunately, python does not give an opportunity to capture `is None` in
+    Unfortunately, Python does not provide a way to capture `is None` within
     any `__*__` method.
     """
     if isinstance(maybe_none, _WrapSrc):

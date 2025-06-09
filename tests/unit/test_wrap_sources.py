@@ -7,9 +7,8 @@
 # pylint: disable=missing-class-docstring
 # pylint: disable=missing-function-docstring
 
-# The module wrap_src is loaded by import_module and mypy has trouble to deal
-# with it. Correct typing seems to be complex and it's not worth to do it here
-# strictly.
+# Helper functions in this module cannot be typed easily and no benefit would
+# come from it. They are called from typed context, so we silent untyped_calls.
 # mypy: disallow_untyped_calls=False
 
 from contextlib import contextmanager
