@@ -2,29 +2,56 @@
 {{ "system_role:ha_cluster" | comment(prefix="", postfix="") }}
 totem {
 {% if ha_cluster_totem and ha_cluster_totem.options | d({}) %}
+{# Add default version if not present in options #}
 {% if ha_cluster_totem.options | selectattr('name', 'equalto', 'version') | list | length == 0 %}
         version: 2
 {% endif %}
+        cluster_name: {{ ha_cluster_cluster_name }}
+{# Use ha_cluster_transport.type if transport is not in options, else use default #}
+{% if ha_cluster_transport is defined and ha_cluster_transport.type is defined and ha_cluster_transport.type | length > 0 and ha_cluster_totem.options | selectattr('name', 'equalto', 'transport') | list | length == 0 %}
+        transport: {{ ha_cluster_transport.type | quote }}
+{% elif ha_cluster_totem.options | selectattr('name', 'equalto', 'transport') | list | length == 0 %}
+        transport: {{ __ha_cluster_transport.type | d('udpu') }}
+{% endif %}
 {% for option in ha_cluster_totem.options %}
+{# Use ha_cluster_transport.type if defined instead of options.transport #}
+{% if ha_cluster_transport is defined and ha_cluster_transport.type is defined and ha_cluster_transport.type | length > 0 and option.name == 'transport' %}
+        transport: {{ option.value | quote }}
+{# Ignore options that are already defined in ha_cluster_transport.options #}
+{% elif ha_cluster_transport is defined
+and ha_cluster_transport.options | d([]) | selectattr('name', 'equalto', option.name) | list | length == 0
+and ha_cluster_transport.crypto | d([]) | selectattr('name', 'equalto', option.name) | list | length == 0
+and ha_cluster_transport.compression | d([]) | selectattr('name', 'equalto', option.name) | list | length == 0 %}
+        {{ option.name | quote }}: {{ option.value | quote }}
+{% endif %}
+{% endfor %}
+{% endif %}
+{% if ha_cluster_transport and ha_cluster_transport.options | d({}) %}
+{% for option in ha_cluster_transport.options %}
         {{ option.name | quote }}: {{ option.value | quote }}
 {% endfor %}
-{% if ha_cluster_totem.options | selectattr('name', 'equalto', 'transport') | list | length == 0 %}
-        transport: udpu        
-{% endif %}
-{% else %}
-        # Default values are configured because ha_cluster_totem.options was not defined
-        version: 2
-        transport: udpu
+{% elif ha_cluster_transport and ha_cluster_transport.crypto | d({}) %}
+{% for crypto in ha_cluster_transport.crypto %}
+        {{ crypto.name | quote }}: {{ crypto.value | quote }}
+{% endfor %}
+{% elif ha_cluster_transport and ha_cluster_transport.compression | d({}) %}
+{% for compression in ha_cluster_transport.compression %}
+        {{ compression.name | quote }}: {{ compression.value | quote }}
+{% endfor %}
 {% endif %}
 }
 nodelist {
-{% for host in ansible_play_batch %}
-       node {
-               nodeid: {{ loop.index }}
-               ring0_addr: {{ hostvars[host]['ansible_facts']['eth0']['ipv4']['address'] }}
-               {% if hostvars[host]['ansible_facts']['eth1']['ipv4']['address'] is defined %}
-               ring1_addr: {{ hostvars[host]['ansible_facts']['eth1']['ipv4']['address'] }}
-               {% endif -%}
+{% for node in ansible_play_batch %}
+        node {
+                nodeid: {{ loop.index }}
+                name: {{ hostvars[node].__ha_cluster_local_node.node_name | d(ansible_hostname) }}
+{% if hostvars[node].__ha_cluster_local_node.corosync_addresses is defined %}
+{% for addr in hostvars[node].__ha_cluster_local_node.corosync_addresses %}
+                ring{{ loop.index0 }}_addr: {{ addr | quote }}
+{% endfor %}
+{% else %}
+                ring0_addr: {{ hostvars[node].__ha_cluster_local_node.pcs_address | d(ansible_default_ipv4.address) }}
+{% endif -%}
        }
 {% endfor %}
 }
@@ -40,7 +67,6 @@ quorum {
         two_node: 1    
 {% endif %}
 {% else %}
-        # Default values are configured because ha_cluster_quorum.options was not defined
         provider: corosync_votequorum
         two_node: 1
 {% endif %}

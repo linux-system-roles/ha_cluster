@@ -1,5 +1,49 @@
 # SPDX-License-Identifier: MIT
 ---
+- name: Discover cluster node names
+  ansible.builtin.set_fact:
+    __ha_cluster_node_name: "{{ ha_cluster.node_name | d(inventory_hostname) }}"
+
+- name: Collect cluster node names
+  ansible.builtin.set_fact:
+    __ha_cluster_all_node_names: "{{
+        ansible_play_hosts
+        | map('extract', hostvars, '__ha_cluster_node_name')
+        | list
+      }}"
+
+- name: Check ha_cluster_node_options
+  run_once: true
+  vars:
+    __nodes_from_options: "{{
+      ha_cluster_node_options | map(attribute='node_name') | list }}"
+  block:
+    - name: >
+        Fail if ha_cluster_node_options contains unknown or duplicate nodes
+      ansible.builtin.fail:
+        msg: >
+          node_name fields in ha_cluster_node_options must be unique
+          and they must match cluster nodes
+      when:
+        - >
+          (
+            __nodes_from_options != (__nodes_from_options | unique)
+          ) or (
+            __nodes_from_options | difference(__ha_cluster_all_node_names)
+          )
+
+- name: Extract node options
+  ansible.builtin.set_fact:
+    __ha_cluster_local_node: >-
+      {{
+        (ha_cluster | d({})) | combine(
+          (ha_cluster_node_options | d([]))
+          | selectattr('node_name', 'match', '^' ~ __ha_cluster_node_name ~ '$')
+          | list | last | d({})
+        )
+      }}
+
+
 - name: Check cluster configuration variables
   block:
     - name: Fail if passwords are not specified
@@ -16,11 +60,12 @@
       ansible.builtin.fail:
         msg: All nodes must have the same number of SBD devices specified
       when:
-        - ha_cluster_cluster_present | bool
-        - ha_cluster_sbd_enabled | bool
+        - ha_cluster_cluster_present
+        - ha_cluster_sbd_enabled
         - >
           ansible_play_hosts
-          | map('extract', hostvars, ['ha_cluster', 'sbd_devices'])
+          | map('extract', hostvars,
+            ['__ha_cluster_local_node', 'sbd_devices'])
           | map('default', [], true)
           | map('length') | unique | length > 1
       run_once: true
@@ -59,17 +104,6 @@
       loop: "{{ ha_cluster_stonith_levels }}"
       run_once: true
 
-- name: Discover cluster node names
-  ansible.builtin.set_fact:
-    __ha_cluster_node_name: "{{ ha_cluster.node_name | d(inventory_hostname) }}"
-
-- name: Collect cluster node names
-  ansible.builtin.set_fact:
-    __ha_cluster_all_node_names: "{{
-        ansible_play_hosts
-        | map('extract', hostvars, '__ha_cluster_node_name')
-        | list
-      }}"
 
 - name: Extract qdevice settings
   ansible.builtin.set_fact:
@@ -98,7 +132,7 @@
     # - qdevice is not used
     __ha_cluster_sbd_needs_atb: "{{
         ha_cluster_sbd_enabled
-        and not ha_cluster.sbd_devices | d([])
+        and not __ha_cluster_local_node.sbd_devices | d([])
         and __ha_cluster_all_node_names | length is even
         and not __ha_cluster_qdevice_in_use
       }}"
