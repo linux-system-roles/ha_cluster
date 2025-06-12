@@ -1,42 +1,27 @@
 ---
 
 # Variables specific to following versions:
-# - SUSE Linux Enterprise Server for SAP Applications 15
-# - SUSE Linux Enterprise Server 15
+# - SUSE Linux Enterprise Server for SAP Applications 16
+# - SUSE Linux Enterprise Server 16
 
 __ha_cluster_patterns:
   - ha_sles
 
 __ha_cluster_role_essential_packages:
-  - 'cluster-glue'
   - 'openssl'
-#  - 'libxml2-tools'
 
 # Pattern ha_sles includes all important packages for cluster
 # Requires: SUSE Linux Enterprise High Availability Extension on SLES
-# - 'conntrack-tools'
 # - 'corosync'
 # - 'crmsh'
 # - 'csync2'
-# - 'ctdb'
-# - 'drbd'
-# - 'drbd-utils'
-# - 'fence-agents'
-# - 'ha-cluster-bootstrap'
-# - 'ha-cluster-webui'
-# - 'ldirectord'
-# - 'lvm2-lockd'
-# - 'ocfs2-tools'
 # - 'pacemaker'
-# - 'python3-dateutil'
-# - 'release-notes-ha'
 # - 'resource-agents'
 # - 'sbd'
-# - 'yast2-cluster'
-# - 'yast2-drbd'
-# - 'yast2-iplb'
 # - 'chrony'
+# - 'fence-agents-sbd'
+# - 'lvm2-lockd'
 
 # Default totem transport configuration
 __ha_cluster_transport:
-  type: udpu
+  type: knet

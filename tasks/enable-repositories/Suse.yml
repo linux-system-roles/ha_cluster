@@ -6,7 +6,7 @@
 # All cluster packages are present on SLES_SAP and openSUSE,
 # but not on base SLES without HAE.
 - name: Block to assert that High Availability Extension is present on SLES
-  when: ansible_distribution.split("_")[0] == 'SLES'
+  when: ansible_distribution == 'SLES'
   block:
 
     - name: Query package sle-ha-release  # noqa command-instead-of-module
@@ -38,3 +38,25 @@
           Register HA Extension before executing again.
       # Fatal fail will occur if any of cluster nodes is missing HAE
       any_errors_fatal: true
+
+
+# Install zypper patterns before additional package installation
+# Pattern installation will run only if pattern is not installed
+# This ensures that command module shows correct changed status
+- name: Query installed zypper patterns
+  ansible.builtin.command:
+    cmd: zypper patterns --installed-only
+  register: __ha_cluster_installed_patterns
+  changed_when: false
+  ignore_errors: true
+
+- name: Ensure that the required zypper patterns are installed
+  ansible.builtin.command:
+    cmd: zypper install -y -t pattern {{ item }}
+  loop: "{{ (ha_cluster_patterns | list | d([])
+    + __ha_cluster_patterns | list | d([])) | unique }}"
+  # Retry added to handle post scripts problems like RC 107
+  retries: 2
+  delay: 10
+  when: item not in __ha_cluster_installed_patterns.stdout
+  changed_when: item not in __ha_cluster_installed_patterns.stdout

@@ -173,6 +173,10 @@ boolean, default: `false`
 If set to `true`, all packages will be installed with latest version.
 If set to `false`, existing packages will not be updated.
 
+#### `ha_cluster_patterns`
+
+SUSE Specific, list of additional zypper patterns to be installed, default: no patterns
+
 #### `ha_cluster_hacluster_password`
 
 string, no default - must be specified
