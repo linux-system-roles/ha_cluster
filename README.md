@@ -1578,6 +1578,10 @@ Note that the dictionary of variables may not be complete and manual
 modification of it is expected. Most notably, you need to set
 [`ha_cluster_hacluster_password`](#ha_cluster_hacluster_password).
 
+Note that primitive resource operations are exported explicitly and
+`ha_cluster_resource_primitives.copy_operations_from_agent` is always set to
+false.
+
 Note that depending on pcs version installed on managed nodes, certain variables
 may not be present in the export.
 
