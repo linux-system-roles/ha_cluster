@@ -14,11 +14,7 @@ __metaclass__ = type
 from typing import Any, Dict, List, Optional
 
 from .nvset import dict_to_nv_list
-
-# This module is exports InvalidSrc
-# pylint: disable=unused-import
 from .wrap_src import (
-    InvalidSrc,
     SrcDict,
     invalid_part,
     is_none,
