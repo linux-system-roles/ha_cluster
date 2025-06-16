@@ -17,9 +17,7 @@ from .nvset import dict_to_nv_list
 from .wrap_src import SrcDict, wrap_src_for_rich_report
 
 
-@wrap_src_for_rich_report(
-    "corosync_conf_dict", data_desc="corosync configuration"
-)
+@wrap_src_for_rich_report(dict(corosync_conf_dict="corosync configuration"))
 def export_corosync_cluster_name(corosync_conf_dict: SrcDict) -> str:
     """
     Extract cluster name form corosync config in pcs format
@@ -29,9 +27,7 @@ def export_corosync_cluster_name(corosync_conf_dict: SrcDict) -> str:
     return corosync_conf_dict["cluster_name"]
 
 
-@wrap_src_for_rich_report(
-    "corosync_conf_dict", data_desc="corosync configuration"
-)
+@wrap_src_for_rich_report(dict(corosync_conf_dict="corosync configuration"))
 def export_corosync_transport(corosync_conf_dict: SrcDict) -> Dict[str, Any]:
     """
     Export transport options in role format from corosync config in pcs format
@@ -61,9 +57,7 @@ def export_corosync_transport(corosync_conf_dict: SrcDict) -> Dict[str, Any]:
     return transport
 
 
-@wrap_src_for_rich_report(
-    "corosync_conf_dict", data_desc="corosync configuration"
-)
+@wrap_src_for_rich_report(dict(corosync_conf_dict="corosync configuration"))
 def export_corosync_totem(corosync_conf_dict: SrcDict) -> Dict[str, Any]:
     """
     Export totem options in role format from corosync config in pcs format
@@ -76,9 +70,7 @@ def export_corosync_totem(corosync_conf_dict: SrcDict) -> Dict[str, Any]:
     return result
 
 
-@wrap_src_for_rich_report(
-    "corosync_conf_dict", data_desc="corosync configuration"
-)
+@wrap_src_for_rich_report(dict(corosync_conf_dict="corosync configuration"))
 def export_corosync_quorum(corosync_conf_dict: SrcDict) -> Dict[str, Any]:
     """
     Export quorum options in role format from corosync config in pcs format
@@ -93,11 +85,8 @@ def export_corosync_quorum(corosync_conf_dict: SrcDict) -> Dict[str, Any]:
     return result
 
 
-@wrap_src_for_rich_report(
-    "corosync_conf_dict",
-    "pcs_node_addr",
-    data_desc=["corosync configuration", "known hosts configuration"],
-)
+# The var pcs_node_addr is in an internally created format, not wrapping.
+@wrap_src_for_rich_report(dict(corosync_conf_dict="corosync configuration"))
 def export_cluster_nodes(
     corosync_conf_dict: SrcDict, pcs_node_addr: Dict[str, str]
 ) -> List[Dict[str, Any]]:

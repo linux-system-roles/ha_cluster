@@ -162,9 +162,7 @@ def _container(bundle_src: Dict[str, Any]) -> Dict[str, Any]:
 
 
 @wrap_src_for_rich_report(
-    "resources",
-    "stonith",
-    data_desc=["resources configuration", "stonith configuration"],
+    dict(resources="resources configuration", stonith="stonith configuration")
 )
 def export_resource_primitive_list(
     resources: SrcDict, stonith: SrcDict
@@ -179,7 +177,7 @@ def export_resource_primitive_list(
     return result
 
 
-@wrap_src_for_rich_report("resources", data_desc="resources configuration")
+@wrap_src_for_rich_report(dict(resources="resources configuration"))
 def export_resource_group_list(resources: SrcDict) -> List[Dict[str, Any]]:
     """Export resource groups from `pcs resource configuration` output"""
     result = []
@@ -195,7 +193,7 @@ def export_resource_group_list(resources: SrcDict) -> List[Dict[str, Any]]:
     return result
 
 
-@wrap_src_for_rich_report("resources", data_desc="resources configuration")
+@wrap_src_for_rich_report(dict(resources="resources configuration"))
 def export_resource_clone_list(resources: SrcDict) -> List[Dict[str, Any]]:
     """Export resource clones from `pcs resource configuration` output"""
     result = []
@@ -212,7 +210,7 @@ def export_resource_clone_list(resources: SrcDict) -> List[Dict[str, Any]]:
     return result
 
 
-@wrap_src_for_rich_report("resources", data_desc="resources configuration")
+@wrap_src_for_rich_report(dict(resources="resources configuration"))
 def export_resource_bundle_list(resources: SrcDict) -> List[Dict[str, Any]]:
     """Export resource bundles from `pcs resource configuration` output"""
     result = []
