@@ -1,6 +1,27 @@
 {
   "ha_cluster_resource_primitives": [
     {
+      "id": "F1",
+      "copy_operations_from_agent": false,
+      "agent": "stonith:fence_xvm",
+      "instance_attrs": [
+        {
+          "attrs": [{ "name": "timeout", "value": "35" }]
+        }
+      ],
+      "meta_attrs": [
+        {
+          "attrs": [{ "name": "target-role", "value": "Stopped" }]
+        }
+      ],
+      "operations": [
+        {
+          "action": "monitor",
+          "attrs": [{ "name": "interval", "value": "60s" }]
+        }
+      ]
+    },
+    {
       "id": "A",
       "copy_operations_from_agent": false,
       "agent": "ocf:pacemaker:Stateful",
@@ -486,27 +507,6 @@
             { "name": "interval", "value": "0s" },
             { "name": "timeout", "value": "20s" }
           ]
-        }
-      ]
-    },
-    {
-      "id": "F1",
-      "copy_operations_from_agent": false,
-      "agent": "stonith:fence_xvm",
-      "instance_attrs": [
-        {
-          "attrs": [{ "name": "timeout", "value": "35" }]
-        }
-      ],
-      "meta_attrs": [
-        {
-          "attrs": [{ "name": "target-role", "value": "Stopped" }]
-        }
-      ],
-      "operations": [
-        {
-          "action": "monitor",
-          "attrs": [{ "name": "interval", "value": "60s" }]
         }
       ]
     }

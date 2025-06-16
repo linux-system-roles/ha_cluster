@@ -166,11 +166,15 @@ def export_resource_primitive_list(
 ) -> List[Dict[str, Any]]:
     """Export primitive resources from `pcs resource configuration` output"""
     result = []
+
+    # Export stonith first: stonith needs to be configured first, otherwise
+    # resources wont start due to missing stonith.
+    for primitive_src in stonith["primitives"]:
+        result.append(_primitive(primitive_src, use_utilization=False))
+
     for primitive_src in resources["primitives"]:
         result.append(_primitive(primitive_src))
 
-    for primitive_src in stonith["primitives"]:
-        result.append(_primitive(primitive_src, use_utilization=False))
     return result
 
 
