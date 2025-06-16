@@ -126,7 +126,8 @@ def _primitive(
 ) -> Dict[str, Any]:
     primitive = dict(
         id=primitive_src["id"],
-        # Use just operations taken from CIB
+        # Use just operations taken from CIB. We need exactly what in CIB and
+        # there is no gain trying to incorporate `copy_operations_from_agent`.
         copy_operations_from_agent=False,
         agent=_agent(primitive_src["agent_name"]),
     )
