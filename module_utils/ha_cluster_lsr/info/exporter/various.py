@@ -103,9 +103,7 @@ def export_manage_selinux(
     return bool(frozenset(ports_selinux_tuples) & frozenset(ha_ports_used))
 
 
-@wrap_src_for_rich_report(
-    "pcs_settings_conf_dict", data_desc="pcs_settings.conf"
-)
+@wrap_src_for_rich_report(dict(pcs_settings_conf_dict="pcs_settings.conf"))
 def export_pcs_permission_list(
     pcs_settings_conf_dict: SrcDict,
 ) -> List[Dict[str, Any]]:
