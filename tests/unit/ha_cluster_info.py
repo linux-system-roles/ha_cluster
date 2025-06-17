@@ -34,26 +34,22 @@ def mocked_module(
         ]
     ] = None,
 ) -> Generator:
-    module_mock = mock.Mock()
-    module_mock.run_command = mock.Mock(
-        side_effect=(
-            [call[1] for call in runner_calls]
-            if runner_calls is not None
-            else []
-        )
-    )
+    calls, side_efect = zip(*runner_calls) if runner_calls else ([], [])
+    module_mock = mock.Mock(run_command=mock.Mock(side_effect=side_efect))
 
     yield module_mock
 
-    if runner_calls is None:
+    if not calls:
         module_mock.run_command.assert_not_called()
         return
 
-    if module_mock.run_command.call_count != len(runner_calls):
-        raise AssertionError(
-            f"AnsibleModule.run_command expected to be run"
-            f" {len(runner_calls)} times"
-            f" but actually ran {module_mock.run_command.call_count} times"
-        )
+    module_mock.run_command.assert_has_calls(calls)
 
-    module_mock.run_command.assert_has_calls([call[0] for call in runner_calls])
+    if module_mock.run_command.call_count != len(calls):
+        raise AssertionError(
+            "AnsibleModule.run_command expected to be run"
+            f" {len(calls)} times"
+            f" but actually ran {module_mock.run_command.call_count} times."
+            f"\nExpected:\n{calls}"
+            f"\nActual:\n{module_mock.run_command.call_args_list}"
+        )
