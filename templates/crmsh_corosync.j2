@@ -44,7 +44,7 @@ nodelist {
 {% for node in ansible_play_batch %}
         node {
                 nodeid: {{ loop.index }}
-                name: {{ hostvars[node].__ha_cluster_local_node.node_name | d(ansible_hostname) }}
+                name: {{ hostvars[node].__ha_cluster_local_node.node_name | d(hostvars[node]['ansible_hostname']) }}
 {% if hostvars[node].__ha_cluster_local_node.corosync_addresses is defined %}
 {% for addr in hostvars[node].__ha_cluster_local_node.corosync_addresses %}
                 ring{{ loop.index0 }}_addr: {{ addr | quote }}
