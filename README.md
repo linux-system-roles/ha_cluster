@@ -8,8 +8,8 @@ An Ansible role for managing High Availability Clustering.
 
 * Compatible OS
   * RHEL 8.3+, Fedora 31+
-  * SUSE Linux Enterprise Server 15 with HA extension
-  * SUSE Linux Enterprise Server for SAP Applications 15
+  * SUSE Linux Enterprise Server 15 and 16 with HA extension
+  * SUSE Linux Enterprise Server for SAP Applications 15 and 16
 * Systems running RHEL are expected to be registered and have High-Availability
   repositories accessible, and ResilientStorage repositories accessible if using
   `ha_cluster_enable_repos_resilient_storage`
@@ -166,16 +166,16 @@ It is possible to specify fence agents here as well. However,
 [`ha_cluster_fence_agent_packages`](#ha_cluster_fence_agent_packages) is
 preferred for that, so that its default value is overridden.
 
+#### `ha_cluster_zypper_patterns`
+
+SUSE Specific, list of additional zypper patterns to be installed, default: no patterns
+
 #### `ha_cluster_use_latest_packages`
 
 boolean, default: `false`
 
 If set to `true`, all packages will be installed with latest version.
 If set to `false`, existing packages will not be updated.
-
-#### `ha_cluster_patterns`
-
-SUSE Specific, list of additional zypper patterns to be installed, default: no patterns
 
 #### `ha_cluster_hacluster_password`
 

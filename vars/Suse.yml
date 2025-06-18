@@ -6,7 +6,7 @@ ha_cluster_pacemaker_shell: crmsh
 __ha_cluster_pcs_provider: crm
 
 # ha_sles pattern requires SLES or SLES4SAP
-__ha_cluster_patterns: []
+__ha_cluster_zypper_patterns: []
 
 # ClusterTools2 removed because it is SLES4SAP specific
 __ha_cluster_role_essential_packages:

@@ -4,7 +4,7 @@
 # - SUSE Linux Enterprise Server for SAP Applications 16
 # - SUSE Linux Enterprise Server 16
 
-__ha_cluster_patterns:
+__ha_cluster_zypper_patterns:
   - ha_sles
 
 __ha_cluster_role_essential_packages:

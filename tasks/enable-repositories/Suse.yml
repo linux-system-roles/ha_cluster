@@ -53,8 +53,8 @@
 - name: Ensure that the required zypper patterns are installed
   ansible.builtin.command:
     cmd: zypper install -y -t pattern {{ item }}
-  loop: "{{ (ha_cluster_patterns | list | d([])
-    + __ha_cluster_patterns | list | d([])) | unique }}"
+  loop: "{{ (ha_cluster_zypper_patterns | list | d([])
+    + __ha_cluster_zypper_patterns | list | d([])) | unique }}"
   # Retry added to handle post scripts problems like RC 107
   retries: 2
   delay: 10
