@@ -13,11 +13,12 @@ ha_cluster_start_on_boot: true
 
 ha_cluster_install_cloud_agents: false
 ha_cluster_extra_packages: []
+# SUSE Specific, list of additional zypper patterns to be installed
+ha_cluster_zypper_patterns: []
 # Default fence agent packages are defined in respective os_family var files
 ha_cluster_fence_agent_packages:
   "{{ __ha_cluster_fence_agent_packages_default }}"
 ha_cluster_use_latest_packages: false
-ha_cluster_patterns: []
 
 ha_cluster_hacluster_password: ""
 ha_cluster_regenerate_keys: false
@@ -78,3 +79,8 @@ ha_cluster_qnetd:
   start_on_boot: true
 
 ha_cluster_export_configuration: false
+
+# SUSE Specific, name and group of os user for cluster administration.
+# This allows cluster administration with non-root user.
+# ha_cluster_admin_user_name: ''
+# ha_cluster_admin_user_group: ''

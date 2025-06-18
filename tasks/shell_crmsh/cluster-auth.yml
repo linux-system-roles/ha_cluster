@@ -1,4 +1,208 @@
 # SPDX-License-Identifier: MIT
 ---
-# Placeholder for potential auth tasks for crmsh
-# There are no authentication steps for crmsh currently.
+# CRM cluster works without root SSH keys, but some commands require it.
+# Example: crm report, crm cluster start --all
+
+# Detection of user home directory can be done with getent_passwd['user'][4]
+
+- name: Set default facts for cluster authentication
+  ansible.builtin.set_fact:
+    __ha_cluster_ssh_user: root
+    __ha_cluster_ssh_group: root
+    __ha_cluster_ssh_path: /root/.ssh
+    __ha_cluster_ssh_key: id_rsa_hacluster
+    __ha_cluster_crm_conf_path: /root/.config/crm/crm.conf
+
+
+- name: Block for custom cluster administrator
+  when:
+    - ha_cluster_admin_user_name is defined
+    - ha_cluster_admin_user_name | length > 0
+  vars:
+    __ha_cluster_admin_user_group: "{{ ha_cluster_admin_user_group
+      if ha_cluster_admin_user_group is defined
+        and ha_cluster_admin_user_group | length > 0
+      else ha_cluster_admin_user_name }}"
+  block: 
+
+    - name: Ensure that the group '{{ __ha_cluster_admin_user_group }}' exists
+      ansible.builtin.group:
+        name: "{{ __ha_cluster_admin_user_group }}"
+        state: present
+
+    - name: Ensure that the user '{{ ha_cluster_admin_user_name }}' exists
+      ansible.builtin.user:
+        name: "{{ ha_cluster_admin_user_name }}"
+        comment: pacemaker cluster administrator
+        group: "{{ __ha_cluster_admin_user_group }}"
+
+    # Listed permissions are required for crm operations
+    - name: Create sudoers file for user '{{ ha_cluster_admin_user_name }}'
+      ansible.builtin.copy:
+        content: |
+          {{ ha_cluster_admin_user_name }} ALL=(ALL) NOPASSWD: \
+            /usr/sbin/crm, \
+            /usr/sbin/crm_mon, \
+            /usr/bin/true, \
+            /usr/bin/systemctl, \
+            /bin/sh
+        dest: "{{ __sudoers_path }}/90-{{
+          ha_cluster_admin_user_name}}-cluster-administrator"
+        mode: '0440'
+        owner: root
+        group: root
+        validate: 'visudo -cf %s'
+      vars:
+        __sudoers_path: >-
+          {% if (ansible_os_family == 'Suse' and
+                ansible_distribution_major_version | int > 15) %}
+          /usr/etc/sudoers.d
+          {%- else -%}
+          /etc/sudoers.d
+          {%- endif %}
+
+    - name: Set facts for user - '{{ ha_cluster_admin_user_name }}'
+      ansible.builtin.set_fact:
+        __ha_cluster_ssh_user: "{{ ha_cluster_admin_user_name }}"
+        __ha_cluster_ssh_group: "{{ __ha_cluster_admin_user_group }}"
+        __ha_cluster_ssh_path:
+          "{{ '/home/' ~ ha_cluster_admin_user_name ~ '/.ssh' }}"
+
+
+- name: Ensure .ssh directory exists on all nodes
+  ansible.builtin.file:
+    path: "{{ __ha_cluster_ssh_path }}"
+    state: directory
+    mode: '0700'
+    owner: "{{ __ha_cluster_ssh_user }}"
+    group: "{{ __ha_cluster_ssh_group }}"
+
+- name: Check if SSH key '{{ __ha_cluster_ssh_key }}' already exists
+  ansible.builtin.stat:
+    path: "{{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}"
+  register: __ha_cluster_ssh_priv_key_stat
+
+- name: Check if public SSH key '{{ __ha_cluster_ssh_key }}.pub' already exists
+  ansible.builtin.stat:
+    path: "{{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}.pub"
+  register: __ha_cluster_ssh_pub_key_stat
+
+- name: Generate public SSH key '{{ __ha_cluster_ssh_key }}'
+  ansible.builtin.command:
+    cmd: "ssh-keygen -t rsa -b 4096 -f {{
+      __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }} -N ''"
+  args:
+    creates: "{{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}"
+  when: not __ha_cluster_ssh_priv_key_stat.stat.exists
+
+- name: Regenerate public key from private key if public key is missing
+  ansible.builtin.command: |
+    ssh-keygen -y -f {{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }} \
+      > {{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}.pub
+  args:
+    creates: "{{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}.pub"
+  when:
+    - __ha_cluster_ssh_priv_key_stat.stat.exists
+    - not __ha_cluster_ssh_pub_key_stat.stat.exists
+
+- name: Ensure correct permissions for the private SSH key
+  ansible.builtin.file:
+    path: "{{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}"
+    owner: "{{ __ha_cluster_ssh_user }}"
+    group: "{{ __ha_cluster_ssh_group }}"
+    mode: '0600'
+
+- name: Ensure correct permissions for the public SSH key
+  ansible.builtin.file:
+    path: "{{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}.pub"
+    owner: "{{ __ha_cluster_ssh_user }}"
+    group: "{{ __ha_cluster_ssh_group }}"
+    mode: '0644'
+
+- name: Slurp SSH public key '{{ __ha_cluster_ssh_key }}' from each node
+  ansible.builtin.slurp:
+    src: "{{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}.pub"
+  register: __ha_cluster_ssh_pub_key
+
+- name: Distribute public SSH key to authorized_keys on all nodes
+  ansible.builtin.lineinfile:
+    path: "{{ __ha_cluster_ssh_path }}/authorized_keys"
+    create: true
+    owner: "{{ __ha_cluster_ssh_user }}"
+    group: "{{ __ha_cluster_ssh_group }}"
+    mode: '0600'
+    line: "{{ hostvars[item].__ha_cluster_ssh_pub_key.content | b64decode
+      | trim }} {{ item }}-pacemaker-cluster-administrator"
+    regexp: "^{{ (hostvars[item].__ha_cluster_ssh_pub_key.content | b64decode
+      | trim).split(' ')[1] }}"
+    state: present
+    insertafter: EOF
+  loop: "{{ ansible_play_hosts }}"
+  when:
+    - hostvars[item].__ha_cluster_ssh_pub_key is defined
+    - hostvars[item].__ha_cluster_ssh_pub_key.content is defined
+    - hostvars[item].__ha_cluster_ssh_pub_key.content | length > 0
+
+- name: Configure SSH config with '{{ __ha_cluster_ssh_key }}'
+  ansible.builtin.blockinfile:
+    path: "{{ __ha_cluster_ssh_path }}/config"
+    create: true
+    owner: "{{ __ha_cluster_ssh_user }}"
+    group: "{{ __ha_cluster_ssh_group }}"
+    mode: '0600'
+    marker: "# {mark} ANSIBLE MANAGED BLOCK FOR HACLUSTER SSH KEYS"
+    block: |
+      Host {{ ansible_play_hosts | join(' ') }}
+        IdentityFile {{ __ha_cluster_ssh_path }}/{{ __ha_cluster_ssh_key }}
+
+
+# Configuration file needs to be maintained.
+# File is created when running crm init and updated during crm join.
+- name: Ensure /root/.config/crm directory exists
+  ansible.builtin.file:
+    path: "/root/.config/crm"
+    state: directory
+    mode: '0700'
+    owner: root
+    group: root
+
+- name: Stat configuration file {{ __ha_cluster_crm_conf_path }}
+  ansible.builtin.stat:
+    path: "{{ __ha_cluster_crm_conf_path }}"
+  register: __ha_cluster_crm_conf_stat
+
+- name: Set fact with hosts line for {{ __ha_cluster_crm_conf_path }}
+  ansible.builtin.set_fact:
+    __ha_cluster_crm_conf_hosts:
+      "{{ ansible_play_hosts | map('regex_replace', '^(.*)$',
+        __ha_cluster_ssh_user + '@\\1') | join(', ') }}"
+
+- name: Create new configuration file {{ __ha_cluster_crm_conf_path }}
+  ansible.builtin.copy:
+    content: |
+      [core]
+      debug = false
+      force = false
+      wait = false
+      hosts = {{ __ha_cluster_crm_conf_hosts }}
+      no_generating_ssh_key = false
+
+      [color]
+      style = color
+    dest: "{{ __ha_cluster_crm_conf_path }}"
+    mode: '0644'
+    owner: root
+    group: root
+  when: not __ha_cluster_crm_conf_stat.stat.exists
+
+- name: Update hosts in existing file {{ __ha_cluster_crm_conf_path }} 
+  ansible.builtin.lineinfile:
+    path: "{{ __ha_cluster_crm_conf_path }}"
+    regexp: '^hosts =*'
+    line: "hosts = {{ __ha_cluster_crm_conf_hosts }}"
+    state: present
+    owner: root
+    group: root
+    mode: '0644'
+    backup: true
+  when: __ha_cluster_crm_conf_stat.stat.exists
