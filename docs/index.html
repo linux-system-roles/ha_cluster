@@ -168,6 +168,8 @@ id="toc-ha_cluster_install_cloud_agents"><code>ha_cluster_install_cloud_agents</
 id="toc-ha_cluster_fence_agent_packages"><code>ha_cluster_fence_agent_packages</code></a></li>
 <li><a href="#ha_cluster_extra_packages"
 id="toc-ha_cluster_extra_packages"><code>ha_cluster_extra_packages</code></a></li>
+<li><a href="#ha_cluster_zypper_patterns"
+id="toc-ha_cluster_zypper_patterns"><code>ha_cluster_zypper_patterns</code></a></li>
 <li><a href="#ha_cluster_use_latest_packages"
 id="toc-ha_cluster_use_latest_packages"><code>ha_cluster_use_latest_packages</code></a></li>
 <li><a href="#ha_cluster_hacluster_password"
@@ -325,8 +327,8 @@ Information</a></li>
 <li>Compatible OS
 <ul>
 <li>RHEL 8.3+, Fedora 31+</li>
-<li>SUSE Linux Enterprise Server 15 with HA extension</li>
-<li>SUSE Linux Enterprise Server for SAP Applications 15</li>
+<li>SUSE Linux Enterprise Server 15 and 16 with HA extension</li>
+<li>SUSE Linux Enterprise Server for SAP Applications 15 and 16</li>
 </ul></li>
 <li>Systems running RHEL are expected to be registered and have
 High-Availability repositories accessible, and ResilientStorage
@@ -475,6 +477,10 @@ agents.</p>
 <p>It is possible to specify fence agents here as well. However, <a
 href="#ha_cluster_fence_agent_packages"><code>ha_cluster_fence_agent_packages</code></a>
 is preferred for that, so that its default value is overridden.</p>
+<h3
+id="ha_cluster_zypper_patterns"><code>ha_cluster_zypper_patterns</code></h3>
+<p>SUSE Specific, list of additional zypper patterns to be installed,
+default: no patterns</p>
 <h3
 id="ha_cluster_use_latest_packages"><code>ha_cluster_use_latest_packages</code></h3>
 <p>boolean, default: <code>false</code></p>
