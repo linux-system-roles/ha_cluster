@@ -23,7 +23,7 @@
       if ha_cluster_admin_user_group is defined
         and ha_cluster_admin_user_group | length > 0
       else ha_cluster_admin_user_name }}"
-  block: 
+  block:
 
     - name: Ensure that the group exists '{{ __ha_cluster_admin_user_group }}'
       ansible.builtin.group:
@@ -195,7 +195,7 @@
     group: root
   when: not __ha_cluster_crm_conf_stat.stat.exists
 
-- name: Update hosts in existing file {{ __ha_cluster_crm_conf_path }} 
+- name: Update hosts in existing file {{ __ha_cluster_crm_conf_path }}
   ansible.builtin.lineinfile:
     path: "{{ __ha_cluster_crm_conf_path }}"
     regexp: '^hosts =*'
