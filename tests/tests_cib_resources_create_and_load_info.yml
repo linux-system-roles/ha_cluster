@@ -441,6 +441,12 @@
         resource_id: G3
 
     ha_cluster_resource_bundles:
+      - id: B-min
+        container:
+          type: docker
+          options:
+            - name: image
+              value: my:image1
       - id: B-without-primitive
         container:
           type: docker

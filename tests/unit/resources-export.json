@@ -634,6 +634,13 @@
           "attrs": [{ "name": "target-role", "value": "Stopped" }]
         }
       ]
+    },
+    {
+      "id": "B-min",
+      "container": {
+        "type": "docker",
+        "options": [{ "name": "image", "value": "my:image1" }]
+      }
     }
   ]
 }

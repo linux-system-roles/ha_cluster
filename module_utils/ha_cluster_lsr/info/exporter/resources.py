@@ -239,7 +239,7 @@ def export_resource_bundle_list(resources: SrcDict) -> List[Dict[str, Any]]:
             bundle["meta_attrs"] = meta_attrs
 
         network_options = _nv_list(
-            bundle_src.get("network", {}),
+            bundle_src.get("network", {}) or {},  # network can be None
             key_map=_BUNDLE_NETWORK_KEY_MAP,
         )
         if network_options:
