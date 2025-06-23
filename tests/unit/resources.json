@@ -1237,6 +1237,26 @@
         }
       ],
       "instance_attributes": []
+    },
+    {
+      "id": "B-min",
+      "description": null,
+      "member_id": null,
+      "container_type": "docker",
+      "container_options": {
+        "image": "my:image1",
+        "replicas": null,
+        "replicas_per_host": null,
+        "promoted_max": null,
+        "run_command": null,
+        "network": null,
+        "options": null
+      },
+      "network": null,
+      "port_mappings": [],
+      "storage_mappings": [],
+      "meta_attributes": [],
+      "instance_attributes": []
     }
   ]
 }
