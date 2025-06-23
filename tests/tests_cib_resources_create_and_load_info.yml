@@ -440,11 +440,7 @@
       - id: G3-clone
         resource_id: G3
 
-    # Currently, pcs fails when network option `add-host` for bundle is
-    # configured. So, this option is ignored during bundle creation and the
-    # bundle is created and then exported without it.
-    # For final comparison, we need bundles without this option.
-    __test_expected_bundles:
+    ha_cluster_resource_bundles:
       - id: B-without-primitive
         container:
           type: docker
@@ -532,21 +528,6 @@
           - attrs:
               - name: target-role
                 value: Stopped
-    # Even though `add-host` option is not propagated to CIB (pcs does not
-    # support it yet) we use it in definition to check that it does not break the
-    # role. So, we extend bundles by this option.
-    ha_cluster_resource_bundles: >-
-      {%- set result = [] -%}
-      {%- for bundle in __test_expected_bundles -%}
-        {%- set _ = result.append(
-          bundle | combine({
-            'network_options':
-              bundle.network_options + [{'name': 'add-host', 'value': true}]
-          })
-        ) -%}
-      {%- endfor -%}
-      {{ result }}
-
 
   tasks:
     - name: Run test
@@ -578,7 +559,7 @@
               clones: >-
                 {{ ha_cluster_resource_clones | sort(attribute='id') }}
               bundles: >-
-                {{ __test_expected_bundles | sort(attribute='id') }}
+                {{ ha_cluster_resource_bundles | sort(attribute='id') }}
             __test_got:
               primitives: >-
                 {{
