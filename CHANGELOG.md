@@ -1,6 +1,19 @@
 Changelog
 =========
 
+[1.24.0] - 2025-06-23
+--------------------
+
+### New Features
+
+- feat: crmsh SLES 16 changes and introduction of zypper patterns (#283)
+
+### Other Changes
+
+- ci: Add Fedora 42; use tox-lsr 3.9.0; use lsr-report-errors for qemu tests (#280)
+- ci: Add support for bootc end-to-end validation tests (#281)
+- ci: Use ansible 2.19 for fedora 42 testing; support python 3.13 (#282)
+
 [1.23.2] - 2025-05-15
 --------------------
 
