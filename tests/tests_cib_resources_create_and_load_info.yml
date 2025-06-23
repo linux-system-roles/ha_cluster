@@ -541,15 +541,20 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
-        - name: Run HA Cluster role
-          include_role:
-            name: linux-system-roles.ha_cluster
-            public: true
+        # Install pcs so we can read capabilities
+        - name: Install pcs
+          package:
+            name: pcs
+            state: present
+            use: >-
+              {{
+                (__ha_cluster_is_ostree | d(false))
+                  | ternary('ansible.posix.rhel_rpm_ostree', omit)
+              }}
 
         - name: Fetch cluster versions of cluster components
           include_tasks: tasks/fetch_versions.yml
 
-        # yamllint disable rule:line-length
         - name: Check exported resources configuration
           when:
             - __required_capability in __test_pcs_capabilities
@@ -585,6 +590,11 @@
                   | sort(attribute='id')
                 }}
           block:
+            - name: Run HA Cluster role
+              include_role:
+                name: linux-system-roles.ha_cluster
+                public: true
+
             - name: Print facts
               debug:
                 var: ha_cluster_facts
