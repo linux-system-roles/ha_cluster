@@ -792,7 +792,7 @@
           when:
             - "'pcmk.resource.config.output-formats' in __test_pcs_capabilities"
           vars:
-            __old_roles: "{{
+            __old_clone_roles: "{{
               (ansible_facts['distribution'] in ['RedHat', 'CentOS']
                and
                ansible_facts['distribution_major_version'] == '8') |
@@ -803,8 +803,8 @@
             __slv: Slave
             # wokeignore:rule=dummy
             __dmy: Dummy
-            __promoted: "{{ __old_roles | ternary(__mstr, 'Promoted') }}"
-            __unpromoted: "{{ __old_roles | ternary(__slv, 'Unpromoted') }}"
+            __promoted: "{{ __old_clone_roles | ternary(__mstr, 'Promoted') }}"
+            __unpromoted: "{{ __old_clone_roles | ternary(__slv, 'Unpromoted') }}"
             __test_expected_lines: '
                 {
                     "primitives": [
