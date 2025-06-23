@@ -1037,6 +1037,11 @@
               "id": "F-clone-meta_attributes-promotable",
               "name": "promotable",
               "value": "true"
+            },
+            {
+              "id": "F-clone-meta_attributes-adhoc",
+              "name": "adhoc",
+              "value": "true"
             }
           ]
         }

@@ -11,7 +11,7 @@ from __future__ import absolute_import, division, print_function
 # pylint: disable=invalid-name
 __metaclass__ = type
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .nvset import dict_to_nv_list
 from .wrap_src import (
@@ -20,6 +20,8 @@ from .wrap_src import (
     is_none,
     wrap_src_for_rich_report,
 )
+
+_PACEMAKER_TRUE = ["true", "on", "yes", "y", "1"]
 
 _PRIMITIVE_OPERATION_SKIP_KEYS = [
     "id",
@@ -50,6 +52,9 @@ _BUNDLE_STORAGE_MAP_KEY_MAP = {
     "target_dir": "target-dir",
 }
 
+_AttrsSrc = List[Dict[str, Any]]
+_Attrs = List[Dict[str, List[Dict[str, Any]]]]
+
 
 def _nv_list(
     input_dict: Dict[str, Any],
@@ -71,10 +76,11 @@ def _nv_list(
     return nv_list
 
 
-def _attrs(
-    nvsets: List[Dict[str, Any]],
-) -> List[Dict[str, List[Dict[str, Any]]]]:
+def _attrs(nvsets: _AttrsSrc) -> _Attrs:
     if len(nvsets) < 1:
+        return []
+
+    if len(nvsets[0]["nvpairs"]) < 1:
         return []
 
     return [
@@ -158,6 +164,29 @@ def _container(bundle_src: Dict[str, Any]) -> Dict[str, Any]:
     return container
 
 
+def _meta_attrs_promotable(meta_attrs_src: _AttrsSrc) -> Tuple[_Attrs, bool]:
+    if len(meta_attrs_src) == 0:
+        return [], False
+
+    first_set, remaining_sets = meta_attrs_src[0], meta_attrs_src[1:]
+
+    promoted_pair = None
+    remaining_pairs = []
+
+    for pair in first_set["nvpairs"]:
+        if pair["name"] == "promotable":
+            promoted_pair = pair
+        else:
+            remaining_pairs.append(pair)
+
+    return (
+        _attrs([{**first_set, "nvpairs": remaining_pairs}] + remaining_sets),
+        bool(
+            promoted_pair and promoted_pair["value"].lower() in _PACEMAKER_TRUE
+        ),
+    )
+
+
 @wrap_src_for_rich_report(
     dict(resources="resources configuration", stonith="stonith configuration")
 )
@@ -203,7 +232,11 @@ def export_resource_clone_list(resources: SrcDict) -> List[Dict[str, Any]]:
             id=clone_src["id"],
             resource_id=clone_src["member_id"],
         )
-        meta_attrs = _attrs(clone_src.get("meta_attributes", []))
+        meta_attrs, promotable = _meta_attrs_promotable(
+            clone_src.get("meta_attributes", [])
+        )
+        if promotable:
+            clone["promotable"] = True
         if meta_attrs:
             clone["meta_attrs"] = meta_attrs
         result.append(clone)

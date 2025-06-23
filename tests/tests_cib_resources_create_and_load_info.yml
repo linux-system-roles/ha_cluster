@@ -433,10 +433,7 @@
     ha_cluster_resource_clones:
       - id: F-clone
         resource_id: F
-        meta_attrs:
-          - attrs:
-              - name: promotable
-                value: "true"
+        promotable: true
       - id: G3-clone
         resource_id: G3
 
