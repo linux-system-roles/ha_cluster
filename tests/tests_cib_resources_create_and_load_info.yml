@@ -99,12 +99,6 @@
         agent: "ocf:pacemaker:Stateful"
         copy_operations_from_agent: false
         operations:
-          - action: "demote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -121,40 +115,10 @@
                 value: "20s"
               - name: "role"
                 value: "{{ __unpromoted }}"
-          - action: "notify"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "5s"
-          - action: "promote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
-          - action: "start"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
-          - action: "stop"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
       - id: D
         agent: "ocf:pacemaker:Stateful"
         copy_operations_from_agent: false
         operations:
-          - action: "demote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -171,40 +135,10 @@
                 value: "20s"
               - name: "role"
                 value: "{{ __unpromoted }}"
-          - action: "notify"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "5s"
-          - action: "promote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
-          - action: "start"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
-          - action: "stop"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
       - id: E
         agent: "ocf:pacemaker:Stateful"
         copy_operations_from_agent: false
         operations:
-          - action: "demote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -221,30 +155,6 @@
                 value: "20s"
               - name: "role"
                 value: "{{ __unpromoted }}"
-          - action: "notify"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "5s"
-          - action: "promote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
-          - action: "start"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
-          - action: "stop"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
       - id: F
         agent: "ocf:pacemaker:Stateful"
         copy_operations_from_agent: false
@@ -299,12 +209,6 @@
         agent: "ocf:pacemaker:Stateful"
         copy_operations_from_agent: false
         operations:
-          - action: "demote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
           - action: "monitor"
             attrs:
               - name: "interval"
@@ -321,40 +225,10 @@
                 value: "20s"
               - name: "role"
                 value: "{{ __unpromoted }}"
-          - action: "notify"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "5s"
-          - action: "promote"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "10s"
-          - action: "start"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
-          - action: "stop"
-            attrs:
-              - name: "interval"
-                value: "0s"
-              - name: "timeout"
-                value: "20s"
       - id: H
         copy_operations_from_agent: false
         agent: ocf:pacemaker:Stateful
         operations:
-          - action: demote
-            attrs:
-              - name: interval
-                value: 0s
-              - name: timeout
-                value: 10s
           - action: monitor
             attrs:
               - name: interval
@@ -371,30 +245,6 @@
                 value: 20s
               - name: role
                 value: "{{ __unpromoted }}"
-          - action: notify
-            attrs:
-              - name: interval
-                value: 0s
-              - name: timeout
-                value: 5s
-          - action: promote
-            attrs:
-              - name: interval
-                value: 0s
-              - name: timeout
-                value: 10s
-          - action: start
-            attrs:
-              - name: interval
-                value: 0s
-              - name: timeout
-                value: 20s
-          - action: stop
-            attrs:
-              - name: interval
-                value: 0s
-              - name: timeout
-                value: 20s
       - id: F1
         agent: "stonith:fence_xvm"
         copy_operations_from_agent: false
