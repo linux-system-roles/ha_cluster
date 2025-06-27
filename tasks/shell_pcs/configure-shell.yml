@@ -53,11 +53,8 @@
       include_role:
         name: fedora.linux_system_roles.certificate
       vars:
-        certificate_requests: |
-          {% for _cert in ha_cluster_pcsd_certificates %}
-          {%   set _ = _cert.__setitem__('name', '/var/lib/pcsd/pcsd') %}
-          {% endfor %}
-          {{ ha_cluster_pcsd_certificates }}
+        certificate_requests: "{{ ha_cluster_pcsd_certificates |
+          map('combine', {'name': '/var/lib/pcsd/pcsd'}) | list }}"
   always:
     - name: Set pcsd's certificate directory back to cluster_var_lib_t
       file:
