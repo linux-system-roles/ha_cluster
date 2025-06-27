@@ -1,5 +1,18 @@
 # SPDX-License-Identifier: MIT
 ---
+# In newer pcs versions, /var/lib/pcsd is created by systemd when pcsd starts.
+# In older versions, it is created during installation. At this point, the
+# directory may not exist yet, but this role needs it. We ensure it exists;
+# systemd will fix its permissions if needed. Using a different path is not
+# supported, as all supported configs use /var/lib/pcsd.
+- name: Ensure /var/lib/pcsd exists
+  file:
+    path: /var/lib/pcsd
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
 # Pcsd must be stopped when its config files are being updated. This is to
 # prevent a race condition caused by pcsd syncing its files in the cluster on
 # its own.
