@@ -39,7 +39,7 @@
           (
             __nodes_from_options != (__nodes_from_options | unique)
           ) or (
-            __nodes_from_options | difference(__ha_cluster_all_node_names)
+            __nodes_from_options | difference(__ha_cluster_all_node_names) | list | length > 0
           )
 
 - name: Extract node options
@@ -166,7 +166,7 @@
   when:
     - ha_cluster_pcsd_public_key_src is not none
     - ha_cluster_pcsd_private_key_src is not none
-    - ha_cluster_pcsd_certificates | d([])
+    - ha_cluster_pcsd_certificates | d([]) | length > 0
 
 - name: Fetch pcs capabilities
   command:
@@ -216,11 +216,11 @@
       defaults. Please, upgrade pcs.
   when:
     - (
-        ha_cluster_resource_defaults
+        ha_cluster_resource_defaults | length > 0
         and not 'pcmk.properties.resource-defaults.multiple'
         in __ha_cluster_pcs_capabilities
       ) or (
-        ha_cluster_resource_operation_defaults
+        ha_cluster_resource_operation_defaults | length > 0
         and not 'pcmk.properties.operation-defaults.multiple'
         in __ha_cluster_pcs_capabilities
       )

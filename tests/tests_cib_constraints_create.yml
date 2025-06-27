@@ -546,11 +546,11 @@
 
             - name: Print real location constraints configuration
               debug:
-                var: __test_pcs_location_config.stdout_lines
+                msg: __test_pcs_location_config {{ __test_pcs_location_config.stdout_lines | sort | list | to_nice_json }}
 
             - name: Print expected location constraints configuration
               debug:
-                var: __test_expected_lines | select | list
+                msg: __test_expected_lines {{ __test_expected_lines | select | sort | list | to_nice_json }}
 
             - name: Check location constraints configuration
               assert:
@@ -849,9 +849,9 @@
                                                 "id": "cl7-rule-rule",
                                                 "in_effect": "UNKNOWN",
                                                 "options": {
-                                                    "boolean-op": "or",
+                                                    "boolean-op": "or"
                                                     {% if __test_inner_rules_score %}
-                                                      "score": "0"
+                                                      ,"score": "0"
                                                     {% endif %}
                                                 },
                                                 "type": "RULE"
@@ -937,9 +937,9 @@
                                                 "id": "cl8-rule-rule",
                                                 "in_effect": "UNKNOWN",
                                                 "options": {
-                                                    "boolean-op": "or",
+                                                    "boolean-op": "or"
                                                     {% if __test_inner_rules_score %}
-                                                      "score": "0"
+                                                      ,"score": "0"
                                                     {% endif %}
                                                 },
                                                 "type": "RULE"
@@ -1236,9 +1236,9 @@
                                                 "id": "location-d3-3-rule-rule",
                                                 "in_effect": "UNKNOWN",
                                                 "options": {
-                                                    "boolean-op": "or",
+                                                    "boolean-op": "or"
                                                     {% if __test_inner_rules_score %}
-                                                      "score": "0"
+                                                      ,"score": "0"
                                                     {% endif %}
                                                 },
                                                 "type": "RULE"
@@ -1323,9 +1323,9 @@
                                                 "id": "location-dd-3-rule-rule",
                                                 "in_effect": "UNKNOWN",
                                                 "options": {
-                                                    "boolean-op": "or",
+                                                    "boolean-op": "or"
                                                     {% if __test_inner_rules_score %}
-                                                      "score": "0"
+                                                      ,"score": "0"
                                                     {% endif %}
                                                 },
                                                 "type": "RULE"
@@ -1545,6 +1545,8 @@
                     "ticket": [],
                     "ticket_set": []
                 }
+            __expected: "{{ __test_expected_lines if __test_expected_lines | type_debug == 'dict'
+              else __test_expected_lines | from_json }}"
           block:
             - name: Fetch location constraints configuration from the cluster
               command:
@@ -1554,16 +1556,16 @@
 
             - name: Print real location constraints configuration
               debug:
-                var: __test_pcs_location_config.stdout | from_json
+                msg: actual {{ __test_pcs_location_config.stdout | from_json | to_nice_json }}
 
             - name: Print expected location constraints configuration
               debug:
-                var: __test_expected_lines
+                msg: expected {{ __expected | to_nice_json }}
 
             - name: Check location constraints configuration
               assert:
                 that:
-                  - __test_pcs_location_config.stdout | from_json == __test_expected_lines
+                  - __test_pcs_location_config.stdout | from_json == __expected
 
         - name: Verify colocation constraints
           when:
@@ -2209,7 +2211,7 @@
 
             - name: Print expected ticket constraints configuration
               debug:
-                var: __test_expected_lines | from_json
+                var: __test_expected_lines | from_json | to_nice_json
 
             - name: Check ticket constraints configuration
               assert:

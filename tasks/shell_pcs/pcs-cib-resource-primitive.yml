@@ -75,4 +75,4 @@
   check_mode: false
   changed_when: not ansible_check_mode
   when:
-    - resource.utilization | d([])
+    - resource.utilization | d([]) | length > 0
