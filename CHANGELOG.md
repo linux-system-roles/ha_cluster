@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.24.1] - 2025-07-02
+--------------------
+
+### Bug Fixes
+
+- fix: ensure /var/lib/pcsd exists (#285)
+
+### Other Changes
+
+- refactor: support Ansible 2.19 (#286)
+
 [1.24.0] - 2025-06-23
 --------------------
 
