@@ -66,14 +66,13 @@ def _nv_list(
     if skip_keys is None:
         skip_keys = []
 
-    nv_list = dict_to_nv_list(
+    return dict_to_nv_list(
         {
             (key_map[key] if key in key_map else key): value
             for key, value in input_dict.items()
             if not (is_none(value) or key in skip_keys)
         }
     )
-    return nv_list
 
 
 def _attrs(nvsets: _AttrsSrc) -> _Attrs:

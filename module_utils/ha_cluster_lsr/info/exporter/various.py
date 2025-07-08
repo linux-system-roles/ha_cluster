@@ -114,13 +114,11 @@ def export_pcs_permission_list(
     """
     # Currently, only format version 2 is in use, so we don't check for file
     # format version
-    result: List[Dict[str, Any]] = []
-    for permission in pcs_settings_conf_dict["permissions"]["local_cluster"]:
-        result.append(
-            {
-                "type": permission["type"],
-                "name": permission["name"],
-                "allow_list": list(permission["allow"]),
-            }
-        )
-    return result
+    return [
+        {
+            "type": permission["type"],
+            "name": permission["name"],
+            "allow_list": list(permission["allow"]),
+        }
+        for permission in pcs_settings_conf_dict["permissions"]["local_cluster"]
+    ]
