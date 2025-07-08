@@ -40,12 +40,12 @@ def export_corosync_transport(corosync_conf_dict: SrcDict) -> Dict[str, Any]:
             corosync_conf_dict["transport_options"]
         )
     if corosync_conf_dict["links_options"]:
-        link_list = []
-        for link_dict in corosync_conf_dict["links_options"].values():
+        transport["links"] = [
             # linknumber is an index in links_options, but it is present in
             # link_dict as well
-            link_list.append(dict_to_nv_list(link_dict))
-        transport["links"] = link_list
+            dict_to_nv_list(link_dict)
+            for link_dict in corosync_conf_dict["links_options"].values()
+        ]
     if corosync_conf_dict["compression_options"]:
         transport["compression"] = dict_to_nv_list(
             corosync_conf_dict["compression_options"]
