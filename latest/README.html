@@ -361,6 +361,10 @@ lost.</li>
 <li>Corosync transport options including compression and encryption</li>
 <li>Corosync totem options</li>
 <li>Corosync quorum options</li>
+<li>Primitive resources (including stonith)</li>
+<li>Resource groups</li>
+<li>Resource clones</li>
+<li>Resource bundles</li>
 </ul></li>
 </ul>
 <h1 id="requirements">Requirements</h1>
@@ -1897,6 +1901,9 @@ recreates the same cluster.</p>
 <p>Note that the dictionary of variables may not be complete and manual
 modification of it is expected. Most notably, you need to set <a
 href="#ha_cluster_hacluster_password"><code>ha_cluster_hacluster_password</code></a>.</p>
+<p>Note that primitive resource operations are exported explicitly and
+<code>ha_cluster_resource_primitives.copy_operations_from_agent</code>
+is always set to false.</p>
 <p>Note that depending on pcs version installed on managed nodes,
 certain variables may not be present in the export.</p>
 <ul>
@@ -1935,6 +1942,14 @@ href="#ha_cluster_transport"><code>ha_cluster_transport</code></a></li>
 href="#ha_cluster_node_options"><code>ha_cluster_node_options</code></a>
 - currently only <code>node_name</code>, <code>corosync_addresses</code>
 and <code>pcs_address</code> are present</li>
+<li><a
+href="#ha_cluster_resource_primitives"><code>ha_cluster_resource_primitives</code></a></li>
+<li><a
+href="#ha_cluster_resource_groups"><code>ha_cluster_resource_groups</code></a></li>
+<li><a
+href="#ha_cluster_resource_clones"><code>ha_cluster_resource_clones</code></a></li>
+<li><a
+href="#ha_cluster_resource_bundles"><code>ha_cluster_resource_bundles</code></a></li>
 </ul></li>
 <li><p>Following variables are never present in the export (consult the
 role documentation for impact of the variables missing when running the
