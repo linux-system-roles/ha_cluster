@@ -196,7 +196,7 @@ def export_resource_primitive_list(
     result = []
 
     # Export stonith first: stonith needs to be configured first, otherwise
-    # resources wont start due to missing stonith.
+    # resources won't start due to missing stonith.
     for primitive_src in stonith["primitives"]:
         result.append(_primitive(primitive_src, use_utilization=False))
 
