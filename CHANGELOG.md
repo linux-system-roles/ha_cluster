@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.25.0] - 2025-07-09
+--------------------
+
+### New Features
+
+- feat: export cluster resources (#288)
+
+### Other Changes
+
+- ci: use py311 for pylint (#289)
+
 [1.24.1] - 2025-07-02
 --------------------
 
