@@ -546,11 +546,11 @@
 
             - name: Print real location constraints configuration
               debug:
-                msg: __test_pcs_location_config {{ __test_pcs_location_config.stdout_lines | sort | list | to_nice_json }}
+                var: __test_pcs_location_config.stdout_lines
 
             - name: Print expected location constraints configuration
               debug:
-                msg: __test_expected_lines {{ __test_expected_lines | select | sort | list | to_nice_json }}
+                var: __test_expected_lines | select | list
 
             - name: Check location constraints configuration
               assert:
@@ -561,7 +561,7 @@
           when:
             - '"pcmk.constraint.config.output-formats" in __test_pcs_capabilities'
           vars:
-            __test_expected_lines: |
+            __test_expected_lines: '
                 {
                     "colocation": [],
                     "colocation_set": [],
@@ -1544,9 +1544,7 @@
                     "order_set": [],
                     "ticket": [],
                     "ticket_set": []
-                }
-            __expected: "{{ __test_expected_lines if __test_expected_lines | type_debug == 'dict'
-              else __test_expected_lines | from_json }}"
+                }'
           block:
             - name: Fetch location constraints configuration from the cluster
               command:
@@ -1556,16 +1554,16 @@
 
             - name: Print real location constraints configuration
               debug:
-                msg: actual {{ __test_pcs_location_config.stdout | from_json | to_nice_json }}
+                var: __test_pcs_location_config.stdout | from_json
 
             - name: Print expected location constraints configuration
               debug:
-                msg: expected {{ __expected | to_nice_json }}
+                var: __test_expected_lines | from_json
 
             - name: Check location constraints configuration
               assert:
                 that:
-                  - __test_pcs_location_config.stdout | from_json == __expected
+                  - __test_pcs_location_config.stdout | from_json == __test_expected_lines | from_json
 
         - name: Verify colocation constraints
           when:
@@ -2211,7 +2209,7 @@
 
             - name: Print expected ticket constraints configuration
               debug:
-                var: __test_expected_lines | from_json | to_nice_json
+                var: __test_expected_lines | from_json
 
             - name: Check ticket constraints configuration
               assert:
