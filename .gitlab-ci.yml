@@ -1,5 +1,16 @@
 ---
 # yamllint disable rule:line-length
+
+# reduce load on CI systems by not running the pipeline for all changes
+# https://docs.gitlab.com/ci/yaml/workflow/#common-if-clauses-for-workflowrules
+# https://docs.gitlab.com/ci/jobs/job_rules/#ci_pipeline_source-predefined-variable
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "parent_pipeline"
+    - when: never
+
 variables:
   PYTHON_CODE_DIRS: "./library/ ./module_utils/ha_cluster_lsr/ ./tests/unit/"
   WOKE_CONFIG: "https://raw.githubusercontent.com/linux-system-roles/tox-lsr/main/src/tox_lsr/config_files/woke.yml"
