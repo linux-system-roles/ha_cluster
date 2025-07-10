@@ -13,7 +13,8 @@
        or 'fence-agents-all' in ha_cluster_extra_packages) }}"
     __fence_fw_port: "{{ [{'port': '1229/tcp', 'state': 'enabled'}]
       if __use_fence_fw_port else [] }}"
-    __ha_fw_service: [{'service': 'high-availability', 'state': 'enabled'}]
+    __ha_fw_service: "{{
+      [{'service': 'high-availability', 'state': 'enabled'}] }}"
     firewall: "{{ __ha_fw_service + __fence_fw_port }}"
   when:
     - ha_cluster_manage_firewall | bool

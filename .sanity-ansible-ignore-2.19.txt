@@ -1,0 +1,6 @@
+plugins/modules/ha_cluster_info.py validate-modules:missing-gplv3-license
+plugins/modules/pcs_api_v2.py validate-modules:missing-gplv3-license
+plugins/modules/pcs_qdevice_certs.py validate-modules:missing-gplv3-license
+plugins/modules/pcs_api_v2.py import-3.8!skip
+plugins/modules/pcs_qdevice_certs.py import-3.8!skip
+plugins/module_utils/ha_cluster_lsr/pcs_api_v2_utils.py import-3.8!skip
