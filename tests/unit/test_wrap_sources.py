@@ -15,9 +15,9 @@ from contextlib import contextmanager
 from typing import Generator
 from unittest import TestCase
 
-from .ha_cluster_info import exporter
+from .ha_cluster_info import exporter_package
 
-wrap_src = exporter.wrap_src
+wrap_src = exporter_package.wrap_src
 
 DESC = "Desc"
 
