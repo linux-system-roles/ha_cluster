@@ -16,9 +16,15 @@ sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
 sys.modules["ansible.module_utils.ha_cluster_lsr.info"] = import_module(
     "ha_cluster_lsr.info"
 )
+sys.modules["ansible.module_utils.ha_cluster_lsr.info.exporter_package"] = (
+    import_module("ha_cluster_lsr.info.exporter_package")
+)
 
 ha_cluster_info = import_module("ha_cluster_info")
 exporter = getattr(import_module("ha_cluster_lsr.info"), "exporter")
+exporter_package = getattr(
+    import_module("ha_cluster_lsr.info"), "exporter_package"
+)
 loader = getattr(import_module("ha_cluster_lsr.info"), "loader")
 
 

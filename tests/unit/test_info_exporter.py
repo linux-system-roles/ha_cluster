@@ -11,26 +11,26 @@ from textwrap import dedent
 from typing import Any, Dict
 from unittest import TestCase
 
-from .ha_cluster_info import exporter
+from .ha_cluster_info import exporter, exporter_package
 
 
 class DictToNvList(TestCase):
     # pylint: disable=protected-access
     def test_no_item(self) -> None:
         self.assertEqual(
-            exporter.nvset.dict_to_nv_list(dict()),
+            exporter_package.nvset.dict_to_nv_list(dict()),
             [],
         )
 
     def test_one_item(self) -> None:
         self.assertEqual(
-            exporter.nvset.dict_to_nv_list(dict(one="1")),
+            exporter_package.nvset.dict_to_nv_list(dict(one="1")),
             [dict(name="one", value="1")],
         )
 
     def test_two_items(self) -> None:
         self.assertEqual(
-            exporter.nvset.dict_to_nv_list(dict(one="1", two="2")),
+            exporter_package.nvset.dict_to_nv_list(dict(one="1", two="2")),
             [dict(name="one", value="1"), dict(name="two", value="2")],
         )
 
