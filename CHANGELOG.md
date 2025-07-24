@@ -1,6 +1,18 @@
 Changelog
 =========
 
+[1.25.2] - 2025-07-24
+--------------------
+
+### Bug Fixes
+
+- fix: use empty init to prevent old ansible issues (#294)
+
+### Other Changes
+
+- ci: add some ansible-test ignores for 2.14 (#293)
+- ci: update pcs test matrix (#295)
+
 [1.25.1] - 2025-07-15
 --------------------
 
