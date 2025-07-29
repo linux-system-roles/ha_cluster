@@ -23,13 +23,22 @@
                  ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
       when: "'openssl' not in ansible_facts.packages"
 
+    - name: Get openssl algorithms
+      command: openssl list -public-key-algorithms
+      register: openssl_algorithms
+      changed_when: false
+      no_log: true  # this is quite verbose
+
     - name: Generate a self signed pcsd cert and the pcsd key
       command: >-
-        openssl req -x509 -newkey rsa:2048 -nodes
+        openssl req -x509 -newkey {{ key_algo }} -nodes
         -keyout "{{ __test_pcsd_private_key_path }}"
         -out "{{ __test_pcsd_public_key_path }}"
         -subj "/CN={{ ansible_host }}"
       changed_when: false
+      vars:
+        key_algo: "{{ 'mldsa65' if 'MLDSA65' in openssl_algorithms.stdout
+          else 'rsa:2048' }}"
 
     - name: Generate corosync key
       copy:
