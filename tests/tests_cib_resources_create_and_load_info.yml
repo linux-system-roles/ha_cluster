@@ -246,7 +246,7 @@
               - name: role
                 value: "{{ __unpromoted }}"
       - id: F1
-        agent: "stonith:fence_xvm"
+        agent: "stonith:fence_kdump"
         copy_operations_from_agent: false
         instance_attrs:
           - attrs:
