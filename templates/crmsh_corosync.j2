@@ -50,7 +50,7 @@ nodelist {
                 ring{{ loop.index0 }}_addr: {{ addr | quote }}
 {% endfor %}
 {% else %}
-                ring0_addr: {{ hostvars[node].__ha_cluster_local_node.pcs_address | d(ansible_default_ipv4.address) }}
+                ring0_addr: {{ hostvars[node].__ha_cluster_local_node.pcs_address | d(hostvars[node]['ansible_default_ipv4']['address']) }}
 {% endif -%}
        }
 {% endfor %}
