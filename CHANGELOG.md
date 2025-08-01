@@ -1,6 +1,18 @@
 Changelog
 =========
 
+[1.25.3] - 2025-08-01
+--------------------
+
+### Bug Fixes
+
+- fix: crsmh corosync template wrongly used variable from run_once host (#299)
+
+### Other Changes
+
+- test: use post quantum crypto for certs where available (#297)
+- test: don't use fence_xvm in tests (#298)
+
 [1.25.2] - 2025-07-24
 --------------------
 
