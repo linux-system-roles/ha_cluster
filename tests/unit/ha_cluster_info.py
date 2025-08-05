@@ -40,8 +40,8 @@ def mocked_module(
         ]
     ] = None,
 ) -> Generator:
-    calls, side_efect = zip(*runner_calls) if runner_calls else ([], [])
-    module_mock = mock.Mock(run_command=mock.Mock(side_effect=side_efect))
+    calls, side_effect = zip(*runner_calls) if runner_calls else ([], [])
+    module_mock = mock.Mock(run_command=mock.Mock(side_effect=side_effect))
 
     yield module_mock
 

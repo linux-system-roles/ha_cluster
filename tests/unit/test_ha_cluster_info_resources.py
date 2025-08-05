@@ -47,7 +47,7 @@ class ExportResourcesConfiguration(TestCase):
                 json.loads(read_file("resources-export.json")),
             )
 
-    def test_no_capabilites(self) -> None:
+    def test_no_capabilities(self) -> None:
         with mocked_module([]) as module_mock:
             self.assertEqual(
                 ha_cluster_info.export_resources_configuration(
