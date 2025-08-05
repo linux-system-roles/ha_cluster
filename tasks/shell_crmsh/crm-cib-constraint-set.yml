@@ -91,7 +91,7 @@
         {%- endif %}
         {{ __ha_cluster_resource_ids_string }}
       {%- else %}
-        {%- for set in constraint.resource_sets %}
+        {%- for set in constraint.resource_sets | d([]) %}
           {{ constraint.ticket | quote }}: {{ __ha_cluster_resource_ids_string }}
         {%- endfor %}
       {%- endif %}

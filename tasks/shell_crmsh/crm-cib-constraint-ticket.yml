@@ -45,8 +45,8 @@
   ansible.builtin.shell:
     cmd: |
       yes 'n' | crm -c {{ __ha_cluster_crm_shadow }} configure rsc_ticket \
-      {{ __ha_cluster_constraint_id }} {{ constraint.ticket | quote }}: \
-      {% if constraint.resource.role | d() and
+        {{ __ha_cluster_constraint_id }} {{ constraint.ticket | quote }}: \
+      {% if constraint.resource.role is defined and
         constraint.resource.role | lower in __ha_cluster_crmsh_roles %}
         {{ constraint.resource.id | quote }}:{{
           constraint.resource.role | lower | capitalize | quote }} \

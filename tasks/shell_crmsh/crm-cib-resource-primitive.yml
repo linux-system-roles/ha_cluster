@@ -26,25 +26,32 @@
     cmd: |
       yes 'n' | crm -c {{ __ha_cluster_crm_shadow }} configure primitive \
         {{ resource.id | quote }} {{ resource.agent | quote }} \
-      {% if resource.instance_attrs[0].attrs | default(False) %}
+      {% if resource.instance_attrs is defined
+        and resource.instance_attrs | type_debug == 'list'
+        and resource.instance_attrs[0].attrs is defined
+        and resource.instance_attrs[0].attrs | type_debug == 'list' %}
         params {% for attr in resource.instance_attrs[0].attrs -%}
           {{ attr.name | quote }}={{ attr.value | quote }} \
         {% endfor %}
       {% endif %}
-      {% if resource.meta_attrs[0].attrs | default(False) %}
+      {% if resource.meta_attrs is defined
+        and resource.meta_attrs | type_debug == 'list'
+        and resource.meta_attrs[0].attrs is defined
+        and resource.meta_attrs[0].attrs | type_debug == 'list' %}
         meta {% for attr in resource.meta_attrs[0].attrs -%}
           {{ attr.name | quote }}={{ attr.value | quote }} \
         {% endfor %}
       {% endif %}
-      {% if resource.operations | default(False) %}\
+      {% if resource.operations is defined
+        and resource.operations | type_debug == 'list' %}\
         {% for operation in resource.operations %}
-          {% if operation.action | default(False) %}
+          {% if operation.action is defined
+            and operation.attrs is defined
+            and operation.attrs | type_debug == 'list' %}
             op {{ operation.action | quote }} \
-            {% if operation.attrs | default(False) %}
-              {%- for attr in operation.attrs -%}
-                {{ attr.name | quote }}={{ attr.value | quote }} \
-              {% endfor %}
-            {% endif %}
+            {%- for attr in operation.attrs -%}
+              {{ attr.name | quote }}={{ attr.value | quote }} \
+            {% endfor %}
           {% endif %}
         {% endfor %}
       {% endif %}

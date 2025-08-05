@@ -40,11 +40,14 @@
   ansible.builtin.shell:
     cmd: |
       yes 'n' | crm -c {{ __ha_cluster_crm_shadow }} configure group \
-      {{ resource_group.id | quote }} \
+        {{ resource_group.id | quote }} \
       {% for resource in resource_group.resource_ids %}
         {{ resource | quote }} \
       {% endfor %}
-      {% if resource_group.meta_attrs[0].attrs | default(False) %}
+      {% if resource_group.meta_attrs is defined
+        and resource_group.meta_attrs | type_debug == 'list'
+        and resource_group.meta_attrs[0].attrs is defined
+        and resource_group.meta_attrs[0].attrs | type_debug == 'list' %}
         meta {% for attr in resource_group.meta_attrs[0].attrs -%}
           {{ attr.name | quote }}={{ attr.value | quote }} \
         {% endfor %}

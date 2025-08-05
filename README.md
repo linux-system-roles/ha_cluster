@@ -746,7 +746,7 @@ ha_cluster_resource_groups:
 This variable defines resource groups. The items are as follows:
 
 * `id` (mandatory) - ID of a group.
-* `resources` (mandatory) - List of the group's resources. Each resource is
+* `resource_ids` (mandatory) - List of the group's resources. Each resource is
   referenced by its ID and the resources must be defined in
   [`ha_cluster_resource_primitives`](#ha_cluster_resource_primitives). At least
   one resource must be listed.

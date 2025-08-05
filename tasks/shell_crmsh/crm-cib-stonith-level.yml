@@ -28,9 +28,9 @@
       yes 'n' | crm -c {{ __ha_cluster_crm_shadow }} \
       configure fencing_topology \
       {% for stonith_level in ha_cluster_stonith_levels -%}
-        {% if stonith_level.target | d() %}
+        {% if stonith_level.target is defined %}
           {{ stonith_level.target | quote }}: \
-        {% elif stonith_level.target_pattern | d() %}
+        {% elif stonith_level.target_pattern is defined %}
           regexp%{{ stonith_level.target_pattern | quote }}: \
         {% endif %}
         {% for resource_id in stonith_level.resource_ids %}

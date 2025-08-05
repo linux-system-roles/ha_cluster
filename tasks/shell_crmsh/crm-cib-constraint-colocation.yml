@@ -62,14 +62,14 @@
       {% else %}
         inf: \
       {% endfor %}
-      {% if constraint.resource_follower.role | d() and
+      {% if constraint.resource_follower.role is defined and
       constraint.resource_follower.role | lower in __ha_cluster_crmsh_roles %}
         {{ constraint.resource_follower.id | quote }}:{{
           constraint.resource_follower.role | lower | capitalize | quote }} \
       {% else %}
         {{ constraint.resource_follower.id | quote }} \
       {% endif %}
-      {% if constraint.resource_leader.role | d() and
+      {% if constraint.resource_leader.role is defined and
         constraint.resource_leader.role | lower in __ha_cluster_crmsh_roles %}
         {{ constraint.resource_leader.id | quote }}:{{
           constraint.resource_leader.role | lower | capitalize | quote }} \
