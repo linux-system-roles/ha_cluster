@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT
 ---
-# Test SBD configuration defined both in a play and in an inventroy. Those
+# Test SBD configuration defined both in a play and in an inventory. Those
 # variables are merged, with variables defined in a play override variables
 # from an inventory.
 - name: Maximal SBD configuration (inventory + play)

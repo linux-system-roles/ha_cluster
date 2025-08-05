@@ -17,9 +17,9 @@ class ExportPcsdConfiguration(TestCase):
 
     @mock.patch("ha_cluster_info.loader.get_pcsd_settings_conf")
     def test_permissions_defined(
-        self, mock_load_pcsd_permisions: mock.Mock
+        self, mock_load_pcsd_permissions: mock.Mock
     ) -> None:
-        mock_load_pcsd_permisions.return_value = {
+        mock_load_pcsd_permissions.return_value = {
             "permissions": {
                 "local_cluster": [
                     {
@@ -56,9 +56,9 @@ class ExportPcsdConfiguration(TestCase):
 
     @mock.patch("ha_cluster_info.loader.get_pcsd_settings_conf")
     def test_empty_permissions_defined(
-        self, mock_load_pcsd_permisions: mock.Mock
+        self, mock_load_pcsd_permissions: mock.Mock
     ) -> None:
-        mock_load_pcsd_permisions.return_value = {
+        mock_load_pcsd_permissions.return_value = {
             "permissions": {
                 "local_cluster": [],
             }
@@ -73,9 +73,9 @@ class ExportPcsdConfiguration(TestCase):
 
     @mock.patch("ha_cluster_info.loader.get_pcsd_settings_conf")
     def test_permission_load_error(
-        self, mock_load_pcsd_permisions: mock.Mock
+        self, mock_load_pcsd_permissions: mock.Mock
     ) -> None:
-        mock_load_pcsd_permisions.return_value = None
+        mock_load_pcsd_permissions.return_value = None
 
         self.assertEqual(
             ha_cluster_info.export_pcsd_configuration(),
@@ -84,9 +84,9 @@ class ExportPcsdConfiguration(TestCase):
 
     @mock.patch("ha_cluster_info.loader.get_pcsd_settings_conf")
     def test_permission_load_bad_format(
-        self, mock_load_pcsd_permisions: mock.Mock
+        self, mock_load_pcsd_permissions: mock.Mock
     ) -> None:
-        mock_load_pcsd_permisions.return_value = {
+        mock_load_pcsd_permissions.return_value = {
             "permissions": {
                 "local": [
                     {
@@ -104,7 +104,7 @@ class ExportPcsdConfiguration(TestCase):
             cm.exception.kwargs,
             dict(
                 data_desc="pcs_settings.conf",
-                data=mock_load_pcsd_permisions.return_value,
+                data=mock_load_pcsd_permissions.return_value,
                 issue_location="/permissions",
                 issue_desc="Missing key 'local_cluster'",
             ),
