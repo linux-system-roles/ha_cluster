@@ -53,7 +53,10 @@
         ms {% else %} clone {% endif %} \
       {{ __ha_cluster_resource_id }} \
       {{ resource_clone.resource_id | quote }} \
-      {% if resource_clone.meta_attrs[0].attrs | default(False) %}
+      {% if resource_clone.meta_attrs is defined
+        and resource_clone.meta_attrs | type_debug == 'list'
+        and resource_clone.meta_attrs[0].attrs is defined
+        and resource_clone.meta_attrs[0].attrs | type_debug == 'list' %}
         meta {% for attr in resource_clone.meta_attrs[0].attrs -%}
           {{ attr.name | quote }}={{ attr.value | quote }} \
         {% endfor %}

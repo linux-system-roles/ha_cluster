@@ -29,7 +29,7 @@
           (
             __nodes_from_options != (__nodes_from_options | unique)
           ) or (
-            __nodes_from_options | difference(__ha_cluster_all_node_names)
+            __nodes_from_options | difference(__ha_cluster_all_node_names) | list | length > 0
           )
 
 - name: Extract node options

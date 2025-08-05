@@ -50,18 +50,18 @@
     cmd: >-
       yes 'n' | crm -c {{ __ha_cluster_crm_shadow }}
       configure location {{ __ha_cluster_constraint_id }}
-      {%- if constraint.resource.pattern | d() %}
+      {%- if constraint.resource.pattern is defined %}
         /{{ constraint.resource.pattern | quote }}/
       {%- else %}
         {{ constraint.resource.id | quote }}
       {%- endif %}
-      {%- if constraint.resource.role | d() and
+      {%- if constraint.resource.role is defined and
         constraint.resource.role | lower in __ha_cluster_crmsh_roles %}
           role={{
             constraint.resource.role | lower | capitalize | quote
           }}
         {%- endif %}
-      {%- if constraint.rule | d() %}
+      {%- if constraint.rule is defined %}
         rule {{ __score }}{{ constraint.rule }}
       {%- else %}
         {{ __score }} {{ constraint.node }}
