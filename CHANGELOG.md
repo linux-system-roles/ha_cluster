@@ -1,6 +1,14 @@
 Changelog
 =========
 
+[1.25.4] - 2025-08-08
+--------------------
+
+### Other Changes
+
+- refactor: crmsh update for ansible-core 2.19 (#301)
+- style: fix typos (#302)
+
 [1.25.3] - 2025-08-01
 --------------------
 
