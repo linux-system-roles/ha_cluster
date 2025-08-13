@@ -80,10 +80,43 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
+      rescue:
+        - name: Dump journal, logs
+          shell: |
+            set -x
+            exec 1>&2
+            journalctl -ex
+            for file in /var/log/pcsd/*.log; do
+              echo "--- $file ---"
+              cat "$file"
+            done
+            for file in /var/log/pacemaker/*.log; do
+              echo "--- $file ---"
+              cat "$file"
+            done
+          changed_when: false
+          failed_when: true
+
       always:
+        - name: Remove pcsd TLS certificate and key files
+          file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - /var/lib/pcsd/pcsd.crt
+            - /var/lib/pcsd/pcsd.key
+
         - name: Clean up work directory
           file:
             path: "{{ __ha_cluster_work_dir.path }}"
             state: absent
           delegate_to: localhost
           run_once: true  # noqa: run_once[task]
+
+        - name: Reset crypto policies
+          include_role:
+            name: fedora.linux_system_roles.crypto_policies
+          vars:
+            crypto_policies_policy: "{{ __crypto_policies_policy }}"
+          when: __crypto_policies_policy | d('') | length > 0
