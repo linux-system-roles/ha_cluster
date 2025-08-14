@@ -29,6 +29,14 @@
       changed_when: false
       no_log: true  # this is quite verbose
 
+    - name: Load test variables
+      include_vars:
+        file: vars/rh_distros_vars.yml
+      when: __ha_cluster_is_rh_distro is not defined
+
+    # Seems like pcs/pcsd is not happy with mldsa65 on RHEL 9,
+    # even though it's supported by openssl.
+    # So we use rsa:2048 instead.
     - name: Generate a self signed pcsd cert and the pcsd key
       command: >-
         openssl req -x509 -newkey {{ key_algo }} -nodes
@@ -38,6 +46,7 @@
       changed_when: false
       vars:
         key_algo: "{{ 'mldsa65' if 'MLDSA65' in openssl_algorithms.stdout
+          and __ha_cluster_is_rh_distro and ansible_facts['distribution_major_version'] | int > 9
           else 'rsa:2048' }}"
 
     - name: Generate corosync key
@@ -57,3 +66,21 @@
         content: "{{ lookup('pipe', 'openssl rand -base64 512') | b64decode }}"
         dest: "{{ __test_fence_xvm_key_path }}"
         mode: "0400"
+
+# https://issues.redhat.com/browse/RHEL-107877
+# el9 needs crypto-policies to be able to use PQC
+- name: Ensure managed node is able to use PQC
+  include_role:
+    name: fedora.linux_system_roles.crypto_policies
+  vars:
+    crypto_policies_policy: DEFAULT:PQ
+  when:
+    - __ha_cluster_is_rh_distro | bool
+    - ansible_facts['distribution_major_version'] | int == 9
+
+- name: Set variables needed for cleanup
+  set_fact:
+    # We need to reset this after the test is done
+    __crypto_policies_policy: "{{ crypto_policies_active | d('')
+      if __ha_cluster_is_rh_distro and ansible_facts['distribution_major_version'] | int == 9
+      else '' }}"
