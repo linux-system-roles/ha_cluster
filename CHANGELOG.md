@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.25.5] - 2025-08-18
+--------------------
+
+### Other Changes
+
+- test: clean up certs/keys created by tests (#304)
+
 [1.25.4] - 2025-08-08
 --------------------
 
