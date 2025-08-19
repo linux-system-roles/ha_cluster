@@ -1,5 +1,49 @@
 # SPDX-License-Identifier: MIT
 ---
+- name: Load test variables
+  include_vars:
+    file: vars/rh_distros_vars.yml
+  when: __ha_cluster_is_rh_distro is not defined
+
+- name: Check if the managed node needs crypto-policies to be able to use PQC
+  when:
+    - __ha_cluster_is_rh_distro | bool
+    - (ansible_facts["distribution"] == "RedHat" and ansible_facts["distribution_version"] is version("9.7", ">=")
+       and ansible_facts["distribution_version"] is version("10", "<"))
+      or (ansible_facts["distribution"] != "RedHat" and
+          ansible_facts['distribution_major_version'] is version("9", "=="))
+  block:
+    # calling role with null will just return the current policy
+    - name: Get current crypto policy
+      include_role:
+        name: fedora.linux_system_roles.crypto_policies
+      vars:
+        crypto_policies_policy: null
+
+    - name: Set variables needed for support and cleanup
+      set_fact:
+        # We need to reset this after the test is done
+        __crypto_policies_policy: "{{ crypto_policies_active | d('') }}"
+
+    # https://issues.redhat.com/browse/RHEL-107877
+    # rhel 9.7 and later, or EL9 other than RHEL, needs crypto-policies to be able to use PQC
+    - name: Ensure managed node is able to use PQC
+      include_role:
+        name: fedora.linux_system_roles.crypto_policies
+      vars:
+        crypto_policies_policy: DEFAULT:PQ
+
+# RHEL 9.7 and later, except for RHEL 10.0, or EL9 other than RHEL, supports PQC
+- name: Check if the managed node supports PQC
+  set_fact:
+    __ha_cluster_supports_pqc: "{{ __ha_cluster_is_rh_distro and
+      ((ansible_facts['distribution'] == 'RedHat' and
+       ansible_facts['distribution_version'] is version('9.7', '>=') and
+       (ansible_facts['distribution_version'] is version('10.0', '<') or
+        ansible_facts['distribution_version'] is version('10.1', '>='))) or
+      (ansible_facts['distribution'] != 'RedHat' and
+       ansible_facts['distribution_major_version'] is version('9', '>='))) }}"
+
 - name: Generate pre-shared keys and certificates on the controller
   delegate_to: localhost
   run_once: true  # noqa: run_once[task]
@@ -11,9 +55,11 @@
     __test_pacemaker_key_path: >-
       {{ __ha_cluster_work_dir.path }}/pacemaker-authkey
     __test_fence_xvm_key_path: "{{ __ha_cluster_work_dir.path }}/fence_xvm.key"
+    __supports_pqc: "{{ hostvars.keys() | list | map('extract', hostvars) | selectattr('__ha_cluster_supports_pqc', 'defined') | selectattr('__ha_cluster_supports_pqc') | list | length > 0 }}"
   block:
     - name: List packages on the controller to see if OpenSSL is installed
       package_facts:
+      no_log: "{{ ansible_verbosity | int <= 2 }}"
 
     - name: Ensure OpenSSL is installed on the controller
       package:
@@ -27,12 +73,8 @@
       command: openssl list -public-key-algorithms
       register: openssl_algorithms
       changed_when: false
-      no_log: true  # this is quite verbose
-
-    - name: Load test variables
-      include_vars:
-        file: vars/rh_distros_vars.yml
-      when: __ha_cluster_is_rh_distro is not defined
+      when: __supports_pqc | bool
+      no_log: "{{ ansible_verbosity | int <= 2 }}"
 
     # Seems like pcs/pcsd is not happy with mldsa65 on RHEL 9,
     # even though it's supported by openssl.
@@ -45,9 +87,8 @@
         -subj "/CN={{ ansible_host }}"
       changed_when: false
       vars:
-        key_algo: "{{ 'mldsa65' if 'MLDSA65' in openssl_algorithms.stdout
-          and __ha_cluster_is_rh_distro and ansible_facts['distribution_major_version'] | int > 9
-          else 'rsa:2048' }}"
+        key_algo: "{{ 'mldsa65' if 'MLDSA65' in openssl_algorithms.stdout | d('')
+          and __supports_pqc else 'rsa:2048' }}"
 
     - name: Generate corosync key
       copy:
@@ -66,21 +107,3 @@
         content: "{{ lookup('pipe', 'openssl rand -base64 512') | b64decode }}"
         dest: "{{ __test_fence_xvm_key_path }}"
         mode: "0400"
-
-# https://issues.redhat.com/browse/RHEL-107877
-# el9 needs crypto-policies to be able to use PQC
-- name: Ensure managed node is able to use PQC
-  include_role:
-    name: fedora.linux_system_roles.crypto_policies
-  vars:
-    crypto_policies_policy: DEFAULT:PQ
-  when:
-    - __ha_cluster_is_rh_distro | bool
-    - ansible_facts['distribution_major_version'] | int == 9
-
-- name: Set variables needed for cleanup
-  set_fact:
-    # We need to reset this after the test is done
-    __crypto_policies_policy: "{{ crypto_policies_active | d('')
-      if __ha_cluster_is_rh_distro and ansible_facts['distribution_major_version'] | int == 9
-      else '' }}"

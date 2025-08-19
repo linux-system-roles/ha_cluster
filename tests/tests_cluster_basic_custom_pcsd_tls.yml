@@ -119,4 +119,4 @@
             name: fedora.linux_system_roles.crypto_policies
           vars:
             crypto_policies_policy: "{{ __crypto_policies_policy }}"
-          when: __crypto_policies_policy | d('') | length > 0
+          when: __crypto_policies_policy | d("") | length > 0
