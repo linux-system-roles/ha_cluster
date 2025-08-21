@@ -55,7 +55,9 @@
     __test_pacemaker_key_path: >-
       {{ __ha_cluster_work_dir.path }}/pacemaker-authkey
     __test_fence_xvm_key_path: "{{ __ha_cluster_work_dir.path }}/fence_xvm.key"
+    # yamllint disable rule:line-length
     __supports_pqc: "{{ hostvars.keys() | list | map('extract', hostvars) | selectattr('__ha_cluster_supports_pqc', 'defined') | selectattr('__ha_cluster_supports_pqc') | list | length > 0 }}"
+    # yamllint enable rule:line-length
   block:
     - name: List packages on the controller to see if OpenSSL is installed
       package_facts:
