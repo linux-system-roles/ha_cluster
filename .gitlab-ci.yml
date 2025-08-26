@@ -71,6 +71,7 @@ variables:
   - ls -l "$PYENV_PACKAGES"
 
 .convert_role_to_collection: &convert_role_to_collection
+  - pwd
   - MY_DIR="$(basename $(pwd))"
   - if [ "x$MY_DIR" != "xha_cluster" ]; then ln -s "$MY_DIR" ../ha_cluster; fi
   - LSR_INFO=true python /usr/local/lib/lsr-auto-maintenance/lsr_role2collection.py --dest-path ../ --src-path ../ --src-owner tomjelinek --role ha_cluster
@@ -95,13 +96,26 @@ ansible_lint:
   extends: .job_ansible_check
   stage: tier0
   script:
+    # Ansible-lint requires role dependencies to be present.
+    # This job is never run on RHEL8Oldest due to old ansible-lint there, there
+    # is no need to conditionally switch to old galaxy server for it.
+    - ansible-galaxy collection install -vvv -r ./meta/collection-requirements.yml
+    # ansible-lint is supposed to be run on collections
+    - *convert_role_to_collection
+    - cp roles/ha_cluster/.ansible-lint .
     - ansible-lint --version
-    - ansible-lint -v --exclude=tests/roles --exclude=.github --skip-list role-name,fqcn --config-file .ansible-lint
+    # role2collection tool used to convert the role to a collection reformats
+    # yaml files and doesn't preserve line wrapping, because it can't ensure
+    # converted lines will be wrapped preserving Jinja and ansible syntax.
+    # This means we get a lot of line-length errors and the only thing we can
+    # do is ignore them.
+    - ansible-lint -v --skip-list 'yaml[line-length]' --config-file .ansible-lint
 
 ansible_test:
   extends: .job_ansible_check
   stage: tier0
   script:
+    # ansible-test only works on collections
     - *convert_role_to_collection
     - ansible-test --version
     - ansible-test sanity -v --color=yes --truncate=0 --no-redact --coverage --docker  # wokeignore:rule=sanity
