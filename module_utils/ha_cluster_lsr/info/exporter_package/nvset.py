@@ -13,9 +13,30 @@ __metaclass__ = type
 
 from typing import Any, Dict, List
 
+Nvset = Dict[str, Any]
+Attrs = List[Dict[str, List[Dict[str, Any]]]]
+
 
 def dict_to_nv_list(input_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
     Convert a dict to a list of dicts with keys 'name' and 'value'
     """
     return [dict(name=name, value=value) for name, value in input_dict.items()]
+
+
+def first_attrs(nvsets: List[Nvset]) -> Attrs:
+    """Returns attrs taken from the first nvset"""
+    if len(nvsets) < 1:
+        return []
+
+    if len(nvsets[0]["nvpairs"]) < 1:
+        return []
+
+    return [
+        dict(
+            attrs=[
+                dict(name=nvpair_src["name"], value=nvpair_src["value"])
+                for nvpair_src in nvsets[0]["nvpairs"]
+            ]
+        )
+    ]

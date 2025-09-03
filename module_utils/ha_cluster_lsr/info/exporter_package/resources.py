@@ -13,7 +13,7 @@ __metaclass__ = type
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from .nvset import dict_to_nv_list
+from .nvset import Attrs, Nvset, dict_to_nv_list, first_attrs
 from .wrap_src import (
     SrcDict,
     invalid_part,
@@ -52,9 +52,6 @@ _BUNDLE_STORAGE_MAP_KEY_MAP = {
     "target_dir": "target-dir",
 }
 
-_AttrsSrc = List[Dict[str, Any]]
-_Attrs = List[Dict[str, List[Dict[str, Any]]]]
-
 
 def _nv_list(
     input_dict: Dict[str, Any],
@@ -73,23 +70,6 @@ def _nv_list(
             if not (is_none(value) or key in skip_keys)
         }
     )
-
-
-def _attrs(nvsets: _AttrsSrc) -> _Attrs:
-    if len(nvsets) < 1:
-        return []
-
-    if len(nvsets[0]["nvpairs"]) < 1:
-        return []
-
-    return [
-        dict(
-            attrs=[
-                dict(name=nvpair_src["name"], value=nvpair_src["value"])
-                for nvpair_src in nvsets[0]["nvpairs"]
-            ]
-        )
-    ]
 
 
 def _operations(
@@ -133,16 +113,16 @@ def _primitive(
         agent=_agent(primitive_src["agent_name"]),
     )
 
-    instance_attrs = _attrs(primitive_src.get("instance_attributes", []))
+    instance_attrs = first_attrs(primitive_src.get("instance_attributes", []))
     if instance_attrs:
         primitive["instance_attrs"] = instance_attrs
 
-    meta_attrs = _attrs(primitive_src.get("meta_attributes", []))
+    meta_attrs = first_attrs(primitive_src.get("meta_attributes", []))
     if meta_attrs:
         primitive["meta_attrs"] = meta_attrs
 
     if use_utilization:
-        utilization = _attrs(primitive_src.get("utilization", []))
+        utilization = first_attrs(primitive_src.get("utilization", []))
         if utilization:
             primitive["utilization"] = utilization
 
@@ -163,7 +143,7 @@ def _container(bundle_src: Dict[str, Any]) -> Dict[str, Any]:
     return container
 
 
-def _meta_attrs_promotable(meta_attrs_src: _AttrsSrc) -> Tuple[_Attrs, bool]:
+def _meta_attrs_promotable(meta_attrs_src: List[Nvset]) -> Tuple[Attrs, bool]:
     if len(meta_attrs_src) == 0:
         return [], False
 
@@ -179,7 +159,9 @@ def _meta_attrs_promotable(meta_attrs_src: _AttrsSrc) -> Tuple[_Attrs, bool]:
             remaining_pairs.append(pair)
 
     return (
-        _attrs([{**first_set, "nvpairs": remaining_pairs}] + remaining_sets),
+        first_attrs(
+            [{**first_set, "nvpairs": remaining_pairs}] + remaining_sets
+        ),
         bool(
             promoted_pair and promoted_pair["value"].lower() in _PACEMAKER_TRUE
         ),
@@ -215,7 +197,7 @@ def export_resource_group_list(resources: SrcDict) -> List[Dict[str, Any]]:
             id=group_src["id"],
             resource_ids=group_src["member_ids"],
         )
-        meta_attrs = _attrs(group_src.get("meta_attributes", []))
+        meta_attrs = first_attrs(group_src.get("meta_attributes", []))
         if meta_attrs:
             group["meta_attrs"] = meta_attrs
         result.append(group)
@@ -266,7 +248,7 @@ def export_resource_bundle_list(resources: SrcDict) -> List[Dict[str, Any]]:
 
         bundle["container"] = _container(bundle_src)
 
-        meta_attrs = _attrs(bundle_src.get("meta_attributes", []))
+        meta_attrs = first_attrs(bundle_src.get("meta_attributes", []))
         if meta_attrs:
             bundle["meta_attrs"] = meta_attrs
 
