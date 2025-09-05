@@ -22,6 +22,10 @@ from .exporter_package.corosync_conf import (
     export_corosync_totem,
     export_corosync_transport,
 )
+from .exporter_package.resource_defaults import (
+    export_resource_defaults,
+    export_resource_op_defaults,
+)
 from .exporter_package.resources import (
     export_resource_bundle_list,
     export_resource_clone_list,

@@ -321,6 +321,26 @@ def get_cluster_properties_configuration(
     )
 
 
+def get_resource_defaults_configuration(
+    run_command: CommandRunner,
+) -> Dict[str, Any]:
+    """Get resourcee defaults configuration from pcs"""
+    return _call_pcs_cli(
+        run_command,
+        ["resource", "defaults", "config", "--output-format=json"],
+    )
+
+
+def get_resource_op_defaults_configuration(
+    run_command: CommandRunner,
+) -> Dict[str, Any]:
+    """Get resourcee operation defaults configuration from pcs"""
+    return _call_pcs_cli(
+        run_command,
+        ["resource", "op", "defaults", "config", "--output-format=json"],
+    )
+
+
 def get_pcs_version_info(run_command: CommandRunner) -> Tuple[str, List[str]]:
     """
     Get pcs version and list of capabilities

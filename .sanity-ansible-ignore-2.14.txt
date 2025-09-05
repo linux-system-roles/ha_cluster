@@ -33,6 +33,7 @@ plugins/module_utils/ha_cluster_lsr/info/loader.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/cluster_properties.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/corosync_conf.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/nvset.py compile-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_defaults.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resources.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/various.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py compile-2.7!skip
@@ -44,6 +45,7 @@ plugins/module_utils/ha_cluster_lsr/info/loader.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/cluster_properties.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/corosync_conf.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/nvset.py import-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_defaults.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resources.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/various.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py import-2.7!skip
