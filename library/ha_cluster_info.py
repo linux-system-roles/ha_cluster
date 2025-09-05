@@ -30,6 +30,8 @@ requirements:
     - pcs-0.10.14 or pcs-0.11.3 or newer for exporting resources configuration
     - pcs-0.10.17 or pcs-0.11.6 or newer for exporting cluster properties
       configuration
+    - pcs-0.12.0a1 or newer for exporting resources defaults and resources
+      operation defaults
     - python3-firewall for exporting ha_cluster_manage_firewall
     - python3-policycoreutils for exporting ha_cluster_manage_selinux
     - python 3.6 or newer
@@ -136,6 +138,12 @@ class Capability(Enum):
 
     RESOURCE_OUTPUT = "pcmk.resource.config.output-formats"
     CLUSTER_PROPERTIES_OUTPUT = "pcmk.properties.cluster.config.output-formats"
+    RESOURCE_DEFAULTS_OUTPUT = (
+        "pcmk.properties.resource-defaults.config.output-formats"
+    )
+    RESOURCE_OP_DEFAULTS_OUTPUT = (
+        "pcmk.properties.operation-defaults.config.output-formats"
+    )
 
 
 def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
@@ -319,6 +327,48 @@ def export_cluster_properties_configuration(
     return result
 
 
+def export_resource_defaults_configuration(
+    module: AnsibleModule, pcs_capabilities: List[str]
+) -> Dict[str, Any]:
+    """
+    Export existing HA cluster resource defaults
+    """
+
+    if Capability.RESOURCE_DEFAULTS_OUTPUT.value not in pcs_capabilities:
+        return dict()
+
+    cmd_runner = get_cmd_runner(module)
+    pcs_defaults = loader.get_resource_defaults_configuration(cmd_runner)
+    defaults = exporter.export_resource_defaults(pcs_defaults)
+
+    result: dict[str, Any] = dict()
+    if defaults:
+        result["ha_cluster_resource_defaults"] = defaults
+
+    return result
+
+
+def export_resource_op_defaults_configuration(
+    module: AnsibleModule, pcs_capabilities: List[str]
+) -> Dict[str, Any]:
+    """
+    Export existing HA cluster resource operations defaults
+    """
+
+    if Capability.RESOURCE_OP_DEFAULTS_OUTPUT.value not in pcs_capabilities:
+        return dict()
+
+    cmd_runner = get_cmd_runner(module)
+    pcs_defaults = loader.get_resource_op_defaults_configuration(cmd_runner)
+    defaults = exporter.export_resource_op_defaults(pcs_defaults)
+
+    result: dict[str, Any] = dict()
+    if defaults:
+        result["ha_cluster_resource_operation_defaults"] = defaults
+
+    return result
+
+
 def get_pcs_capabilities(module: AnsibleModule) -> List[str]:
     """
     Extract pcsd pcs_capabilities from pcs version info
@@ -350,6 +400,16 @@ def main() -> None:
             )
             ha_cluster_result.update(
                 **export_cluster_properties_configuration(
+                    module, pcs_capabilities
+                )
+            )
+            ha_cluster_result.update(
+                **export_resource_defaults_configuration(
+                    module, pcs_capabilities
+                )
+            )
+            ha_cluster_result.update(
+                **export_resource_op_defaults_configuration(
                     module, pcs_capabilities
                 )
             )

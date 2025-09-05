@@ -24,6 +24,20 @@ def dict_to_nv_list(input_dict: Dict[str, Any]) -> List[Dict[str, Any]]:
     return [dict(name=name, value=value) for name, value in input_dict.items()]
 
 
+def nvset_to_attrs(
+    nvset: Nvset,
+    skip_keys: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
+    """Returns attrs taken from the nvset"""
+
+    skip_keys = skip_keys if skip_keys else []
+    return [
+        dict(name=nvpair_src["name"], value=nvpair_src["value"])
+        for nvpair_src in nvset["nvpairs"]
+        if nvpair_src["name"] not in skip_keys
+    ]
+
+
 def first_attrs(
     nvsets: List[Nvset],
     skip_keys: Optional[List[str]] = None,
@@ -34,15 +48,4 @@ def first_attrs(
 
     if len(nvsets[0]["nvpairs"]) < 1:
         return []
-
-    skip_keys = skip_keys if skip_keys else []
-
-    return [
-        dict(
-            attrs=[
-                dict(name=nvpair_src["name"], value=nvpair_src["value"])
-                for nvpair_src in nvsets[0]["nvpairs"]
-                if nvpair_src["name"] not in skip_keys
-            ]
-        )
-    ]
+    return [dict(attrs=nvset_to_attrs(nvsets[0], skip_keys))]

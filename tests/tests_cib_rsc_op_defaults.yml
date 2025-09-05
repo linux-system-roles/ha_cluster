@@ -4,6 +4,9 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
+    __required_capabilities:
+      rsc_defaults: pcmk.properties.resource-defaults.config.output-formats
+      rsc_op_defaults: pcmk.properties.operation-defaults.config.output-formats
     ha_cluster_cluster_name: test-cluster
     ha_cluster_manage_firewall: true
     ha_cluster_manage_selinux: true
@@ -63,6 +66,7 @@
               value: op-val-5
             - name: op-key-6
               value: op-val-6
+    ha_cluster_export_configuration: true
   tasks:
     - name: Run test
       tags: tests::verify
@@ -182,3 +186,124 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
+        - name: Check exported configuration
+          when:
+            # Don't complicate it by corner cases with only one capability.
+            # There are both capabilities in newer versions (and it is tested)
+            # and a low probability of just one capability in older tests.
+            - __required_capabilities.rsc_defaults in __test_pcs_capabilities
+            - __required_capabilities.rsc_op_defaults in __test_pcs_capabilities
+
+          vars:
+            __test_exported_config: >
+              {{
+                ha_cluster_facts | combine({
+                  'ha_cluster_enable_repos': 'it depends on test environment',
+                  'ha_cluster_enable_repos_resilient_storage': 'it depends on test environment',
+                  'ha_cluster_manage_firewall': 'it depends on test environment',
+                  'ha_cluster_manage_selinux': 'it depends on test environment',
+                  'ha_cluster_install_cloud_agents': 'it depends on test environment',
+                  'ha_cluster_node_options': 'it depends on test environment'
+                })
+              }}
+            __test_expected_config:
+              ha_cluster_cluster_present: true
+              ha_cluster_cluster_name: test-cluster
+              ha_cluster_cluster_properties:
+                - attrs:
+                    - name: stonith-watchdog-timeout
+                      value: "{{ha_cluster_sbd_enabled | ternary('', '0') }}"
+              ha_cluster_start_on_boot: true
+              ha_cluster_transport:
+                type: knet
+                crypto:
+                  - name: cipher
+                    value: aes256
+                  - name: hash
+                    value: sha256
+              ha_cluster_pcs_permission_list:
+                - name: haclient
+                  type: group
+                  allow_list: ["grant", "read", "write"]
+              ha_cluster_enable_repos: "it depends on test environment"
+              ha_cluster_enable_repos_resilient_storage: "it depends on test environment"
+              ha_cluster_manage_firewall: "it depends on test environment"
+              ha_cluster_manage_selinux: "it depends on test environment"
+              ha_cluster_resource_defaults:
+                meta_attrs:
+                  - attrs:
+                      - name: rsc-key-1
+                        value: rsc-val-1
+                    id: rsc_defaults-meta_attributes
+                  - attrs:
+                      - name: rsc-key-2
+                        value: rsc-val-2
+                    id: custom_id_rsc
+                  - attrs:
+                      - name: rsc-key-3
+                        value: rsc-val-3
+                    id: rsc_defaults-meta_attributes-1
+                    score: "10"
+                  - attrs:
+                      - name: rsc-key-4
+                        value: rsc-val-4
+                    id: rsc_defaults-meta_attributes-2
+                    rule: "resource ocf:pacemaker:"
+                  - id: without_attrs_rsc
+                    score: "20"
+                    rule: "resource :pacemaker: or resource :heartbeat:"
+                  - id: all_options_rsc
+                    rule: resource ocf:pacemaker:test
+                    score: INFINITY
+                    attrs:
+                      - name: rsc-key-5
+                        value: rsc-val-5
+                      - name: rsc-key-6
+                        value: rsc-val-6
+              ha_cluster_resource_operation_defaults:
+                meta_attrs:
+                  - attrs:
+                      - name: op-key-1
+                        value: op-val-1
+                    id: op_defaults-meta_attributes
+                  - attrs:
+                      - name: op-key-2
+                        value: op-val-2
+                    id: custom_id_op
+                  - attrs:
+                      - name: op-key-3
+                        value: op-val-3
+                    id: op_defaults-meta_attributes-1
+                    score: "10"
+                  - attrs:
+                      - name: op-key-4
+                        value: op-val-4
+                    id: op_defaults-meta_attributes-2
+                    rule: "resource ocf:pacemaker:"
+                  - id: without_attrs_op
+                    score: "20"
+                    rule: "resource :pacemaker: or op monitor"
+                  - id: all_options_op
+                    rule: resource ocf:pacemaker:test
+                    score: INFINITY
+                    attrs:
+                      - name: op-key-5
+                        value: op-val-5
+                      - name: op-key-6
+                        value: op-val-6
+              ha_cluster_install_cloud_agents: "it depends on test environment"
+              ha_cluster_node_options: "it depends on test environment"
+          block:
+            - name: Print exported configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config
