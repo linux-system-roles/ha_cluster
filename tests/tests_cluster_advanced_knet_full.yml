@@ -4,6 +4,7 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
+    __properties_capability: pcmk.properties.cluster.config.output-formats
     ha_cluster_export_configuration: true
     ha_cluster_cluster_name: test-cluster
     ha_cluster_transport:
@@ -138,7 +139,7 @@
                   'ha_cluster_node_options': 'it depends on test environment'
                 })
               }}
-            __test_expected_config:
+            __test_expected_config_always:
               ha_cluster_cluster_present: true
               ha_cluster_cluster_name: test-cluster
               ha_cluster_start_on_boot: true
@@ -172,6 +173,22 @@
               ha_cluster_manage_selinux: "it depends on test environment"
               ha_cluster_install_cloud_agents: "it depends on test environment"
               ha_cluster_node_options: "it depends on test environment"
+            __test_expected_config_sometimes: >-
+              {{
+                (__properties_capability in __test_pcs_capabilities) | ternary({
+                  "ha_cluster_cluster_properties": [{
+                    "attrs": [{
+                      "name": "stonith-watchdog-timeout",
+                      "value": ha_cluster_sbd_enabled | ternary('', '0')
+                    }]
+                  }]
+                }, {})
+              }}
+            __test_expected_config: >-
+              {{
+                __test_expected_config_always
+                  | combine(__test_expected_config_sometimes)
+              }}
           block:
             - name: Print exported configuration
               debug:

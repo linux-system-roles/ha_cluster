@@ -28,6 +28,8 @@ requirements:
     - pcs-0.10.8 or newer installed on managed nodes
     - pcs-0.10.8 or newer for exporting corosync configuration
     - pcs-0.10.14 or pcs-0.11.3 or newer for exporting resources configuration
+    - pcs-0.10.17 or pcs-0.11.6 or newer for exporting cluster properties
+      configuration
     - python3-firewall for exporting ha_cluster_manage_firewall
     - python3-policycoreutils for exporting ha_cluster_manage_selinux
     - python 3.6 or newer
@@ -57,6 +59,7 @@ ha_cluster:
         - ha_cluster_manage_firewall
         - ha_cluster_manage_selinux
         - ha_cluster_cluster_present
+        - ha_cluster_cluster_properties
         - ha_cluster_start_on_boot
         - ha_cluster_install_cloud_agents
         - ha_cluster_pcs_permission_list
@@ -91,6 +94,7 @@ ha_cluster:
         - HORIZONTALLINE
 """
 
+from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple
 
 from ansible.module_utils.basic import AnsibleModule
@@ -126,7 +130,12 @@ except ImportError:
 
     HAS_SELINUX = False
 
-_CAPABILITY_RESOURCE_OUTPUT = "pcmk.resource.config.output-formats"
+
+class Capability(Enum):
+    """Enumeration of capabilities used here"""
+
+    RESOURCE_OUTPUT = "pcmk.resource.config.output-formats"
+    CLUSTER_PROPERTIES_OUTPUT = "pcmk.properties.cluster.config.output-formats"
 
 
 def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
@@ -266,7 +275,7 @@ def export_resources_configuration(
     Export existing HA cluster resources
     """
 
-    if _CAPABILITY_RESOURCE_OUTPUT not in pcs_capabilities:
+    if Capability.RESOURCE_OUTPUT.value not in pcs_capabilities:
         return dict()
 
     cmd_runner = get_cmd_runner(module)
@@ -286,6 +295,27 @@ def export_resources_configuration(
         result["ha_cluster_resource_clones"] = clones
     if bundles:
         result["ha_cluster_resource_bundles"] = bundles
+    return result
+
+
+def export_cluster_properties_configuration(
+    module: AnsibleModule, pcs_capabilities: List[str]
+) -> Dict[str, Any]:
+    """
+    Export existing HA cluster properties
+    """
+
+    if Capability.CLUSTER_PROPERTIES_OUTPUT.value not in pcs_capabilities:
+        return dict()
+
+    cmd_runner = get_cmd_runner(module)
+    pcs_properties = loader.get_cluster_properties_configuration(cmd_runner)
+    properties = exporter.export_cluster_properties(pcs_properties)
+
+    result: dict[str, Any] = dict()
+    if properties:
+        result["ha_cluster_cluster_properties"] = properties
+
     return result
 
 
@@ -317,6 +347,11 @@ def main() -> None:
             ha_cluster_result.update(**export_cluster_configuration(module))
             ha_cluster_result.update(
                 **export_resources_configuration(module, pcs_capabilities)
+            )
+            ha_cluster_result.update(
+                **export_cluster_properties_configuration(
+                    module, pcs_capabilities
+                )
             )
             ha_cluster_result["ha_cluster_cluster_present"] = True
         else:

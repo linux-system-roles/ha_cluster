@@ -23,8 +23,6 @@ CMD_STONITH_CONF = mock.call(
     ["pcs", "stonith", "config", "--output-format=json"], **CMD_OPTIONS
 )
 
-FIXTURE_CAPABILITIES = ["pcmk.resource.config.output-formats"]
-
 
 class ExportResourcesConfiguration(TestCase):
     maxDiff = None
@@ -42,7 +40,8 @@ class ExportResourcesConfiguration(TestCase):
         ) as module_mock:
             self.assertEqual(
                 ha_cluster_info.export_resources_configuration(
-                    module_mock, FIXTURE_CAPABILITIES
+                    module_mock,
+                    ha_cluster_info.Capability.RESOURCE_OUTPUT.value,
                 ),
                 json.loads(read_file("resources-export.json")),
             )
@@ -62,7 +61,8 @@ class ExportResourcesConfiguration(TestCase):
                 [(CMD_RESOURCE_CONF, (1, "", "Error"))]
             ) as module_mock:
                 ha_cluster_info.export_resources_configuration(
-                    module_mock, FIXTURE_CAPABILITIES
+                    module_mock,
+                    ha_cluster_info.Capability.RESOURCE_OUTPUT.value,
                 )
         self.assertEqual(
             cm.exception.kwargs,

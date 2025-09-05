@@ -4,6 +4,7 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
+    __properties_capability: pcmk.properties.cluster.config.output-formats
     ha_cluster_cluster_name: test-cluster
     ha_cluster_cluster_properties:
       - attrs:
@@ -13,6 +14,7 @@
             value: stop
     ha_cluster_manage_firewall: true
     ha_cluster_manage_selinux: true
+    ha_cluster_export_configuration: true
   tasks:
     - name: Run test
       tags: tests::verify
@@ -72,3 +74,61 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
+        - name: Check exported configuration
+          when:
+            - __properties_capability in __test_pcs_capabilities
+          vars:
+            __test_exported_config: >
+              {{
+                ha_cluster_facts | combine({
+                  'ha_cluster_enable_repos': 'it depends on test environment',
+                  'ha_cluster_enable_repos_resilient_storage': 'it depends on test environment',
+                  'ha_cluster_manage_firewall': 'it depends on test environment',
+                  'ha_cluster_manage_selinux': 'it depends on test environment',
+                  'ha_cluster_install_cloud_agents': 'it depends on test environment',
+                  'ha_cluster_node_options': 'it depends on test environment'
+                })
+              }}
+            __test_expected_config:
+              ha_cluster_cluster_present: true
+              ha_cluster_cluster_name: test-cluster
+              ha_cluster_cluster_properties:
+                - attrs:
+                    - name: no-quorum-policy
+                      value: stop
+                    - name: stonith-enabled
+                      value: 'true'
+                    - name: stonith-watchdog-timeout
+                      value: "{{ha_cluster_sbd_enabled | ternary('', '0') }}"
+              ha_cluster_start_on_boot: true
+              ha_cluster_transport:
+                type: knet
+                crypto:
+                  - name: cipher
+                    value: aes256
+                  - name: hash
+                    value: sha256
+              ha_cluster_pcs_permission_list:
+                - name: haclient
+                  type: group
+                  allow_list: ["grant", "read", "write"]
+              ha_cluster_enable_repos: "it depends on test environment"
+              ha_cluster_enable_repos_resilient_storage: "it depends on test environment"
+              ha_cluster_manage_firewall: "it depends on test environment"
+              ha_cluster_manage_selinux: "it depends on test environment"
+              ha_cluster_install_cloud_agents: "it depends on test environment"
+              ha_cluster_node_options: "it depends on test environment"
+          block:
+            - name: Print exported configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config

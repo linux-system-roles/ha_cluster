@@ -40,6 +40,7 @@ An Ansible role for managing High Availability Clustering.
   * Resource groups
   * Resource clones
   * Resource bundles
+  * Cluster properties
 
 ## Requirements
 

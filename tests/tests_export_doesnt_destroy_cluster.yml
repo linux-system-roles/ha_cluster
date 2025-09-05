@@ -3,77 +3,99 @@
 - name: Ensure that exporting cluster configuration doesn't modify the cluster
   hosts: all
   gather_facts: false
+  vars:
+    __properties_capability: pcmk.properties.cluster.config.output-formats
+    ha_cluster_cluster_name: test-cluster
+    # Create a cluster with a non-default configuration (default is knet)
+    ha_cluster_transport:
+      type: udp
   tasks:
     - name: Run test
       tags: tests::verify
-      vars:
-        ha_cluster_cluster_name: test-cluster
-        __test_exported_config: >
-          {{
-            ha_cluster_facts | combine({
-              'ha_cluster_enable_repos': 'it depends on test environment',
-              'ha_cluster_enable_repos_resilient_storage': 'it depends on test environment',
-              'ha_cluster_manage_firewall': 'it depends on test environment',
-              'ha_cluster_manage_selinux': 'it depends on test environment',
-              'ha_cluster_install_cloud_agents': 'it depends on test environment',
-              'ha_cluster_node_options': 'it depends on test environment'
-            })
-          }}
-        __test_expected_config:
-          ha_cluster_cluster_present: true
-          ha_cluster_cluster_name: test-cluster
-          ha_cluster_start_on_boot: true
-          ha_cluster_transport:
-            type: udp
-          ha_cluster_pcs_permission_list:
-            - name: haclient
-              type: group
-              allow_list: ["grant", "read", "write"]
-          ha_cluster_enable_repos: "it depends on test environment"
-          ha_cluster_enable_repos_resilient_storage: "it depends on test environment"
-          ha_cluster_manage_firewall: "it depends on test environment"
-          ha_cluster_manage_selinux: "it depends on test environment"
-          ha_cluster_install_cloud_agents: "it depends on test environment"
-          ha_cluster_node_options: "it depends on test environment"
       block:
         - name: Set up test environment
           include_role:
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
-        # Create a cluster with a non-default configuration (default is knet)
         - name: Run the role to create a cluster
           include_role:
             name: linux-system-roles.ha_cluster
+
+        - name: Fetch cluster versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+
+        - name: Check that run role for an export doesn't modify the cluster
           vars:
-            ha_cluster_transport:
-              type: udp
+            __test_exported_config: >
+              {{
+                ha_cluster_facts | combine({
+                  'ha_cluster_enable_repos': 'it depends on test environment',
+                  'ha_cluster_enable_repos_resilient_storage': 'it depends on test environment',
+                  'ha_cluster_manage_firewall': 'it depends on test environment',
+                  'ha_cluster_manage_selinux': 'it depends on test environment',
+                  'ha_cluster_install_cloud_agents': 'it depends on test environment',
+                  'ha_cluster_node_options': 'it depends on test environment'
+                })
+              }}
+            __test_expected_config_always:
+              ha_cluster_cluster_present: true
+              ha_cluster_cluster_name: "{{ ha_cluster_cluster_name }}"
+              ha_cluster_start_on_boot: true
+              ha_cluster_transport: "{{ ha_cluster_transport }}"
+              ha_cluster_pcs_permission_list:
+                - name: haclient
+                  type: group
+                  allow_list: ["grant", "read", "write"]
+              ha_cluster_enable_repos: "it depends on test environment"
+              ha_cluster_enable_repos_resilient_storage: "it depends on test environment"
+              ha_cluster_manage_firewall: "it depends on test environment"
+              ha_cluster_manage_selinux: "it depends on test environment"
+              ha_cluster_install_cloud_agents: "it depends on test environment"
+              ha_cluster_node_options: "it depends on test environment"
+            __test_expected_config_sometimes: >-
+              {{
+                (__properties_capability in __test_pcs_capabilities) | ternary({
+                  "ha_cluster_cluster_properties": [{
+                    "attrs": [{
+                      "name": "stonith-watchdog-timeout",
+                      "value": ha_cluster_sbd_enabled | d(False)
+                        | ternary('', '0')
+                    }]
+                  }]
+                }, {})
+              }}
+            __test_expected_config: >-
+              {{
+                __test_expected_config_always
+                  | combine(__test_expected_config_sometimes)
+              }}
+          block:
+            # Export and compare cluster configuration
+            - name: Run the role to export the cluster config 1
+              include_role:
+                name: linux-system-roles.ha_cluster
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_export_configuration: true
 
-        # Export and compare cluster configuration
-        - name: Run the role to export the cluster config 1
-          include_role:
-            name: linux-system-roles.ha_cluster
-          vars:
-            ha_cluster_cluster_present: null
-            ha_cluster_qnetd: null
-            ha_cluster_export_configuration: true
+            - name: Compare expected and exported configuration 1
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config
 
-        - name: Compare expected and exported configuration 1
-          assert:
-            that:
-              - __test_exported_config == __test_expected_config
+            # Export again; check that previous export didn't change the cluster
+            # If modified, transport would be default 'knet' instead of 'udp'.
+            - name: Run the role to export the cluster config 2
+              include_role:
+                name: linux-system-roles.ha_cluster
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_export_configuration: true
 
-        # Export again to check that previous export didn't change the cluster
-        # If it was modified, it would have transport 'knet' instead of 'udp'
-        - name: Run the role to export the cluster config 2
-          include_role:
-            name: linux-system-roles.ha_cluster
-          vars:
-            ha_cluster_cluster_present: null
-            ha_cluster_qnetd: null
-            ha_cluster_export_configuration: true
-
-        - name: Compare expected and exported configuration 2
-          assert:
-            that:
-              - __test_exported_config == __test_expected_config
+            - name: Compare expected and exported configuration 2
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config

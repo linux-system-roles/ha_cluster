@@ -12,6 +12,9 @@ from __future__ import absolute_import, division, print_function
 __metaclass__ = type
 
 # pylint: disable=unused-import
+from .exporter_package.cluster_properties import (
+    export_cluster_properties,
+)
 from .exporter_package.corosync_conf import (
     export_cluster_nodes,
     export_corosync_cluster_name,
