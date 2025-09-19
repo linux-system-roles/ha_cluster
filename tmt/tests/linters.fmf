@@ -1,0 +1,107 @@
+environment+:
+  PYTHON_CODE_DIRS: ./library/ ./module_utils/ha_cluster_lsr/ ./tests/unit/
+  WOKE_CONFIG: "https://raw.githubusercontent.com/linux-system-roles/tox-lsr/main/src/tox_lsr/config_files/woke.yml"
+  YAMLLINT_CONFIG: "{extends: .yamllint.yml, ignore: [.github/, .markdownlint.yaml]}"
+tag+: [ansible_current, tier0] # tags are used to filter tests in plans, all tests marked as tier0 and ansible_current tests
+adjust+:
+  - when: distro < rhel-9
+    enabled: false
+    because: |
+      Most of the linters only works with pcs-0.11+ (RHEL9+), or higher
+      versions of python and ansible tools
+
+/ansible:
+  adjust+:
+    - when: distro >= rhel-8.10
+      enabled: true
+      because: |
+        We want to run ansible linters on rhel-8.10 and newer with
+        ansible_current. Old versions of ansible don't provide all required
+        functionality.
+
+  /ansible_lint:
+    summary: Run ansible-lint
+    # role2collection tool used to convert the role to a collection reformats
+    # yaml files and doesn't preserve line wrapping, because it can't ensure
+    # converted lines will be wrapped preserving Jinja and ansible syntax.
+    # This means we get a lot of line-length errors and the only thing we can
+    # do is ignore them.
+    test: |
+      source "$PYENV_ROOT/bin/activate" &&
+      cd "$COLLECTIONS_ROLES_DIR" &&
+      ansible-lint --version &&
+      ansible-lint -v --skip-list 'yaml[line-length]' \
+        --config-file .ansible-lint
+
+  /ansible_test:
+    summary: Run ansible-test
+    test: |
+      source "$PYENV_ROOT/bin/activate" &&
+      cd "$COLLECTIONS_ROLES_DIR" &&
+      ansible-test --version &&
+      ansible-test sanity -v --color=yes --truncate=0 --no-redact --coverage --docker  # wokeignore:rule=sanity
+
+/black:
+  summary: Run black
+  test: |
+    source "$PYENV_ROOT/bin/activate" &&
+    black --version &&
+    black --config pyproject.toml --check $PYTHON_CODE_DIRS
+
+/check_tier1_test_list:
+  summary: Check tier1 tests against TMT tests definitions
+  test: tmt/tests/check_tier1_test_list.sh
+  adjust+:
+    - when: distro >= rhel-8.10
+      enabled: true
+      because: Also run on rhel-8. The rhel-8.4 has too old python for tmt.
+
+/isort:
+  summary: Run isort
+  test: |
+    source "$PYENV_ROOT/bin/activate" &&
+    isort --version &&
+    isort --check-only $PYTHON_CODE_DIRS
+
+/markdownlint:
+  summary: Run markdownlint
+  test: |
+    chcon -R -t container_ro_file_t "../$(basename $(pwd))" &&
+    podman run --rm --volume "$(pwd):/ha_cluster:ro" docker://avtodev/markdown-lint:master --config /ha_cluster/.markdownlint.yaml --ignore /ha_cluster/CHANGELOG.md /ha_cluster/**/*.md  # wokeignore:rule=master
+
+/mypy:
+  summary: Run mypy
+  tag+: [ansible_29] # this test is run on ansible_29 as well
+  test: |
+    source "$PYENV_ROOT/bin/activate" &&
+    pcs --version &&
+    mypy --version &&
+    mypy --config-file mypy.ini $PYTHON_CODE_DIRS
+
+/pylint:
+  summary: Run pylint
+  tag+: [ansible_29] # this test is run on ansible_29 as well
+  test: |
+    source "$PYENV_ROOT/bin/activate" &&
+    pylint --version &&
+    pylint --rcfile pylintrc --persistent=n --reports=y --score=y \
+      --disable similarities $PYTHON_CODE_DIRS
+
+/shellcheck:
+  summary: Run shellcheck
+  test: |
+    shellcheck --version &&
+    shellcheck files/*.sh
+
+/woke:
+  summary: Run woke
+  test: |
+    woke --version &&
+    woke -c "$WOKE_CONFIG" --exit-1-on-failure --debug
+
+/yaml_lint:
+  summary: Run yamllint
+  test: |
+    source "$PYENV_ROOT/bin/activate" &&
+    yamllint --version &&
+    yamllint --config-data "$YAMLLINT_CONFIG" ./

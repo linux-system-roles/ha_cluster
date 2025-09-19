@@ -1,0 +1,244 @@
+description: Common setup for ansible_current and ansible_29 plans
+
+environment+:
+  ARTIFACTS_HEADER: "JOB-TOKEN: $CI_JOB_TOKEN"
+  CURL_FAIL_OPTION: "--fail-with-body"
+  PYENV_ROOT: /root/pyenvs/ansible
+  COLLECTIONS_ROLES_DIR: "$TMT_PLAN_DATA/ansible_collections/fedora/linux_system_roles"
+  ANSIBLE_PKG: ansible-core
+  ANSIBLE_LINT_PKG: ansible-lint
+  # This is supposed to be continuously manually updated to the newest python
+  # version available. (rhel-10 has python3.12)
+  PYTHON3_PACKAGE: python3.12
+  GALAXY_EXTRA_ARGS: ""
+  PLAYBOOK_EXTRA_ARGS: ""
+
+adjust+:
+  - when: initiator != gitlab-ci
+    environment+:
+      ARTIFACTS_HEADER: "PRIVATE-TOKEN: $PRIVATE_TOKEN"
+  - when: distro <= rhel-8
+    environment+:
+      CURL_FAIL_OPTION: "--fail"
+    because: old curl does not support option --fail-with-body
+  - when: distro == rhel-8.4
+    environment+:
+      PYTHON3_PACKAGE: python3
+    because: python3.12 is not available
+  - when: distro == rhel-8.4
+    environment+:
+      GALAXY_EXTRA_ARGS: "--server=https://old-galaxy.ansible.com"
+    because: |
+      RHEL 8.4 with the newest compatible Ansible doesn't work with the new
+      ansible galaxy deployed on 2023-09-30. It works with the old one,
+      though, so we set it to connect to the old one using the --server
+      option.
+      references:
+      https://www.ansible.com/blog/new-ansible-galaxy
+      https://forum.ansible.com/t/new-ansible-galaxy/1155/20
+      https://github.com/ansible/awx/issues/14496#issuecomment-1743711473
+
+prepare+:
+  - name: Install common packages
+    how: install
+    package:
+      - curl
+      - jq
+      - podman
+      - tar
+      - unzip
+
+  - name: Install docker (podman-docker) on rhel-8
+    when: distro == rhel-8
+    how: install
+    package:
+      - docker
+
+  - name: Download and install pcs rpms from a CI using job/private token
+    when: initiator is defined and development == true
+    how: shell
+    script:
+      - >
+        curl "$CURL_FAIL_OPTION" --location --insecure \
+          --output pcs_artifacts.zip \
+          --header "${ARTIFACTS_HEADER}" "${PCS_ARTIFACTS_URL}"
+      - unzip pcs_artifacts.zip
+      - dnf install -y rpms/pcs-[0-9]*.rpm
+      - rm -rf rpms/ pcs_artifacts.zip
+
+  - name: Install pcs from system repository if CI version is not available
+    when: initiator is not defined or development == false
+    how: install
+    package:
+      - pcs
+
+  - name: Install Python
+    how: install
+    package:
+      - "$PYTHON3_PACKAGE"
+
+  - name: Create pyenv for ansible
+    how: shell
+    script: |
+      rm -rf "$PYENV_ROOT"
+      "$PYTHON3_PACKAGE" -m venv --system-site-packages "$PYENV_ROOT"
+      source $PYENV_ROOT/bin/activate
+      pip install --upgrade pip
+      pip install \
+        "$ANSIBLE_PKG" \
+        "$ANSIBLE_LINT_PKG" \
+        astroid \
+        black \
+        isort \
+        mypy \
+        pylint \
+        PyYAML \
+        tmt \
+        yamllint
+
+  # If we are running Python version other than what pcs was built for,
+  # Python won't find installed pcs. To overcome this, symlink pcs to pyenv.
+  - name: Symlink pcs to pyenv
+    how: shell
+    script:
+      # this file is missing on rhel-8 and mypy needs it
+      - touch "$(rpm -ql pcs | grep 'site-packages/pcs$')/py.typed"
+      - |
+        source $PYENV_ROOT/bin/activate
+        PYTHON_VER=$(python3 -c 'import sys; v=sys.version_info; \
+          print(f"{v.major}.{v.minor}")')
+        PYENV_PACKAGES="${PYENV_ROOT}/lib/python${PYTHON_VER}/site-packages"
+        PCS_DIR=$(rpm -ql pcs | grep 'site-packages/pcs$')
+        PCS_PYTHON_VER=$(
+          echo "$PCS_DIR" | sed -e 's@.*/python\([0-9\.]\+\)/.*@\1@'
+        )
+        if [ "x$PYTHON_VER" != "x$PCS_PYTHON_VER" ]; then
+          ln -sf "${PCS_DIR}" "${PYENV_PACKAGES}/pcs";
+        fi
+        ls -l "$PYENV_PACKAGES"
+
+  - name: Download 'lsr-auto-maintenance' from GitHub
+    when: ci-dependencies is not defined or ci-dependencies == github
+    how: shell
+    script:
+      - |
+        curl "$CURL_FAIL_OPTION" --location --insecure \
+          --output lsr_am_releases.json \
+          https://api.github.com/repos/linux-system-roles/auto-maintenance/releases/latest
+        LSR_AM_VERSION=$(jq -r '.tag_name' lsr_am_releases.json | sed s/^v//)
+        echo $LSR_AM_VERSION
+        curl "$CURL_FAIL_OPTION" --location --insecure --remote-name \
+          https://github.com/linux-system-roles/auto-maintenance/archive/refs/tags/$LSR_AM_VERSION.tar.gz
+        mkdir -p /usr/local/bin /usr/local/lib/lsr-auto-maintenance
+        tar --strip-components=1 -xvzf $LSR_AM_VERSION.tar.gz \
+          -C /usr/local/lib/lsr-auto-maintenance
+        rm -rf $LSR_AM_VERSION.tar.gz
+
+  - name: Download 'lsr-auto-maintenance' from a CI using job/private token
+    when: ci-dependencies is defined and ci-dependencies == gitlab
+    how: shell
+    script:
+      - >
+        curl "$CURL_FAIL_OPTION" --location --insecure \
+          --output lsr-auto-maintenance.zip \
+          --header "$ARTIFACTS_HEADER" \
+          "$LSR_ARTIFACTS_URL"
+      - rm -rf /usr/local/lib/lsr-auto-maintenance
+      - mkdir -p /usr/local/lib
+      - unzip lsr-auto-maintenance.zip -d /usr/local/lib
+      - rm -rf lsr-auto-maintenance.zip
+
+  - name: Install role dependencies from ansible galaxy
+    how: shell
+    script:
+      - |
+        source $PYENV_ROOT/bin/activate
+        python --version
+        ansible-galaxy collection install -vvv $GALAXY_EXTRA_ARGS \
+          -r ./meta/collection-requirements.yml
+
+  - name: Convert ansible ha_cluster role to collection
+    # conversion script does not work with provided python version
+    when: distro > rhel-8.4
+    how: shell
+    script:
+      - |
+        source $PYENV_ROOT/bin/activate
+        python --version
+        export LSR_INFO="true"
+        python /usr/local/lib/lsr-auto-maintenance/lsr_role2collection.py \
+          --dest-path $TMT_PLAN_DATA \
+          --src-path . \
+          --src-owner linux-system-roles \
+          --role ha_cluster
+      # wokeignore:rule=sanity
+      - mkdir -pv "$COLLECTIONS_ROLES_DIR/tests/sanity"
+      - cp "$COLLECTIONS_ROLES_DIR/roles/ha_cluster/.ansible-lint" "$COLLECTIONS_ROLES_DIR"
+      - |
+        # wokeignore:rule=sanity
+        for file in .sanity-ansible-ignore-*.txt; do
+          if [ -f "$file" ]; then
+            # wokeignore:rule=sanity
+            cp "$file" "$COLLECTIONS_ROLES_DIR/tests/sanity/${file//*.sanity-ansible-/}";
+          fi
+        done
+      # remove irrelevant files
+      - rm -f "$COLLECTIONS_ROLES_DIR"/.pandoc_template-ha_cluster.html5
+      - rm -rf "$COLLECTIONS_ROLES_DIR"/tmt*
+
+  - name: Download 'woke' from GitHub
+    when: ci-dependencies is not defined or ci-dependencies == github
+    how: shell
+    script:
+      - |
+        curl "$CURL_FAIL_OPTION" --location --insecure \
+          --output woke_releases.json \
+          https://api.github.com/repos/get-woke/woke/releases/latest
+        WOKE_VERSION=$(jq -r '.tag_name' woke_releases.json | sed s/^v//)
+        echo $WOKE_VERSION
+        curl "$CURL_FAIL_OPTION" --location --insecure --remote-name \
+          https://github.com/get-woke/woke/releases/download/v$WOKE_VERSION/woke-$WOKE_VERSION-linux-amd64.tar.gz
+        mkdir -p /usr/local/bin /usr/local/lib/woke
+        tar --strip-components=1 -xvzf woke-$WOKE_VERSION-linux-amd64.tar.gz -C /usr/local/lib/woke
+        ln -sf /usr/local/lib/woke/woke /usr/local/bin/woke
+        rm -rf woke-$WOKE_VERSION-linux-amd64.tar.gz
+
+  - name: Download 'woke' from a CI using job/private token
+    when: ci-dependencies is defined and ci-dependencies == gitlab
+    how: shell
+    script:
+      - >
+        curl "$CURL_FAIL_OPTION" --location --insecure \
+          --output woke.zip \
+          --header "$ARTIFACTS_HEADER" \
+          "$WOKE_ARTIFACTS_URL"
+      - rm -rf /usr/local/lib/woke
+      - mkdir -p /usr/local/bin /usr/local/lib
+      - unzip woke.zip -d /usr/local/lib
+      - ln -sf /usr/local/lib/woke/woke /usr/local/bin/woke
+      - rm -rf woke.zip
+
+  - name: Enable epel repository
+    how: feature
+    epel: enabled
+
+  - name: Install packages [epel]
+    how: install
+    package:
+      - ShellCheck
+
+  - name: Set keys for SSH connection to localhost
+    how: shell
+    script:
+      - |
+        ssh-keyscan -v localhost >> /root/.ssh/known_hosts
+        rm -rf /root/.ssh/id_ecdsa
+        ssh-keygen -t ecdsa -f /root/.ssh/id_ecdsa -N ""
+        cat /root/.ssh/id_ecdsa.pub >> /root/.ssh/authorized_keys
+        restorecon -Fvvr /root/.ssh/
+
+  # https://tmt.readthedocs.io/en/stable/plugins/prepare.html#plugins-prepare-ansible
+  - name: Setup configuration files for ansible and pcsd
+    how: ansible
+    playbook: tmt/plans/ansible_versions/playbook_setup_configs.yml
+    extra-args: "-vv"

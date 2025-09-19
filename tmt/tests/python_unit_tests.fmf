@@ -1,0 +1,14 @@
+summary: Run python unit tests
+environment+:
+  IGNORE_TESTS_FILE: ""
+adjust+:
+  - when: distro <= rhel-8
+    environment+:
+      IGNORE_TESTS_FILE: tmt/tests/ignore_tests_file_rhel-8.txt
+    because: |
+      * Tests that are using API v2 are ignored because pcs-0.10 does not
+        support API v2.
+      * The test test_info_loader.py is disabled because it is failing from
+        unknown reasons. It needs to be investigated. TODO: investigate failure
+tag+: [ansible_current, ansible_29, tier0] # this test is run on ansible_29 as well
+test: tmt/tests/python_unit_tests.sh $IGNORE_TESTS_FILE

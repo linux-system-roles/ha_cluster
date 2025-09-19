@@ -1,0 +1,3 @@
+component: rhel-system-roles
+duration: 10m
+path: /

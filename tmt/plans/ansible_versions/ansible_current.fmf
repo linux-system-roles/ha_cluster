@@ -1,0 +1,50 @@
+prepare+:
+  # Install pcs / tests dependencies
+  # If we are in latest Python3 venv, python3 libraries installed as pcs
+  # dependencies are not accessible, as they are built for Python shipped
+  # in OS, which is generally lower version than the latest
+  - name: Install packages for latest python3 package
+    how: shell
+    script:
+      - |
+        source $PYENV_ROOT/bin/activate
+        pip install --upgrade lxml
+
+adjust+:
+  - when: distro == rhel-8
+    environment+:
+      ANSIBLE_PKG: ansible-core<2.17
+
+/tier0:
+  summary: Run tier0 tests with ansible current
+  discover+:
+    filter: tag:tier0 & tag:ansible_current
+
+/tier1:
+  summary: Run tier1 tests with ansible current
+  discover+:
+    filter: tag:tier1
+  adjust+:
+    - when: distro == rhel-9
+      environment+:
+        PLAYBOOK_EXTRA_ARGS: " -e ansible_python_interpreter=/usr/bin/python3"
+      because: |
+        Use ansible-2.16-like Python in ansible 2.17+
+        (RHEL8 supports ansible < 2.17 only)
+        See https://github.com/linux-system-roles/ha_cluster/pull/205#issuecomment-2141431543
+
+  /cib:
+    discover+:
+      filter: tag:tier1 & tag:cib
+
+  /cluster:
+    discover+:
+      filter: tag:tier1 & tag:cluster
+
+  /mixed:
+    discover+:
+      filter: tag:tier1 & tag:mixed
+
+  /sbd:
+    discover+:
+      filter: tag:tier1 & tag:sbd
