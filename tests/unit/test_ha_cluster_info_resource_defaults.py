@@ -58,7 +58,7 @@ class ExportResourceDefaultsConfiguration(TestCase):
             self.assertEqual(
                 ha_cluster_info.export_resource_defaults_configuration(
                     module_mock,
-                    ha_cluster_info.Capability.RESOURCE_DEFAULTS_OUTPUT.value,
+                    [ha_cluster_info.Capability.RESOURCE_DEFAULTS_OUTPUT.value],
                 ),
                 {
                     "ha_cluster_resource_defaults": {
@@ -119,7 +119,9 @@ class ExportResourceOpDefaultsConfiguration(TestCase):
             self.assertEqual(
                 ha_cluster_info.export_resource_op_defaults_configuration(
                     module_mock,
-                    ha_cluster_info.Capability.RESOURCE_OP_DEFAULTS_OUTPUT.value,
+                    [
+                        ha_cluster_info.Capability.RESOURCE_OP_DEFAULTS_OUTPUT.value
+                    ],
                 ),
                 {
                     "ha_cluster_resource_operation_defaults": {

@@ -39,7 +39,7 @@ class ExportResourceDefaults(TestCase):
             )
         )
 
-    def test_export_multiple_nvpairs(self) -> None:
+    def test_export_multiple_nvsets(self) -> None:
         resource_defaults_data = {  # type: ignore
             "instance_attributes": [],
             "meta_attributes": [
