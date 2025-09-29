@@ -102,8 +102,7 @@
                   "ha_cluster_cluster_properties": [{
                     "attrs": [{
                       "name": "stonith-watchdog-timeout",
-                      "value": ha_cluster_sbd_enabled
-                        | d(False) | ternary('', '0')
+                      "value": "0"
                     }]
                   }]
                 }, {})
