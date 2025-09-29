@@ -48,7 +48,9 @@ class ExportPropertiesConfiguration(TestCase):
             self.assertEqual(
                 ha_cluster_info.export_cluster_properties_configuration(
                     module_mock,
-                    ha_cluster_info.Capability.CLUSTER_PROPERTIES_OUTPUT.value,
+                    [
+                        ha_cluster_info.Capability.CLUSTER_PROPERTIES_OUTPUT.value
+                    ],
                 ),
                 {
                     "ha_cluster_cluster_properties": [
@@ -80,7 +82,9 @@ class ExportPropertiesConfiguration(TestCase):
             ) as module_mock:
                 ha_cluster_info.export_cluster_properties_configuration(
                     module_mock,
-                    ha_cluster_info.Capability.CLUSTER_PROPERTIES_OUTPUT.value,
+                    [
+                        ha_cluster_info.Capability.CLUSTER_PROPERTIES_OUTPUT.value
+                    ],
                 )
         self.assertEqual(
             cm.exception.kwargs,
