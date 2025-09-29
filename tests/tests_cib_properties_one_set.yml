@@ -100,7 +100,7 @@
                     - name: stonith-enabled
                       value: 'true'
                     - name: stonith-watchdog-timeout
-                      value: "{{ha_cluster_sbd_enabled | ternary('', '0') }}"
+                      value: "0"
               ha_cluster_start_on_boot: true
               ha_cluster_transport:
                 type: knet
