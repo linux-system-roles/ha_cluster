@@ -36,13 +36,9 @@ An Ansible role for managing High Availability Clustering.
   * Corosync transport options including compression and encryption
   * Corosync totem options
   * Corosync quorum options
-  * Primitive resources (including stonith)
-  * Resource groups
-  * Resource clones
-  * Resource bundles
-  * Cluster properties
-  * Resource defaults
-  * Resource operation defaults
+  * Pacemaker cluster properties
+  * stonith and resources
+  * resource defaults and resource operation defaults
 
 ## Requirements
 
@@ -1611,6 +1607,9 @@ may not be present in the export.
   * [`ha_cluster_resource_groups`](#ha_cluster_resource_groups)
   * [`ha_cluster_resource_clones`](#ha_cluster_resource_clones)
   * [`ha_cluster_resource_bundles`](#ha_cluster_resource_bundles)
+  * [`ha_cluster_cluster_properties`](#ha_cluster_cluster_properties)
+  * [`ha_cluster_resource_defaults`](#ha_cluster_resource_defaults)
+  * [`ha_cluster_resource_operation_defaults`](#ha_cluster_resource_operation_defaults)
 
 * Following variables are never present in the export (consult the role
   documentation for impact of the variables missing when running the role):

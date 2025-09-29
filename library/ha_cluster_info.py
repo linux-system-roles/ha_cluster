@@ -30,8 +30,8 @@ requirements:
     - pcs-0.10.14 or pcs-0.11.3 or newer for exporting resources configuration
     - pcs-0.10.17 or pcs-0.11.6 or newer for exporting cluster properties
       configuration
-    - pcs-0.12.0a1 or newer for exporting resources defaults and resources
-      operation defaults
+    - pcs-0.12.0 or 0.11.8 or newer for exporting resources defaults and
+      resources operation defaults
     - python3-firewall for exporting ha_cluster_manage_firewall
     - python3-policycoreutils for exporting ha_cluster_manage_selinux
     - python 3.6 or newer
@@ -62,6 +62,8 @@ ha_cluster:
         - ha_cluster_manage_selinux
         - ha_cluster_cluster_present
         - ha_cluster_cluster_properties
+        - ha_cluster_resource_defaults
+        - ha_cluster_resource_operation_defaults
         - ha_cluster_start_on_boot
         - ha_cluster_install_cloud_agents
         - ha_cluster_pcs_permission_list
