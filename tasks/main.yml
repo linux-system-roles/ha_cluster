@@ -123,7 +123,7 @@
     - not ha_cluster_cluster_present
   block:
     - name: Remove cluster configuration
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-destroy-{{ __ha_cluster_pcs_provider }}.yml  # yamllint disable-line rule:line-length
+      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-destroy.yml
 
     - name: Remove fence-virt authkey
       file:
