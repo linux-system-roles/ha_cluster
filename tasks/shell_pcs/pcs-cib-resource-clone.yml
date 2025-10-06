@@ -23,7 +23,7 @@
 
 - name: Configure resource clone {{ resource_clone.resource_id }}
   command:
-    # pcs-0.10 supports only one set of attributes, that's the reason for
+    # pcs supports only one set of attributes, that's the reason for
     # *_attrs[0] instead of looping over *_attrs
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}

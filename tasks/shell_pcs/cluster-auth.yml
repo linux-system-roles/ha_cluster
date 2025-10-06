@@ -21,11 +21,47 @@
     - __ha_cluster_pcs_auth_status.rc != 2
 
 - name: Run pcs auth
-  include_tasks: cluster-auth-{{ __ha_cluster_pcs_provider }}.yml
-  # Include the tasks for nodes which can not talk to other nodes due to
-  # missing pcs auth tokens. The pcs-auth-*.yml contains "run_once: true" as
-  # running the auth on one node is sufficient (auth tokens are distributed by
-  # pcs automatically). By applying "when" here and "run_once" in the included
-  # task, it is achieved that the pcs auth command is run once on one of the
-  # nodes which lack pcs auth tokens.
+  # Running the tasks for nodes which can not talk to other nodes due to
+  # missing pcs auth tokens. The task contain "run_once: true" as running the
+  # auth on one node is sufficient (auth tokens are distributed by pcs
+  # automatically). By applying "when" here and "run_once" in the tasks, it is
+  # achieved that the pcs auth command is run once on one of the nodes which
+  # lack pcs auth tokens.
   when: not ansible_check_mode and __ha_cluster_pcs_auth_status.rc == 2
+  block:
+    - name: Pcs auth
+      command:
+        # Always auth all nodes to prevent possible corner cases with
+        # synchronizing pcs auth tokens in the cluster when not all nodes are
+        # auth-ed.
+        cmd: >
+          pcs host auth -u hacluster --
+          {% for node in ansible_play_hosts %}
+            {{ hostvars[node].__ha_cluster_node_name | quote }}
+            {% if hostvars[node].__ha_cluster_local_node.pcs_address | d("") %}
+              addr={{ hostvars[node].__ha_cluster_local_node.pcs_address | quote }}
+            {% endif %}
+          {% endfor %}
+        stdin: "{{ ha_cluster_hacluster_password }}"
+      run_once: true  # noqa: run_once[task]
+      changed_when: true
+
+    - name: Pcs auth for qdevice
+      command:
+        # Always auth all nodes to prevent possible corner cases with
+        # synchronizing pcs auth tokens in the cluster when not all nodes are
+        # auth-ed.
+        cmd: >
+          pcs host auth -u hacluster --
+          {{ __ha_cluster_qdevice_host | quote }}
+          {% if __ha_cluster_qdevice_pcs_address %}
+            addr={{ __ha_cluster_qdevice_pcs_address | quote }}
+          {% endif %}
+        stdin: "{{ ha_cluster_hacluster_qdevice_password |
+          d(ha_cluster_hacluster_password) }}"
+      when:
+        - __ha_cluster_qdevice_model == "net"
+        - __ha_cluster_qdevice_host | length > 0
+        - __ha_cluster_qdevice_host not in __ha_cluster_all_node_names
+      run_once: true  # noqa: run_once[task]
+      changed_when: true
