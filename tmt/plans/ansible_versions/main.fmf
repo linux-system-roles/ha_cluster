@@ -94,7 +94,7 @@ prepare+:
         pylint \
         PyYAML \
         tmt \
-        yamllint
+        yamllint # codespell:ignore astroid
 
   # If we are running Python version other than what pcs was built for,
   # Python won't find installed pcs. To overcome this, symlink pcs to pyenv.
@@ -184,7 +184,7 @@ prepare+:
         done
       # remove irrelevant files
       - rm -f "$COLLECTIONS_ROLES_DIR"/.pandoc_template-ha_cluster.html5
-      - rm -rf "$COLLECTIONS_ROLES_DIR"/tmt*
+      - rm -rf "$COLLECTIONS_ROLES_DIR"/tmt-*
 
   - name: Download 'woke' from GitHub
     when: ci-dependencies is not defined or ci-dependencies == github

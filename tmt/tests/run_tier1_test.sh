@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -eu
 
 TEST_NAME="${TMT_TEST_NAME##*/}"
 TEST_FILE_NAME="tests_$TEST_NAME.yml"
@@ -13,6 +13,7 @@ python --version
 ansible --version
 
 EXIT_CODE=0
+# shellcheck disable=SC2086
 ansible-playbook -v -i localhost, -c local \
   --vault-password-file tests/vault_pwd $PLAYBOOK_EXTRA_ARGS \
   "tests/$TEST_FILE_NAME" || EXIT_CODE=$?
