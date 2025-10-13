@@ -121,6 +121,7 @@ try:
     from pcs.common.async_tasks.dto import CommandDto, CommandOptionsDto
 except ImportError:
     HAS_PCS = False
+    # pylint: disable=invalid-name
     PCS_IMPORT_ERROR: Optional[str] = traceback.format_exc()
 
     # These classes need to be available and imported above to do linting
@@ -137,7 +138,7 @@ except ImportError:
 
 else:
     HAS_PCS = True
-    PCS_IMPORT_ERROR = None
+    PCS_IMPORT_ERROR = None  # pylint: disable=invalid-name
 
 
 def run_module() -> None:

@@ -30,10 +30,11 @@ try:
     from dacite import DaciteError
 except ImportError:
     HAS_DACITE = False
+    # pylint: disable=invalid-name
     DACITE_IMPORT_ERROR: Optional[str] = traceback.format_exc()
 else:
     HAS_DACITE = True
-    DACITE_IMPORT_ERROR = None
+    DACITE_IMPORT_ERROR = None  # pylint: disable=invalid-name
 
 try:
     from pcs.common.async_tasks.dto import (
@@ -46,6 +47,7 @@ try:
     from pcs.common.reports import ReportItemDto, ReportItemSeverity
 except ImportError:
     HAS_PCS = False
+    # pylint: disable=invalid-name
     PCS_IMPORT_ERROR: Optional[str] = traceback.format_exc()
 
     # These classes need to be available and imported above to do linting
@@ -68,7 +70,7 @@ except ImportError:
 
 else:
     HAS_PCS = True
-    PCS_IMPORT_ERROR = None
+    PCS_IMPORT_ERROR = None  # pylint: disable=invalid-name
 
 PCSD_SOCKET = "/var/run/pcsd.socket"
 API_ENDPOINT = "http://doesntmatter/api/v2/task/run"
