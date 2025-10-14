@@ -87,14 +87,13 @@ prepare+:
       pip install \
         "$ANSIBLE_PKG" \
         "$ANSIBLE_LINT_PKG" \
-        astroid \
         black \
         isort \
         mypy \
         pylint \
         PyYAML \
         tmt \
-        yamllint # codespell:ignore astroid
+        yamllint
 
   # If we are running Python version other than what pcs was built for,
   # Python won't find installed pcs. To overcome this, symlink pcs to pyenv.
