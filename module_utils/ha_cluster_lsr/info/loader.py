@@ -341,6 +341,15 @@ def get_resource_op_defaults_configuration(
     )
 
 
+def get_constraints_configuration(
+    run_command: CommandRunner,
+) -> Dict[str, Any]:
+    """Get constraints configuration from pcs"""
+    return _call_pcs_cli(
+        run_command, ["constraint", "--all", "--output-format=json"]
+    )
+
+
 def get_pcs_version_info(run_command: CommandRunner) -> Tuple[str, List[str]]:
     """
     Get pcs version and list of capabilities
