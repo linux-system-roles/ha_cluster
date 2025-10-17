@@ -12,229 +12,206 @@ workflow:
     - when: never
 
 variables:
-  PYTHON_CODE_DIRS: "./library/ ./module_utils/ha_cluster_lsr/ ./tests/unit/"
-  WOKE_CONFIG: "https://raw.githubusercontent.com/linux-system-roles/tox-lsr/main/src/tox_lsr/config_files/woke.yml"
-  YAMLLINT_CONFIG: "{extends: .yamllint.yml, ignore: [.github/, .markdownlint.yaml]}"
-  PYENV_ROOT: /root/pyenvs/ansible
+  # override these by CI variables if needed
+  ENABLE_FIPS:
+    description: Enable FIPS mode in testing farm. Set to empty to disable FIPS
+    value: --insert --order 0 --how feature --fips enabled
+    options:
+      - --insert --order 0 --how feature --fips enabled
+      - ""
+  PLAN_FILTER:
+    description: Predefined plan filters for testing farm. Default is empty
+      which means run all plans.
+    value: "name:/tmt/plans/.*"
+    options:
+      - ""
+      - "name:/tmt/plans/.*"
+      - "name:/tmt/plans/ansible_versions/ansible_29/tier0"
+      - "name:/tmt/plans/ansible_versions/ansible_29/tier1/cib"
+      - "name:/tmt/plans/ansible_versions/ansible_29/tier1/cluster"
+      - "name:/tmt/plans/ansible_versions/ansible_29/tier1/mixed"
+      - "name:/tmt/plans/ansible_versions/ansible_29/tier1/sbd"
+      - "name:/tmt/plans/ansible_versions/ansible_current/tier0"
+      - "name:/tmt/plans/ansible_versions/ansible_current/tier1/cib"
+      - "name:/tmt/plans/ansible_versions/ansible_current/tier1/cluster"
+      - "name:/tmt/plans/ansible_versions/ansible_current/tier1/mixed"
+      - "name:/tmt/plans/ansible_versions/ansible_current/tier1/sbd"
+  TEST_FILTER:
+    description: Predefined test filters for testing farm. Default is empty
+      which means run all test.
+    value: ""
+    options:
+      - ""
+      - "tag:tier0"
+      - "tag:tier1"
+      - "tag:tier0 & tag:ansible"
+      - "tag:tier0 & tag:ansible29"
+      - "tag:tier1 & tag:cib"
+      - "tag:tier1 & tag:cluster"
+      - "tag:tier1 & tag:mixed"
+      - "tag:tier1 & tag:sbd"
+  TFCLI_PLAN_FILTER:
+    description: Set to $PLAN_FILTER to use a predefined plan filter or specify
+      a custom one.
+    value: $PLAN_FILTER
+  TFCLI_TEST_FILTER:
+    description: Set to $TEST_FILTER to use a predefined test filter or specify
+      a custom one.
+    value: $TEST_FILTER
+  TFCLI_TMT_PREPARE: $ENABLE_FIPS
+  TF_REQUEST_ID_FILE: /tmp/tf_request_id-$CI_JOB_ID
+  TF_EXIT_CODE_FILE: /tmp/tf_exit_code-$CI_JOB_ID
+  LSR_ARTIFACTS_URL: $CI_API_V4_URL/projects/pcs%2Fci-job-dependencies/jobs/artifacts/main/download?job=lsr-auto-maintenance
+  WOKE_ARTIFACTS_URL: $CI_API_V4_URL/projects/pcs%2Fci-job-dependencies/jobs/artifacts/main/download?job=woke
+  # for context variable development to distinguish development compose
+  TMT_DEVELOPMENT: false
+  PLAN_VARIANTS: ansible_current ansible_29
 
-# Ansible 2.9 doesn't work with Python 3.12 shipped in RHEL 10
-.all_images: &ALL_IMAGES
-  - LsrRhel10NextAnsibleCurrent
-  - LsrRhel10CurrentAnsibleCurrent
-  - LsrRhel9NextAnsibleCurrent
-  - LsrRhel9NextAnsible29
-  - LsrRhel9CurrentAnsibleCurrent
-  - LsrRhel9CurrentAnsible29
-  - LsrRhel8NextAnsibleCurrent
-  - LsrRhel8NextAnsible29
-  - LsrRhel8OldestAnsibleCurrent
-  - LsrRhel8OldestAnsible29
 
-# Jobs running linters and test tools shipped with ansible. Old versions of
-# ansible don't provide all required functionality.
-.job_ansible_check:
+# https://docs.gitlab.com/ci/yaml/#parallelmatrix
+# COPMOSE_NAME
+#   * values must use only letters and numbers because they are used as part
+#     of rpm name
+#   * must be kept short because they are used in job names
+#   * other pipelines use a job name to download the job's artifacts
+# TF_COMPOSE
+#   * name of a testing farm compose
+#   * list of composes:
+#     https://api.testing-farm.io/v0.1/composes/public
+#     https://api.testing-farm.io/v0.1/composes/redhat
+# TMT_DISTRO
+#   * value for the tmt context variable distro:
+#     https://tmt.readthedocs.io/en/stable/spec/context.html
+#     https://fmf.readthedocs.io/en/latest/context.html
+#
+.parallel:
   parallel:
     matrix:
-      - BASE_IMAGE_NAME: *ALL_IMAGES
+      - COMPOSE_NAME:
+          - Rhel10Next
+          - Rhel10CurrentRelease
+          - Rhel9Next
+          - Rhel9CurrentRelease
+          - Rhel8Next
+          - Rhel8Oldest
   rules:
-    - if: ($BASE_IMAGE_NAME =~ /.*AnsibleCurrent$/) && ($BASE_IMAGE_NAME !~ /^LsrRhel8Oldest.*/)
+    - if: $COMPOSE_NAME == "Rhel10Next"
+      variables:
+        TF_COMPOSE: RHEL-10-Nightly
+        TMT_DEVELOPMENT: true
+        TMT_DISTRO: rhel-10.2
+        PCS_BRANCH: "main"
+        PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
+          artifacts/${PCS_BRANCH}/download?\
+          job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
+    - if: $COMPOSE_NAME == "Rhel10CurrentRelease"
+      variables:
+        TF_COMPOSE: RHEL-10.0-Nightly
+        TMT_DISTRO: rhel-10.0
+        PCS_BRANCH: "main"
+        PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
+          artifacts/${PCS_BRANCH}/download?\
+          job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
+    - if: $COMPOSE_NAME == "Rhel9Next"
+      variables:
+        TF_COMPOSE: RHEL-9-Nightly
+        TMT_DEVELOPMENT: true
+        TMT_DISTRO: rhel-9.8
+        PCS_BRANCH: "pcs-0.11"
+        PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
+          artifacts/${PCS_BRANCH}/download?\
+          job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
+    - if: $COMPOSE_NAME == "Rhel9CurrentRelease"
+      variables:
+        TF_COMPOSE: RHEL-9.6.0-Nightly
+        TMT_DISTRO: rhel-9.6
+        PCS_BRANCH: "pcs-0.11"
+        PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
+          artifacts/${PCS_BRANCH}/download?\
+          job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
+    - if: $COMPOSE_NAME == "Rhel8Next"
+      variables:
+        TF_COMPOSE: RHEL-8-Nightly
+        TMT_DEVELOPMENT: true
+        TMT_DISTRO: rhel-8.10
+        PCS_BRANCH: "pcs-0.10"
+        PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
+          artifacts/${PCS_BRANCH}/download?\
+          job=rpm_build%3A%20%5BPcsRhel8Next%5D"
+    - if: $COMPOSE_NAME == "Rhel8Oldest"
+      variables:
+        TF_COMPOSE: RHEL-8.4.0-Nightly
+        TMT_DISTRO: rhel-8.4
+        PCS_BRANCH: "pcs-0.10"
+        PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
+          artifacts/${PCS_BRANCH}/download?\
+          job=rpm_build%3A%20%5BPcsRhel8Next%5D"
 
-# Do not run python unit tests and linters on RHEL8 as it doesn't ship a
-# compatible version of pcs.
-# Linters depending on pcs code (mypy, pylint) benefit from running on all
-# capable combinations of pcs, python and ansible.
-.job_python:
-  parallel:
-    matrix:
-      - BASE_IMAGE_NAME: *ALL_IMAGES
-  rules:
-    - if: $BASE_IMAGE_NAME !~ /^LsrRhel8.*/
+.download_artifacts_from_tf: &download_artifacts_from_tf
+  - UUID_REGEX="[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}"
+  - REQUEST_ID=$(sed -n -E "s/.*($UUID_REGEX).*/\1/p" output.txt | head -n 1)
+  - echo "$REQUEST_ID" > "$TF_REQUEST_ID_FILE"
+  - echo "Testing Farm request id is $REQUEST_ID"
+  - EXIT_CODE=0
+  - testing-farm watch --id "$REQUEST_ID" || EXIT_CODE=$?
+  - echo $EXIT_CODE > "$TF_EXIT_CODE_FILE"
+  - >
+    curl --insecure --location --remote-name \
+      "https://artifacts.osci.redhat.com/testing-farm/$REQUEST_ID/results.xml"
+  - >
+    time for PLAN in $PLAN_VARIANTS; do
+      for ARTIFACT_URL in $(
+        xmllint \
+          --xpath "//testcase[contains(@name, 'tests/tier1')]/*/log[@name='data' and contains(@href, '$PLAN')]/@href" \
+          results.xml \
+        | sed "s/.*=\"\(.*\)\"/\1/"
+      ); do
+        wget --no-verbose --no-parent -r --reject '*.html*' \
+          --no-host-directories --directory-prefix "var_log/$PLAN" \
+          --cut-dirs=19 "$ARTIFACT_URL";
+      done
+    done
+  - exit $EXIT_CODE
 
-# Linting / code formatting that either works the same on all images or using
-# the newest linter / formatter is desired
-# Rhel9 can be dropped once Rhel10 is stable
-.job_generic_linter:
-  parallel:
-    matrix:
-      - BASE_IMAGE_NAME:
-          - LsrRhel9NextAnsibleCurrent
-          - LsrRhel10NextAnsibleCurrent
-
-#  If we are running Python version other than what pcs was built for, Python
-#  won't find installed pcs. To overcome this, symlink pcs to pyenv.
-.symlink_pcs_to_pyenv: &symlink_pcs_to_pyenv
-  - PYTHON_VER=$(python3 -c 'import sys; v=sys.version_info; print(f"{v.major}.{v.minor}")')
-  - PYENV_PACKAGES="${PYENV_ROOT}/lib/python${PYTHON_VER}/site-packages"
-  - PCS_DIR=$(rpm -ql pcs | grep 'site-packages/pcs$')
-  - PCS_PYTHON_VER=$(echo "$PCS_DIR" | sed -e 's@.*/python\([0-9\.]\+\)/.*@\1@')
-  - if [ "x$PYTHON_VER" != "x$PCS_PYTHON_VER" ]; then ln -s "${PCS_DIR}" "${PYENV_PACKAGES}/pcs"; fi
-  - ls -l "$PYENV_PACKAGES"
-
-.convert_role_to_collection: &convert_role_to_collection
-  - pwd
-  - MY_DIR="$(basename $(pwd))"
-  - if [ "x$MY_DIR" != "xha_cluster" ]; then ln -s "$MY_DIR" ../ha_cluster; fi
-  - LSR_INFO=true python /usr/local/lib/lsr-auto-maintenance/lsr_role2collection.py --dest-path ../ --src-path ../ --src-owner tomjelinek --role ha_cluster
-  - coll_dir="../ansible_collections/fedora/linux_system_roles/"
-  - ignore_dir="$coll_dir/tests/sanity"  # wokeignore:rule=sanity
-  - mkdir -pv "$ignore_dir"
-  - for file in .sanity-ansible-ignore-*.txt; do if [ -f "$file" ]; then cp "$file" "$ignore_dir/${file//*.sanity-ansible-}"; fi; done  # wokeignore:rule=sanity
-  - cd "$coll_dir"
-  - rm -f .pandoc_template-ha_cluster.html5  # remove irrelevant files
-
-default:
-  before_script:
-    - source "${PYENV_ROOT}/bin/activate"
-    - python --version
-
-stages:
-  - tier0
-  - tier1
-
-# tier0 - non-python
-ansible_lint:
-  extends: .job_ansible_check
-  stage: tier0
+tf_tests:
+  extends: .parallel
+  image: $SHARED_RUNNER_CONTAINER_IMAGE
   script:
-    # Ansible-lint requires role dependencies to be present.
-    # This job is never run on RHEL8Oldest due to old ansible-lint there, there
-    # is no need to conditionally switch to old galaxy server for it.
-    - ansible-galaxy collection install -vvv -r ./meta/collection-requirements.yml
-    # ansible-lint is supposed to be run on collections
-    - *convert_role_to_collection
-    - cp roles/ha_cluster/.ansible-lint .
-    - ansible-lint --version
-    # role2collection tool used to convert the role to a collection reformats
-    # yaml files and doesn't preserve line wrapping, because it can't ensure
-    # converted lines will be wrapped preserving Jinja and ansible syntax.
-    # This means we get a lot of line-length errors and the only thing we can
-    # do is ignore them.
-    - ansible-lint -v --skip-list 'yaml[line-length]' --config-file .ansible-lint
-
-ansible_test:
-  extends: .job_ansible_check
-  stage: tier0
-  script:
-    # ansible-test only works on collections
-    - *convert_role_to_collection
-    - ansible-test --version
-    - ansible-test sanity -v --color=yes --truncate=0 --no-redact --coverage --docker  # wokeignore:rule=sanity
-
-# TODO enable shellcheck for RHEL 10 once it is available there
-shellcheck:
-  extends: .job_generic_linter
-  stage: tier0
-  script:
-    - shellcheck --version
-    - shellcheck files/*.sh
-  rules:
-    - if: $BASE_IMAGE_NAME !~ /^LsrRhel10.*/
-
-markdownlint:
-  extends: .job_generic_linter
-  stage: tier0
-  script:
-    - chcon -R -t container_ro_file_t "../$(basename $(pwd))"
-    - podman run --rm --volume "$(pwd):/ha_cluster:ro" docker://avtodev/markdown-lint:master --config /ha_cluster/.markdownlint.yaml --ignore /ha_cluster/CHANGELOG.md /ha_cluster/**/*.md  # wokeignore:rule=master
-
-woke:
-  extends: .job_generic_linter
-  stage: tier0
-  script:
-    - woke --version
-    - woke -c "${WOKE_CONFIG}" --exit-1-on-failure --debug
-
-yaml_lint:
-  extends: .job_generic_linter
-  stage: tier0
-  script:
-    - yamllint --version
-    - yamllint --config-data "${YAMLLINT_CONFIG}" ./
-
-# tier0 - python
-black:
-  extends: .job_generic_linter
-  stage: tier0
-  script:
-    - black --version
-    - black --config pyproject.toml --check ${PYTHON_CODE_DIRS}
-
-isort:
-  extends: .job_generic_linter
-  stage: tier0
-  script:
-    - isort --version
-    - isort --check-only ${PYTHON_CODE_DIRS}
-
-mypy:
-  extends: .job_python
-  stage: tier0
-  script:
-    - dnf install -y pcs
-    - touch "$(rpm -ql pcs | grep 'site-packages/pcs$')/py.typed"
-    - *symlink_pcs_to_pyenv
-    - pcs --version
-    - mypy --version
-    - mypy --config-file mypy.ini ${PYTHON_CODE_DIRS}
-
-pylint:
-  extends: .job_python
-  stage: tier0
-  script:
-    - pylint --rcfile pylintrc --persistent=n --reports=y --score=y --disable similarities ${PYTHON_CODE_DIRS}
-
-unit_tests:
-  extends: .job_python
-  stage: tier0
-  script:
-    - dnf install -y pcs
-    - *symlink_pcs_to_pyenv
-    - pcs --version
-    - PYTHONPATH="./library:./module_utils:$PYTHONPATH" python -m unittest --verbose tests/unit/*.py
-
-unit_tests_rhel8:
-  parallel:
-    matrix:
-      - BASE_IMAGE_NAME: *ALL_IMAGES
-  rules:
-    - if: $BASE_IMAGE_NAME =~ /^LsrRhel8.*/
-  stage: tier0
-  script:
-    - dnf install -y pcs
-    - *symlink_pcs_to_pyenv
-    - pcs --version
-    - PYTHONPATH="./library:./module_utils:$PYTHONPATH" python -m unittest --verbose
-      tests/unit/test_ha_cluster_info_cluster.py
-      tests/unit/test_ha_cluster_info_pcsd.py
-      tests/unit/test_ha_cluster_info.py
-      tests/unit/test_ha_cluster_info_resources.py
-      tests/unit/test_ha_cluster_os.py
-      tests/unit/test_info_exporter.py
-      tests/unit/test_info_exporter_resources.py
-      tests/unit/test_wrap_sources.py
-
-# tier 1
-build_tier1_ci_yml:
-  variables:
-    BASE_IMAGE_NAME: LsrRhel9CurrentAnsibleCurrent
-  stage: tier0
-  script:
-    - cd tests
-    - export TESTS=$(ls -1 tests_*.yml | sed -e 's/^tests_\(.*\)\.yml$/\1/')
-    - cd ..
-    - python -c 'import os; from jinja2 import Template; print(Template(open(".gitlab-ci-tier1.yml.j2").read()).render(tests=os.environ["TESTS"].split()));' > .gitlab-ci-tier1.yml
+    # increased parallel-limit because we have 10 plans (default: 5)
+    - testing-farm request
+      --parallel-limit 10
+      --git-url
+      https://gitlab-ci-token:$CI_JOB_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_PATH
+      --git-ref $CI_COMMIT_REF_NAME
+      --compose $TF_COMPOSE
+      --context development=$TMT_DEVELOPMENT
+      --context distro=$TMT_DISTRO
+      --context initiator=gitlab-ci
+      --context ci-dependencies=github
+      --secret CI_JOB_TOKEN="$CI_JOB_TOKEN"
+      --environment PCS_ARTIFACTS_URL="$PCS_ARTIFACTS_URL"
+      --environment LSR_ARTIFACTS_URL="$LSR_ARTIFACTS_URL"
+      --environment WOKE_ARTIFACTS_URL="$WOKE_ARTIFACTS_URL"
+      --plan-filter "$TFCLI_PLAN_FILTER"
+      --test-filter "$TFCLI_TEST_FILTER"
+      --tmt-prepare "$TFCLI_TMT_PREPARE"
+      --no-wait
+      | tee output.txt
+    - *download_artifacts_from_tf
+  after_script:
+    - REQUEST_ID=$(<"$TF_REQUEST_ID_FILE")
+    - EXIT_CODE=$(<"$TF_EXIT_CODE_FILE")
+    - echo "CI_JOB_STATUS=$CI_JOB_STATUS EXIT_CODE=$EXIT_CODE"
+    - >
+      if [[ "$CI_JOB_STATUS" != "success" && "$EXIT_CODE" != "1" ]]; then \
+        echo "Canceling testing farm request $REQUEST_ID"; \
+        testing-farm cancel "$REQUEST_ID"; \
+      fi
+  tags:
+    - "shared-podman"
   artifacts:
+    name: "ha_cluster-${CI_COMMIT_SHORT_SHA}-${TF_COMPOSE}"
+    expire_in: 1 week
+    when: always
     paths:
-      - .gitlab-ci-tier1.yml
-    expire_in: 1 day
-
-trigger_tier1:
-  stage: tier1
-  trigger:
-    include:
-      - artifact: .gitlab-ci-tier1.yml
-        job: build_tier1_ci_yml
-    strategy: depend
-  parallel:
-    matrix:
-      - BASE_IMAGE_NAME: *ALL_IMAGES
+      - var_log/ansible*/var_log*

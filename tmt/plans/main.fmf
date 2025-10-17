@@ -1,0 +1,48 @@
+discover:
+  how: fmf
+
+execute:
+  how: tmt
+
+finish:
+  - name: Gather some system info
+    how: shell
+    script:
+      - mkdir -p $TMT_PLAN_DATA/misc
+      - cp -r /etc/yum.repos.d/ $TMT_PLAN_DATA/misc/repo_files
+      - rpm -qa 'booth*' 'corosync*' 'fence-agents*' 'pacemaker*'
+        'resource-agents*' sbd | tee $TMT_PLAN_DATA/misc/cluster_packages.log
+      - dnf repolist --all | tee $TMT_PLAN_DATA/misc/repolist.log
+      - dnf list --installed | tee $TMT_PLAN_DATA/misc/installed.log
+      - rpm -qa | sort | tee $TMT_PLAN_DATA/misc/packages.log
+      - lscpu | tee $TMT_PLAN_DATA/misc/lscpu.log
+      - free -h | tee $TMT_PLAN_DATA/misc/free.log
+      - "ausearch -m AVC,USER_AVC,SELINUX_ERR,USER_SELINUX_ERR -ts boot || : \
+        | tee $TMT_PLAN_DATA/misc/ausearch.log"
+      - sysctl crypto.fips_enabled | tee $TMT_PLAN_DATA/misc/fips_status.log
+
+prepare:
+  # https://docs.testing-farm.io/Testing%20Farm/0.1/test-environment.html#_tag_repository
+  - name: Disable testing-farm RHEL repos that may contain packages of
+          different versions than we want
+    when: distro == rhel
+    how: shell
+    script:
+      - |
+        for repo in testing-farm-tag-repository \
+            testing-farm-tag-repository-mainline \
+            testing-farm-tag-repository-z-stream; do
+          if dnf repolist --enabled -v | grep "^Repo-id\s*:\s*${repo}$"; then
+            dnf config-manager --set-disabled "${repo}"
+          fi;
+        done
+
+  - name: Enable testing-farm HighAvailability RHEL repo
+    when: distro == rhel
+    how: shell
+    script:
+      - |
+        if dnf repolist --disabled -v |
+            grep "^Repo-id\s*:\s*rhel-HighAvailability$"; then
+          dnf config-manager --set-enabled rhel-HighAvailability
+        fi

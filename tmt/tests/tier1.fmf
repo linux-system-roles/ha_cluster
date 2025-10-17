@@ -1,0 +1,67 @@
+summary: Run a tier1 test
+tag+: [tier1]
+test: tmt/tests/run_tier1_test.sh
+
+/cib:
+  tag+: [cib]
+  /cib_acls:
+  /cib_alerts:
+  /cib_constraints_create:
+  /cib_node_attributes:
+  /cib_properties_empty:
+  /cib_properties_one_set:
+  /cib_resources_create:
+  /cib_resources_create_and_load_info:
+  /cib_rsc_op_defaults:
+  /cib_stonith_levels:
+  /cib_stonith_levels_validation:
+  /cib_utilization:
+    adjust+:
+      - when: distro == rhel-8.4
+        enabled: false
+        because: Test fails because of crm_mon segmentation fault.
+
+/cluster:
+  tag+: [cluster]
+  /cluster_advanced_knet_full:
+  /cluster_advanced_knet_implicit:
+  /cluster_advanced_udp_full:
+  /cluster_basic:
+  /cluster_basic_cloud_packages:
+  /cluster_basic_custom_fence_agents:
+  /cluster_basic_custom_packages:
+  /cluster_basic_custom_pcsd_tls:
+  /cluster_basic_custom_pcsd_tls_cert_role:
+  /cluster_basic_disabled:
+  /cluster_basic_existing_psks:
+  /cluster_basic_new_psks:
+  /cluster_destroy:
+
+/mixed:
+  tag+: [mixed]
+  /default:
+  /export_doesnt_destroy_cluster:
+  /export_firewall_selinux:
+  /node_options_check:
+  /pcs_permissions:
+  /qdevice_all_options:
+  /qdevice_minimal:
+  /qdevice_tls_kaptb_options:
+  /qnetd:
+  /qnetd_and_cluster:
+  /qnetd_disabled:
+  /role_mode_consistency:
+
+/sbd:
+  tag+: [sbd]
+  /sbd_all_options_combined:
+  /sbd_all_options_inventory:
+  /sbd_all_options_play:
+  /sbd_check_devices_count_combined:
+  /sbd_check_devices_count_inventory:
+  /sbd_check_devices_count_play:
+  /sbd_defaults:
+  /sbd_defaults_disabled:
+  /sbd_delay_start:
+  /sbd_needs_atb_while_atb_disabled:
+  /sbd_needs_atb_while_atb_enabled:

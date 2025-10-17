@@ -1,0 +1,36 @@
+environment+:
+  ANSIBLE_PKG: ansible==2.9.*
+  # ansible-lint 6.0.0 depends on ansible>2.9
+  ANSIBLE_LINT_PKG: ansible-lint<6.0.0
+  PYTHON3_PACKAGE: python3
+
+adjust+:
+ - when: distro >= rhel-10
+   enabled: false
+   because: Ansible 2.9 doesn't work with Python 3.12 shipped in RHEL 10
+
+/tier0:
+  summary: Run tier0 tests with ansible-2.9
+  discover+:
+    filter: tag:tier0 & tag:ansible_29
+
+/tier1:
+  summary: Run tier1 tests with ansible-2.9
+  discover+:
+    filter: tag:tier1
+
+  /cib:
+    discover+:
+      filter: tag:tier1 & tag:cib
+
+  /cluster:
+    discover+:
+      filter: tag:tier1 & tag:cluster
+
+  /mixed:
+    discover+:
+      filter: tag:tier1 & tag:mixed
+
+  /sbd:
+    discover+:
+      filter: tag:tier1 & tag:sbd

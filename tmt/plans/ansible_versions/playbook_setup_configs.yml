@@ -1,0 +1,24 @@
+---
+- name: Setup configuration files for ansible and pcsd
+  hosts: all
+  tasks:
+    - name: Configure Ansible output format
+      community.general.ini_file:
+        path: /etc/ansible/ansible.cfg
+        section: defaults
+        option: "{{ item.option }}"
+        value: "{{ item.value }}"
+        mode: "0644"
+        group: root
+        owner: root
+      loop:
+        - option: stdout_callback
+          value: debug
+        - option: bin_ansible_callbacks
+          value: "True"
+
+    - name: Enable pcsd debug
+      ansible.builtin.lineinfile:
+        path: /etc/sysconfig/pcsd
+        regexp: '^PCSD_DEBUG='
+        line: PCSD_DEBUG=true
