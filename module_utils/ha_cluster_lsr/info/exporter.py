@@ -15,6 +15,9 @@ __metaclass__ = type
 from .exporter_package.cluster_properties import (
     export_cluster_properties,
 )
+from .exporter_package.constraints_location import (
+    export_location_constraints,
+)
 from .exporter_package.corosync_conf import (
     export_cluster_nodes,
     export_corosync_cluster_name,

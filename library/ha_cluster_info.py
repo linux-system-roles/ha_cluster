@@ -77,6 +77,7 @@ ha_cluster:
         - ha_cluster_resource_groups
         - ha_cluster_resource_clones
         - ha_cluster_resource_bundles
+        - ha_cluster_constraints_location
         - HORIZONTALLINE
         - Following variables are required for running ha_cluster role but are
           never present in this module output
@@ -146,6 +147,7 @@ class Capability(Enum):
     RESOURCE_OP_DEFAULTS_OUTPUT = (
         "pcmk.properties.operation-defaults.config.output-formats"
     )
+    CONSTRAINTS_OUTPUT = "pcmk.constraint.config.output-formats"
 
 
 def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
@@ -371,6 +373,27 @@ def export_resource_op_defaults_configuration(
     return result
 
 
+def export_constraints_configuration(
+    module: AnsibleModule, pcs_capabilities: List[str]
+) -> Dict[str, Any]:
+    """
+    Export existing HA cluster location constraints
+    """
+
+    if Capability.CONSTRAINTS_OUTPUT.value not in pcs_capabilities:
+        return dict()
+
+    cmd_runner = get_cmd_runner(module)
+    pcs_constraints = loader.get_constraints_configuration(cmd_runner)
+    location_constraints = exporter.export_location_constraints(pcs_constraints)
+
+    result: dict[str, Any] = dict()
+    if location_constraints:
+        result["ha_cluster_constraints_location"] = location_constraints
+
+    return result
+
+
 def get_pcs_capabilities(module: AnsibleModule) -> List[str]:
     """
     Extract pcsd pcs_capabilities from pcs version info
@@ -414,6 +437,9 @@ def main() -> None:
                 **export_resource_op_defaults_configuration(
                     module, pcs_capabilities
                 )
+            )
+            ha_cluster_result.update(
+                **export_constraints_configuration(module, pcs_capabilities)
             )
             ha_cluster_result["ha_cluster_cluster_present"] = True
         else:
