@@ -39,6 +39,23 @@ class ExportConstraintsConfiguration(TestCase):
                     },
                 }
             ],
+            "colocation": [
+                {
+                    "resource_id": "resource1",
+                    "with_resource_id": "resource2",
+                    "node_attribute": None,
+                    "resource_role": None,
+                    "with_resource_role": None,
+                    "resource_instance": None,
+                    "with_resource_instance": None,
+                    "attributes": {
+                        "constraint_id": "colocation-resource1-resource2-80",
+                        "score": "80",
+                        "influence": None,
+                        "lifetime": [],
+                    },
+                }
+            ],
         }
         with mocked_module(
             [
@@ -63,6 +80,19 @@ class ExportConstraintsConfiguration(TestCase):
                                 {
                                     "name": "score",
                                     "value": "INFINITY",
+                                }
+                            ],
+                        }
+                    ],
+                    "ha_cluster_constraints_colocation": [
+                        {
+                            "id": "colocation-resource1-resource2-80",
+                            "resource_leader": {"id": "resource1"},
+                            "resource_follower": {"id": "resource2"},
+                            "options": [
+                                {
+                                    "name": "score",
+                                    "value": "80",
                                 }
                             ],
                         }
