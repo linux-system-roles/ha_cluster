@@ -78,6 +78,7 @@ ha_cluster:
         - ha_cluster_resource_clones
         - ha_cluster_resource_bundles
         - ha_cluster_constraints_location
+        - ha_cluster_constraints_colocation
         - HORIZONTALLINE
         - Following variables are required for running ha_cluster role but are
           never present in this module output
@@ -377,19 +378,24 @@ def export_constraints_configuration(
     module: AnsibleModule, pcs_capabilities: List[str]
 ) -> Dict[str, Any]:
     """
-    Export existing HA cluster location constraints
+    Export existing HA cluster constraints
     """
 
     if Capability.CONSTRAINTS_OUTPUT.value not in pcs_capabilities:
         return dict()
 
     cmd_runner = get_cmd_runner(module)
-    pcs_constraints = loader.get_constraints_configuration(cmd_runner)
-    location_constraints = exporter.export_location_constraints(pcs_constraints)
+    constraints = loader.get_constraints_configuration(cmd_runner)
 
     result: dict[str, Any] = dict()
+
+    location_constraints = exporter.export_location_constraints(constraints)
     if location_constraints:
         result["ha_cluster_constraints_location"] = location_constraints
+
+    colocation_constraints = exporter.export_colocation_constraints(constraints)
+    if colocation_constraints:
+        result["ha_cluster_constraints_colocation"] = colocation_constraints
 
     return result
 
