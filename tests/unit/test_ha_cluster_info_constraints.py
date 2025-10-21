@@ -56,6 +56,29 @@ class ExportConstraintsConfiguration(TestCase):
                     },
                 }
             ],
+            "colocation_set": [
+                {
+                    "resource_sets": [
+                        {
+                            "set_id": "colocation-set-mixed-set",
+                            "sequential": None,
+                            "require_all": None,
+                            "ordering": None,
+                            "action": None,
+                            "role": None,
+                            "score": None,
+                            "kind": None,
+                            "resources_ids": ["resource3", "resource4"],
+                        },
+                    ],
+                    "attributes": {
+                        "constraint_id": "colocation-set-mixed",
+                        "score": "15",
+                        "influence": None,
+                        "lifetime": [],
+                    },
+                }
+            ],
         }
         with mocked_module(
             [
@@ -95,7 +118,21 @@ class ExportConstraintsConfiguration(TestCase):
                                     "value": "80",
                                 }
                             ],
-                        }
+                        },
+                        {
+                            "id": "colocation-set-mixed",
+                            "resource_sets": [
+                                {
+                                    "resource_ids": ["resource3", "resource4"],
+                                },
+                            ],
+                            "options": [
+                                {
+                                    "name": "score",
+                                    "value": "15",
+                                }
+                            ],
+                        },
                     ],
                 },
             )

@@ -13,6 +13,7 @@ __metaclass__ = type
 
 from typing import Any, Dict, List
 
+from .constraint_options import simple_options
 from .wrap_src import SrcDict, invalid_part, wrap_src_for_rich_report
 
 
@@ -40,28 +41,6 @@ def _resource(location_src: SrcDict) -> Dict[str, Any]:
     return resource
 
 
-def _options(attributes_src: SrcDict) -> List[Any]:
-    options = []
-
-    if attributes_src.get("score", None):
-        options.append(
-            {
-                "name": "score",
-                "value": attributes_src["score"],
-            }
-        )
-
-    if attributes_src["resource_discovery"]:
-        options.append(
-            {
-                "name": "resource-discovery",
-                "value": attributes_src["resource_discovery"],
-            }
-        )
-
-    return options
-
-
 def _location(location_src: SrcDict) -> Dict[str, Any]:
     attributes_src = location_src["attributes"]
     location = {
@@ -80,7 +59,9 @@ def _location(location_src: SrcDict) -> Dict[str, Any]:
     else:
         raise invalid_part(location_src, "Location has neither node nor rule")
 
-    options = _options(attributes_src)
+    options = simple_options(
+        attributes_src, "score", ("resource_discovery", "resource-discovery")
+    )
     if options:
         location["options"] = options
 
