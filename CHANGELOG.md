@@ -1,6 +1,27 @@
 Changelog
 =========
 
+[1.26.0] - 2025-10-21
+--------------------
+
+### New Features
+
+- feat: export cluster properties and resource defaults and resource operation defaults (#318)
+
+### Other Changes
+
+- style: allow a long line in fixture_psks.yml (#308)
+- ci: run ansible-lint after converting the role to a collection (#309)
+- ci: bump actions/checkout from 4 to 5 (#310)
+- ci: rollout several recent changes to CI testing (#312)
+- ci: support openSUSE Leap in qemu/kvm test matrix (#313)
+- ci: use the new epel feature to enable EPEL for testing farm (#314)
+- ci: use tox-lsr 3.12.0 for osbuild_config.yml feature (#316)
+- ci: use JSON format for __bootc_validation (#317)
+- ci: bump actions/github-script from 7 to 8 (#319)
+- refactor: remove unused pcs_provider variable (#320)
+- ci: add tmt plans and tests for running from gitlab-ci (#321)
+
 [1.25.6] - 2025-08-20
 --------------------
 
