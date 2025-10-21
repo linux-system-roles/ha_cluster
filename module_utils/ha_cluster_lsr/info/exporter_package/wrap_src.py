@@ -304,6 +304,9 @@ class _WrapBool(int, _WrapScalar):
         # Provide a clearer repr than the inherited int(bool) repr
         return f"<WrappedJsonBool {bool(self)!r}>"
 
+    def __str__(self) -> str:
+        return str(bool(self))
+
     def __bool__(self) -> bool:
         return bool(int(self))
 
