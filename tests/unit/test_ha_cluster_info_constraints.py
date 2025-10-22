@@ -79,6 +79,23 @@ class ExportConstraintsConfiguration(TestCase):
                     },
                 }
             ],
+            "order": [
+                {
+                    "first_resource_id": "resource5",
+                    "then_resource_id": "resource6",
+                    "first_action": "start",
+                    "then_action": "start",
+                    "first_resource_instance": None,
+                    "then_resource_instance": None,
+                    "attributes": {
+                        "constraint_id": "order-resource5-resource6-100",
+                        "symmetrical": False,
+                        "require_all": None,
+                        "score": "100",
+                        "kind": None,
+                    },
+                }
+            ],
         }
         with mocked_module(
             [
@@ -133,6 +150,29 @@ class ExportConstraintsConfiguration(TestCase):
                                 }
                             ],
                         },
+                    ],
+                    "ha_cluster_constraints_order": [
+                        {
+                            "id": "order-resource5-resource6-100",
+                            "resource_first": {
+                                "id": "resource5",
+                                "action": "start",
+                            },
+                            "resource_then": {
+                                "id": "resource6",
+                                "action": "start",
+                            },
+                            "options": [
+                                {
+                                    "name": "score",
+                                    "value": "100",
+                                },
+                                {
+                                    "name": "symmetrical",
+                                    "value": "false",
+                                },
+                            ],
+                        }
                     ],
                 },
             )

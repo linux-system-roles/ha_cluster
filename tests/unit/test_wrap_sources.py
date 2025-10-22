@@ -42,7 +42,7 @@ class TestWrapSources(TestCase):
     def assert_wrap_eq(self, data, path):  # type: ignore
         self.assertEqual(
             _access_path(data, path),
-            wrap_src._cleanup_wrap(_access_path(_wrap(data), path)),
+            wrap_src.cleanup_wrap(_access_path(_wrap(data), path)),
         )
 
     @contextmanager

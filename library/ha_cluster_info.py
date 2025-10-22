@@ -79,6 +79,7 @@ ha_cluster:
         - ha_cluster_resource_bundles
         - ha_cluster_constraints_location
         - ha_cluster_constraints_colocation
+        - ha_cluster_constraints_order
         - HORIZONTALLINE
         - Following variables are required for running ha_cluster role but are
           never present in this module output
@@ -396,6 +397,10 @@ def export_constraints_configuration(
     colocation_constraints = exporter.export_colocation_constraints(constraints)
     if colocation_constraints:
         result["ha_cluster_constraints_colocation"] = colocation_constraints
+
+    order_constraints = exporter.export_order_constraints(constraints)
+    if order_constraints:
+        result["ha_cluster_constraints_order"] = order_constraints
 
     return result
 
