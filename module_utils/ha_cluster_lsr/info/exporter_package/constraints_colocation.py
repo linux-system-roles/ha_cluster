@@ -13,8 +13,9 @@ __metaclass__ = type
 
 from typing import Any, Dict, List
 
-from .constraint_options import simple_options
-from .wrap_src import SrcDict, invalid_part, is_none, wrap_src_for_rich_report
+from .constraint_options import to_options
+from .resource_set import export_resource_set
+from .wrap_src import SrcDict, invalid_part, wrap_src_for_rich_report
 
 
 def _leader(colocation_src: SrcDict) -> Dict[str, Any]:
@@ -48,7 +49,7 @@ def _follower(colocation_src: SrcDict) -> Dict[str, Any]:
 
 
 def _options(attributes_src: SrcDict) -> List[Any]:
-    return simple_options(attributes_src, "score", "influence")
+    return to_options(attributes_src, "score", "influence")
 
 
 def _colocation(colocation_src: SrcDict) -> Dict[str, Any]:
@@ -65,42 +66,6 @@ def _colocation(colocation_src: SrcDict) -> Dict[str, Any]:
     return colocation
 
 
-def _resource_set_options(resource_set_src: SrcDict) -> List[Dict[str, Any]]:
-    options = simple_options(
-        resource_set_src, "ordering", "action", "role", "score", "kind"
-    )
-
-    if not is_none(resource_set_src["sequential"]):
-        options.append(
-            {
-                "name": "sequential",
-                "value": str(resource_set_src["sequential"]).lower(),
-            }
-        )
-
-    if not is_none(resource_set_src["require_all"]):
-        options.append(
-            {
-                "name": "require-all",
-                "value": str(resource_set_src["require_all"]).lower(),
-            }
-        )
-
-    return options
-
-
-def _resource_set(resource_set_src: SrcDict) -> Dict[str, Any]:
-    resource_set = {
-        "resource_ids": resource_set_src["resources_ids"],
-    }
-
-    options = _resource_set_options(resource_set_src)
-    if options:
-        resource_set["options"] = options
-
-    return resource_set
-
-
 def _colocation_set(colocation_set_src: SrcDict) -> Dict[str, Any]:
     if not colocation_set_src["resource_sets"]:
         raise invalid_part(
@@ -111,7 +76,7 @@ def _colocation_set(colocation_set_src: SrcDict) -> Dict[str, Any]:
     colocation_set = {
         "id": colocation_set_src["attributes"]["constraint_id"],
         "resource_sets": [
-            _resource_set(resource_set)
+            export_resource_set(resource_set)
             for resource_set in colocation_set_src["resource_sets"]
         ],
     }

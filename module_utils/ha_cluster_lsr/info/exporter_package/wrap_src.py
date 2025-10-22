@@ -140,7 +140,7 @@ def wrap_src_for_rich_report(
                         bound.arguments[param],
                         _Context(bound.arguments[param], desc),
                     )
-            return _cleanup_wrap(func(*bound.args, **bound.kwargs))
+            return cleanup_wrap(func(*bound.args, **bound.kwargs))
 
         return wrapper
 
@@ -557,7 +557,7 @@ def _wrap_src(data: CleanSrc, context: _Context) -> _WrapSrc:
     return _WrapNone(context)
 
 
-def _cleanup_wrap(maybe_wrapped: Union[CleanSrc, _WrapSrc]) -> CleanSrc:
+def cleanup_wrap(maybe_wrapped: Union[CleanSrc, _WrapSrc]) -> CleanSrc:
     """Recursively unwraps any wrapped values into pure Python types."""
     top_clean = (
         maybe_wrapped.unwrap()
@@ -567,12 +567,12 @@ def _cleanup_wrap(maybe_wrapped: Union[CleanSrc, _WrapSrc]) -> CleanSrc:
 
     if isinstance(top_clean, dict):
         return {
-            _cleanup_wrap(key): _cleanup_wrap(value)
+            cleanup_wrap(key): cleanup_wrap(value)
             for key, value in top_clean.items()
         }
 
     if isinstance(top_clean, list):
-        return [_cleanup_wrap(item) for item in top_clean]
+        return [cleanup_wrap(item) for item in top_clean]
 
     return top_clean
 

@@ -21,6 +21,9 @@ from .exporter_package.constraints_colocation import (
 from .exporter_package.constraints_location import (
     export_location_constraints,
 )
+from .exporter_package.constraints_order import (
+    export_order_constraints,
+)
 from .exporter_package.corosync_conf import (
     export_cluster_nodes,
     export_corosync_cluster_name,

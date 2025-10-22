@@ -13,7 +13,7 @@ __metaclass__ = type
 
 from typing import Any, Dict, List
 
-from .constraint_options import simple_options
+from .constraint_options import to_options
 from .wrap_src import SrcDict, invalid_part, wrap_src_for_rich_report
 
 
@@ -59,7 +59,7 @@ def _location(location_src: SrcDict) -> Dict[str, Any]:
     else:
         raise invalid_part(location_src, "Location has neither node nor rule")
 
-    options = simple_options(
+    options = to_options(
         attributes_src, "score", ("resource_discovery", "resource-discovery")
     )
     if options:
