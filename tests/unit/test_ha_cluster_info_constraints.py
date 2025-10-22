@@ -96,6 +96,63 @@ class ExportConstraintsConfiguration(TestCase):
                     },
                 }
             ],
+            "order_set": [
+                {
+                    "resource_sets": [
+                        {
+                            "set_id": "order-set-resource",
+                            "sequential": None,
+                            "require_all": None,
+                            "ordering": None,
+                            "action": None,
+                            "role": None,
+                            "score": None,
+                            "kind": None,
+                            "resources_ids": ["resource1", "resource2"],
+                        },
+                    ],
+                    "attributes": {
+                        "constraint_id": "order-set",
+                        "symmetrical": None,
+                        "require_all": None,
+                        "score": None,
+                        "kind": "Optional",
+                    },
+                },
+            ],
+            "ticket": [
+                {
+                    "resource_id": "resource7",
+                    "role": None,
+                    "attributes": {
+                        "constraint_id": "ticket-resource7-ticket1",
+                        "ticket": "ticket1",
+                        "loss_policy": "demote",
+                    },
+                }
+            ],
+            "ticket_set": [
+                {
+                    "resource_sets": [
+                        {
+                            "set_id": "ticket-set-resource",
+                            "sequential": None,
+                            "require_all": None,
+                            "ordering": None,
+                            "action": None,
+                            "role": None,
+                            "score": None,
+                            "kind": None,
+                            "resources_ids": ["resource1", "resource2"],
+                        },
+                    ],
+                    "attributes": {
+                        "constraint_id": "ticket-set",
+                        "ticket": "ticket2",
+                        "loss_policy": "fence",
+                    },
+                },
+            ],
         }
         with mocked_module(
             [
@@ -172,7 +229,43 @@ class ExportConstraintsConfiguration(TestCase):
                                     "value": "false",
                                 },
                             ],
-                        }
+                        },
+                        {
+                            "id": "order-set",
+                            "resource_sets": [
+                                {
+                                    "resource_ids": ["resource1", "resource2"],
+                                },
+                            ],
+                            "options": [
+                                {"name": "kind", "value": "Optional"},
+                            ],
+                        },
+                    ],
+                    "ha_cluster_constraints_ticket": [
+                        {
+                            "id": "ticket-resource7-ticket1",
+                            "resource": {"id": "resource7"},
+                            "ticket": "ticket1",
+                            "options": [
+                                {
+                                    "name": "loss-policy",
+                                    "value": "demote",
+                                }
+                            ],
+                        },
+                        {
+                            "id": "ticket-set",
+                            "resource_sets": [
+                                {
+                                    "resource_ids": ["resource1", "resource2"],
+                                },
+                            ],
+                            "ticket": "ticket2",
+                            "options": [
+                                {"name": "loss-policy", "value": "fence"},
+                            ],
+                        },
                     ],
                 },
             )

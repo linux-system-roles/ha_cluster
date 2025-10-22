@@ -80,6 +80,7 @@ ha_cluster:
         - ha_cluster_constraints_location
         - ha_cluster_constraints_colocation
         - ha_cluster_constraints_order
+        - ha_cluster_constraints_ticket
         - HORIZONTALLINE
         - Following variables are required for running ha_cluster role but are
           never present in this module output
@@ -401,6 +402,10 @@ def export_constraints_configuration(
     order_constraints = exporter.export_order_constraints(constraints)
     if order_constraints:
         result["ha_cluster_constraints_order"] = order_constraints
+
+    ticket_constraints = exporter.export_ticket_constraints(constraints)
+    if ticket_constraints:
+        result["ha_cluster_constraints_ticket"] = ticket_constraints
 
     return result
 

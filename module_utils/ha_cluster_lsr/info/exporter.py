@@ -24,6 +24,9 @@ from .exporter_package.constraints_location import (
 from .exporter_package.constraints_order import (
     export_order_constraints,
 )
+from .exporter_package.constraints_ticket import (
+    export_ticket_constraints,
+)
 from .exporter_package.corosync_conf import (
     export_cluster_nodes,
     export_corosync_cluster_name,
