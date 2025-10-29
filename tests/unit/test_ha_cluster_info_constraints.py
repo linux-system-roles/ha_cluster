@@ -184,8 +184,8 @@ class ExportConstraintsConfiguration(TestCase):
                     "ha_cluster_constraints_colocation": [
                         {
                             "id": "colocation-resource1-resource2-80",
-                            "resource_leader": {"id": "resource1"},
-                            "resource_follower": {"id": "resource2"},
+                            "resource_leader": {"id": "resource2"},
+                            "resource_follower": {"id": "resource1"},
                             "options": [
                                 {
                                     "name": "score",

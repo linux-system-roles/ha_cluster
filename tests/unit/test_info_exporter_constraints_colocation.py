@@ -40,8 +40,8 @@ class ExportColocationConstraints(TestCase):
             [
                 {
                     "id": "colocation-resource1-resource2-100",
-                    "resource_leader": {"id": "resource1"},
-                    "resource_follower": {"id": "resource2"},
+                    "resource_leader": {"id": "resource2"},
+                    "resource_follower": {"id": "resource1"},
                     "options": [
                         {"name": "score", "value": "100"},
                     ],
@@ -49,12 +49,12 @@ class ExportColocationConstraints(TestCase):
                 {
                     "id": "colocation-resource3-resource4--50",
                     "resource_leader": {
-                        "id": "resource3",
-                        "role": "Promoted",
-                    },
-                    "resource_follower": {
                         "id": "resource4",
                         "role": "Started",
+                    },
+                    "resource_follower": {
+                        "id": "resource3",
+                        "role": "Promoted",
                     },
                     "options": [
                         {"name": "score", "value": "-50"},
