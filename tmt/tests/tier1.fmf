@@ -7,6 +7,7 @@ test: tmt/tests/run_tier1_test.sh
   /cib_acls:
   /cib_alerts:
   /cib_constraints_create:
+  /cib_constraints_create_and_load_info:
   /cib_node_attributes:
   /cib_properties_empty:
   /cib_properties_one_set:
