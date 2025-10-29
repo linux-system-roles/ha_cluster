@@ -1,0 +1,372 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Create all kinds of resource constraints in a cluster
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    __constraints_capability: pcmk.constraint.config.output-formats
+    ha_cluster_export_configuration: true
+    ha_cluster_cluster_name: test-cluster
+    ha_cluster_resource_primitives:
+      - id: d1
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+      - id: d2
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+        # wokeignore:rule=dummy
+      - id: d3
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+      - id: d4
+        # wokeignore:rule=dummy
+        agent: 'ocf:pacemaker:Dummy'
+    ha_cluster_constraints_location:
+      # resource, node
+      - resource:
+          id: d2
+        node: node1
+        id: cl1
+        options:
+          - name: score
+            value: "-123"
+      # pattern, node
+      - resource:
+          pattern: d\d+
+        node: node3
+        id: cl2
+        options:
+          - name: score
+            value: "23"
+      # resource, node, options
+      - resource:
+          id: d2
+        node: node2
+        id: cl3
+        options:
+          - name: resource-discovery
+            value: exclusive
+          - name: score
+            value: "23"
+      # pattern, node, options
+      - resource:
+          pattern: d\d+
+        node: node5
+        id: cl4
+        options:
+          - name: resource-discovery
+            value: never
+          - name: score
+            value: "-32"
+      # resource, rule
+      - resource:
+          id: d3
+        rule: rule eq 1
+        id: cl5
+        options:
+          - name: score
+            value: "INFINITY"
+      # pattern, rule
+      - resource:
+          pattern: d\d+
+        rule: rule eq 1
+        id: cl6
+        options:
+          - name: score
+            value: "INFINITY"
+      # resource, rule, role, score
+      - resource:
+          id: d3
+          role: Promoted
+        rule: 'rule eq 3 or #uname eq node2'
+        id: cl7
+        options:
+          - name: score
+            value: "-47"
+      # pattern, rule, role, score
+      - resource:
+          pattern: d\d+
+          role: Promoted
+        rule: 'rule eq 3 or #uname eq node2'
+        id: cl8
+        options:
+          - name: score
+            value: "-47"
+      # resource, rule, score-attribute
+      - resource:
+          id: d3
+        rule: (rule eq 5 or value ne string interesting;string&) and x gt 0
+        id: cl9
+        options:
+          - name: score-attribute
+            value: myscore
+      # pattern, rule, score-attribute
+      - resource:
+          pattern: d\d+
+        rule: (rule eq 5 or value ne string interesting;string&) and x gt 0
+        id: cl10
+        options:
+          - name: score-attribute
+            value: myscore
+      # resource, rule, options
+      - resource:
+          id: d3
+        rule: rule eq 6
+        id: cl11
+        options:
+          - name: resource-discovery
+            value: always
+          - name: score
+            value: "-47"
+      # pattern, rule, options
+      - resource:
+          pattern: d\d+
+        rule: rule eq 6
+        id: cl12
+        options:
+          - name: resource-discovery
+            value: always
+          - name: score
+            value: "-47"
+    ha_cluster_constraints_colocation:
+      # simplest constraint
+      - resource_follower:
+          id: d1
+        resource_leader:
+          id: d2
+        id: cc1
+        options:
+          - name: score
+            value: "INFINITY"
+      # roles specified
+      - resource_follower:
+          id: d1
+          role: Promoted
+        resource_leader:
+          id: d3
+          role: Promoted
+        id: cc2
+        options:
+          - name: score
+            value: "INFINITY"
+
+      # options specified
+      - resource_follower:
+          id: d1
+        resource_leader:
+          id: d4
+        id: cc3
+        options:
+          - name: score
+            value: -INFINITY
+          - name: node-attribute
+            value: attribute-name
+      # simple set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+        id: cc4
+        options:
+          - name: score
+            value: "INFINITY"
+      # complex set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+            options:
+              - name: role
+                value: Promoted
+          - resource_ids:
+              - d3
+              - d4
+            options:
+              - name: sequential
+                value: "false"
+        id: cc5
+        options:
+          - name: score
+            value: "20"
+    ha_cluster_constraints_order:
+      # simplest constraint
+      - resource_first:
+          id: d1
+          action: demote
+        resource_then:
+          id: d2
+          action: promote
+        id: co1
+      # options specified
+      - resource_first:
+          id: d1
+          action: start
+        resource_then:
+          id: d3
+          action: start
+        id: co2
+        options:
+          - name: kind
+            value: Optional
+          - name: symmetrical
+            value: "false"
+          - name: require-all
+            value: "false"
+      # score specified
+      - resource_first:
+          id: d1
+          action: start
+        resource_then:
+          id: d4
+          action: start
+        id: co3
+        options:
+          - name: score
+            value: "-15"
+      # everything specified
+      - resource_first:
+          id: d2
+          action: demote
+        resource_then:
+          id: d4
+          action: stop
+        id: co4
+        options:
+          - name: score
+            value: "10"
+          - name: symmetrical
+            value: "false"
+          - name: require-all
+            value: "false"
+      # simple set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+        id: co5
+      # complex set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+            options:
+              - name: action
+                value: promote
+          - resource_ids:
+              - d3
+              - d4
+            options:
+              - name: sequential
+                value: "false"
+              - name: require-all
+                value: "true"
+        id: co6
+        options:
+          - name: kind
+            value: Serialize
+          - name: symmetrical
+            value: "false"
+    ha_cluster_constraints_ticket:
+      # constraint id specified
+      - resource:
+          id: d1
+        id: ct1
+        ticket: ticket2
+      # role specified
+      - resource:
+          id: d2
+          role: Promoted
+        id: ct2
+        ticket: ticket1
+      # options specified
+      - resource:
+          id: d2
+        id: ct3
+        ticket: ticket2
+        options:
+          - name: loss-policy
+            value: stop
+      # everything specified
+      - resource:
+          id: d3
+          role: Unpromoted
+        id: ct4
+        ticket: ticket3
+        options:
+          - name: loss-policy
+            value: demote
+      # simple set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+        id: ct5
+        ticket: ticket-set1
+      # complex set constraint
+      - resource_sets:
+          - resource_ids:
+              - d1
+              - d2
+          - resource_ids:
+              - d3
+              - d4
+            options:
+              - name: sequential
+                value: "false"
+              - name: require-all
+                value: "true"
+        id: ct6
+        ticket: ticket-set1
+        options:
+          - name: loss-policy
+            value: fence
+    # test to set true to manage selinux to see it's ignored.
+    ha_cluster_manage_selinux: true
+
+  tasks:
+    - name: Run tests
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Fetch cluster versions of cluster components
+          include_tasks: tasks/fetch_versions.yml
+          vars:
+            with_cib_schema_version: true
+
+        - name: Check firewall and selinux state
+          include_tasks: tasks/check_firewall_selinux.yml
+        - name: Check exported configuration
+          when:
+            - __constraints_capability in __test_pcs_capabilities
+          vars:
+            __test_exported_config:
+              ha_cluster_constraints_location: "{{ ha_cluster_facts.ha_cluster_constraints_location }}"
+              ha_cluster_constraints_colocation: "{{ ha_cluster_facts.ha_cluster_constraints_colocation }}"
+              ha_cluster_constraints_order: "{{ ha_cluster_facts.ha_cluster_constraints_order }}"
+              ha_cluster_constraints_ticket: "{{ ha_cluster_facts.ha_cluster_constraints_ticket }}"
+            __test_expected_config:
+              ha_cluster_constraints_location: "{{ ha_cluster_constraints_location }}"
+              ha_cluster_constraints_colocation: "{{ ha_cluster_constraints_colocation }}"
+              ha_cluster_constraints_order: "{{ ha_cluster_constraints_order }}"
+              ha_cluster_constraints_ticket: "{{ ha_cluster_constraints_ticket }}"
+          block:
+            - name: Print exported configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config
