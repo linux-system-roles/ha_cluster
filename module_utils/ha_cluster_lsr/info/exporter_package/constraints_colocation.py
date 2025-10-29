@@ -60,6 +60,13 @@ def _colocation(colocation_src: SrcDict) -> Dict[str, Any]:
     }
 
     options = _options(colocation_src["attributes"])
+    if colocation_src["node_attribute"]:
+        options.append(
+            {
+                "name": "node-attribute",
+                "value": colocation_src["node_attribute"],
+            }
+        )
     if options:
         colocation["options"] = options
 
