@@ -39,6 +39,7 @@ An Ansible role for managing High Availability Clustering.
   * Pacemaker cluster properties
   * stonith and resources
   * resource defaults and resource operation defaults
+  * resource constraints
 
 ## Requirements
 
@@ -1581,6 +1582,9 @@ Note that primitive resource operations are exported explicitly and
 `ha_cluster_resource_primitives.copy_operations_from_agent` is always set to
 false.
 
+Note that in `ha_cluster_constraints_location` is exported only the first rule
+and attribute `lifetime` is not exported (since the role does not support it).
+
 Note that depending on pcs version installed on managed nodes, certain variables
 may not be present in the export.
 
@@ -1610,6 +1614,10 @@ may not be present in the export.
   * [`ha_cluster_cluster_properties`](#ha_cluster_cluster_properties)
   * [`ha_cluster_resource_defaults`](#ha_cluster_resource_defaults)
   * [`ha_cluster_resource_operation_defaults`](#ha_cluster_resource_operation_defaults)
+  * [`ha_cluster_constraints_location`](#ha_cluster_constraints_location)
+  * [`ha_cluster_constraints_colocation`](#ha_cluster_constraints_colocation)
+  * [`ha_cluster_constraints_order`](#ha_cluster_constraints_order)
+  * [`ha_cluster_constraints_ticket`](#ha_cluster_constraints_ticket)
 
 * Following variables are never present in the export (consult the role
   documentation for impact of the variables missing when running the role):
