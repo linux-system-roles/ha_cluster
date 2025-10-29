@@ -32,6 +32,7 @@ requirements:
       configuration
     - pcs-0.12.0 or 0.11.8 or newer for exporting resources defaults and
       resources operation defaults
+    - pcs-0.12.0 or pcs-0.11.6 or newer for exporting constraints configuration
     - python3-firewall for exporting ha_cluster_manage_firewall
     - python3-policycoreutils for exporting ha_cluster_manage_selinux
     - python 3.6 or newer
