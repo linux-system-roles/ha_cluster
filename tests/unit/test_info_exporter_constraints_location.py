@@ -48,8 +48,8 @@ class ExportLocationConstraintsLocation(TestCase):
                     "node": "node2",
                     "id": "location-resource2-node2-50",
                     "options": [
-                        {"name": "score", "value": "50"},
                         {"name": "resource-discovery", "value": "never"},
+                        {"name": "score", "value": "50"},
                     ],
                 },
             ],
@@ -63,6 +63,7 @@ class ExportLocationConstraintsLocation(TestCase):
                             "role": None,
                             "attributes": {
                                 "constraint_id": "location-resource1-INFINITY",
+                                "score": None,
                                 "node": "node1",
                                 "rules": [],
                                 "lifetime": [],
@@ -110,7 +111,10 @@ class ExportLocationConstraintsLocation(TestCase):
         self.assertEqual(
             [
                 {
-                    "resource": {"id": "resource1"},
+                    "resource": {
+                        "id": "resource1",
+                        "role": "Promoted",
+                    },
                     "id": "location-resource1-INFINITY",
                     # Only one rule is supported in the ha_cluster role.
                     # So just the first rule is exported.
@@ -118,7 +122,19 @@ class ExportLocationConstraintsLocation(TestCase):
                     "options": [
                         {"name": "score", "value": "INFINITY"},
                     ],
-                }
+                },
+                {
+                    "resource": {
+                        "id": "resource2",
+                    },
+                    "id": "location-resource2-INFINITY",
+                    # Only one rule is supported in the ha_cluster role.
+                    # So just the first rule is exported.
+                    "rule": "#uname eq node1",
+                    "options": [
+                        {"name": "score-attribute", "value": "some-attr"},
+                    ],
+                },
             ],
             exporter.export_location_constraints(
                 {
@@ -130,22 +146,48 @@ class ExportLocationConstraintsLocation(TestCase):
                             "role": None,
                             "attributes": {
                                 "constraint_id": "location-resource1-INFINITY",
-                                "score": "INFINITY",
+                                "score": None,
                                 "node": None,
                                 "rules": [
                                     {
                                         "id": "location-resource1-rule-rule",
                                         "as_string": "#uname eq node1",
+                                        "options": {
+                                            "role": "Promoted",
+                                            "score": "INFINITY",
+                                        },
                                     },
                                     {
                                         "id": "location-resource1-rule-rule2",
                                         "as_string": "#uname eq node2",
+                                        "options": {},
                                     },
                                 ],
                                 "lifetime": [],
                                 "resource_discovery": None,
                             },
-                        }
+                        },
+                        {
+                            "resource_id": "resource2",
+                            "resource_pattern": None,
+                            "role": None,
+                            "attributes": {
+                                "constraint_id": "location-resource2-INFINITY",
+                                "score": None,
+                                "node": None,
+                                "rules": [
+                                    {
+                                        "id": "location-resource2-rule-rule",
+                                        "as_string": "#uname eq node1",
+                                        "options": {
+                                            "score-attribute": "some-attr",
+                                        },
+                                    },
+                                ],
+                                "lifetime": [],
+                                "resource_discovery": None,
+                            },
+                        },
                     ],
                 }
             ),
@@ -198,6 +240,7 @@ class ExportLocationConstraintsLocation(TestCase):
                             {
                                 "id": "location-resource1-rule-rule",
                                 "as_string": "#uname eq node1",
+                                "options": {},
                             }
                         ],
                         "lifetime": [],

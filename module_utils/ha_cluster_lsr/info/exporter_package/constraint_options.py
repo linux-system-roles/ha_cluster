@@ -1,6 +1,11 @@
-from typing import Any, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 from .wrap_src import SrcDict, cleanup_wrap
+
+
+def create_option(name: str, value: Any) -> Dict[str, Any]:
+    """Returns option in role format"""
+    return {"name": name, "value": value}
 
 
 def to_options(
@@ -15,10 +20,10 @@ def to_options(
 
         # Support common case with boolean.
         if isinstance(cleanup_wrap(src[key]), bool):
-            options.append({"name": name, "value": str(src[key]).lower()})
+            options.append(create_option(name, str(src[key]).lower()))
             continue
 
         if src[key]:
-            options.append({"name": name, "value": src[key]})
+            options.append(create_option(name, src[key]))
 
     return options
