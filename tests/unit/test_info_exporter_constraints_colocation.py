@@ -59,6 +59,7 @@ class ExportColocationConstraints(TestCase):
                     "options": [
                         {"name": "score", "value": "-50"},
                         {"name": "influence", "value": "stop"},
+                        {"name": "node-attribute", "value": "attribute-name"},
                     ],
                 },
                 {
@@ -123,7 +124,7 @@ class ExportColocationConstraints(TestCase):
                         {
                             "resource_id": "resource3",
                             "with_resource_id": "resource4",
-                            "node_attribute": None,
+                            "node_attribute": "attribute-name",
                             "resource_role": "Promoted",
                             "with_resource_role": "Started",
                             "resource_instance": None,
