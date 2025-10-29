@@ -19,21 +19,6 @@ from .wrap_src import SrcDict, invalid_part, wrap_src_for_rich_report
 
 
 def _leader(colocation_src: SrcDict) -> Dict[str, Any]:
-    if not colocation_src["resource_id"]:
-        raise invalid_part(
-            colocation_src,
-            "Colocation is missing resource_id",
-        )
-
-    resource = {"id": colocation_src["resource_id"]}
-
-    if colocation_src["resource_role"]:
-        resource["role"] = colocation_src["resource_role"]
-
-    return resource
-
-
-def _follower(colocation_src: SrcDict) -> Dict[str, Any]:
     if not colocation_src["with_resource_id"]:
         raise invalid_part(
             colocation_src,
@@ -44,6 +29,21 @@ def _follower(colocation_src: SrcDict) -> Dict[str, Any]:
 
     if colocation_src["with_resource_role"]:
         resource["role"] = colocation_src["with_resource_role"]
+
+    return resource
+
+
+def _follower(colocation_src: SrcDict) -> Dict[str, Any]:
+    if not colocation_src["resource_id"]:
+        raise invalid_part(
+            colocation_src,
+            "Colocation is missing resource_id",
+        )
+
+    resource = {"id": colocation_src["resource_id"]}
+
+    if colocation_src["resource_role"]:
+        resource["role"] = colocation_src["resource_role"]
 
     return resource
 
