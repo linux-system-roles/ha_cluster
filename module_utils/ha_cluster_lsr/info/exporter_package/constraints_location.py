@@ -102,5 +102,5 @@ def export_location_constraints(constraints: SrcDict) -> List[Dict[str, Any]]:
     Export location constraints from `pcs constraint --all --output-format=json`
     output
     """
-    # Location_set is ignored because is not supported in the role.
+    # Location_set is ignored because it is not supported in the role.
     return [_location(location) for location in constraints["location"]]
