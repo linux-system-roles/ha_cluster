@@ -22,7 +22,7 @@ def _first(order_src: SrcDict) -> Dict[str, Any]:
     if not order_src["first_resource_id"]:
         raise invalid_part(
             order_src,
-            "Order is missing first_resource_id",
+            "Order constraint is missing first_resource_id",
         )
 
     resource = {"id": order_src["first_resource_id"]}
@@ -37,7 +37,7 @@ def _then(order_src: SrcDict) -> Dict[str, Any]:
     if not order_src["then_resource_id"]:
         raise invalid_part(
             order_src,
-            "Order is missing then_resource_id",
+            "Order constraint is missing then_resource_id",
         )
 
     resource = {"id": order_src["then_resource_id"]}
@@ -74,7 +74,9 @@ def _order(order_src: SrcDict) -> Dict[str, Any]:
 
 def _order_set(order_set_src: SrcDict) -> Dict[str, Any]:
     if not order_set_src["resource_sets"]:
-        raise invalid_part(order_set_src, "Order is missing resource_sets")
+        raise invalid_part(
+            order_set_src, "Order constraint is missing resource_sets"
+        )
 
     order_set = {
         "id": order_set_src["attributes"]["constraint_id"],

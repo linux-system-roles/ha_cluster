@@ -225,7 +225,7 @@ class ExportColocationConstraints(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/colocation/0",
-                issue_desc="Colocation is missing resource_id",
+                issue_desc="Colocation constraint is missing resource_id",
             ),
         )
 
@@ -258,7 +258,7 @@ class ExportColocationConstraints(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/colocation/0",
-                issue_desc="Colocation is missing with_resource_id",
+                issue_desc="Colocation constraint is missing with_resource_id",
             ),
         )
 
@@ -285,7 +285,7 @@ class ExportColocationConstraints(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/colocation_set/0",
-                issue_desc="Colocation is missing resource_sets",
+                issue_desc="Colocation constraint is missing resource_sets",
             ),
         )
 

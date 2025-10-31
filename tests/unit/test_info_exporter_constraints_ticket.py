@@ -205,7 +205,7 @@ class ExportTicketConstraints(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/ticket/0",
-                issue_desc="Ticket is missing resource_id",
+                issue_desc="Ticket constraint is missing resource_id",
             ),
         )
 
@@ -258,7 +258,7 @@ class ExportTicketConstraints(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/ticket_set/0",
-                issue_desc="Ticket is missing resource_sets",
+                issue_desc="Ticket constraint is missing resource_sets",
             ),
         )
 

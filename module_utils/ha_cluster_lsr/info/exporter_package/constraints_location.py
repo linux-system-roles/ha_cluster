@@ -21,7 +21,7 @@ def _resource(location_src: SrcDict) -> Dict[str, Any]:
     if location_src["resource_id"] and location_src["resource_pattern"]:
         raise invalid_part(
             location_src,
-            "Location has both resource_id and resource_pattern",
+            "Location constraint has both resource_id and resource_pattern",
         )
 
     resource = {}
@@ -32,7 +32,7 @@ def _resource(location_src: SrcDict) -> Dict[str, Any]:
     else:
         raise invalid_part(
             location_src,
-            "Location has neither resource_id nor resource_pattern",
+            "Location constraint has neither resource_id nor resource_pattern",
         )
 
     return resource
@@ -59,7 +59,9 @@ def _location(location_src: SrcDict) -> Dict[str, Any]:
     }
 
     if attributes_src["node"] and attributes_src["rules"]:
-        raise invalid_part(location_src, "Location has both node and rule")
+        raise invalid_part(
+            location_src, "Location constraint has both node and rule"
+        )
 
     role = None
     score = None
@@ -84,7 +86,9 @@ def _location(location_src: SrcDict) -> Dict[str, Any]:
             score_attribute = rule["options"]["score-attribute"]
 
     else:
-        raise invalid_part(location_src, "Location has neither node nor rule")
+        raise invalid_part(
+            location_src, "Location constraint has neither node nor rule"
+        )
 
     if role:
         location["resource"]["role"] = role
