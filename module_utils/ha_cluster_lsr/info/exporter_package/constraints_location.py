@@ -13,7 +13,7 @@ __metaclass__ = type
 
 from typing import Any, Dict, List
 
-from .constraint_options import create_option, to_options
+from .options import create_option, to_options
 from .wrap_src import SrcDict, invalid_part, wrap_src_for_rich_report
 
 

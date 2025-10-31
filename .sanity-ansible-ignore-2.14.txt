@@ -31,7 +31,7 @@ plugins/modules/ha_cluster_info.py import-3.5!skip
 plugins/modules/ha_cluster_info.py validate-modules:missing-gplv3-license
 plugins/module_utils/ha_cluster_lsr/info/loader.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/cluster_properties.py compile-2.7!skip
-plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraint_options.py compile-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/options.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_colocation.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_location.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_order.py compile-2.7!skip
@@ -49,7 +49,7 @@ plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py compile-3.
 plugins/module_utils/ha_cluster_lsr/info/exporter.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/loader.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/cluster_properties.py import-2.7!skip
-plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraint_options.py import-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/options.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_colocation.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_location.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_order.py import-2.7!skip
