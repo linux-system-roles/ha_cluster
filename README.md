@@ -1582,8 +1582,8 @@ Note that primitive resource operations are exported explicitly and
 `ha_cluster_resource_primitives.copy_operations_from_agent` is always set to
 false.
 
-Note that in `ha_cluster_constraints_location` is exported only the first rule
-and attribute `lifetime` is not exported (since the role does not support it).
+Note that only the first rule is exported in `ha_cluster_constraints_location`,  
+and attribute `lifetime` is not exported at all (since the role does not support it).
 
 Note that depending on pcs version installed on managed nodes, certain variables
 may not be present in the export.

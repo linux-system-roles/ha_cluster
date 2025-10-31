@@ -343,6 +343,7 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
         - name: Check exported configuration
           when:
             - __constraints_capability in __test_pcs_capabilities
