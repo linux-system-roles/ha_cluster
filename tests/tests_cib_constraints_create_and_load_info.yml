@@ -331,43 +331,56 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
-        - name: Run HA Cluster role
-          include_role:
-            name: linux-system-roles.ha_cluster
-            public: true
+        # Install pcs so we can read capabilities
+        - name: Install pcs
+          package:
+            name: pcs
+            state: present
+            use: >-
+              {{
+                (__ha_cluster_is_ostree | d(false))
+                  | ternary('ansible.posix.rhel_rpm_ostree', omit)
+              }}
 
         - name: Fetch cluster versions of cluster components
           include_tasks: tasks/fetch_versions.yml
           vars:
             with_cib_schema_version: true
 
-        - name: Check firewall and selinux state
-          include_tasks: tasks/check_firewall_selinux.yml
-
-        - name: Check exported configuration
+        - name: Create cluster, export it and check exported configuration
           when:
             - __constraints_capability in __test_pcs_capabilities
-          vars:
-            __test_exported_config:
-              ha_cluster_constraints_location: "{{ ha_cluster_facts.ha_cluster_constraints_location }}"
-              ha_cluster_constraints_colocation: "{{ ha_cluster_facts.ha_cluster_constraints_colocation }}"
-              ha_cluster_constraints_order: "{{ ha_cluster_facts.ha_cluster_constraints_order }}"
-              ha_cluster_constraints_ticket: "{{ ha_cluster_facts.ha_cluster_constraints_ticket }}"
-            __test_expected_config:
-              ha_cluster_constraints_location: "{{ ha_cluster_constraints_location }}"
-              ha_cluster_constraints_colocation: "{{ ha_cluster_constraints_colocation }}"
-              ha_cluster_constraints_order: "{{ ha_cluster_constraints_order }}"
-              ha_cluster_constraints_ticket: "{{ ha_cluster_constraints_ticket }}"
           block:
-            - name: Print exported configuration
-              debug:
-                var: __test_exported_config
+            - name: Run HA Cluster role
+              include_role:
+                name: linux-system-roles.ha_cluster
+                public: true
 
-            - name: Print expected configuration
-              debug:
-                var: __test_expected_config
+            - name: Check firewall and selinux state
+              include_tasks: tasks/check_firewall_selinux.yml
 
-            - name: Compare expected and exported configuration
-              assert:
-                that:
-                  - __test_exported_config == __test_expected_config
+            - name: Check exported configuration
+              vars:
+                __test_exported_config:
+                  ha_cluster_constraints_location: "{{ ha_cluster_facts.ha_cluster_constraints_location }}"
+                  ha_cluster_constraints_colocation: "{{ ha_cluster_facts.ha_cluster_constraints_colocation }}"
+                  ha_cluster_constraints_order: "{{ ha_cluster_facts.ha_cluster_constraints_order }}"
+                  ha_cluster_constraints_ticket: "{{ ha_cluster_facts.ha_cluster_constraints_ticket }}"
+                __test_expected_config:
+                  ha_cluster_constraints_location: "{{ ha_cluster_constraints_location }}"
+                  ha_cluster_constraints_colocation: "{{ ha_cluster_constraints_colocation }}"
+                  ha_cluster_constraints_order: "{{ ha_cluster_constraints_order }}"
+                  ha_cluster_constraints_ticket: "{{ ha_cluster_constraints_ticket }}"
+              block:
+                - name: Print exported configuration
+                  debug:
+                    var: __test_exported_config
+
+                - name: Print expected configuration
+                  debug:
+                    var: __test_expected_config
+
+                - name: Compare expected and exported configuration
+                  assert:
+                    that:
+                      - __test_exported_config == __test_expected_config
