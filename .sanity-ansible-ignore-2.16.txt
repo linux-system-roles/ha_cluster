@@ -27,8 +27,8 @@ plugins/module_utils/ha_cluster_lsr/info/exporter.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/__init__.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/cluster_properties.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/cluster_properties.py import-2.7!skip
-plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraint_options.py compile-2.7!skip
-plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraint_options.py import-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/options.py compile-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/options.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_colocation.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_colocation.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_location.py compile-2.7!skip
