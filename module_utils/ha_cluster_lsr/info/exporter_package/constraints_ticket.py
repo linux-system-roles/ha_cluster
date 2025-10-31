@@ -22,7 +22,7 @@ def _resource(ticket_src: SrcDict) -> Dict[str, Any]:
     if not ticket_src["resource_id"]:
         raise invalid_part(
             ticket_src,
-            "Ticket is missing resource_id",
+            "Ticket constraint is missing resource_id",
         )
 
     resource = {"id": ticket_src["resource_id"]}
@@ -63,7 +63,9 @@ def _ticket(ticket_src: SrcDict) -> Dict[str, Any]:
 
 def _ticket_set(ticket_set_src: SrcDict) -> Dict[str, Any]:
     if not ticket_set_src["resource_sets"]:
-        raise invalid_part(ticket_set_src, "Ticket is missing resource_sets")
+        raise invalid_part(
+            ticket_set_src, "Ticket constraint is missing resource_sets"
+        )
 
     _ensure_ticket_attr(ticket_set_src)
 

@@ -231,7 +231,7 @@ class ExportOrderConstraints(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/order/0",
-                issue_desc="Order is missing first_resource_id",
+                issue_desc="Order constraint is missing first_resource_id",
             ),
         )
 
@@ -264,7 +264,7 @@ class ExportOrderConstraints(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/order/0",
-                issue_desc="Order is missing then_resource_id",
+                issue_desc="Order constraint is missing then_resource_id",
             ),
         )
 
@@ -292,7 +292,7 @@ class ExportOrderConstraints(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/order_set/0",
-                issue_desc="Order is missing resource_sets",
+                issue_desc="Order constraint is missing resource_sets",
             ),
         )
 

@@ -22,7 +22,7 @@ def _leader(colocation_src: SrcDict) -> Dict[str, Any]:
     if not colocation_src["with_resource_id"]:
         raise invalid_part(
             colocation_src,
-            "Colocation is missing with_resource_id",
+            "Colocation constraint is missing with_resource_id",
         )
 
     resource = {"id": colocation_src["with_resource_id"]}
@@ -37,7 +37,7 @@ def _follower(colocation_src: SrcDict) -> Dict[str, Any]:
     if not colocation_src["resource_id"]:
         raise invalid_part(
             colocation_src,
-            "Colocation is missing resource_id",
+            "Colocation constraint is missing resource_id",
         )
 
     resource = {"id": colocation_src["resource_id"]}
@@ -77,7 +77,7 @@ def _colocation_set(colocation_set_src: SrcDict) -> Dict[str, Any]:
     if not colocation_set_src["resource_sets"]:
         raise invalid_part(
             colocation_set_src,
-            "Colocation is missing resource_sets",
+            "Colocation constraint is missing resource_sets",
         )
 
     colocation_set = {

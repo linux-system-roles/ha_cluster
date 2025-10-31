@@ -220,7 +220,7 @@ class ExportLocationConstraintsLocation(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/location/0",
-                issue_desc="Location has neither node nor rule",
+                issue_desc="Location constraint has neither node nor rule",
             ),
         )
 
@@ -257,7 +257,7 @@ class ExportLocationConstraintsLocation(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/location/0",
-                issue_desc="Location has both node and rule",
+                issue_desc="Location constraint has both node and rule",
             ),
         )
 
@@ -288,7 +288,7 @@ class ExportLocationConstraintsLocation(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/location/0",
-                issue_desc="Location has neither resource_id nor resource_pattern",
+                issue_desc="Location constraint has neither resource_id nor resource_pattern",
             ),
         )
 
@@ -319,6 +319,6 @@ class ExportLocationConstraintsLocation(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/location/0",
-                issue_desc="Location has neither resource_id nor resource_pattern",
+                issue_desc="Location constraint has neither resource_id nor resource_pattern",
             ),
         )
