@@ -266,8 +266,8 @@ class ExportLocationConstraintsLocation(TestCase):
             **EMPTY_CONSTRAINTS,
             "location": [
                 {
-                    "resource_id": None,
-                    "resource_pattern": None,
+                    "resource_id": "x",
+                    "resource_pattern": "y",
                     "role": None,
                     "attributes": {
                         "constraint_id": "location-resource1-INFINITY",
@@ -288,7 +288,7 @@ class ExportLocationConstraintsLocation(TestCase):
                 data=constraints_data,
                 data_desc="constraints configuration",
                 issue_location="/location/0",
-                issue_desc="Location constraint has neither resource_id nor resource_pattern",
+                issue_desc="Location constraint has both resource_id and resource_pattern",
             ),
         )
 
