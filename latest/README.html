@@ -364,6 +364,7 @@ lost.</li>
 <li>Pacemaker cluster properties</li>
 <li>stonith and resources</li>
 <li>resource defaults and resource operation defaults</li>
+<li>resource constraints</li>
 </ul></li>
 </ul>
 <h1 id="requirements">Requirements</h1>
@@ -1903,6 +1904,10 @@ href="#ha_cluster_hacluster_password"><code>ha_cluster_hacluster_password</code>
 <p>Note that primitive resource operations are exported explicitly and
 <code>ha_cluster_resource_primitives.copy_operations_from_agent</code>
 is always set to false.</p>
+<p>Note that only the first rule is exported in
+<code>ha_cluster_constraints_location</code>,<br />
+and attribute <code>lifetime</code> is not exported at all (since the
+role does not support it).</p>
 <p>Note that depending on pcs version installed on managed nodes,
 certain variables may not be present in the export.</p>
 <ul>
@@ -1955,6 +1960,14 @@ href="#ha_cluster_cluster_properties"><code>ha_cluster_cluster_properties</code>
 href="#ha_cluster_resource_defaults"><code>ha_cluster_resource_defaults</code></a></li>
 <li><a
 href="#ha_cluster_resource_operation_defaults"><code>ha_cluster_resource_operation_defaults</code></a></li>
+<li><a
+href="#ha_cluster_constraints_location"><code>ha_cluster_constraints_location</code></a></li>
+<li><a
+href="#ha_cluster_constraints_colocation"><code>ha_cluster_constraints_colocation</code></a></li>
+<li><a
+href="#ha_cluster_constraints_order"><code>ha_cluster_constraints_order</code></a></li>
+<li><a
+href="#ha_cluster_constraints_ticket"><code>ha_cluster_constraints_ticket</code></a></li>
 </ul></li>
 <li><p>Following variables are never present in the export (consult the
 role documentation for impact of the variables missing when running the
