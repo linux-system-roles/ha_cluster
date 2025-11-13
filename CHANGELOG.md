@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.27.0] - 2025-11-13
+--------------------
+
+### New Features
+
+- feat: export cluster constraints (#326)
+
+### Other Changes
+
+- ci: bump github/codeql-action from 3 to 4 (#323)
+- ci: bump actions/upload-artifact from 4 to 5 (#324)
+- ci: use versioned upload-artifact instead of master; bump codeql-action to v4; bump upload-artifact to v5 (#325)
+- ci: bump tox-lsr to 3.13.0 (#327)
+- ci: bump tox-lsr to 3.14.0 - this moves standard-inventory-qcow2 to tox-lsr (#328)
+
 [1.26.0] - 2025-10-21
 --------------------
 
