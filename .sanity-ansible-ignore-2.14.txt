@@ -67,3 +67,11 @@ plugins/module_utils/ha_cluster_lsr/info/exporter_package/corosync_conf.py impor
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resources.py import-3.5!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/various.py import-3.5!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/cluster_properties.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_colocation.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_location.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_order.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_ticket.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/options.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_defaults.py import-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_set.py import-3.5!skip
