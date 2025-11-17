@@ -1,6 +1,17 @@
 Changelog
 =========
 
+[1.27.1] - 2025-11-17
+--------------------
+
+### Bug Fixes
+
+- fix: cannot use community-general version 12 - no py27 and py36 support (#330)
+
+### Other Changes
+
+- test: fix ansible-test import 3.5 issues on ansible-core 2.14 (#331)
+
 [1.27.0] - 2025-11-13
 --------------------
 
