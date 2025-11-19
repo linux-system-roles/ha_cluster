@@ -208,7 +208,7 @@ tf_tests:
         testing-farm cancel "$REQUEST_ID"; \
       fi
   tags:
-    - "shared-podman"
+    - $SHARED_RUNNER_TAG
   artifacts:
     name: "ha_cluster-${CI_COMMIT_SHORT_SHA}-${TF_COMPOSE}"
     expire_in: 1 week
