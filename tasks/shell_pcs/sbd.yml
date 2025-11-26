@@ -151,6 +151,19 @@
           == 'running' }}"
   block:
     - name: Set stonith-watchdog-timeout cluster property in CIB
+      # Original name of the cluster property is 'stonith-watchdog-timeout'. In
+      # pacemaker feature set 3.20.5 (at the time of writing this comment it
+      # hasn't been released in any pacemaker version yet), it was renamed to
+      # 'fencing-watchdog-timeout', while the original property is still kept
+      # as deprecated.
+      #
+      # Setting both properties is safe:
+      # - old pacemaker ignores the new property, no issues are caused by
+      #   setting it
+      # - new pacemaker ignores the old property (if the new one is set), no
+      #   issues are caused by setting it
+      # - both properties are set to the same value for the new pacemaker
+      #   preventing inconsistencies
       command:
         cmd: >
           pcs --force
@@ -158,6 +171,8 @@
             pacemaker_running | ternary('', '-f /var/lib/pacemaker/cib/cib.xml')
           }}
           -- property set
+          fencing-watchdog-timeout={{
+            ha_cluster_sbd_enabled | ternary('', '0') }}
           stonith-watchdog-timeout={{
             ha_cluster_sbd_enabled | ternary('', '0') }}
       changed_when: true
