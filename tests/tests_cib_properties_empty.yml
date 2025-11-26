@@ -64,6 +64,8 @@
               ha_cluster_cluster_name: test-cluster
               ha_cluster_cluster_properties:
                 - attrs:
+                    - name: fencing-watchdog-timeout
+                      value: "0"
                     - name: stonith-watchdog-timeout
                       value: "0"
               ha_cluster_start_on_boot: true

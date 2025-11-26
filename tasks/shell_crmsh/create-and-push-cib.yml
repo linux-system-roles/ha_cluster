@@ -91,7 +91,8 @@
         @name="dc-version" or
         @name="have-watchdog" or
         @name="last-lrm-refresh" or
-        @name="stonith-watchdog-timeout"
+        @name="stonith-watchdog-timeout" or
+        @name="fencing-watchdog-timeout"
       )]'
   environment:
     CIB_file: "{{ __ha_cluster_tempfile_cib_xml.path }}"

@@ -76,10 +76,16 @@
               {{
                 (__properties_capability in __test_pcs_capabilities) | ternary({
                   "ha_cluster_cluster_properties": [{
-                    "attrs": [{
-                      "name": "stonith-watchdog-timeout",
-                      "value": "0"
-                    }]
+                    "attrs": [
+                      {
+                        "name": "fencing-watchdog-timeout",
+                        "value": "0"
+                      },
+                      {
+                        "name": "stonith-watchdog-timeout",
+                        "value": "0"
+                      },
+                    ]
                   }]
                 }, {})
               }}
