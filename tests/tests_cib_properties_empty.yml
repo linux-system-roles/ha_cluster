@@ -28,8 +28,6 @@
 
         - name: Fetch versions of cluster components
           include_tasks: tasks/fetch_versions.yml
-          vars:
-            with_cib_schema_version: true
 
         - name: Fetch cluster properties configuration from the cluster
           command:

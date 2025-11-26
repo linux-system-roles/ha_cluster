@@ -344,8 +344,6 @@
 
         - name: Fetch cluster versions of cluster components
           include_tasks: tasks/fetch_versions.yml
-          vars:
-            with_cib_schema_version: true
 
         - name: Create cluster, export it and check exported configuration
           when:
