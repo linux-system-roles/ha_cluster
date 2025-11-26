@@ -92,7 +92,7 @@
               debug:
                 var: __test_expected_lines | list
 
-            - name: Check node attributes configuration
+            - name: Check acl configuration
               assert:
                 that:
                   - __test_pcs_acl_config.stdout_lines
