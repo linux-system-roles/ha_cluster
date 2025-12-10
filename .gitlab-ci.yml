@@ -97,7 +97,7 @@ variables:
   rules:
     - if: $COMPOSE_NAME == "Rhel10Next"
       variables:
-        TF_COMPOSE: RHEL-10-Nightly
+        TF_COMPOSE: RHEL-10.2-Nightly
         TMT_DEVELOPMENT: true
         TMT_DISTRO: rhel-10.2
         PCS_BRANCH: "main"
@@ -106,15 +106,15 @@ variables:
           job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
     - if: $COMPOSE_NAME == "Rhel10CurrentRelease"
       variables:
-        TF_COMPOSE: RHEL-10.0-Nightly
-        TMT_DISTRO: rhel-10.0
+        TF_COMPOSE: RHEL-10.1-Nightly
+        TMT_DISTRO: rhel-10.1
         PCS_BRANCH: "main"
         PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
           artifacts/${PCS_BRANCH}/download?\
           job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
     - if: $COMPOSE_NAME == "Rhel9Next"
       variables:
-        TF_COMPOSE: RHEL-9-Nightly
+        TF_COMPOSE: RHEL-9.8.0-Nightly
         TMT_DEVELOPMENT: true
         TMT_DISTRO: rhel-9.8
         PCS_BRANCH: "pcs-0.11"
@@ -123,15 +123,15 @@ variables:
           job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
     - if: $COMPOSE_NAME == "Rhel9CurrentRelease"
       variables:
-        TF_COMPOSE: RHEL-9.6.0-Nightly
-        TMT_DISTRO: rhel-9.6
+        TF_COMPOSE: RHEL-9.7.0-Nightly
+        TMT_DISTRO: rhel-9.7
         PCS_BRANCH: "pcs-0.11"
         PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
           artifacts/${PCS_BRANCH}/download?\
           job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
     - if: $COMPOSE_NAME == "Rhel8Next"
       variables:
-        TF_COMPOSE: RHEL-8-Nightly
+        TF_COMPOSE: RHEL-8.10.0-Nightly
         TMT_DEVELOPMENT: true
         TMT_DISTRO: rhel-8.10
         PCS_BRANCH: "pcs-0.10"
