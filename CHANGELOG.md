@@ -1,6 +1,21 @@
 Changelog
 =========
 
+[1.28.0] - 2025-12-17
+--------------------
+
+### New Features
+
+- feat: add support for fencing-watchdog-timeout (#335)
+
+### Other Changes
+
+- ci: define job tag by a gitlab variable (#333)
+- ci: introduce ansible-test ignore file for version 2.20 (#334)
+- ci: bump gha checkout from v5 to v6 (#336)
+- ci: add qemu tests for Fedora 43, drop Fedora 41 (#337)
+- ci: update test composes (#338)
+
 [1.27.1] - 2025-11-17
 --------------------
 
