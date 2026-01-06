@@ -7,6 +7,9 @@
     _required_capability: corosync.quorum.device.model.net.options_tls_and_kaptb
 
   tasks:
+    - name: Skip test in bootc mode
+      include_tasks: tasks/skip_if_bootc.yml
+
     - name: Set qnetd address
       set_fact:
         __test_qnetd_address: "{{
@@ -37,7 +40,9 @@
       include_tasks: tasks/fetch_versions.yml
 
     - name: Run test
-      tags: tests::verify
+      tags:
+        - tests::booted
+        - tests::verify
       include_tasks: template_qdevice.yml
       when:
         - _required_capability in __test_pcs_capabilities
