@@ -19,8 +19,13 @@
 
   tasks:
     - name: Run test
-      tags: tests::verify
+      tags:
+        - tests::booted
+        - tests::verify
       block:
+        - name: Skip test in bootc mode
+          include_tasks: tasks/skip_if_bootc.yml
+
         - name: Create temp directory for secrets
           tempfile:
             state: directory

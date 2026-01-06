@@ -40,10 +40,14 @@ test: tmt/tests/run_tier1_test.sh
 
 /mixed:
   tag+: [mixed]
+  /bootc_e2e_cluster:
+  /bootc_e2e_qnetd:
   /default:
   /export_doesnt_destroy_cluster:
   /export_firewall_selinux:
   /node_options_check:
+  /not_booted_cluster:
+  /not_booted_qnetd:
   /pcs_permissions:
   /qdevice_all_options:
   /qdevice_minimal:

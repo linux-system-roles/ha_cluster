@@ -11,8 +11,13 @@
 
   tasks:
     - name: Run test
-      tags: tests::verify
+      tags:
+        - tests::booted
+        - tests::verify
       block:
+        - name: Skip test in bootc mode
+          include_tasks: tasks/skip_if_bootc.yml
+
         - name: Remove pcsd TLS certificate and key files
           file:
             path: "{{ item }}"

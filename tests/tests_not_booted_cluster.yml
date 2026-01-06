@@ -1,0 +1,143 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Simulate running at image-build time - cluster
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    # Switch the role to bootc mode to test it even on booted systems
+    __ha_cluster_is_booted: false
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Skip test on ostree systems
+          meta: end_host
+          when: __ha_cluster_is_ostree | d(false)
+
+        # Ensure correct test environment - stopped, disabled and not installed
+        # cluster services. This is needed in case multiple tests are run on
+        # the same machine in sequence.
+        - name: Get services status
+          include_tasks: tasks/handle_service_facts.yml
+
+        - name: Ensure cluster daemons are stopped and disabled
+          service:
+            name: "{{ item }}"
+            state: "{{ 'stopped' if __test_is_booted else omit }}"
+            enabled: false
+          when: item in __test_service_facts
+          loop:
+            - pacemaker.service
+            - corosync-qdevice.service
+            - corosync.service
+            - pcsd.service
+
+        # dnf ansible module internally automatically sets 'allowerasing: true'
+        # when 'state' is set to 'absent'. This allows dnf to remove packages
+        # which depend on the packages listed in the task. dnf5 ansible module
+        # never sets 'allowerasing: true' automatically. This leads to a
+        # dependency error and the task fails.
+        # Ansible documentation states that all arguments of the package module
+        # are passed to the underlying OS-specific module:
+        # https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/package_module.html
+        # Therefore, we could set 'allowerasing' despite it's not documented for
+        # the 'package' module. This would resolve the dependency errors.
+        # However, the dnf module doesn't accept the 'allowerasing' option in
+        # ansible older than 2.10. Therefore, our only option is to list
+        # dependent packages as long as we support ansible 2.9.
+        # That's why pcs-snmp and pcs-web-ui are listed here.
+        - name: Ensure cluster packages are not installed
+          package:
+            name:
+              - pcs
+              - pcs-snmp
+              - pcs-web-ui
+              - pacemaker
+              - corosync
+            state: absent
+
+        - name: Ensure that config files, keys and certificates are not present
+          file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - /etc/corosync/corosync.conf
+            - /etc/corosync/authkey
+            - /etc/pacemaker/authkey
+            - /etc/cluster/fence_xvm.key
+            - /var/lib/pcsd/pcsd.key
+            - /var/lib/pcsd/pcsd.crt
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Get packages status
+          package_facts:
+
+        - name: Check installed packages
+          assert:
+            that:
+              - "'corosync' in ansible_facts.packages"
+              - "'pacemaker' in ansible_facts.packages"
+              - "'pcs' in ansible_facts.packages"
+
+        - name: Get services status again
+          include_tasks: tasks/handle_service_facts.yml
+
+        - name: Check services status
+          assert:
+            that:
+              - __test_service_facts["pcsd.service"].status == "disabled"
+              - __test_service_facts["pcsd.service"].state == "inactive"
+              - __test_service_facts["corosync.service"].status == "disabled"
+              - __test_service_facts["corosync.service"].state == "inactive"
+              - __test_service_facts["pacemaker.service"].status == "disabled"
+              - __test_service_facts["pacemaker.service"].state == "inactive"
+
+        - name: Stat corosync config
+          stat:
+            path: /etc/corosync/corosync.conf
+          register: stat_corosync_conf
+
+        - name: Stat corosync authkey
+          stat:
+            path: /etc/corosync/authkey
+          register: stat_corosync_key
+
+        - name: Stat pacemaker authkey
+          stat:
+            path: /etc/pacemaker/authkey
+          register: stat_pacemaker_key
+
+        - name: Stat fence-virt authkey
+          stat:
+            path: /etc/cluster/fence_xvm.key
+          register: stat_fence_xvm_key
+
+        - name: Stat pcsd TLS certificate
+          stat:
+            path: /var/lib/pcsd/pcsd.crt
+          register: stat_pcsd_cert
+
+        - name: Stat pcsd TLS key
+          stat:
+            path: /var/lib/pcsd/pcsd.key
+          register: stat_pcsd_key
+
+        - name: Check that config files, keys and certificates are not present
+          assert:
+            that:
+              - not stat_corosync_conf.stat.exists
+              - not stat_corosync_key.stat.exists
+              - not stat_pacemaker_key.stat.exists
+              - not stat_fence_xvm_key.stat.exists
+              - not stat_pcsd_cert.stat.exists
+              - not stat_pcsd_key.stat.exists
