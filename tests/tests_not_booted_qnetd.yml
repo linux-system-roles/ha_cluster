@@ -1,0 +1,82 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Simulate running at image-build time - qnetd
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    __ha_cluster_is_booted: false
+    ha_cluster_cluster_present: false
+    ha_cluster_qnetd:
+      present: true
+      start_on_boot: true
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Skip test on ostree systems
+          meta: end_host
+          when: __ha_cluster_is_ostree | d(false)
+
+        - name: Get services status
+          service_facts:
+
+        - name: Ensure cluster daemons are stopped and disabled
+          service:
+            name: "{{ item }}"
+            state: stopped  # noqa no-handler
+            enabled: false
+          when:
+            - item in ansible_facts.services
+          loop:
+            - corosync-qnetd.service
+
+        - name: Ensure cluster packages are not installed
+          package:
+            name:
+              - corosync-qnetd
+            state: absent
+
+        - name: Ensure that config files, keys and certificates are not present
+          file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - /etc/corosync/qnetd/nssdb
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Get packages status
+          package_facts:
+
+        - name: Check installed packages
+          assert:
+            that:
+              - "'corosync-qnetd' in ansible_facts.packages"
+
+        - name: Get services status
+          service_facts:
+
+        - name: Check services status
+          assert:
+            that:
+              - ansible_facts.services["corosync-qnetd.service"].status == "disabled"
+              - ansible_facts.services["corosync-qnetd.service"].state == "inactive"
+
+        - name: Stat corosync-qnetd config
+          stat:
+            path: /etc/corosync/qnetd/nssdb
+          register: stat_corosync_qnetd
+
+        - name: Check that config files, keys and certificates are not present
+          assert:
+            that:
+              - not stat_corosync_qnetd.stat.exists

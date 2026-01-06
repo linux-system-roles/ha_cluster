@@ -40,6 +40,8 @@ An Ansible role for managing High Availability Clustering.
   * stonith and resources
   * resource defaults and resource operation defaults
   * resource constraints
+* The role can be used to configure a non-running container or VM image.
+  However, in this mode, the role is limited to only install cluster packages.
 
 ## Requirements
 
@@ -188,6 +190,9 @@ string, no default - must be specified
 Password of the `hacluster` user. This user has full access to a cluster. It is
 recommended to vault encrypt the value, see
 <https://docs.ansible.com/ansible/latest/user_guide/vault.html> for details.
+
+This variable is optional if the role is used to configure a non-running
+container or VM image.
 
 #### `ha_cluster_hacluster_qdevice_password`
 
@@ -1582,8 +1587,9 @@ Note that primitive resource operations are exported explicitly and
 `ha_cluster_resource_primitives.copy_operations_from_agent` is always set to
 false.
 
-Note that only the first rule is exported in `ha_cluster_constraints_location`,  
-and attribute `lifetime` is not exported at all (since the role does not support it).
+Note that only the first rule is exported in `ha_cluster_constraints_location`,
+and attribute `lifetime` is not exported at all (since the role does not support
+it).
 
 Note that depending on pcs version installed on managed nodes, certain variables
 may not be present in the export.

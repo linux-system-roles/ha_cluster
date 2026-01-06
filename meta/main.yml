@@ -15,6 +15,7 @@ galaxy_info:
         - "8"
         - "9"
   galaxy_tags:
+    - containerbuild
     - corosync
     - el8
     - el9

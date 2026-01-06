@@ -1,0 +1,124 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Simulate running at image-build time - cluster
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    __ha_cluster_is_booted: false
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Skip test on ostree systems
+          meta: end_host
+          when: __ha_cluster_is_ostree | d(false)
+
+        - name: Get services status
+          service_facts:
+
+        - name: Ensure cluster daemons are stopped and disabled
+          service:
+            name: "{{ item }}"
+            state: stopped  # noqa no-handler
+            enabled: false
+          when:
+            - item in ansible_facts.services
+          loop:
+            - pacemaker.service
+            - corosync-qdevice.service
+            - corosync.service
+            - pcsd.service
+
+        - name: Ensure cluster packages are not installed
+          package:
+            name:
+              - pcs
+              - pacemaker
+              - corosync
+            state: absent
+
+        - name: Ensure that config files, keys and certificates are not present
+          file:
+            path: "{{ item }}"
+            state: absent
+          loop:
+            - /etc/corosync/corosync.conf
+            - /etc/corosync/authkey
+            - /etc/pacemaker/authkey
+            - /etc/cluster/fence_xvm.key
+            - /var/lib/pcsd/pcsd.key
+            - /var/lib/pcsd/pcsd.crt
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Get packages status
+          package_facts:
+
+        - name: Check installed packages
+          assert:
+            that:
+              - "'corosync' in ansible_facts.packages"
+              - "'pacemaker' in ansible_facts.packages"
+              - "'pcs' in ansible_facts.packages"
+
+        - name: Get services status
+          service_facts:
+
+        - name: Check services status
+          assert:
+            that:
+              - ansible_facts.services["pcsd.service"].status == "disabled"
+              - ansible_facts.services["pcsd.service"].state == "inactive"
+              - ansible_facts.services["corosync.service"].status == "disabled"
+              - ansible_facts.services["corosync.service"].state == "inactive"
+              - ansible_facts.services["pacemaker.service"].status == "disabled"
+              - ansible_facts.services["pacemaker.service"].state == "inactive"
+
+        - name: Stat corosync config
+          stat:
+            path: /etc/corosync/corosync.conf
+          register: stat_corosync_conf
+
+        - name: Stat corosync authkey
+          stat:
+            path: /etc/corosync/authkey
+          register: stat_corosync_key
+
+        - name: Stat pacemaker authkey
+          stat:
+            path: /etc/pacemaker/authkey
+          register: stat_pacemaker_key
+
+        - name: Stat fence-virt authkey
+          stat:
+            path: /etc/cluster/fence_xvm.key
+          register: stat_fence_xvm_key
+
+        - name: Stat pcsd TLS certificate
+          stat:
+            path: /var/lib/pcsd/pcsd.crt
+          register: stat_pcsd_cert
+
+        - name: Stat pcsd TLS key
+          stat:
+            path: /var/lib/pcsd/pcsd.key
+          register: stat_pcsd_key
+
+        - name: Check that config files, keys and certificates are not present
+          assert:
+            that:
+              - not stat_corosync_conf.stat.exists
+              - not stat_corosync_key.stat.exists
+              - not stat_pacemaker_key.stat.exists
+              - not stat_fence_xvm_key.stat.exists
+              - not stat_pcsd_cert.stat.exists
+              - not stat_pcsd_key.stat.exists
