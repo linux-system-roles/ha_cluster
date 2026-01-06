@@ -61,6 +61,8 @@
       when:
         - lookup("vars", item, default="") | string | length < 1
         - ha_cluster_cluster_present | bool
+        # passwords will not be set when the role runs at image-build time
+        - __ha_cluster_is_booted | bool
       loop:
         - ha_cluster_hacluster_password
       run_once: true

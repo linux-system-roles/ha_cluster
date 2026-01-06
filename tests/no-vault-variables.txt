@@ -1,1 +1,3 @@
 tests_default.yml
+tests_not_booted_cluster.yml
+tests_not_booted_qnetd.yml

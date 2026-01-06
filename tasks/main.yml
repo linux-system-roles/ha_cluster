@@ -18,13 +18,16 @@
     use: "{{ (__ha_cluster_is_ostree | d(false)) |
              ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
+- name: Check and prepare role variables
+  include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml  # yamllint disable-line rule:line-length
+  when:
+    - ha_cluster_cluster_present is not none or ha_cluster_qnetd is not none
+
 - name: Preconfigure hosts
   when:
     - ha_cluster_cluster_present is not none or ha_cluster_qnetd is not none
+    -  __ha_cluster_is_booted | bool
   block:
-    - name: Check and prepare role variables
-      include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/check-and-prepare-role-variables.yml  # yamllint disable-line rule:line-length
-
     # The user is created by installing pacemaker packages. We just need to set
     # the password.
     - name: Provide a password for the hacluster user
@@ -60,29 +63,32 @@
         - name: Configure selinux
           include_tasks: selinux.yml
 
-- name: Install and configure HA cluster
+- name: Install cluster packages
   when: ha_cluster_cluster_present | bool
-  block:
-    - name: Install cluster packages
-      package:
-        name: "{{
-          __ha_cluster_fullstack_node_packages
-          +
-          __ha_cluster_qdevice_in_use |
-            ternary(__ha_cluster_qdevice_node_packages, [])
-          +
-          ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
-          +
-          ha_cluster_install_cloud_agents |
-            ternary(__ha_cluster_cloud_agents_packages[ansible_facts['architecture']]
-                | d(__ha_cluster_cloud_agents_packages['noarch'] | d([])),
-              [])
-          +
-          ha_cluster_fence_agent_packages }}"
-        state: "{{ 'latest' if ha_cluster_use_latest_packages else 'present' }}"
-        use: "{{ (__ha_cluster_is_ostree | d(false)) |
-                 ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
+  package:
+    name: "{{
+      __ha_cluster_fullstack_node_packages
+      +
+      __ha_cluster_qdevice_in_use |
+        ternary(__ha_cluster_qdevice_node_packages, [])
+      +
+      ha_cluster_sbd_enabled | ternary(__ha_cluster_sbd_packages, [])
+      +
+      ha_cluster_install_cloud_agents |
+        ternary(__ha_cluster_cloud_agents_packages[ansible_facts['architecture']]
+            | d(__ha_cluster_cloud_agents_packages['noarch'] | d([])),
+          [])
+      +
+      ha_cluster_fence_agent_packages }}"
+    state: "{{ 'latest' if ha_cluster_use_latest_packages else 'present' }}"
+    use: "{{ (__ha_cluster_is_ostree | d(false)) |
+             ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
+- name: Configure cluster
+  when:
+    - ha_cluster_cluster_present | bool
+    -  __ha_cluster_is_booted | bool
+  block:
     - name: Distribute fence-virt authkey
       include_tasks: distribute-fence-virt-key.yml
       when:
@@ -121,6 +127,7 @@
   when:
     - ha_cluster_cluster_present is not none
     - not ha_cluster_cluster_present
+    -  __ha_cluster_is_booted | bool
   block:
     - name: Remove cluster configuration
       include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/cluster-destroy.yml
@@ -131,13 +138,16 @@
         state: absent
 
 - name: Configure qnetd
-  when: ha_cluster_qnetd is not none
+  when:
+    - ha_cluster_qnetd is not none
+    -  __ha_cluster_is_booted | bool
   include_tasks: shell_{{ ha_cluster_pacemaker_shell }}/pcs-qnetd.yml
 
 - name: Export configuration
   when:
     - ha_cluster_export_configuration | bool
     - ha_cluster_pacemaker_shell == "pcs"
+    -  __ha_cluster_is_booted | bool
   block:
     - name: Fetch configuration
       ha_cluster_info:

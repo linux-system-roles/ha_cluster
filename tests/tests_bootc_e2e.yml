@@ -1,0 +1,36 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Bootc end-to-end test
+  hosts: all
+  vars_files: vars/main.yml
+  tags:
+    - tests::bootc-e2e
+
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      block:
+        - name: Skip test if not running in an image building environment
+          meta: end_host
+          when: ansible_connection | d("") != "buildah"
+
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Run HA Cluster role
+          include_role:
+            name: linux-system-roles.ha_cluster
+            public: true
+
+        - name: Get packages status
+          package_facts:
+
+        - name: Check installed packages
+          assert:
+            that:
+              - "'corosync' in ansible_facts.packages"
+              - "'corosync-qnetd' in ansible_facts.packages"
+              - "'pacemaker' in ansible_facts.packages"
+              - "'pcs' in ansible_facts.packages"
