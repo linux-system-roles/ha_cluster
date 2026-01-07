@@ -12,21 +12,7 @@
   when: ansible_play_hosts_all | length == 1
 
 - name: Ensure facts used by tests
-  setup:
-    gather_subset: min
-  when: "'distribution' not in ansible_facts"
-
-- name: Determine if system is ostree and set flag
-  when: not __ha_cluster_is_ostree is defined
-  block:
-    - name: Check if system is ostree
-      stat:
-        path: /run/ostree-booted
-      register: __ostree_booted_stat
-
-    - name: Set flag to indicate system is ostree
-      set_fact:
-        __ha_cluster_is_ostree: "{{ __ostree_booted_stat.stat.exists }}"
+  include_tasks: tasks/set_vars.yml
 
 # Test systems may not have repositories available through subscriptions
 - name: Do not try to enable RHEL repositories

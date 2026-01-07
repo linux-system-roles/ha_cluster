@@ -3,9 +3,6 @@
 - name: Simulate running at image-build time - cluster
   hosts: all
   vars_files: vars/main.yml
-  vars:
-    __ha_cluster_is_booted: false
-
   tasks:
     - name: Run test
       tags: tests::verify
@@ -20,15 +17,16 @@
           when: __ha_cluster_is_ostree | d(false)
 
         - name: Get services status
-          service_facts:
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: handle_service_facts.yml
 
         - name: Ensure cluster daemons are stopped and disabled
           service:
             name: "{{ item }}"
-            state: stopped  # noqa no-handler
+            state: "{{ 'stopped' if __ha_cluster_is_booted else omit }}"
             enabled: false
-          when:
-            - item in ansible_facts.services
+          when: item in __ha_cluster_service_facts
           loop:
             - pacemaker.service
             - corosync-qdevice.service
@@ -70,18 +68,20 @@
               - "'pacemaker' in ansible_facts.packages"
               - "'pcs' in ansible_facts.packages"
 
-        - name: Get services status
-          service_facts:
+        - name: Get services status again
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: handle_service_facts.yml
 
         - name: Check services status
           assert:
             that:
-              - ansible_facts.services["pcsd.service"].status == "disabled"
-              - ansible_facts.services["pcsd.service"].state == "inactive"
-              - ansible_facts.services["corosync.service"].status == "disabled"
-              - ansible_facts.services["corosync.service"].state == "inactive"
-              - ansible_facts.services["pacemaker.service"].status == "disabled"
-              - ansible_facts.services["pacemaker.service"].state == "inactive"
+              - __ha_cluster_service_facts["pcsd.service"].status == "disabled"
+              - __ha_cluster_service_facts["pcsd.service"].state == "inactive"
+              - __ha_cluster_service_facts["corosync.service"].status == "disabled"
+              - __ha_cluster_service_facts["corosync.service"].state == "inactive"
+              - __ha_cluster_service_facts["pacemaker.service"].status == "disabled"
+              - __ha_cluster_service_facts["pacemaker.service"].state == "inactive"
 
         - name: Stat corosync config
           stat:

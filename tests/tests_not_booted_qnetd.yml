@@ -4,7 +4,6 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
-    __ha_cluster_is_booted: false
     ha_cluster_cluster_present: false
     ha_cluster_qnetd:
       present: true
@@ -24,15 +23,16 @@
           when: __ha_cluster_is_ostree | d(false)
 
         - name: Get services status
-          service_facts:
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: handle_service_facts.yml
 
         - name: Ensure cluster daemons are stopped and disabled
           service:
             name: "{{ item }}"
-            state: stopped  # noqa no-handler
+            state: "{{ 'stopped' if __ha_cluster_is_booted else omit }}"
             enabled: false
-          when:
-            - item in ansible_facts.services
+          when: item in __ha_cluster_service_facts
           loop:
             - corosync-qnetd.service
 
@@ -62,14 +62,16 @@
             that:
               - "'corosync-qnetd' in ansible_facts.packages"
 
-        - name: Get services status
-          service_facts:
+        - name: Get services status again
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: handle_service_facts.yml
 
         - name: Check services status
           assert:
             that:
-              - ansible_facts.services["corosync-qnetd.service"].status == "disabled"
-              - ansible_facts.services["corosync-qnetd.service"].state == "inactive"
+              - __ha_cluster_service_facts["corosync-qnetd.service"].status == "disabled"
+              - __ha_cluster_service_facts["corosync-qnetd.service"].state == "inactive"
 
         - name: Stat corosync-qnetd config
           stat:
