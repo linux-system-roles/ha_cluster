@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Populate service facts
-  include_tasks: tasks/handle_service_facts.yml
+  service_facts:
 
 - name: Manage SELinux
   when:

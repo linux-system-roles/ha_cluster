@@ -1,6 +1,6 @@
 # service_facts: does not work in bootc mode, and there is no
 # way to update ansible_facts.services otherwise.  Create
-# a variable __ha_cluster_service_facts that has the same information
+# a variable __test_service_facts that has the same information
 # as ansible_facts.services.
 # Q: Why not just update ansible_facts.services?
 # A: ansible_facts is a very special variable that is not meant to be updated except
@@ -10,29 +10,29 @@
 ---
 - name: Handle service facts for booted systems
   service_facts:
-  when: __ha_cluster_is_booted | d(true)
+  when: __test_is_booted | d(true)
 
-- name: Set __ha_cluster_service_facts for booted systems
+- name: Set __test_service_facts for booted systems
   set_fact:
-    __ha_cluster_service_facts: "{{ ansible_facts.services }}"
-  when: __ha_cluster_is_booted | d(true)
+    __test_service_facts: "{{ ansible_facts.services }}"
+  when: __test_is_booted | d(true)
 
 - name: Update ansible_facts.services for bootc mode
-  when: not __ha_cluster_is_booted | d(false)
+  when: not __test_is_booted | d(false)
   block:
     - name: Populate service facts when in bootc mode
       command: systemctl list-unit-files --type=service -l  # noqa command-instead-of-module
-      register: __ha_cluster_services_output
+      register: __test_services_output
       changed_when: false
       no_log: "{{ ansible_verbosity < 2 }}"
 
-    - name: Reset __ha_cluster_service_facts
+    - name: Reset __test_service_facts
       set_fact:
-        __ha_cluster_service_facts: {}
+        __test_service_facts: {}
 
     # note - state is always inactive in bootc mode
-    - name: Set __ha_cluster_service_facts for bootc mode
+    - name: Set __test_service_facts for bootc mode
       set_fact:
-        __ha_cluster_service_facts: "{{ __ha_cluster_service_facts | combine({item.0: {'status': item.1, 'state': 'inactive'}}) }}"
-      loop: "{{ __ha_cluster_services_output.stdout_lines | select('search', '[.]service ') | map('split') | list }}"
+        __test_service_facts: "{{ __test_service_facts | combine({item.0: {'status': item.1, 'state': 'inactive'}}) }}"
+      loop: "{{ __test_services_output.stdout_lines | select('search', '[.]service ') | map('split') | list }}"
       no_log: "{{ ansible_verbosity < 2 }}"
