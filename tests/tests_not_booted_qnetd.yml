@@ -8,6 +8,8 @@
     ha_cluster_qnetd:
       present: true
       start_on_boot: true
+    # Switch the role to bootc mode to test it even on booted systems
+    __ha_cluster_is_booted: false
 
   tasks:
     - name: Run test
@@ -22,17 +24,18 @@
           meta: end_host
           when: __ha_cluster_is_ostree | d(false)
 
+        # Ensure correct test environment - stopped, disabled and not installed
+        # cluster services. This is needed in case multiple tests are run on
+        # the same machine in sequence.
         - name: Get services status
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: handle_service_facts.yml
+          include_tasks: tasks/handle_service_facts.yml
 
         - name: Ensure cluster daemons are stopped and disabled
           service:
             name: "{{ item }}"
-            state: "{{ 'stopped' if __ha_cluster_is_booted else omit }}"
+            state: "{{ 'stopped' if __test_is_booted else omit }}"
             enabled: false
-          when: item in __ha_cluster_service_facts
+          when: item in __test_service_facts
           loop:
             - corosync-qnetd.service
 
@@ -63,15 +66,13 @@
               - "'corosync-qnetd' in ansible_facts.packages"
 
         - name: Get services status again
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: handle_service_facts.yml
+          include_tasks: tasks/handle_service_facts.yml
 
         - name: Check services status
           assert:
             that:
-              - __ha_cluster_service_facts["corosync-qnetd.service"].status == "disabled"
-              - __ha_cluster_service_facts["corosync-qnetd.service"].state == "inactive"
+              - __test_service_facts["corosync-qnetd.service"].status == "disabled"
+              - __test_service_facts["corosync-qnetd.service"].state == "inactive"
 
         - name: Stat corosync-qnetd config
           stat:
