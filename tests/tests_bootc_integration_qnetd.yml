@@ -1,0 +1,73 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Test bootc integration - qnetd
+  hosts: all
+  vars_files: vars/main.yml
+  vars:
+    ha_cluster_cluster_present: false
+    ha_cluster_qnetd:
+      present: true
+      start_on_boot: true
+  tasks:
+    - name: Run test
+      tags: tests::verify
+      when: ansible_connection | d("") == "buildah" or __bootc_validation | d(false)
+      block:
+        - name: Set up test environment
+          include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Do build time tasks and verify
+          when: not __bootc_validation | d(false)
+          block:
+            - name: Run HA Cluster role
+              include_role:
+                name: linux-system-roles.ha_cluster
+                public: true
+              when: not __bootc_validation | d(false)
+
+            - name: Get package facts
+              package_facts:
+
+            - name: Check installed packages
+              assert:
+                that:
+                  - "'corosync-qnetd' in ansible_facts.packages"
+
+            - name: Get services status
+              include_tasks: tasks/handle_service_facts.yml
+
+            - name: Check that services exist and are not running
+              assert:
+                that:
+                  - __test_service_facts["corosync-qnetd.service"].status == "disabled"
+                  - __test_service_facts["corosync-qnetd.service"].state == "inactive"
+
+            - name: Stat corosync-qnetd config
+              stat:
+                path: /etc/corosync/qnetd/nssdb
+              register: stat_corosync_qnetd
+
+            - name: Check that config files, keys and certificates are not present
+              assert:
+                that:
+                  - not stat_corosync_qnetd.stat.exists
+
+            - name: Create QEMU deployment during bootc end-to-end test
+              delegate_to: localhost
+              command: "{{ lsr_scriptdir | quote }}/bootc-buildah-qcow.sh {{ ansible_host | quote }}"
+              changed_when: true
+
+        - name: Do build time tasks and verify
+          when: __bootc_validation | d(false)
+          block:
+            - name: Ensure cluster daemons are started and enabled
+              service:
+                name: "{{ item }}"
+                state: started
+                enabled: true
+              register: __service_state
+              failed_when: __service_state is changed
+              loop:
+                - corosync-qnetd.service
