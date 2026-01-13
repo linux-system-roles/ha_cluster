@@ -6,9 +6,9 @@
 # id: repo ID used to enable the repo
 # name: user-friendly name of a repo used to check if the repo is enabled
 __ha_cluster_repos:
-  - id: rhel-8-for-{{ ansible_architecture }}-highavailability-rpms
+  - id: rhel-8-for-{{ ansible_facts['architecture'] }}-highavailability-rpms
     name: High Availability
-  - id: rhel-8-for-{{ ansible_architecture }}-resilientstorage-rpms
+  - id: rhel-8-for-{{ ansible_facts['architecture'] }}-resilientstorage-rpms
     name: Resilient Storage
 
 # cloud agent packages are also mentioned in library/ha_cluster_info.py

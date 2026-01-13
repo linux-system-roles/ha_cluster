@@ -1,2 +1,2 @@
 ---
-__test_fence_virt_supported: "{{ ansible_architecture == 'x86_64' }}"
+__test_fence_virt_supported: "{{ ansible_facts['architecture'] == 'x86_64' }}"

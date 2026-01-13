@@ -54,8 +54,8 @@
         validate: 'visudo -cf %s'
       vars:
         __sudoers_path: >-
-          {% if (ansible_os_family == 'Suse' and
-                ansible_distribution_major_version | int > 15) %}
+          {% if (ansible_facts['os_family'] == 'Suse' and
+                ansible_facts['distribution_major_version'] | int > 15) %}
           /usr/etc/sudoers.d
           {%- else -%}
           /etc/sudoers.d

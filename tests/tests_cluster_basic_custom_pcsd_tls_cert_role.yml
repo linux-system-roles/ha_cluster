@@ -33,7 +33,7 @@
           vars:
             ha_cluster_pcsd_certificates:
               - name: "{{ __cert_name }}"
-                common_name: "{{ ansible_hostname }}"
+                common_name: "{{ ansible_facts['hostname'] }}"
                 ca: self-sign
 
         - name: Stat pcsd TLS certificate

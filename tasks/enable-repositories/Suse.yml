@@ -6,7 +6,7 @@
 # All cluster packages are present on SLES_SAP and openSUSE,
 # but not on base SLES without HAE.
 - name: Block to assert that High Availability Extension is present on SLES
-  when: ansible_distribution == 'SLES'
+  when: ansible_facts["distribution"] == 'SLES'
   block:
 
     - name: Query package sle-ha-release  # noqa command-instead-of-module

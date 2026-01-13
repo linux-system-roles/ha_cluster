@@ -33,7 +33,7 @@
   set_fact:
     ha_cluster_enable_repos: false
   when:
-    - ansible_distribution == 'RedHat'
+    - ansible_facts["distribution"] == 'RedHat'
 
 # HACK - test systems build ostree images with /usr/lib/passwd
 # have to copy hacluster user to /etc/passwd

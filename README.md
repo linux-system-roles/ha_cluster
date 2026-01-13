@@ -1752,7 +1752,7 @@ in /var/lib/pcsd with the file name FILENAME.crt and FILENAME.key, respectively.
   vars:
     ha_cluster_pcsd_certificates:
       - name: FILENAME
-        common_name: "{{ ansible_hostname }}"
+        common_name: "{{ ansible_facts['hostname'] }}"
         ca: self-sign
   roles:
     - linux-system-roles.ha_cluster

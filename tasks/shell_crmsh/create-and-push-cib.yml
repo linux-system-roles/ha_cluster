@@ -5,7 +5,7 @@
 # the only thing which matters is pushing the resulting CIB to the cluster.
 
 # Create backup of current cib in /root
-- name: Gather facts for ansible_date_time
+- name: Gather facts for ansible_facts["date_time"]
   ansible.builtin.setup:
     filter:
       - 'ansible_date_time'
