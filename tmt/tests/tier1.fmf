@@ -41,6 +41,8 @@ test: tmt/tests/run_tier1_test.sh
 /mixed:
   tag+: [mixed]
   /bootc_e2e:
+  /bootc_integration_cluster:
+  /bootc_integration_qnetd:
   /default:
   /export_doesnt_destroy_cluster:
   /export_firewall_selinux:

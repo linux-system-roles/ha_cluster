@@ -27,6 +27,14 @@
                 public: true
               when: not __bootc_validation | d(false)
 
+            - name: Create QEMU deployment during bootc end-to-end test
+              delegate_to: localhost
+              command: "{{ lsr_scriptdir | quote }}/bootc-buildah-qcow.sh {{ ansible_host | quote }}"
+              changed_when: true
+
+        - name: Do build time tasks and verify
+          when: __bootc_validation | d(false)
+          block:
             - name: Get package facts
               package_facts:
 
@@ -53,21 +61,3 @@
               assert:
                 that:
                   - not stat_corosync_qnetd.stat.exists
-
-            - name: Create QEMU deployment during bootc end-to-end test
-              delegate_to: localhost
-              command: "{{ lsr_scriptdir | quote }}/bootc-buildah-qcow.sh {{ ansible_host | quote }}"
-              changed_when: true
-
-        - name: Do build time tasks and verify
-          when: __bootc_validation | d(false)
-          block:
-            - name: Ensure cluster daemons are started and enabled
-              service:
-                name: "{{ item }}"
-                state: started
-                enabled: true
-              register: __service_state
-              failed_when: __service_state is changed
-              loop:
-                - corosync-qnetd.service
