@@ -2109,7 +2109,7 @@ class="sourceCode yaml"><code class="sourceCode yaml"><span id="cb34-1"><a href=
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">vars</span><span class="kw">:</span></span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">ha_cluster_pcsd_certificates</span><span class="kw">:</span></span>
 <span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="kw">-</span><span class="at"> </span><span class="fu">name</span><span class="kw">:</span><span class="at"> FILENAME</span></span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">common_name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;{{ ansible_hostname }}&quot;</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">common_name</span><span class="kw">:</span><span class="at"> </span><span class="st">&quot;{{ ansible_facts[&#39;hostname&#39;] }}&quot;</span></span>
 <span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">ca</span><span class="kw">:</span><span class="at"> self-sign</span></span>
 <span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">roles</span><span class="kw">:</span></span>
 <span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="kw">-</span><span class="at"> linux-system-roles.ha_cluster</span></span></code></pre></div>
