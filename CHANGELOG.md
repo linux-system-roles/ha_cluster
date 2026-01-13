@@ -1,6 +1,14 @@
 Changelog
 =========
 
+[1.28.1] - 2026-01-13
+--------------------
+
+### Other Changes
+
+- ci: bump actions/upload-artifact from 5 to 6 (#340)
+- refactor: handle INJECT_FACTS_AS_VARS=false by using ansible_facts instead (#342)
+
 [1.28.0] - 2025-12-17
 --------------------
 
