@@ -131,7 +131,9 @@ jobs:
           311) toxenvs="${toxenvs},coveralls,flake8,pylint,black" ;;
           *) toxenvs="${toxenvs},coveralls" ;;
           esac
-          TOXENV="$toxenvs" lsr_ci_runtox
+          # sitepackages needs to be enabled for the unit tests to be able to find pcs
+          # built from upstream sources
+          VIRTUALENV_SYSTEM_SITE_PACKAGES=true TOXENV="$toxenvs" lsr_ci_runtox
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
