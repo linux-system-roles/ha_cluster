@@ -38,10 +38,26 @@
             - corosync.service
             - pcsd.service
 
+        # dnf ansible module internally automatically sets 'allowerasing: true'
+        # when 'state' is set to 'absent'. This allows dnf to remove packages
+        # which depend on the packages listed in the task. dnf5 ansible module
+        # never sets 'allowerasing: true' automatically. This leads to a
+        # dependency error and the task fails.
+        # Ansible documentation states that all arguments of the package module
+        # are passed to the underlying OS-specific module:
+        # https://docs.ansible.com/projects/ansible/latest/collections/ansible/builtin/package_module.html
+        # Therefore, we could set 'allowerasing' despite it's not documented for
+        # the 'package' module. This would resolve the dependency errors.
+        # However, the dnf module doesn't accept the 'allowerasing' option in
+        # ansible older than 2.10. Therefore, our only option is to list
+        # dependent packages as long as we support ansible 2.9.
+        # That's why pcs-snmp and pcs-web-ui are listed here.
         - name: Ensure cluster packages are not installed
           package:
             name:
               - pcs
+              - pcs-snmp
+              - pcs-web-ui
               - pacemaker
               - corosync
             state: absent
