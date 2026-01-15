@@ -20,24 +20,6 @@
           meta: end_host
           when: __ha_cluster_is_ostree | d(false)
 
-        # Ensure correct test environment - stopped, disabled and not installed
-        # cluster services. This is needed in case multiple tests are run on
-        # the same machine in sequence.
-        - name: Get services status
-          include_tasks: tasks/handle_service_facts.yml
-
-        - name: Ensure cluster daemons are stopped and disabled
-          service:
-            name: "{{ item }}"
-            state: "{{ 'stopped' if __test_is_booted else omit }}"
-            enabled: false
-          when: item in __test_service_facts
-          loop:
-            - pacemaker.service
-            - corosync-qdevice.service
-            - corosync.service
-            - pcsd.service
-
         # dnf ansible module internally automatically sets 'allowerasing: true'
         # when 'state' is set to 'absent'. This allows dnf to remove packages
         # which depend on the packages listed in the task. dnf5 ansible module
@@ -89,7 +71,7 @@
               - "'pacemaker' in ansible_facts.packages"
               - "'pcs' in ansible_facts.packages"
 
-        - name: Get services status again
+        - name: Get services status
           include_tasks: tasks/handle_service_facts.yml
 
         - name: Check services status
