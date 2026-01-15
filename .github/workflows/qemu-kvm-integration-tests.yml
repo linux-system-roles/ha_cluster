@@ -157,6 +157,9 @@ jobs:
         run: |
           set -euo pipefail
           rc=0
+          echo ::group::Environment Variables
+          env | sort
+          echo ::endgroup::
           for t in tests/tests_*.yml; do
               if tox -e ${{ matrix.scenario.env }} -- --image-name ${{ matrix.scenario.image }} $t 2>&1 | tee ${t}.log; then
                   echo "PASS: $(basename $t)"
