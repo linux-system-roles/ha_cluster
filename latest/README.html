@@ -366,6 +366,9 @@ lost.</li>
 <li>resource defaults and resource operation defaults</li>
 <li>resource constraints</li>
 </ul></li>
+<li>The role can be used to configure a non-running container or VM
+image. However, in this mode, the role is limited to only install
+cluster packages.</li>
 </ul>
 <h1 id="requirements">Requirements</h1>
 <p>See below</p>
@@ -499,6 +502,8 @@ access to a cluster. It is recommended to vault encrypt the value, see
 <a
 href="https://docs.ansible.com/ansible/latest/user_guide/vault.html">https://docs.ansible.com/ansible/latest/user_guide/vault.html</a>
 for details.</p>
+<p>This variable is optional if the role is used to configure a
+non-running container or VM image.</p>
 <h3
 id="ha_cluster_hacluster_qdevice_password"><code>ha_cluster_hacluster_qdevice_password</code></h3>
 <p>string, no default - optional</p>
@@ -1905,9 +1910,9 @@ href="#ha_cluster_hacluster_password"><code>ha_cluster_hacluster_password</code>
 <code>ha_cluster_resource_primitives.copy_operations_from_agent</code>
 is always set to false.</p>
 <p>Note that only the first rule is exported in
-<code>ha_cluster_constraints_location</code>,<br />
-and attribute <code>lifetime</code> is not exported at all (since the
-role does not support it).</p>
+<code>ha_cluster_constraints_location</code>, and attribute
+<code>lifetime</code> is not exported at all (since the role does not
+support it).</p>
 <p>Note that depending on pcs version installed on managed nodes,
 certain variables may not be present in the export.</p>
 <ul>
