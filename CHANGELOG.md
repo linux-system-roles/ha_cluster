@@ -1,6 +1,18 @@
 Changelog
 =========
 
+[1.29.0] - 2026-01-17
+--------------------
+
+### New Features
+
+- feat: Support this role in container builds (#341)
+
+### Other Changes
+
+- ci: fix container bootc test on el9 (#344)
+- ci: move sitepackages to python unit test workflow (#347)
+
 [1.28.1] - 2026-01-13
 --------------------
 
