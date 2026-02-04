@@ -56,10 +56,6 @@ jobs:
             pcs_version: v0.11.10
             pcs_dir_local: ''
             pcs_site_packages: site-packages
-          - os: ubuntu-22.04
-            pcs_version: v0.11.11
-            pcs_dir_local: ''
-            pcs_site_packages: site-packages
           - os: ubuntu-24.04
             # v0.12.0 contains a bug preventing it being build in CI
             # v0.12.0-lsr-ci fixes that bug while not adding any other changes
@@ -68,10 +64,6 @@ jobs:
             pcs_site_packages: dist-packages
           - os: ubuntu-24.04
             pcs_version: v0.12.1
-            pcs_dir_local: '/local'
-            pcs_site_packages: dist-packages
-          - os: ubuntu-24.04
-            pcs_version: v0.12.2
             pcs_dir_local: '/local'
             pcs_site_packages: dist-packages
           - os: ubuntu-24.04
@@ -139,9 +131,7 @@ jobs:
           311) toxenvs="${toxenvs},coveralls,flake8,pylint,black" ;;
           *) toxenvs="${toxenvs},coveralls" ;;
           esac
-          # sitepackages needs to be enabled for the unit tests to be able to find pcs
-          # built from upstream sources
-          VIRTUALENV_SYSTEM_SITE_PACKAGES=true TOXENV="$toxenvs" lsr_ci_runtox
+          TOXENV="$toxenvs" lsr_ci_runtox
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
