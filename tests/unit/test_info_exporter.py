@@ -38,55 +38,47 @@ class DictToNvList(TestCase):
 class ExportEnableReposHa(TestCase):
     def test_enabled(self) -> None:
         # pylint: disable=line-too-long
-        dnf_repolist = dedent(
-            """\
+        dnf_repolist = dedent("""\
             Updating Subscription Management repositories.
             repo id                                  repo name
             rhel-10-for-x86_64-appstream-rpms        Red Hat Enterprise Linux 10 for x86_64 - AppStream (RPMs)
             rhel-10-for-x86_64-baseos-rpms           Red Hat Enterprise Linux 10 for x86_64 - BaseOS (RPMs)
             rhel-10-for-x86_64-highavailability-rpms Red Hat Enterprise Linux 10 for x86_64 - High Availability (RPMs)
-            """
-        )
+            """)
         self.assertTrue(exporter.export_enable_repos_ha(dnf_repolist))
 
     def test_not_enabled(self) -> None:
-        dnf_repolist = dedent(
-            """\
+        dnf_repolist = dedent("""\
             repo id                repo name
             fedora                 Fedora 41 - x86_64
             fedora-cisco-openh264  Fedora 41 openh264 (From Cisco) - x86_64
             updates                Fedora 41 - x86_64 - Updates
-            """
-        )
+            """)
         self.assertFalse(exporter.export_enable_repos_ha(dnf_repolist))
 
 
 class ExportEnableReposRs(TestCase):
     def test_enabled(self) -> None:
         # pylint: disable=line-too-long
-        dnf_repolist = dedent(
-            """\
+        dnf_repolist = dedent("""\
             Updating Subscription Management repositories.
             repo id                                  repo name
             rhel-9-for-x86_64-appstream-rpms         Red Hat Enterprise Linux 9 for x86_64 - AppStream (RPMs)
             rhel-9-for-x86_64-baseos-rpms            Red Hat Enterprise Linux 9 for x86_64 - BaseOS (RPMs)
             rhel-9-for-x86_64-highavailability-rpms  Red Hat Enterprise Linux 9 for x86_64 - High Availability (RPMs)
             rhel-9-for-x86_64-resilientstorage-rpms  Red Hat Enterprise Linux 9 for x86_64 - Resilient Storage (RPMs)
-            """
-        )
+            """)
         self.assertTrue(exporter.export_enable_repos_rs(dnf_repolist))
 
     def test_not_enabled(self) -> None:
         # pylint: disable=line-too-long
-        dnf_repolist = dedent(
-            """\
+        dnf_repolist = dedent("""\
             Updating Subscription Management repositories.
             repo id                                  repo name
             rhel-10-for-x86_64-appstream-rpms        Red Hat Enterprise Linux 10 for x86_64 - AppStream (RPMs)
             rhel-10-for-x86_64-baseos-rpms           Red Hat Enterprise Linux 10 for x86_64 - BaseOS (RPMs)
             rhel-10-for-x86_64-highavailability-rpms Red Hat Enterprise Linux 10 for x86_64 - High Availability (RPMs)
-            """
-        )
+            """)
         self.assertFalse(exporter.export_enable_repos_rs(dnf_repolist))
 
 

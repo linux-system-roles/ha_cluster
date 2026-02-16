@@ -28,19 +28,15 @@ class ExportOsConfiguration(TestCase):
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
     @mock.patch("ha_cluster_info.HAS_SELINUX", False)
     def test_packages_rhel_1(self) -> None:
-        dnf_repolist = dedent(
-            """\
+        dnf_repolist = dedent("""\
             repo1id           Repository 1
             highavailability  Repository HA Addon
             repo2id           Repository 2
-            """
-        )
-        rpm_packages = dedent(
-            """\
+            """)
+        rpm_packages = dedent("""\
             package1
             package2
-            """
-        )
+            """)
         with mocked_module(
             [
                 (CMD_DNF_REPORTLIST, (0, dnf_repolist, "")),
@@ -60,20 +56,16 @@ class ExportOsConfiguration(TestCase):
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
     @mock.patch("ha_cluster_info.HAS_SELINUX", False)
     def test_packages_rhel_2(self) -> None:
-        dnf_repolist = dedent(
-            """\
+        dnf_repolist = dedent("""\
             repo1id           Repository 1
             resilientstorage  RS repository
             repo2id           Repository 2
-            """
-        )
-        rpm_packages = dedent(
-            """\
+            """)
+        rpm_packages = dedent("""\
             package1
             resource-agents-cloud
             package2
-            """
-        )
+            """)
         with mocked_module(
             [
                 (CMD_DNF_REPORTLIST, (0, dnf_repolist, "")),
@@ -93,13 +85,11 @@ class ExportOsConfiguration(TestCase):
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
     @mock.patch("ha_cluster_info.HAS_SELINUX", False)
     def test_packages_rhel_error_repolist(self) -> None:
-        rpm_packages = dedent(
-            """\
+        rpm_packages = dedent("""\
             package1
             resource-agents-cloud
             package2
-            """
-        )
+            """)
         with mocked_module(
             [
                 (CMD_DNF_REPORTLIST, (1, "some output", "an error")),
@@ -117,13 +107,11 @@ class ExportOsConfiguration(TestCase):
     @mock.patch("ha_cluster_info.HAS_FIREWALL", False)
     @mock.patch("ha_cluster_info.HAS_SELINUX", False)
     def test_packages_rhel_error_pkglist(self) -> None:
-        dnf_repolist = dedent(
-            """\
+        dnf_repolist = dedent("""\
             repo1id           Repository 1
             highavailability  Repository HA Addon
             repo2id           Repository 2
-            """
-        )
+            """)
         with mocked_module(
             [
                 (CMD_DNF_REPORTLIST, (0, dnf_repolist, "")),

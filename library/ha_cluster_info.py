@@ -113,7 +113,7 @@ from ansible.module_utils.ha_cluster_lsr.info import exporter, loader
 
 try:
     # firewall module doesn't provide type hints
-    from firewall.client import FirewallClient  # type:ignore
+    from firewall.client import FirewallClient  # type: ignore
 
     HAS_FIREWALL = True
 except ImportError:

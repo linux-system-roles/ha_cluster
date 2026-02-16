@@ -66,15 +66,13 @@ class IsRhelOrClone(TestCase):
 class GetDnfRepolist(TestCase):
     def test_success(self) -> None:
         # pylint: disable=line-too-long
-        dnf_output = dedent(
-            """\
+        dnf_output = dedent("""\
             Updating Subscription Management repositories.
             repo id                                  repo name
             rhel-10-for-x86_64-appstream-rpms        Red Hat Enterprise Linux 10 for x86_64 - AppStream (RPMs)
             rhel-10-for-x86_64-baseos-rpms           Red Hat Enterprise Linux 10 for x86_64 - BaseOS (RPMs)
             rhel-10-for-x86_64-highavailability-rpms Red Hat Enterprise Linux 10 for x86_64 - High Availability (RPMs)
-            """
-        )
+            """)
         runner_mock = mock.Mock()
         runner_mock.return_value = (0, dnf_output, "")
 
