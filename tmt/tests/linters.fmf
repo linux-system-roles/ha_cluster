@@ -35,9 +35,14 @@ adjust+:
 
   /ansible_test:
     summary: Run ansible-test
+    # For an unknown reason, with a new version of TMT, tmt-* files started
+    # appearing in the collection dir. They interfere with the linter, as they
+    # don't follow the rules the linter enforces. Therefore, we remove them to
+    # prevent false failures.
     test: |
       source "$PYENV_ROOT/bin/activate" &&
       cd "$COLLECTIONS_ROLES_DIR" &&
+      rm -rfv ./tmt-* &&
       ansible-test --version &&
       ansible-test sanity -v --color=yes --truncate=0 --no-redact --coverage --docker  # wokeignore:rule=sanity
 
