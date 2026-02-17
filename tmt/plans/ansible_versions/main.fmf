@@ -182,8 +182,9 @@ prepare+:
           fi
         done
       # remove irrelevant files
-      - rm -f "$COLLECTIONS_ROLES_DIR"/.pandoc_template-ha_cluster.html5
-      - rm -rf "$COLLECTIONS_ROLES_DIR"/tmt-*
+      - rm -fv "$COLLECTIONS_ROLES_DIR"/.pandoc_template-ha_cluster.html5
+      # remove tmt-* files so they don't cause failures in various linters
+      - rm -rfv "$COLLECTIONS_ROLES_DIR"/tmt-*
 
   - name: Download 'woke' from GitHub
     when: ci-dependencies is not defined or ci-dependencies == github
