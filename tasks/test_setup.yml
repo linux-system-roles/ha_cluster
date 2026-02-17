@@ -50,11 +50,12 @@
         __test_is_booted: "{{ __is_system_running.stdout != 'offline' }}"
 
 # Test systems may not have repositories available through subscriptions
+# ostree systems should already have repos/packages installed
 - name: Do not try to enable RHEL repositories
   set_fact:
     ha_cluster_enable_repos: false
   when:
-    - ansible_facts["distribution"] == 'RedHat'
+    - ansible_facts["distribution"] == 'RedHat' or __ha_cluster_is_ostree
 
 # HACK - test systems build ostree images with /usr/lib/passwd
 # have to copy hacluster user to /etc/passwd
