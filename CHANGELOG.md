@@ -1,6 +1,24 @@
 Changelog
 =========
 
+[1.29.1] - 2026-02-18
+--------------------
+
+### Bug Fixes
+
+- fix: ostree - add dnf/dnf5 package, add firewall packages (#358)
+
+### Other Changes
+
+- ci: update pcs test matrix (#349)
+- ci: bump ansible/ansible-lint from 25 to 26 (#350)
+- ci: skip most CI checks if title contains citest skip [citest_skip] (#351)
+- ci: ansible-lint - remove .collection directory from converted collection [citest_skip] (#352)
+- ci: tox-lsr version 3.15.0 [citest_skip] (#353)
+- ci: Add Fedora 43, remove Fedora 41 from Testing Farm CI (#354)
+- ci: update for the latest linters and tmt (#355)
+- ci: Ansible version must be string, not float [citest_skip] (#356)
+
 [1.29.0] - 2026-01-17
 --------------------
 
