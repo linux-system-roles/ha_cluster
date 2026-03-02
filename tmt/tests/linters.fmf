@@ -26,9 +26,14 @@ adjust+:
     # converted lines will be wrapped preserving Jinja and ansible syntax.
     # This means we get a lot of line-length errors and the only thing we can
     # do is ignore them.
+    # For an unknown reason, with a new version of TMT, tmt-* files started
+    # appearing in the collection dir. They interfere with the linter, as they
+    # don't follow the rules the linter enforces. Therefore, we remove them to
+    # prevent false failures.
     test: |
       source "$PYENV_ROOT/bin/activate" &&
       cd "$COLLECTIONS_ROLES_DIR" &&
+      rm -rfv ./tmt-* &&
       ansible-lint --version &&
       ansible-lint -v --skip-list 'yaml[line-length]' \
         --config-file .ansible-lint
