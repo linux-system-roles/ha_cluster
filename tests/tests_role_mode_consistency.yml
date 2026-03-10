@@ -15,8 +15,7 @@
         - name: Test cluster_present==true and qnetd_present==null
           block:
             - name: Run the role
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 ha_cluster_qnetd: null
 
@@ -32,8 +31,7 @@
         - name: Test cluster_present==null and qnetd_present==true
           block:
             - name: Run the role
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 ha_cluster_cluster_present: null
 

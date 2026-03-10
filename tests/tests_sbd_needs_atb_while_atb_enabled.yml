@@ -36,9 +36,9 @@
               sbd_devices: []
 
         - name: Run the role
-          include_role:
-            name: linux-system-roles.ha_cluster
-            public: true
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_public: true
 
         - name: Fetch quorum configuration
           command:

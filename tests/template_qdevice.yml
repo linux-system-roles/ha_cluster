@@ -27,10 +27,9 @@
       run_once: true  # noqa: run_once[task]
 
     - name: Run HA Cluster role
-      include_role:
-        name: linux-system-roles.ha_cluster
-        # variables for the role are supposed to be defined in a playbook which
-        # includes this task file
+      include_tasks: tasks/run_role_with_clear_facts.yml
+      # variables for the role are supposed to be defined in a playbook which
+      # includes this task file
 
     # The role removed qnetd configuration
     - name: Restore qnetd
