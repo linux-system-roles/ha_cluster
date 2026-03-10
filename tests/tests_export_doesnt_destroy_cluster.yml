@@ -24,8 +24,7 @@
             tasks_from: test_setup.yml
 
         - name: Run the role to create a cluster
-          include_role:
-            name: linux-system-roles.ha_cluster
+          include_tasks: tasks/run_role_with_clear_facts.yml
 
         - name: Fetch cluster versions of cluster components
           include_tasks: tasks/fetch_versions.yml
@@ -83,8 +82,7 @@
           block:
             # Export and compare cluster configuration
             - name: Run the role to export the cluster config 1
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 ha_cluster_cluster_present: null
                 ha_cluster_qnetd: null
@@ -98,8 +96,7 @@
             # Export again; check that previous export didn't change the cluster
             # If modified, transport would be default 'knet' instead of 'udp'.
             - name: Run the role to export the cluster config 2
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 ha_cluster_cluster_present: null
                 ha_cluster_qnetd: null

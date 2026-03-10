@@ -60,8 +60,7 @@
         - name: Run the role and check for errors
           block:
             - name: Run the role
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
           rescue:
             - name: Check errors
               assert:
