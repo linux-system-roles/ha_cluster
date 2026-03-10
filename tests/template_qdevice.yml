@@ -5,19 +5,19 @@
     ha_cluster_cluster_name: test-cluster
   block:
     - name: Set up test environment
-      include_role:
-        name: linux-system-roles.ha_cluster
-        tasks_from: test_setup.yml
+      include_tasks: tasks/run_role_with_clear_facts.yml
+      vars:
+        __sr_tasks_from: test_setup.yml
 
     - name: Clean up test environment for qnetd
-      include_role:
-        name: linux-system-roles.ha_cluster
-        tasks_from: test_cleanup_qnetd.yml
+      include_tasks: tasks/run_role_with_clear_facts.yml
+      vars:
+        __sr_tasks_from: test_cleanup_qnetd.yml
 
     - name: Set up test environment for qnetd
-      include_role:
-        name: linux-system-roles.ha_cluster
-        tasks_from: test_setup_qnetd.yml
+      include_tasks: tasks/run_role_with_clear_facts.yml
+      vars:
+        __sr_tasks_from: test_setup_qnetd.yml
       run_once: true  # noqa: run_once[task]
 
     - name: Back up qnetd
@@ -27,10 +27,9 @@
       run_once: true  # noqa: run_once[task]
 
     - name: Run HA Cluster role
-      include_role:
-        name: linux-system-roles.ha_cluster
-        # variables for the role are supposed to be defined in a playbook which
-        # includes this task file
+      include_tasks: tasks/run_role_with_clear_facts.yml
+      # variables for the role are supposed to be defined in a playbook which
+      # includes this task file
 
     # The role removed qnetd configuration
     - name: Restore qnetd
@@ -63,6 +62,6 @@
 
   always:
     - name: Clean up test environment for qnetd
-      include_role:
-        name: linux-system-roles.ha_cluster
-        tasks_from: test_cleanup_qnetd.yml
+      include_tasks: tasks/run_role_with_clear_facts.yml
+      vars:
+        __sr_tasks_from: test_cleanup_qnetd.yml

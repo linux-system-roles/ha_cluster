@@ -17,15 +17,14 @@
           include_tasks: tasks/skip_if_bootc.yml
 
         - name: Set up test environment
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_tasks_from: test_setup.yml
 
         - name: Set up test environment for SBD
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup_sbd.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
+            __sr_tasks_from: test_setup_sbd.yml
             __test_disable_modprobe: true  # noqa: var-naming[no-role-prefix]
 
         # module is defined in an inventory, module blocklist in a play,
@@ -78,6 +77,6 @@
             __test_node_options:
 
         - name: Clean up test environment for SBD
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_cleanup_sbd.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_tasks_from: test_cleanup_sbd.yml

@@ -9,9 +9,9 @@
       tags: tests::verify
       block:
         - name: Set up test environment
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_tasks_from: test_setup.yml
 
         - name: Find first node name
           set_fact:
