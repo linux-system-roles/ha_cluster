@@ -21,14 +21,14 @@
           include_tasks: tasks/skip_if_bootc.yml
 
         - name: Set up test environment
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_tasks_from: test_setup.yml
 
         - name: Set up test environment for SBD
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup_sbd.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_tasks_from: test_setup_sbd.yml
 
         - name: Set SBD devices variable
           set_fact:
@@ -38,8 +38,7 @@
         - name: Run the role and check errors
           block:
             - name: Run the role
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
           rescue:
             - name: Check errors
               assert:
@@ -54,9 +53,9 @@
             ha_cluster:
 
         - name: Clean up test environment for SBD
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_cleanup_sbd.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_tasks_from: test_cleanup_sbd.yml
 
     - name: Message
       debug:

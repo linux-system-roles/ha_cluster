@@ -9,15 +9,14 @@
       tags: tests::verify
       block:
         - name: Set up test environment
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_tasks_from: test_setup.yml
 
         - name: Check that target is specified
           block:
             - name: Run HA Cluster role 1
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 ha_cluster_cluster_name: test-cluster
                 ha_cluster_stonith_levels:
@@ -36,8 +35,7 @@
         - name: Check that exactly one target is specified
           block:
             - name: Run HA Cluster role 2
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 ha_cluster_cluster_name: test-cluster
                 ha_cluster_stonith_levels:
@@ -58,8 +56,7 @@
         - name: Check that level is specified
           block:
             - name: Run HA Cluster role 3
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 ha_cluster_cluster_name: test-cluster
                 ha_cluster_stonith_levels:
@@ -77,8 +74,7 @@
         - name: Check that level is correct
           block:
             - name: Run HA Cluster role 4
-              include_role:
-                name: linux-system-roles.ha_cluster
+              include_tasks: tasks/run_role_with_clear_facts.yml
               vars:
                 ha_cluster_cluster_name: test-cluster
                 ha_cluster_stonith_levels:

@@ -332,9 +332,9 @@
           include_tasks: tasks/skip_if_bootc.yml
 
         - name: Set up test environment
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup.yml
+          include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            __sr_tasks_from: test_setup.yml
 
         # Install pcs so we can read capabilities
         - name: Install pcs
@@ -355,9 +355,9 @@
             - __constraints_capability in __test_pcs_capabilities
           block:
             - name: Run HA Cluster role
-              include_role:
-                name: linux-system-roles.ha_cluster
-                public: true
+              include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                __sr_public: true
 
             - name: Check firewall and selinux state
               include_tasks: tasks/check_firewall_selinux.yml
