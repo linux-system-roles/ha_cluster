@@ -147,4 +147,4 @@ jobs:
           VIRTUALENV_SYSTEM_SITE_PACKAGES=true TOXENV="$toxenvs" lsr_ci_runtox
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
