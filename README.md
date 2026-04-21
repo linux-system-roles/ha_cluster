@@ -40,6 +40,7 @@ An Ansible role for managing High Availability Clustering.
   * stonith and resources
   * resource defaults and resource operation defaults
   * resource constraints
+  * stonith levels, also known as fencing topology
 * The role can be used to configure a non-running container or VM image.
   However, in this mode, the role is limited to only install cluster packages.
 
@@ -1624,6 +1625,7 @@ may not be present in the export.
   * [`ha_cluster_constraints_colocation`](#ha_cluster_constraints_colocation)
   * [`ha_cluster_constraints_order`](#ha_cluster_constraints_order)
   * [`ha_cluster_constraints_ticket`](#ha_cluster_constraints_ticket)
+  * [`ha_cluster_stonith_levels`](#ha_cluster_stonith_levels)
 
 * Following variables are never present in the export (consult the role
   documentation for impact of the variables missing when running the role):
