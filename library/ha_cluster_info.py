@@ -152,6 +152,7 @@ class Capability(Enum):
         "pcmk.properties.operation-defaults.config.output-formats"
     )
     CONSTRAINTS_OUTPUT = "pcmk.constraint.config.output-formats"
+    STONITH_LEVELS_OUTPUT = "pcmk.stonith.levels.config.output-formats"
 
 
 def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
@@ -411,6 +412,28 @@ def export_constraints_configuration(
     return result
 
 
+def export_stonith_levels_configuration(
+    module: AnsibleModule, pcs_capabilities: List[str]
+) -> Dict[str, Any]:
+    """
+    Export existing HA cluster stonith levels
+    """
+
+    if Capability.STONITH_LEVELS_OUTPUT.value not in pcs_capabilities:
+        return dict()
+
+    cmd_runner = get_cmd_runner(module)
+    stonith_levels = loader.get_stonith_levels_configuration(cmd_runner)
+
+    result: dict[str, Any] = dict()
+
+    levels = exporter.export_stonith_levels(stonith_levels)
+    if levels:
+        result["ha_cluster_stonith_levels"] = levels
+
+    return result
+
+
 def get_pcs_capabilities(module: AnsibleModule) -> List[str]:
     """
     Extract pcsd pcs_capabilities from pcs version info
@@ -457,6 +480,9 @@ def main() -> None:
             )
             ha_cluster_result.update(
                 **export_constraints_configuration(module, pcs_capabilities)
+            )
+            ha_cluster_result.update(
+                **export_stonith_levels_configuration(module, pcs_capabilities)
             )
             ha_cluster_result["ha_cluster_cluster_present"] = True
         else:

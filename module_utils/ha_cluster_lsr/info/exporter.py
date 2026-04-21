@@ -44,6 +44,9 @@ from .exporter_package.resources import (
     export_resource_group_list,
     export_resource_primitive_list,
 )
+from .exporter_package.stonith_levels import (
+    export_stonith_levels,
+)
 from .exporter_package.various import (
     export_enable_repos_ha,
     export_enable_repos_rs,

@@ -350,6 +350,16 @@ def get_constraints_configuration(
     )
 
 
+def get_stonith_levels_configuration(
+    run_command: CommandRunner,
+) -> Dict[str, Any]:
+    """Get stonith levels configuration from pcs"""
+    return _call_pcs_cli(
+        run_command,
+        ["stonith", "level", "config", "--output-format=json"],
+    )
+
+
 def get_pcs_version_info(run_command: CommandRunner) -> Tuple[str, List[str]]:
     """
     Get pcs version and list of capabilities
