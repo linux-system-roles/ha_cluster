@@ -9,6 +9,27 @@
       tags:
         - tests::booted
         - tests::verify
+      vars:
+        ha_cluster_stonith_levels:
+          - level: 1
+            target: "{{ __test_first_node }}"
+            resource_ids:
+              - fence1
+          - level: 2
+            target_pattern: node-\d+
+            resource_ids:
+              - fence2
+          - level: 3
+            target_attribute: some-name
+            resource_ids:
+              - fence1
+              - fence2
+          - level: 4
+            target_attribute: some-name
+            target_value: some-value
+            resource_ids:
+              - fence2
+              - fence1
       block:
         - name: Skip test in bootc mode
           include_tasks: tasks/skip_if_bootc.yml
@@ -31,31 +52,12 @@
             ha_cluster_cluster_name: test-cluster
             ha_cluster_manage_firewall: true
             ha_cluster_manage_selinux: true
+            ha_cluster_export_configuration: true
             ha_cluster_resource_primitives:
               - id: fence1
                 agent: 'stonith:fence_kdump'
               - id: fence2
                 agent: 'stonith:fence_kdump'
-            ha_cluster_stonith_levels:
-              - level: 1
-                target: "{{ __test_first_node }}"
-                resource_ids:
-                  - fence1
-              - level: 2
-                target_pattern: node-\d+
-                resource_ids:
-                  - fence2
-              - level: 3
-                target_attribute: some-name
-                resource_ids:
-                  - fence1
-                  - fence2
-              - level: 4
-                target_attribute: some-name
-                target_value: some-value
-                resource_ids:
-                  - fence2
-                  - fence1
 
         - name: Fetch versions of cluster components
           include_tasks: tasks/fetch_versions.yml
@@ -169,3 +171,27 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
+        - name: Check exported stonith levels configuration
+          when:
+            - '"pcmk.stonith.levels.config.output-formats" in __test_pcs_capabilities'
+          vars:
+            __test_exported_config:
+              ha_cluster_stonith_levels: >-
+                {{ ha_cluster_facts.ha_cluster_stonith_levels }}
+            __test_expected_config:
+              ha_cluster_stonith_levels: >-
+                {{ ha_cluster_stonith_levels }}
+          block:
+            - name: Print exported stonith levels configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected stonith levels configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported stonith levels configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config
