@@ -47,6 +47,8 @@ plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_set.py compil
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_set.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resources.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resources.py import-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/stonith_levels.py compile-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/stonith_levels.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/various.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/various.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py compile-2.7!skip
