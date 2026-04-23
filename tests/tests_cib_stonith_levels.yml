@@ -5,6 +5,12 @@
   vars_files: vars/main.yml
 
   tasks:
+    - name: Find first node name
+      set_fact:
+        __test_first_node: "{{
+            (ansible_play_hosts_all | length == 1)
+            | ternary('localhost', ansible_play_hosts[0]) }}"
+
     - name: Run test
       tags:
         - tests::booted
@@ -38,12 +44,6 @@
           include_role:
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
-
-        - name: Find first node name
-          set_fact:
-            __test_first_node: "{{
-                (ansible_play_hosts_all | length == 1)
-                | ternary('localhost', ansible_play_hosts[0]) }}"
 
         - name: Run HA Cluster role
           include_tasks: tasks/run_role_with_clear_facts.yml
