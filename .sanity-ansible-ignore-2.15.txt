@@ -29,3 +29,4 @@ plugins/modules/ha_cluster_info.py compile-3.5!skip
 plugins/modules/ha_cluster_info.py import-2.7!skip
 plugins/modules/ha_cluster_info.py import-3.5!skip
 plugins/modules/ha_cluster_info.py validate-modules:missing-gplv3-license
+plugins/modules/sr_fingerprint.py validate-modules:missing-gplv3-license

@@ -75,3 +75,4 @@ plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_ticket.py 
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/options.py import-3.5!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_defaults.py import-3.5!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_set.py import-3.5!skip
+plugins/modules/sr_fingerprint.py validate-modules:missing-gplv3-license

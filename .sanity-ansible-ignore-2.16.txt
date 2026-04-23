@@ -53,3 +53,4 @@ plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py compile-2.
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/loader.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/loader.py import-2.7!skip
+plugins/modules/sr_fingerprint.py validate-modules:missing-gplv3-license

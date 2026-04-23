@@ -1,3 +1,4 @@
 plugins/modules/ha_cluster_info.py validate-modules:missing-gplv3-license
 plugins/modules/pcs_api_v2.py validate-modules:missing-gplv3-license
 plugins/modules/pcs_qdevice_certs.py validate-modules:missing-gplv3-license
+plugins/modules/sr_fingerprint.py validate-modules:missing-gplv3-license
