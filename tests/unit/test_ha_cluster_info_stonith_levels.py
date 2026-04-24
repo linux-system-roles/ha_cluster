@@ -10,7 +10,7 @@ import json
 from unittest import TestCase, mock
 
 from .fixture_stonith_levels import EMPTY_STONITH_LEVELS
-from .ha_cluster_info import ha_cluster_info, mocked_module
+from .ha_cluster_info import ha_cluster_info, mocked_cmd_runner
 
 CMD_OPTIONS = dict(environ_update={"LC_ALL": "C"}, check_rc=False)
 PCS_CMD = ["pcs", "stonith", "level", "config", "--output-format=json"]
@@ -54,17 +54,17 @@ class ExportStonithLevelsConfiguration(TestCase):
                 },
             ],
         }
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (
                     CMD_STONITH_LEVELS_CONF,
                     (0, json.dumps(stonith_levels_data), ""),
                 ),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_stonith_levels_configuration(
-                    module_mock,
+                    cmd_runner,
                     [
                         ha_cluster_info.Capability.STONITH_LEVELS_OUTPUT.value,
                     ],
@@ -97,17 +97,17 @@ class ExportStonithLevelsConfiguration(TestCase):
             )
 
     def test_success_empty(self) -> None:
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (
                     CMD_STONITH_LEVELS_CONF,
                     (0, json.dumps(EMPTY_STONITH_LEVELS), ""),
                 ),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_stonith_levels_configuration(
-                    module_mock,
+                    cmd_runner,
                     [
                         ha_cluster_info.Capability.STONITH_LEVELS_OUTPUT.value,
                     ],
@@ -116,21 +116,21 @@ class ExportStonithLevelsConfiguration(TestCase):
             )
 
     def test_no_capabilities(self) -> None:
-        with mocked_module([]) as module_mock:
+        with mocked_cmd_runner([]) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_stonith_levels_configuration(
-                    module_mock, pcs_capabilities=[]
+                    cmd_runner, pcs_capabilities=[]
                 ),
                 {},
             )
 
     def test_pcs_cmd_fail(self) -> None:
         with self.assertRaises(ha_cluster_info.loader.CliCommandError) as cm:
-            with mocked_module(
+            with mocked_cmd_runner(
                 [(CMD_STONITH_LEVELS_CONF, (1, "", "Error"))]
-            ) as module_mock:
+            ) as cmd_runner:
                 ha_cluster_info.export_stonith_levels_configuration(
-                    module_mock,
+                    cmd_runner,
                     [
                         ha_cluster_info.Capability.STONITH_LEVELS_OUTPUT.value,
                     ],

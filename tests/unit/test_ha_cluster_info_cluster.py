@@ -9,7 +9,7 @@
 
 from unittest import TestCase, mock
 
-from .ha_cluster_info import ha_cluster_info, mocked_module
+from .ha_cluster_info import ha_cluster_info, mocked_cmd_runner
 
 CMD_OPTIONS = dict(environ_update={"LC_ALL": "C"}, check_rc=False)
 
@@ -19,6 +19,7 @@ CMD_ENABLED_COROSYNC = mock.call(
 CMD_ENABLED_PCMK = mock.call(
     ["systemctl", "is-enabled", "pacemaker.service"], **CMD_OPTIONS
 )
+
 
 class ExportClusterConfiguration(TestCase):
     maxDiff = None
@@ -46,15 +47,15 @@ class ExportClusterConfiguration(TestCase):
                 ),
             ],
         )
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (CMD_ENABLED_COROSYNC, (0 if corosync_enabled else 1, "", "")),
                 (CMD_ENABLED_PCMK, (0 if pacemaker_enabled else 1, "", "")),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_cluster_configuration(
-                    module_mock, corosync_conf_data
+                    cmd_runner, corosync_conf_data
                 ),
                 dict(
                     ha_cluster_start_on_boot=cluster_start_on_boot,
@@ -93,15 +94,15 @@ class ExportClusterConfiguration(TestCase):
             ],
         )
 
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (CMD_ENABLED_COROSYNC, (0, "", "")),
                 (CMD_ENABLED_PCMK, (0, "", "")),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_cluster_configuration(
-                    module_mock, corosync_conf_data
+                    cmd_runner, corosync_conf_data
                 ),
                 dict(
                     ha_cluster_start_on_boot=True,

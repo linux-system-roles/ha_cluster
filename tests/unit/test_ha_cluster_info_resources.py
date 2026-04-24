@@ -11,7 +11,7 @@ import json
 import os.path
 from unittest import TestCase, mock
 
-from .ha_cluster_info import ha_cluster_info, mocked_module
+from .ha_cluster_info import ha_cluster_info, mocked_cmd_runner
 
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -32,36 +32,36 @@ class ExportResourcesConfiguration(TestCase):
             with open(os.path.join(CURRENT_DIR, fname), encoding="utf-8") as f:
                 return f.read()
 
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (CMD_RESOURCE_CONF, (0, read_file("resources.json"), "")),
                 (CMD_STONITH_CONF, (0, read_file("stonith.json"), "")),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_resources_configuration(
-                    module_mock,
+                    cmd_runner,
                     ha_cluster_info.Capability.RESOURCE_OUTPUT.value,
                 ),
                 json.loads(read_file("resources-export.json")),
             )
 
     def test_no_capabilities(self) -> None:
-        with mocked_module([]) as module_mock:
+        with mocked_cmd_runner([]) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_resources_configuration(
-                    module_mock, pcs_capabilities=[]
+                    cmd_runner, pcs_capabilities=[]
                 ),
                 {},
             )
 
     def test_pcs_cmd_fail(self) -> None:
         with self.assertRaises(ha_cluster_info.loader.CliCommandError) as cm:
-            with mocked_module(
+            with mocked_cmd_runner(
                 [(CMD_RESOURCE_CONF, (1, "", "Error"))]
-            ) as module_mock:
+            ) as cmd_runner:
                 ha_cluster_info.export_resources_configuration(
-                    module_mock,
+                    cmd_runner,
                     ha_cluster_info.Capability.RESOURCE_OUTPUT.value,
                 )
         self.assertEqual(

@@ -10,7 +10,7 @@
 import json
 from unittest import TestCase, mock
 
-from .ha_cluster_info import ha_cluster_info, mocked_module
+from .ha_cluster_info import ha_cluster_info, mocked_cmd_runner
 
 CMD_OPTIONS = dict(environ_update={"LC_ALL": "C"}, check_rc=False)
 PCS_CMD = ["pcs", "resource", "defaults", "config", "--output-format=json"]
@@ -47,17 +47,17 @@ class ExportResourceDefaultsConfiguration(TestCase):
                 },
             ],
         }
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (
                     CMD_RESOURCE_DEFAULTS_CONF,
                     (0, json.dumps(defaults_data), ""),
                 ),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_resource_defaults_configuration(
-                    module_mock,
+                    cmd_runner,
                     [ha_cluster_info.Capability.RESOURCE_DEFAULTS_OUTPUT.value],
                 ),
                 {
@@ -78,10 +78,10 @@ class ExportResourceDefaultsConfiguration(TestCase):
             )
 
     def test_no_capabilities(self) -> None:
-        with mocked_module([]) as module_mock:
+        with mocked_cmd_runner([]) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_resource_defaults_configuration(
-                    module_mock, pcs_capabilities=[]
+                    cmd_runner, pcs_capabilities=[]
                 ),
                 {},
             )
@@ -108,17 +108,17 @@ class ExportResourceOpDefaultsConfiguration(TestCase):
                 },
             ],
         }
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (
                     CMD_RESOURCE_OP_DEFAULTS_CONF,
                     (0, json.dumps(defaults_data), ""),
                 ),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_resource_op_defaults_configuration(
-                    module_mock,
+                    cmd_runner,
                     [
                         ha_cluster_info.Capability.RESOURCE_OP_DEFAULTS_OUTPUT.value
                     ],
@@ -141,10 +141,10 @@ class ExportResourceOpDefaultsConfiguration(TestCase):
             )
 
     def test_no_capabilities_op(self) -> None:
-        with mocked_module([]) as module_mock:
+        with mocked_cmd_runner([]) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_resource_op_defaults_configuration(
-                    module_mock, pcs_capabilities=[]
+                    cmd_runner, pcs_capabilities=[]
                 ),
                 {},
             )

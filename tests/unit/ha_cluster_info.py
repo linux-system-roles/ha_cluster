@@ -30,7 +30,7 @@ loader = getattr(import_module("ha_cluster_lsr.info"), "loader")
 
 # pylint: disable=missing-function-docstring
 @contextmanager
-def mocked_module(
+def mocked_cmd_runner(
     runner_calls: Optional[
         List[
             Tuple[
@@ -43,7 +43,7 @@ def mocked_module(
     calls, side_effect = zip(*runner_calls) if runner_calls else ([], [])
     module_mock = mock.Mock(run_command=mock.Mock(side_effect=side_effect))
 
-    yield module_mock
+    yield ha_cluster_info.get_cmd_runner(module_mock)
 
     if not calls:
         module_mock.run_command.assert_not_called()

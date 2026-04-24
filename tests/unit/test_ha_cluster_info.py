@@ -9,7 +9,7 @@
 
 from unittest import TestCase, mock
 
-from .ha_cluster_info import ha_cluster_info, loader, mocked_module
+from .ha_cluster_info import ha_cluster_info, loader, mocked_cmd_runner
 
 CMD_OPTIONS = dict(environ_update={"LC_ALL": "C"}, check_rc=False)
 PCS_CMD_VERSION = ["pcs", "--version", "--full"]
@@ -22,31 +22,33 @@ class GetPcsCapabilities(TestCase):
             "pcmk.resource.config.output-formats",
             "pcmk.resource.refresh",
         ]
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (
                     CMD_VERSION,
                     (0, "\n".join(["0.12.0", " ".join(capabilities)]), ""),
                 )
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
-                ha_cluster_info.get_pcs_capabilities(module_mock),
+                ha_cluster_info.get_pcs_capabilities(cmd_runner),
                 capabilities,
             )
 
     def test_raises_on_cmd_fail(self) -> None:
         with self.assertRaises(loader.CliCommandError) as cm:
-            with mocked_module([(CMD_VERSION, (1, "", ""))]) as module_mock:
-                ha_cluster_info.get_pcs_capabilities(module_mock)
+            with mocked_cmd_runner([(CMD_VERSION, (1, "", ""))]) as cmd_runner:
+                ha_cluster_info.get_pcs_capabilities(cmd_runner)
         self.assertEqual(
             cm.exception.kwargs,
             dict(pcs_command=PCS_CMD_VERSION, rc=1, stdout="", stderr=""),
         )
 
     def test_no_capabilities_on_only_version(self) -> None:
-        with mocked_module([(CMD_VERSION, (0, "0.12.0", ""))]) as module_mock:
+        with mocked_cmd_runner(
+            [(CMD_VERSION, (0, "0.12.0", ""))]
+        ) as cmd_runner:
             self.assertEqual(
-                ha_cluster_info.get_pcs_capabilities(module_mock),
+                ha_cluster_info.get_pcs_capabilities(cmd_runner),
                 [],
             )
