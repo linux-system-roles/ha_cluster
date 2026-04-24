@@ -239,9 +239,12 @@ def export_pcsd_configuration() -> Dict[str, Any]:
     return result
 
 
-def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
+def export_cluster_configuration(
+    module: AnsibleModule,
+    corosync_conf_pcs: Dict[str, Any],
+) -> Dict[str, Any]:
     """
-    Export existing HA cluster configuration
+    Export existing HA cluster configuration (corosync settings)
     """
     # Until pcs is able to export the whole configuration in one go, we need to
     # put it together from separate parts provided by pcs. Some parts are only
@@ -254,17 +257,6 @@ def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
     result["ha_cluster_start_on_boot"] = exporter.export_start_on_boot(
         corosync_enabled, pacemaker_enabled
     )
-
-    # Corosync config is available via CLI since pcs-0.10.8, via API v2 since
-    # pcs-0.12.0 and pcs-0.11.9. For old pcs versions, CLI must be used, and
-    # there is no benefit in implementing access via API on top of that.
-    # No need to check pcs capabilities. If this is not supported by pcs,
-    # exporting anything else is pointless (and not supported by pcs anyway).
-    corosync_conf_pcs = loader.get_corosync_conf(cmd_runner)
-    # known-hosts file is available since pcs-0.10, but is not exported by pcs
-    # in any version.
-    # No need to check pcs capabilities.
-    known_hosts_pcs = loader.get_pcsd_known_hosts()
 
     # Convert corosync config to role format
     result["ha_cluster_cluster_name"] = exporter.export_corosync_cluster_name(
@@ -280,12 +272,25 @@ def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
     if exported_quorum:
         result["ha_cluster_quorum"] = exported_quorum
 
-    # Convert nodes definition to role format
-    result["ha_cluster_node_options"] = exporter.export_cluster_nodes(
+    return result
+
+
+def export_node_options_configuration(
+    corosync_conf_pcs: Dict[str, Any],
+) -> Dict[str, Any]:
+    """
+    Export node options (node names, addresses) from corosync configuration
+    """
+    # known-hosts file is available since pcs-0.10, but is not exported by pcs
+    # in any version.
+    # No need to check pcs capabilities.
+    known_hosts_pcs = loader.get_pcsd_known_hosts()
+
+    node_options = exporter.export_cluster_nodes(
         corosync_conf_pcs, known_hosts_pcs
     )
 
-    return result
+    return {"ha_cluster_node_options": node_options}
 
 
 def export_resources_configuration(
@@ -460,9 +465,24 @@ def main() -> None:
 
     try:
         if loader.has_corosync_conf():
+            # Corosync config is available via CLI since pcs-0.10.8, via API
+            # v2 since pcs-0.12.0 and pcs-0.11.9. For old pcs versions, CLI
+            # must be used, and there is no benefit in implementing access via
+            # API on top of that.
+            # No need to check pcs capabilities. If this is not supported by
+            # pcs, exporting anything else is pointless (and not supported by
+            # pcs anyway).
+            cmd_runner = get_cmd_runner(module)
+            corosync_conf_pcs = loader.get_corosync_conf(cmd_runner)
+
             ha_cluster_result.update(**export_os_configuration(module))
             ha_cluster_result.update(**export_pcsd_configuration())
-            ha_cluster_result.update(**export_cluster_configuration(module))
+            ha_cluster_result.update(
+                **export_cluster_configuration(module, corosync_conf_pcs)
+            )
+            ha_cluster_result.update(
+                **export_node_options_configuration(corosync_conf_pcs)
+            )
             ha_cluster_result.update(
                 **export_resources_configuration(module, pcs_capabilities)
             )
