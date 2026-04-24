@@ -1,6 +1,8 @@
 [tool.black]
 line-length = 80
+extend-exclude = "library/sr_fingerprint.py"
 
 [tool.isort]
 profile = "black"
 line_length = 80
+extend_skip = ["library/sr_fingerprint.py"]

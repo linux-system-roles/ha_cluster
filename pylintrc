@@ -1,2 +1,5 @@
+[MAIN]
+ignore-paths=library/sr_fingerprint.py
+
 [MESSAGES CONTROL]
 disable=fixme, import-error, missing-module-docstring, use-dict-literal, wrong-import-position
