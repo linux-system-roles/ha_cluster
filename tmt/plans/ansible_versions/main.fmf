@@ -170,9 +170,14 @@ prepare+:
           --src-path . \
           --src-owner linux-system-roles \
           --role ha_cluster
+      # copy ansible-lint config
+      - cp "$COLLECTIONS_ROLES_DIR/roles/ha_cluster/.ansible-lint" "$COLLECTIONS_ROLES_DIR"
+      # add files necessary for the directory to be recognized as a collections dir
+      - cp /usr/local/lib/lsr-auto-maintenance/galaxy.yml "$COLLECTIONS_ROLES_DIR"
+      - touch "$COLLECTIONS_ROLES_DIR"/CHANGELOG.rst
+      # copy ignore*.txt files
       # wokeignore:rule=sanity
       - mkdir -pv "$COLLECTIONS_ROLES_DIR/tests/sanity"
-      - cp "$COLLECTIONS_ROLES_DIR/roles/ha_cluster/.ansible-lint" "$COLLECTIONS_ROLES_DIR"
       - |
         # wokeignore:rule=sanity
         for file in .sanity-ansible-ignore-*.txt; do
