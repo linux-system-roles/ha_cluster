@@ -30,13 +30,19 @@ adjust+:
     # appearing in the collection dir. They interfere with the linter, as they
     # don't follow the rules the linter enforces. Therefore, we remove them to
     # prevent false failures.
+    # ansible-lint installs the current collection (and resolves its
+    # dependencies) into a .ansible/collections/ directory inside the current
+    # working directory. This creates a nested copy of the entire collection.
+    # This interferes with ansible-test. We need to clean up after
+    # ansible-lint: 'rm -rf .ansible'
     test: |
       source "$PYENV_ROOT/bin/activate" &&
       cd "$COLLECTIONS_ROLES_DIR" &&
       rm -rfv ./tmt-* &&
       ansible-lint --version &&
       ansible-lint -v --skip-list 'yaml[line-length]' \
-        --config-file .ansible-lint
+        --config-file .ansible-lint ;
+      rm -rf "$COLLECTIONS_ROLES_DIR/.ansible"
 
   /ansible_test:
     summary: Run ansible-test
