@@ -278,6 +278,26 @@ class TestWrapSources(TestCase):
     def test_string_add_works_correctly(self) -> None:
         self.assertEqual((_wrap("abc") + _wrap("d")).unwrap(), "abcd")
 
+    def test_string_int_conversion(self) -> None:
+        self.assertEqual(int(_wrap("42")), 42)
+
+    def test_string_int_conversion_invalid(self) -> None:
+        data = "err"
+        with self.assert_invalid_src(
+            data,
+            issue_desc="invalid literal for int() with base 10: 'err'",
+        ):
+            int(_wrap(data))
+
+    def test_string_int_conversion_invalid_nested(self) -> None:
+        data = {"a": "err"}
+        with self.assert_invalid_src(
+            data,
+            issue_location="/a",
+            issue_desc="invalid literal for int() with base 10: 'err'",
+        ):
+            int(_wrap(data)["a"])
+
     def test_none_sorting(self) -> None:
         data = {"a": [1, 2, None]}
         with self.assert_invalid_src(
