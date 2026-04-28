@@ -1,6 +1,31 @@
 Changelog
 =========
 
+[1.30.0] - 2026-04-28
+--------------------
+
+### New Features
+
+- feat: crmsh - Add support for QDevice, Qnet and Diskless SBD (#374)
+- feat: add role fingerprints to syslog (#375)
+- feat: export stonith levels (#376)
+
+### Other Changes
+
+- ci: bump actions/upload-artifact from 6 to 7 (#360)
+- ci: address issues with tmt-* files [citest_skip] (#361)
+- test: ensure role gathers the facts it uses by having test clear_facts before include_role (#363)
+- ci: tox-lsr 3.17.0 - container test improvements, use ansible 2.20 for fedora 43 [citest_skip] (#364)
+- ci: tox-lsr 3.17.1 - previous update broke container tests, this fixes them [citest_skip] (#365)
+- ci: update test composes [citest_skip] (#366)
+- ci: fix yum repos to use devel site instead of old site name [citest_skip] (#367)
+- ci: use codecov @v6 [citest_skip] (#368)
+- ci: update header for run_role_with_clear_facts [citest_skip] (#369)
+- test: support ansible-test milestone version 2.22 [citest_skip] (#370)
+- ci: Comply with Ansible partner certification checking [citest_skip] (#371)
+- ci: ansible-lint requires dependencies to be installed [citest_skip] (#372)
+- ci: fix ci scripts [citest_skip] (#379)
+
 [1.29.1] - 2026-02-18
 --------------------
 
