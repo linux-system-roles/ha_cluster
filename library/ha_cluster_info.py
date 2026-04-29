@@ -35,6 +35,8 @@ requirements:
     - pcs-0.12.0 or pcs-0.11.6 or newer for exporting constraints configuration
     - pcs-0.12.0 or pcs-0.11.9 or newer for exporting stonith levels
       configuration
+    - pcs-0.12.1 or pcs-0.11.10 or newer for exporting node attributes and
+      utilization
     - python3-firewall for exporting ha_cluster_manage_firewall
     - python3-policycoreutils for exporting ha_cluster_manage_selinux
     - python 3.6 or newer
@@ -74,8 +76,8 @@ ha_cluster:
         - ha_cluster_transport
         - ha_cluster_totem
         - ha_cluster_quorum
-        - ha_cluster_node_options - currently only node_name,
-          corosync_addresses and pcs_address are present
+        - ha_cluster_node_options - node_name, corosync_addresses,
+          pcs_address, attributes and utilization
         - ha_cluster_resource_primitives
         - ha_cluster_resource_groups
         - ha_cluster_resource_clones
