@@ -360,6 +360,17 @@ def get_stonith_levels_configuration(
     )
 
 
+def get_node_attributes_configuration(
+    run_command: CommandRunner,
+) -> Dict[str, Any]:
+    """
+    Get node attributes and utilization configuration from pcs
+    """
+    return _call_pcs_cli(
+        run_command, ["node", "attribute", "--output-format=json"]
+    )
+
+
 def get_pcs_version_info(run_command: CommandRunner) -> Tuple[str, List[str]]:
     """
     Get pcs version and list of capabilities

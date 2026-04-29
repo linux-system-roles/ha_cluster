@@ -155,6 +155,7 @@ class Capability(Enum):
         "pcmk.properties.operation-defaults.config.output-formats"
     )
     CONSTRAINTS_OUTPUT = "pcmk.constraint.config.output-formats"
+    NODE_ATTRIBUTES_OUTPUT = "node.attributes.output-formats"
     STONITH_LEVELS_OUTPUT = "pcmk.stonith.levels.config.output-formats"
 
 
@@ -276,18 +277,25 @@ def export_cluster_configuration(
 
 
 def export_node_options_configuration(
+    cmd_runner: loader.CommandRunner,
     corosync_conf_pcs: Dict[str, Any],
+    pcs_capabilities: List[str],
 ) -> Dict[str, Any]:
     """
-    Export node options (node names, addresses) from corosync configuration
+    Export node options (node names, addresses, attributes, utilization)
+    from corosync configuration and pcs node attributes
     """
     # known-hosts file is available since pcs-0.10, but is not exported by pcs
     # in any version.
     # No need to check pcs capabilities.
     known_hosts_pcs = loader.get_pcsd_known_hosts()
 
+    node_attrs_config = None
+    if Capability.NODE_ATTRIBUTES_OUTPUT.value in pcs_capabilities:
+        node_attrs_config = loader.get_node_attributes_configuration(cmd_runner)
+
     node_options = exporter.export_cluster_nodes(
-        corosync_conf_pcs, known_hosts_pcs
+        corosync_conf_pcs, known_hosts_pcs, node_attrs_config
     )
 
     return {"ha_cluster_node_options": node_options}
@@ -470,7 +478,9 @@ def main() -> None:
                 **export_cluster_configuration(cmd_runner, corosync_conf_pcs)
             )
             ha_cluster_result.update(
-                **export_node_options_configuration(corosync_conf_pcs)
+                **export_node_options_configuration(
+                    cmd_runner, corosync_conf_pcs, pcs_capabilities
+                )
             )
             ha_cluster_result.update(
                 **export_resources_configuration(cmd_runner, pcs_capabilities)

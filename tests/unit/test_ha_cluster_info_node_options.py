@@ -9,7 +9,7 @@
 
 from unittest import TestCase, mock
 
-from .ha_cluster_info import ha_cluster_info
+from .ha_cluster_info import ha_cluster_info, mocked_cmd_runner
 
 
 class ExportNodeOptionsConfiguration(TestCase):
@@ -38,19 +38,20 @@ class ExportNodeOptionsConfiguration(TestCase):
             ],
         )
         mock_load_pcsd_known_hosts.return_value = dict()
-        self.assertEqual(
-            ha_cluster_info.export_node_options_configuration(
-                corosync_conf_data
-            ),
-            dict(
-                ha_cluster_node_options=[
-                    dict(
-                        node_name="node1",
-                        corosync_addresses=["node1addr"],
-                    ),
-                ],
-            ),
-        )
+        with mocked_cmd_runner([]) as cmd_runner:
+            self.assertEqual(
+                ha_cluster_info.export_node_options_configuration(
+                    cmd_runner, corosync_conf_data, pcs_capabilities=[]
+                ),
+                dict(
+                    ha_cluster_node_options=[
+                        dict(
+                            node_name="node1",
+                            corosync_addresses=["node1addr"],
+                        ),
+                    ],
+                ),
+            )
         mock_load_pcsd_known_hosts.assert_called_once_with()
 
     @mock.patch("ha_cluster_info.loader.get_pcsd_known_hosts")
@@ -84,25 +85,26 @@ class ExportNodeOptionsConfiguration(TestCase):
             node1="node1pcs",
             node2="node2pcs",
         )
-        self.assertEqual(
-            ha_cluster_info.export_node_options_configuration(
-                corosync_conf_data
-            ),
-            dict(
-                ha_cluster_node_options=[
-                    dict(
-                        node_name="node1",
-                        corosync_addresses=["node1addr"],
-                        pcs_address="node1pcs",
-                    ),
-                    dict(
-                        node_name="node2",
-                        corosync_addresses=["node2addr"],
-                        pcs_address="node2pcs",
-                    ),
-                ],
-            ),
-        )
+        with mocked_cmd_runner([]) as cmd_runner:
+            self.assertEqual(
+                ha_cluster_info.export_node_options_configuration(
+                    cmd_runner, corosync_conf_data, pcs_capabilities=[]
+                ),
+                dict(
+                    ha_cluster_node_options=[
+                        dict(
+                            node_name="node1",
+                            corosync_addresses=["node1addr"],
+                            pcs_address="node1pcs",
+                        ),
+                        dict(
+                            node_name="node2",
+                            corosync_addresses=["node2addr"],
+                            pcs_address="node2pcs",
+                        ),
+                    ],
+                ),
+            )
         mock_load_pcsd_known_hosts.assert_called_once_with()
 
     @mock.patch("ha_cluster_info.loader.get_pcsd_known_hosts")
@@ -127,9 +129,10 @@ class ExportNodeOptionsConfiguration(TestCase):
         )
 
         with self.assertRaises(ha_cluster_info.exporter.InvalidSrc) as cm:
-            ha_cluster_info.export_node_options_configuration(
-                corosync_conf_data
-            )
+            with mocked_cmd_runner([]) as cmd_runner:
+                ha_cluster_info.export_node_options_configuration(
+                    cmd_runner, corosync_conf_data, pcs_capabilities=[]
+                )
         self.assertEqual(
             cm.exception.kwargs,
             dict(
