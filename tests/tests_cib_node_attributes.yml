@@ -5,10 +5,25 @@
   vars_files: vars/main.yml
 
   tasks:
+    - name: Find first node name
+      set_fact:
+        __test_first_node: "{{
+            (ansible_play_hosts_all | length == 1)
+            | ternary('localhost', ansible_play_hosts[0]) }}"
+
     - name: Run test
       tags:
         - tests::booted
         - tests::verify
+      vars:
+        ha_cluster_node_options:
+          - node_name: "{{ __test_first_node }}"
+            attributes:
+              - attrs:
+                  - name: attr1
+                    value: val1
+                  - name: attr2
+                    value: val2
       block:
         - name: Skip test in bootc mode
           include_tasks: tasks/skip_if_bootc.yml
@@ -18,12 +33,6 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
-        - name: Find first node name
-          set_fact:
-            __test_first_node: "{{
-                (ansible_play_hosts_all | length == 1)
-                | ternary('localhost', ansible_play_hosts[0]) }}"
-
         - name: Run HA Cluster role
           include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
@@ -31,14 +40,7 @@
             ha_cluster_cluster_name: test-cluster
             ha_cluster_manage_firewall: true
             ha_cluster_manage_selinux: true
-            ha_cluster_node_options:
-              - node_name: "{{ __test_first_node }}"
-                attributes:
-                  - attrs:
-                      - name: attr1
-                        value: val1
-                      - name: attr2
-                        value: val2
+            ha_cluster_export_configuration: true
 
         - name: Fetch versions of cluster components
           include_tasks: tasks/fetch_versions.yml
@@ -130,3 +132,31 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
+        # yamllint disable rule:line-length
+        - name: Check exported node attributes configuration
+          when:
+            - '"node.attributes.output-formats" in __test_pcs_capabilities'
+          vars:
+            __test_exported_config:
+              attributes: >-
+                {{ (ha_cluster_facts.ha_cluster_node_options
+                    | selectattr('node_name', 'equalto', __test_first_node)
+                    | first).attributes }}
+            __test_expected_config:
+              attributes: >-
+                {{ ha_cluster_node_options[0].attributes }}
+          block:
+            - name: Print exported node attributes configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected node attributes configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported node attributes configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config
+        # yamllint enable rule:line-length
