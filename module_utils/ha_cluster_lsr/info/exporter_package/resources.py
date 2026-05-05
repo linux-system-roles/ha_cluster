@@ -13,7 +13,13 @@ __metaclass__ = type
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from .nvset import Attrs, Nvset, dict_to_nv_list, first_attrs
+from .nvset import (
+    Attrs,
+    Nvset,
+    dict_to_nv_list,
+    first_attrs,
+    first_utilization_attrs,
+)
 from .wrap_src import (
     SrcDict,
     invalid_part,
@@ -122,7 +128,9 @@ def _primitive(
         primitive["meta_attrs"] = meta_attrs
 
     if use_utilization:
-        utilization = first_attrs(primitive_src.get("utilization", []))
+        utilization = first_utilization_attrs(
+            primitive_src.get("utilization", [])
+        )
         if utilization:
             primitive["utilization"] = utilization
 

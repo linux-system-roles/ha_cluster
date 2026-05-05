@@ -28,11 +28,13 @@ from .exporter_package.constraints_ticket import (
     export_ticket_constraints,
 )
 from .exporter_package.corosync_conf import (
-    export_cluster_nodes,
     export_corosync_cluster_name,
     export_corosync_quorum,
     export_corosync_totem,
     export_corosync_transport,
+)
+from .exporter_package.nodes import (
+    export_cluster_nodes,
 )
 from .exporter_package.resource_defaults import (
     export_resource_defaults,

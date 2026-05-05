@@ -11,7 +11,7 @@ import json
 from unittest import TestCase, mock
 
 from .fixture_constraints import EMPTY_CONSTRAINTS
-from .ha_cluster_info import ha_cluster_info, mocked_module
+from .ha_cluster_info import ha_cluster_info, mocked_cmd_runner
 
 CMD_OPTIONS = dict(environ_update={"LC_ALL": "C"}, check_rc=False)
 PCS_CMD = ["pcs", "constraint", "--all", "--output-format=json"]
@@ -154,17 +154,17 @@ class ExportConstraintsConfiguration(TestCase):
                 },
             ],
         }
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (
                     CMD_CONSTRAINTS_CONF,
                     (0, json.dumps(constraints_data), ""),
                 ),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_constraints_configuration(
-                    module_mock,
+                    cmd_runner,
                     [ha_cluster_info.Capability.CONSTRAINTS_OUTPUT.value],
                 ),
                 {
@@ -271,38 +271,38 @@ class ExportConstraintsConfiguration(TestCase):
             )
 
     def test_success_empty_constraints(self) -> None:
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (
                     CMD_CONSTRAINTS_CONF,
                     (0, json.dumps(EMPTY_CONSTRAINTS), ""),
                 ),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_constraints_configuration(
-                    module_mock,
+                    cmd_runner,
                     [ha_cluster_info.Capability.CONSTRAINTS_OUTPUT.value],
                 ),
                 {},
             )
 
     def test_no_capabilities(self) -> None:
-        with mocked_module([]) as module_mock:
+        with mocked_cmd_runner([]) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_constraints_configuration(
-                    module_mock, pcs_capabilities=[]
+                    cmd_runner, pcs_capabilities=[]
                 ),
                 {},
             )
 
     def test_pcs_cmd_fail(self) -> None:
         with self.assertRaises(ha_cluster_info.loader.CliCommandError) as cm:
-            with mocked_module(
+            with mocked_cmd_runner(
                 [(CMD_CONSTRAINTS_CONF, (1, "", "Error"))]
-            ) as module_mock:
+            ) as cmd_runner:
                 ha_cluster_info.export_constraints_configuration(
-                    module_mock,
+                    cmd_runner,
                     [ha_cluster_info.Capability.CONSTRAINTS_OUTPUT.value],
                 )
         self.assertEqual(

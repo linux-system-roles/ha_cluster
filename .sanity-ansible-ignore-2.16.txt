@@ -39,6 +39,8 @@ plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_ticket.py 
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/constraints_ticket.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/corosync_conf.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/corosync_conf.py import-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/nodes.py compile-2.7!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/nodes.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/nvset.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/nvset.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/resource_defaults.py compile-2.7!skip

@@ -466,6 +466,12 @@ class _WrapStr(str, _WrapSeq):
     def __add__(self, other: Any) -> "_WrapStr":
         return self._add(other)
 
+    def __int__(self) -> int:
+        try:
+            return int(self._data)
+        except ValueError as e:
+            raise self._invalid_src(str(e)) from e
+
 
 class _WrapList(list, _WrapSeq):
     _data: list

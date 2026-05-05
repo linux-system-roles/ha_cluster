@@ -41,6 +41,8 @@ An Ansible role for managing High Availability Clustering.
   * resource defaults and resource operation defaults
   * resource constraints
   * stonith levels, also known as fencing topology
+  * Pacemaker node attributes
+  * node and resource utilization
 * The role can be used to configure a non-running container or VM image.
   However, in this mode, the role is limited to only install cluster packages.
 
@@ -1612,8 +1614,8 @@ may not be present in the export.
   * [`ha_cluster_transport`](#ha_cluster_transport)
   * [`ha_cluster_totem`](#ha_cluster_totem)
   * [`ha_cluster_quorum`](#ha_cluster_quorum)
-  * [`ha_cluster_node_options`](#ha_cluster_node_options) - currently only
-    `node_name`, `corosync_addresses` and `pcs_address` are present
+  * [`ha_cluster_node_options`](#ha_cluster_node_options) - `node_name`,
+    `corosync_addresses`, `pcs_address`, `attributes` and `utilization`
   * [`ha_cluster_resource_primitives`](#ha_cluster_resource_primitives)
   * [`ha_cluster_resource_groups`](#ha_cluster_resource_groups)
   * [`ha_cluster_resource_clones`](#ha_cluster_resource_clones)

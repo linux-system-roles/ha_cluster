@@ -5,10 +5,25 @@
   vars_files: vars/main.yml
 
   tasks:
+    - name: Find first node name
+      set_fact:
+        __test_first_node: "{{
+            (ansible_play_hosts_all | length == 1)
+            | ternary('localhost', ansible_play_hosts[0]) }}"
+
     - name: Run test
       tags:
         - tests::booted
         - tests::verify
+      vars:
+        ha_cluster_node_options:
+          - node_name: "{{ __test_first_node }}"
+            utilization:
+              - attrs:
+                  - name: cpu
+                    value: 2
+                  - name: memory
+                    value: 4096
       block:
         - name: Skip test in bootc mode
           include_tasks: tasks/skip_if_bootc.yml
@@ -18,12 +33,6 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
-        - name: Find first node name
-          set_fact:
-            __test_first_node: "{{
-                (ansible_play_hosts_all | length == 1)
-                | ternary('localhost', ansible_play_hosts[0]) }}"
-
         - name: Run HA Cluster role
           include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
@@ -31,6 +40,7 @@
             ha_cluster_cluster_name: test-cluster
             ha_cluster_manage_firewall: true
             ha_cluster_manage_selinux: true
+            ha_cluster_export_configuration: true
             # Property placement-strategy must be set accordingly. When not set,
             # there is an extra warning in the `pcs node|resource utilization`
             # result.
@@ -38,14 +48,6 @@
               - attrs:
                   - name: placement-strategy
                     value: utilization
-            ha_cluster_node_options:
-              - node_name: "{{ __test_first_node }}"
-                utilization:
-                  - attrs:
-                      - name: cpu
-                        value: 2
-                      - name: memory
-                        value: 4096
             ha_cluster_resource_primitives:
               - id: resource1
                 # wokeignore:rule=dummy
@@ -178,3 +180,31 @@
 
         - name: Check firewall and selinux state
           include_tasks: tasks/check_firewall_selinux.yml
+
+        # yamllint disable rule:line-length
+        - name: Check exported node utilization configuration
+          when:
+            - '"node.attributes.output-formats" in __test_pcs_capabilities'
+          vars:
+            __test_exported_config:
+              utilization: >-
+                {{ (ha_cluster_facts.ha_cluster_node_options
+                    | selectattr('node_name', 'equalto', __test_first_node)
+                    | first).utilization }}
+            __test_expected_config:
+              utilization: >-
+                {{ ha_cluster_node_options[0].utilization }}
+          block:
+            - name: Print exported node utilization configuration
+              debug:
+                var: __test_exported_config
+
+            - name: Print expected node utilization configuration
+              debug:
+                var: __test_expected_config
+
+            - name: Compare expected and exported node utilization configuration
+              assert:
+                that:
+                  - __test_exported_config == __test_expected_config
+        # yamllint enable rule:line-length

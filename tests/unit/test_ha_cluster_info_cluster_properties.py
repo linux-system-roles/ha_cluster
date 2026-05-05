@@ -10,7 +10,7 @@
 import json
 from unittest import TestCase, mock
 
-from .ha_cluster_info import ha_cluster_info, mocked_module
+from .ha_cluster_info import ha_cluster_info, mocked_cmd_runner
 
 CMD_OPTIONS = dict(environ_update={"LC_ALL": "C"}, check_rc=False)
 PCS_CMD = ["pcs", "property", "config", "--output-format=json"]
@@ -37,17 +37,17 @@ class ExportPropertiesConfiguration(TestCase):
                 },
             ]
         }
-        with mocked_module(
+        with mocked_cmd_runner(
             [
                 (
                     CMD_CLUSTER_PROPERTIES_CONF,
                     (0, json.dumps(properties_data), ""),
                 ),
             ]
-        ) as module_mock:
+        ) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_cluster_properties_configuration(
-                    module_mock,
+                    cmd_runner,
                     [
                         ha_cluster_info.Capability.CLUSTER_PROPERTIES_OUTPUT.value
                     ],
@@ -67,21 +67,21 @@ class ExportPropertiesConfiguration(TestCase):
             )
 
     def test_no_capabilities(self) -> None:
-        with mocked_module([]) as module_mock:
+        with mocked_cmd_runner([]) as cmd_runner:
             self.assertEqual(
                 ha_cluster_info.export_cluster_properties_configuration(
-                    module_mock, pcs_capabilities=[]
+                    cmd_runner, pcs_capabilities=[]
                 ),
                 {},
             )
 
     def test_pcs_cmd_fail(self) -> None:
         with self.assertRaises(ha_cluster_info.loader.CliCommandError) as cm:
-            with mocked_module(
+            with mocked_cmd_runner(
                 [(CMD_CLUSTER_PROPERTIES_CONF, (1, "", "Error"))]
-            ) as module_mock:
+            ) as cmd_runner:
                 ha_cluster_info.export_cluster_properties_configuration(
-                    module_mock,
+                    cmd_runner,
                     [
                         ha_cluster_info.Capability.CLUSTER_PROPERTIES_OUTPUT.value
                     ],

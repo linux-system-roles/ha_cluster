@@ -35,6 +35,8 @@ requirements:
     - pcs-0.12.0 or pcs-0.11.6 or newer for exporting constraints configuration
     - pcs-0.12.0 or pcs-0.11.9 or newer for exporting stonith levels
       configuration
+    - pcs-0.12.1 or pcs-0.11.10 or newer for exporting node attributes and
+      utilization
     - python3-firewall for exporting ha_cluster_manage_firewall
     - python3-policycoreutils for exporting ha_cluster_manage_selinux
     - python 3.6 or newer
@@ -74,8 +76,8 @@ ha_cluster:
         - ha_cluster_transport
         - ha_cluster_totem
         - ha_cluster_quorum
-        - ha_cluster_node_options - currently only node_name,
-          corosync_addresses and pcs_address are present
+        - ha_cluster_node_options - node_name, corosync_addresses,
+          pcs_address, attributes and utilization
         - ha_cluster_resource_primitives
         - ha_cluster_resource_groups
         - ha_cluster_resource_clones
@@ -155,6 +157,7 @@ class Capability(Enum):
         "pcmk.properties.operation-defaults.config.output-formats"
     )
     CONSTRAINTS_OUTPUT = "pcmk.constraint.config.output-formats"
+    NODE_ATTRIBUTES_OUTPUT = "node.attributes.output-formats"
     STONITH_LEVELS_OUTPUT = "pcmk.stonith.levels.config.output-formats"
 
 
@@ -173,12 +176,13 @@ def get_cmd_runner(module: AnsibleModule) -> loader.CommandRunner:
     return runner
 
 
-def export_os_configuration(module: AnsibleModule) -> Dict[str, Any]:
+def export_os_configuration(
+    cmd_runner: loader.CommandRunner,
+) -> Dict[str, Any]:
     """
     Export OS configuration managed by the role
     """
     result: dict[str, Any] = dict()
-    cmd_runner = get_cmd_runner(module)
 
     if loader.is_rhel_or_clone():
         # The role only enables repos on RHEL and SLES.
@@ -239,32 +243,23 @@ def export_pcsd_configuration() -> Dict[str, Any]:
     return result
 
 
-def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
+def export_cluster_configuration(
+    cmd_runner: loader.CommandRunner,
+    corosync_conf_pcs: Dict[str, Any],
+) -> Dict[str, Any]:
     """
-    Export existing HA cluster configuration
+    Export existing HA cluster configuration (corosync settings)
     """
     # Until pcs is able to export the whole configuration in one go, we need to
     # put it together from separate parts provided by pcs. Some parts are only
     # available in recent pcs versions. Check pcs capabilities.
     result: dict[str, Any] = dict()
-    cmd_runner = get_cmd_runner(module)
 
     corosync_enabled = loader.is_service_enabled(cmd_runner, "corosync")
     pacemaker_enabled = loader.is_service_enabled(cmd_runner, "pacemaker")
     result["ha_cluster_start_on_boot"] = exporter.export_start_on_boot(
         corosync_enabled, pacemaker_enabled
     )
-
-    # Corosync config is available via CLI since pcs-0.10.8, via API v2 since
-    # pcs-0.12.0 and pcs-0.11.9. For old pcs versions, CLI must be used, and
-    # there is no benefit in implementing access via API on top of that.
-    # No need to check pcs capabilities. If this is not supported by pcs,
-    # exporting anything else is pointless (and not supported by pcs anyway).
-    corosync_conf_pcs = loader.get_corosync_conf(cmd_runner)
-    # known-hosts file is available since pcs-0.10, but is not exported by pcs
-    # in any version.
-    # No need to check pcs capabilities.
-    known_hosts_pcs = loader.get_pcsd_known_hosts()
 
     # Convert corosync config to role format
     result["ha_cluster_cluster_name"] = exporter.export_corosync_cluster_name(
@@ -280,16 +275,36 @@ def export_cluster_configuration(module: AnsibleModule) -> Dict[str, Any]:
     if exported_quorum:
         result["ha_cluster_quorum"] = exported_quorum
 
-    # Convert nodes definition to role format
-    result["ha_cluster_node_options"] = exporter.export_cluster_nodes(
-        corosync_conf_pcs, known_hosts_pcs
-    )
-
     return result
 
 
+def export_node_options_configuration(
+    cmd_runner: loader.CommandRunner,
+    corosync_conf_pcs: Dict[str, Any],
+    pcs_capabilities: List[str],
+) -> Dict[str, Any]:
+    """
+    Export node options (node names, addresses, attributes, utilization)
+    from corosync configuration and pcs node attributes
+    """
+    # known-hosts file is available since pcs-0.10, but is not exported by pcs
+    # in any version.
+    # No need to check pcs capabilities.
+    known_hosts_pcs = loader.get_pcsd_known_hosts()
+
+    node_attrs_config = None
+    if Capability.NODE_ATTRIBUTES_OUTPUT.value in pcs_capabilities:
+        node_attrs_config = loader.get_node_attributes_configuration(cmd_runner)
+
+    node_options = exporter.export_cluster_nodes(
+        corosync_conf_pcs, known_hosts_pcs, node_attrs_config
+    )
+
+    return {"ha_cluster_node_options": node_options}
+
+
 def export_resources_configuration(
-    module: AnsibleModule, pcs_capabilities: List[str]
+    cmd_runner: loader.CommandRunner, pcs_capabilities: List[str]
 ) -> Dict[str, Any]:
     """
     Export existing HA cluster resources
@@ -297,8 +312,6 @@ def export_resources_configuration(
 
     if Capability.RESOURCE_OUTPUT.value not in pcs_capabilities:
         return dict()
-
-    cmd_runner = get_cmd_runner(module)
     resources = loader.get_resources_configuration(cmd_runner)
     stonith = loader.get_stonith_configuration(cmd_runner)
     primitives = exporter.export_resource_primitive_list(resources, stonith)
@@ -319,7 +332,7 @@ def export_resources_configuration(
 
 
 def export_cluster_properties_configuration(
-    module: AnsibleModule, pcs_capabilities: List[str]
+    cmd_runner: loader.CommandRunner, pcs_capabilities: List[str]
 ) -> Dict[str, Any]:
     """
     Export existing HA cluster properties
@@ -327,8 +340,6 @@ def export_cluster_properties_configuration(
 
     if Capability.CLUSTER_PROPERTIES_OUTPUT.value not in pcs_capabilities:
         return dict()
-
-    cmd_runner = get_cmd_runner(module)
     pcs_properties = loader.get_cluster_properties_configuration(cmd_runner)
     properties = exporter.export_cluster_properties(pcs_properties)
 
@@ -340,7 +351,7 @@ def export_cluster_properties_configuration(
 
 
 def export_resource_defaults_configuration(
-    module: AnsibleModule, pcs_capabilities: List[str]
+    cmd_runner: loader.CommandRunner, pcs_capabilities: List[str]
 ) -> Dict[str, Any]:
     """
     Export existing HA cluster resource defaults
@@ -348,8 +359,6 @@ def export_resource_defaults_configuration(
 
     if Capability.RESOURCE_DEFAULTS_OUTPUT.value not in pcs_capabilities:
         return dict()
-
-    cmd_runner = get_cmd_runner(module)
     pcs_defaults = loader.get_resource_defaults_configuration(cmd_runner)
     defaults = exporter.export_resource_defaults(pcs_defaults)
 
@@ -361,7 +370,7 @@ def export_resource_defaults_configuration(
 
 
 def export_resource_op_defaults_configuration(
-    module: AnsibleModule, pcs_capabilities: List[str]
+    cmd_runner: loader.CommandRunner, pcs_capabilities: List[str]
 ) -> Dict[str, Any]:
     """
     Export existing HA cluster resource operations defaults
@@ -369,8 +378,6 @@ def export_resource_op_defaults_configuration(
 
     if Capability.RESOURCE_OP_DEFAULTS_OUTPUT.value not in pcs_capabilities:
         return dict()
-
-    cmd_runner = get_cmd_runner(module)
     pcs_defaults = loader.get_resource_op_defaults_configuration(cmd_runner)
     defaults = exporter.export_resource_op_defaults(pcs_defaults)
 
@@ -382,7 +389,7 @@ def export_resource_op_defaults_configuration(
 
 
 def export_constraints_configuration(
-    module: AnsibleModule, pcs_capabilities: List[str]
+    cmd_runner: loader.CommandRunner, pcs_capabilities: List[str]
 ) -> Dict[str, Any]:
     """
     Export existing HA cluster constraints
@@ -390,8 +397,6 @@ def export_constraints_configuration(
 
     if Capability.CONSTRAINTS_OUTPUT.value not in pcs_capabilities:
         return dict()
-
-    cmd_runner = get_cmd_runner(module)
     constraints = loader.get_constraints_configuration(cmd_runner)
 
     result: dict[str, Any] = dict()
@@ -416,7 +421,7 @@ def export_constraints_configuration(
 
 
 def export_stonith_levels_configuration(
-    module: AnsibleModule, pcs_capabilities: List[str]
+    cmd_runner: loader.CommandRunner, pcs_capabilities: List[str]
 ) -> Dict[str, Any]:
     """
     Export existing HA cluster stonith levels
@@ -425,7 +430,6 @@ def export_stonith_levels_configuration(
     if Capability.STONITH_LEVELS_OUTPUT.value not in pcs_capabilities:
         return dict()
 
-    cmd_runner = get_cmd_runner(module)
     stonith_levels = loader.get_stonith_levels_configuration(cmd_runner)
 
     result: dict[str, Any] = dict()
@@ -437,11 +441,11 @@ def export_stonith_levels_configuration(
     return result
 
 
-def get_pcs_capabilities(module: AnsibleModule) -> List[str]:
+def get_pcs_capabilities(cmd_runner: loader.CommandRunner) -> List[str]:
     """
     Extract pcsd pcs_capabilities from pcs version info
     """
-    _version, capabilities = loader.get_pcs_version_info(get_cmd_runner(module))
+    _version, capabilities = loader.get_pcs_version_info(cmd_runner)
     return capabilities
 
 
@@ -456,36 +460,55 @@ def main() -> None:
     ha_cluster_result: Dict[str, Any] = dict()
     module_result["ha_cluster"] = ha_cluster_result
 
-    pcs_capabilities = get_pcs_capabilities(module)
+    cmd_runner = get_cmd_runner(module)
+    pcs_capabilities = get_pcs_capabilities(cmd_runner)
 
     try:
         if loader.has_corosync_conf():
-            ha_cluster_result.update(**export_os_configuration(module))
+            # Corosync config is available via CLI since pcs-0.10.8, via API
+            # v2 since pcs-0.12.0 and pcs-0.11.9. For old pcs versions, CLI
+            # must be used, and there is no benefit in implementing access via
+            # API on top of that.
+            # No need to check pcs capabilities. If this is not supported by
+            # pcs, exporting anything else is pointless (and not supported by
+            # pcs anyway).
+            corosync_conf_pcs = loader.get_corosync_conf(cmd_runner)
+
+            ha_cluster_result.update(**export_os_configuration(cmd_runner))
             ha_cluster_result.update(**export_pcsd_configuration())
-            ha_cluster_result.update(**export_cluster_configuration(module))
             ha_cluster_result.update(
-                **export_resources_configuration(module, pcs_capabilities)
+                **export_cluster_configuration(cmd_runner, corosync_conf_pcs)
+            )
+            ha_cluster_result.update(
+                **export_node_options_configuration(
+                    cmd_runner, corosync_conf_pcs, pcs_capabilities
+                )
+            )
+            ha_cluster_result.update(
+                **export_resources_configuration(cmd_runner, pcs_capabilities)
             )
             ha_cluster_result.update(
                 **export_cluster_properties_configuration(
-                    module, pcs_capabilities
+                    cmd_runner, pcs_capabilities
                 )
             )
             ha_cluster_result.update(
                 **export_resource_defaults_configuration(
-                    module, pcs_capabilities
+                    cmd_runner, pcs_capabilities
                 )
             )
             ha_cluster_result.update(
                 **export_resource_op_defaults_configuration(
-                    module, pcs_capabilities
+                    cmd_runner, pcs_capabilities
                 )
             )
             ha_cluster_result.update(
-                **export_constraints_configuration(module, pcs_capabilities)
+                **export_constraints_configuration(cmd_runner, pcs_capabilities)
             )
             ha_cluster_result.update(
-                **export_stonith_levels_configuration(module, pcs_capabilities)
+                **export_stonith_levels_configuration(
+                    cmd_runner, pcs_capabilities
+                )
             )
             ha_cluster_result["ha_cluster_cluster_present"] = True
         else:
