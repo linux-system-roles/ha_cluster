@@ -47,6 +47,7 @@ plugins/module_utils/ha_cluster_lsr/info/exporter_package/various.py compile-2.7
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py compile-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/loader.py compile-3.5!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/corosync_conf.py compile-3.5!skip
+plugins/module_utils/ha_cluster_lsr/info/exporter_package/nodes.py compile-3.5!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter_package/wrap_src.py compile-3.5!skip
 plugins/module_utils/ha_cluster_lsr/info/exporter.py import-2.7!skip
 plugins/module_utils/ha_cluster_lsr/info/loader.py import-2.7!skip
