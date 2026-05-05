@@ -41,7 +41,8 @@ An Ansible role for managing High Availability Clustering.
   * resource defaults and resource operation defaults
   * resource constraints
   * stonith levels, also known as fencing topology
-  * node attributes and utilization
+  * Pacemaker node attributes
+  * node and resource utilization
 * The role can be used to configure a non-running container or VM image.
   However, in this mode, the role is limited to only install cluster packages.
 
