@@ -3,6 +3,7 @@
 
 - name: Populate service facts
   ansible.builtin.service_facts:
+  no_log: "{{ ansible_verbosity < 2 }}"
 
 - name: Manage SELinux
   when:

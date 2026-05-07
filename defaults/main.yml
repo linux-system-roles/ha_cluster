@@ -84,3 +84,7 @@ ha_cluster_export_configuration: false
 # This allows cluster administration with non-root user.
 # ha_cluster_admin_user_name: ''
 # ha_cluster_admin_user_group: ''
+
+# If true, suppress potentially sensitive output from tasks that
+# handle credentials, secrets, and other sensitive data.
+ha_cluster_secure_logging: true

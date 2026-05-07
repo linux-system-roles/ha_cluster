@@ -1490,6 +1490,20 @@ changed.
 You may take a look at [an
 example](#configuring-a-cluster-using-a-quorum-device).
 
+#### `ha_cluster_secure_logging`
+
+boolean, default: `true`
+
+If `true`, suppress potentially sensitive output from tasks that handle
+credentials, secrets, and other sensitive data by setting `no_log: true` on
+those tasks. This prevents passwords, API tokens, preshared keys, and similar
+sensitive information from appearing in Ansible logs and console output.
+
+If you need to debug issues with credential handling or secret management, you
+can temporarily set `ha_cluster_secure_logging: false` to see the full output
+from these tasks. However, be aware that this may expose sensitive information
+in logs, so it should only be used in development or troubleshooting scenarios.
+
 ### Inventory
 
 #### Nodes' names and addresses

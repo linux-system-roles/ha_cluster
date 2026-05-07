@@ -143,6 +143,7 @@
 
 - name: Get services status - detect pacemaker
   service_facts:
+  no_log: "{{ ansible_verbosity < 2 }}"
 
 - name: Set stonith-watchdog-timeout cluster property
   vars:
