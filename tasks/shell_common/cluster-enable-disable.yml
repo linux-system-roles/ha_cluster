@@ -18,6 +18,7 @@
 
 - name: Get services status - detect SBD
   ansible.builtin.service_facts:
+  no_log: "{{ ansible_verbosity < 2 }}"
 
 - name: Enable or disable SBD
   ansible.builtin.service:

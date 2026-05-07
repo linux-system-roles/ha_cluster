@@ -25,7 +25,7 @@
       register: __ha_cluster_preshared_key_slurp_controller
       when: __ha_cluster_preshared_key_stat_controller.stat.exists
       # Prevent key contents to be printed to the output
-      no_log: true
+      no_log: "{{ ha_cluster_secure_logging }}"
 
     - name: Use the slurped key from the controller {{ preshared_key_label }}
       ansible.builtin.set_fact:
@@ -33,14 +33,14 @@
           "{{ __ha_cluster_preshared_key_slurp_controller.content }}"
       when: __ha_cluster_preshared_key_stat_controller.stat.exists
       # Prevent key contents to be printed to the output
-      no_log: true
+      no_log: "{{ ha_cluster_secure_logging }}"
 
 - name: Generate random key {{ preshared_key_label }}
   when:
     - not (preshared_key_src is string and preshared_key_src | length > 1)
   run_once: true  # noqa: run_once[task]
   # Prevent key contents to be printed to the output
-  no_log: true
+  no_log: "{{ ha_cluster_secure_logging }}"
   block:
     - name: Generate key using OpenSSL {{ preshared_key_label }}
       ansible.builtin.command:
@@ -69,7 +69,7 @@
       register: __ha_cluster_preshared_key_slurp
       when: __ha_cluster_preshared_key_stat.stat.exists
       # Prevent key contents to be printed to the output
-      no_log: true
+      no_log: "{{ ha_cluster_secure_logging }}"
 
     - name: Use the slurped key from cluster nodes {{ preshared_key_label }}
       ansible.builtin.set_fact:
@@ -77,7 +77,7 @@
           "{{ __ha_cluster_preshared_key_slurp.content }}"
       when: __ha_cluster_preshared_key_stat.stat.exists
       # Prevent key contents to be printed to the output
-      no_log: true
+      no_log: "{{ ha_cluster_secure_logging }}"
       # Following variables set the fact for all nodes
       delegate_facts: true
       delegate_to: "{{ item }}"

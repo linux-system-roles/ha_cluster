@@ -17,7 +17,7 @@
     group: root
     mode: '0400'
   register: __ha_cluster_distribute_corosync_authkey
-  no_log: true
+  no_log: "{{ ha_cluster_secure_logging }}"
 
 - name: Get pacemaker authkey
   ansible.builtin.include_tasks:
@@ -36,4 +36,4 @@
     group: haclient
     mode: '0400'
   register: __ha_cluster_distribute_pacemaker_authkey
-  no_log: true
+  no_log: "{{ ha_cluster_secure_logging }}"

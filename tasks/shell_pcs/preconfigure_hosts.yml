@@ -17,7 +17,7 @@
             {{ ha_cluster_hacluster_password | string | quote }}
       register: __ha_cluster_openssl_call_result
       changed_when: false
-      no_log: true
+      no_log: "{{ ha_cluster_secure_logging }}"
 
     - name: Set hacluster password
       ansible.builtin.user:
