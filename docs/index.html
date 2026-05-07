@@ -236,6 +236,8 @@ id="toc-ha_cluster_acls"><code>ha_cluster_acls</code></a></li>
 id="toc-ha_cluster_alerts"><code>ha_cluster_alerts</code></a></li>
 <li><a href="#ha_cluster_qnetd"
 id="toc-ha_cluster_qnetd"><code>ha_cluster_qnetd</code></a></li>
+<li><a href="#ha_cluster_secure_logging"
+id="toc-ha_cluster_secure_logging"><code>ha_cluster_secure_logging</code></a></li>
 </ul></li>
 <li><a href="#inventory" id="toc-inventory">Inventory</a>
 <ul>
@@ -1814,6 +1816,20 @@ disrupt qnetd operation.</p>
 configuration will not be changed.</p>
 <p>You may take a look at <a
 href="#configuring-a-cluster-using-a-quorum-device">an example</a>.</p>
+<h3
+id="ha_cluster_secure_logging"><code>ha_cluster_secure_logging</code></h3>
+<p>boolean, default: <code>true</code></p>
+<p>If <code>true</code>, suppress potentially sensitive output from
+tasks that handle credentials, secrets, and other sensitive data by
+setting <code>no_log: true</code> on those tasks. This prevents
+passwords, API tokens, preshared keys, and similar sensitive information
+from appearing in Ansible logs and console output.</p>
+<p>If you need to debug issues with credential handling or secret
+management, you can temporarily set
+<code>ha_cluster_secure_logging: false</code> to see the full output
+from these tasks. However, be aware that this may expose sensitive
+information in logs, so it should only be used in development or
+troubleshooting scenarios.</p>
 <h2 id="inventory">Inventory</h2>
 <h3 id="nodes-names-and-addresses">Nodes' names and addresses</h3>
 <p>Nodes' names and addresses can be configured in
