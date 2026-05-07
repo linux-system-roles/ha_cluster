@@ -1,6 +1,19 @@
 Changelog
 =========
 
+[1.31.0] - 2026-05-07
+--------------------
+
+### New Features
+
+- feat: export node attributes utilization (#382)
+- feat: Parametrize no_log usage in ha_cluster role (#383)
+
+### Other Changes
+
+- refactor: Restructure task files to enable more differences between shells (#378)
+- ci: bump actions/github-script from 8 to 9 (#381)
+
 [1.30.0] - 2026-04-28
 --------------------
 
