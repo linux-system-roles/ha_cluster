@@ -17,7 +17,10 @@
 # Corosync-qdevice does not support reload, it must always be restarted to
 # apply changes. If qdevice is not to be used in a cluster, we make sure it is
 # stopped. The only exception to that is when qdevice is not installed at all.
-
+# NOTE: due to a weird quirk in the service_facts module, it can report that
+# the status is one of the bad_states instead of just leaving it out, when the service is
+# not installed. Therefore, we check for the status and if it is one of the bad_states, we
+# assume the service is not installed.
 - name: Get services status - detect corosync-qdevice
   service_facts:
   no_log: "{{ ansible_verbosity < 2 }}"
@@ -30,6 +33,10 @@
     - pacemaker
     - corosync-qdevice
     - corosync
+  vars:
+    __corosync_qdevice_service_status: "{{ ansible_facts.services.get('corosync-qdevice.service', {'status': 'not-found'})['status'] }}"
+    # Ansible service_facts.py - BAD_STATES
+    __bad_states: ['not-found', 'masked', 'failed']
   when:
     - >
         __ha_cluster_distribute_corosync_conf.changed
@@ -41,8 +48,7 @@
         or (__ha_cluster_qdevice_certs_api.changed | d(false))
     - >
         item != 'corosync-qdevice'
-        or 'corosync-qdevice.service' in ansible_facts.services
-
+        or __corosync_qdevice_service_status not in __bad_states
 
 # We must always start daemons to get the cluster running on newly added nodes.
 
