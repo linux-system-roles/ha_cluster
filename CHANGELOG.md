@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.31.1] - 2026-05-13
+--------------------
+
+### Bug Fixes
+
+- fix: check for corosync-qdevice service in bad state before stopping (#385)
+
 [1.31.0] - 2026-05-07
 --------------------
 
