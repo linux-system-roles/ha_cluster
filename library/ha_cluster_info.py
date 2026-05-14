@@ -182,7 +182,7 @@ def export_os_configuration(
     """
     Export OS configuration managed by the role
     """
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
 
     if loader.is_rhel_or_clone():
         # The role only enables repos on RHEL and SLES.
@@ -232,7 +232,7 @@ def export_pcsd_configuration() -> Dict[str, Any]:
     """
     Export pcsd configuration managed by the role
     """
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
 
     pcsd_settings_dict = loader.get_pcsd_settings_conf()
     if pcsd_settings_dict is not None:
@@ -253,7 +253,7 @@ def export_cluster_configuration(
     # Until pcs is able to export the whole configuration in one go, we need to
     # put it together from separate parts provided by pcs. Some parts are only
     # available in recent pcs versions. Check pcs capabilities.
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
 
     corosync_enabled = loader.is_service_enabled(cmd_runner, "corosync")
     pacemaker_enabled = loader.is_service_enabled(cmd_runner, "pacemaker")
@@ -319,7 +319,7 @@ def export_resources_configuration(
     clones = exporter.export_resource_clone_list(resources)
     bundles = exporter.export_resource_bundle_list(resources)
 
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
     if primitives:
         result["ha_cluster_resource_primitives"] = primitives
     if groups:
@@ -343,7 +343,7 @@ def export_cluster_properties_configuration(
     pcs_properties = loader.get_cluster_properties_configuration(cmd_runner)
     properties = exporter.export_cluster_properties(pcs_properties)
 
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
     if properties:
         result["ha_cluster_cluster_properties"] = properties
 
@@ -362,7 +362,7 @@ def export_resource_defaults_configuration(
     pcs_defaults = loader.get_resource_defaults_configuration(cmd_runner)
     defaults = exporter.export_resource_defaults(pcs_defaults)
 
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
     if defaults:
         result["ha_cluster_resource_defaults"] = defaults
 
@@ -381,7 +381,7 @@ def export_resource_op_defaults_configuration(
     pcs_defaults = loader.get_resource_op_defaults_configuration(cmd_runner)
     defaults = exporter.export_resource_op_defaults(pcs_defaults)
 
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
     if defaults:
         result["ha_cluster_resource_operation_defaults"] = defaults
 
@@ -399,7 +399,7 @@ def export_constraints_configuration(
         return dict()
     constraints = loader.get_constraints_configuration(cmd_runner)
 
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
 
     location_constraints = exporter.export_location_constraints(constraints)
     if location_constraints:
@@ -432,7 +432,7 @@ def export_stonith_levels_configuration(
 
     stonith_levels = loader.get_stonith_levels_configuration(cmd_runner)
 
-    result: dict[str, Any] = dict()
+    result: Dict[str, Any] = dict()
 
     levels = exporter.export_stonith_levels(stonith_levels)
     if levels:
