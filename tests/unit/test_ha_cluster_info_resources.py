@@ -41,7 +41,7 @@ class ExportResourcesConfiguration(TestCase):
             self.assertEqual(
                 ha_cluster_info.export_resources_configuration(
                     cmd_runner,
-                    ha_cluster_info.Capability.RESOURCE_OUTPUT.value,
+                    [ha_cluster_info.Capability.RESOURCE_OUTPUT.value],
                 ),
                 json.loads(read_file("resources-export.json")),
             )
@@ -62,7 +62,7 @@ class ExportResourcesConfiguration(TestCase):
             ) as cmd_runner:
                 ha_cluster_info.export_resources_configuration(
                     cmd_runner,
-                    ha_cluster_info.Capability.RESOURCE_OUTPUT.value,
+                    [ha_cluster_info.Capability.RESOURCE_OUTPUT.value],
                 )
         self.assertEqual(
             cm.exception.kwargs,
