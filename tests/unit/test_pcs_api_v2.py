@@ -66,7 +66,7 @@ class Pcs(TestCase):
                     "params": self.cmd_params,
                     "options": to_dict(self.cmd_options),
                 },
-                task_finish_type="TaskFinishType.SUCCESS",
+                task_finish_type="SUCCESS",
                 result={"some": "result"},
                 reports=[],
                 kill_reason=None,

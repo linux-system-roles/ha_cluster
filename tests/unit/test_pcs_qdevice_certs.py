@@ -84,7 +84,7 @@ class Pcs(TestCase):
                     "params": self.cmd_params,
                     "options": to_dict(self.cmd_options),
                 },
-                task_finish_type="TaskFinishType.SUCCESS",
+                task_finish_type="SUCCESS",
                 result=None,
                 reports=[],
                 kill_reason=None,
@@ -119,7 +119,7 @@ class Pcs(TestCase):
                     "params": self.cmd_params,
                     "options": to_dict(self.cmd_options),
                 },
-                task_finish_type="TaskFinishType.SUCCESS",
+                task_finish_type="SUCCESS",
                 result=certs_already_configured,
                 reports=[],
                 kill_reason=None,
@@ -143,7 +143,7 @@ class Pcs(TestCase):
             fixture.response_from_dto(
                 fixture.task_result_dto(
                     result=None,
-                    finish_type=TaskFinishType.UNHANDLED_EXCEPTION,
+                    finish_type=UNHANDLED_EXCEPTION,
                     command=self.cmd_check_dto,
                 )
             ),
@@ -188,7 +188,7 @@ class Pcs(TestCase):
                 fixture.response_from_dto(
                     fixture.task_result_dto(
                         result=None,
-                        finish_type=TaskFinishType.UNHANDLED_EXCEPTION,
+                        finish_type=UNHANDLED_EXCEPTION,
                         command=self.cmd_setup_dto,
                     )
                 ),

@@ -46,7 +46,7 @@ fixture_api_result_command_dict: dict[str, Any] = {
 fixture_api_result_dict_minimal: dict[str, Any] = {
     "task_ident": "identifier",
     "command": fixture_api_result_command_dict,
-    "task_finish_type": str(TaskFinishType.SUCCESS),
+    "task_finish_type": str(SUCCESS),
     "result": None,
     "reports": [],
     "kill_reason": None,
@@ -230,7 +230,7 @@ class ParseApiResponse(TestCase):
             dict(
                 task_ident="identifier",
                 command=fixture_api_result_command_dict,
-                task_finish_type="TaskFinishType.FAIL",
+                task_finish_type="FAIL",
                 result=None,
                 reports=[],
                 kill_reason=None,
@@ -245,7 +245,7 @@ class ParseApiResponse(TestCase):
                     to_dict(
                         fixture.task_result_dto(
                             finish_type=TaskFinishType.KILL,
-                            kill_reason=TaskKillReason.COMPLETION_TIMEOUT,
+                            kill_reason=COMPLETION_TIMEOUT,
                         )
                     )
                 ).encode(),
@@ -256,7 +256,7 @@ class ParseApiResponse(TestCase):
             dict(
                 task_ident="identifier",
                 command=fixture_api_result_command_dict,
-                task_finish_type="TaskFinishType.KILL",
+                task_finish_type="KILL",
                 result=None,
                 reports=[],
                 kill_reason="TaskKillReason.COMPLETION_TIMEOUT",
@@ -271,7 +271,7 @@ class ParseApiResponse(TestCase):
                     to_dict(
                         fixture.task_result_dto(
                             finish_type=TaskFinishType.KILL,
-                            kill_reason=TaskKillReason.USER,
+                            kill_reason=USER,
                         )
                     )
                 ).encode(),
@@ -282,7 +282,7 @@ class ParseApiResponse(TestCase):
             dict(
                 command=fixture_api_result_command_dict,
                 task_ident="identifier",
-                task_finish_type="TaskFinishType.KILL",
+                task_finish_type="KILL",
                 result=None,
                 reports=[],
                 kill_reason="TaskKillReason.USER",
@@ -307,7 +307,7 @@ class ParseApiResponse(TestCase):
             dict(
                 task_ident="identifier",
                 command=fixture_api_result_command_dict,
-                task_finish_type="TaskFinishType.UNHANDLED_EXCEPTION",
+                task_finish_type="UNHANDLED_EXCEPTION",
                 result=None,
                 reports=[],
                 kill_reason=None,
@@ -358,7 +358,7 @@ class ParseApiResponse(TestCase):
             dict(
                 task_ident="identifier",
                 command=fixture_api_result_command_dict,
-                task_finish_type="TaskFinishType.SUCCESS",
+                task_finish_type="SUCCESS",
                 result=None,
                 reports=[
                     {
