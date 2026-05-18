@@ -46,7 +46,7 @@ fixture_api_result_command_dict: dict[str, Any] = {
 fixture_api_result_dict_minimal: dict[str, Any] = {
     "task_ident": "identifier",
     "command": fixture_api_result_command_dict,
-    "task_finish_type": str(SUCCESS),
+    "task_finish_type": "SUCCESS",
     "result": None,
     "reports": [],
     "kill_reason": None,
