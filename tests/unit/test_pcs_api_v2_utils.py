@@ -230,7 +230,7 @@ class ParseApiResponse(TestCase):
             dict(
                 task_ident="identifier",
                 command=fixture_api_result_command_dict,
-                task_finish_type="TaskFinishType.FAIL",
+                task_finish_type=str(TaskFinishType.FAIL),
                 result=None,
                 reports=[],
                 kill_reason=None,
@@ -256,10 +256,10 @@ class ParseApiResponse(TestCase):
             dict(
                 task_ident="identifier",
                 command=fixture_api_result_command_dict,
-                task_finish_type="TaskFinishType.KILL",
+                task_finish_type=str(TaskFinishType.KILL),
                 result=None,
                 reports=[],
-                kill_reason="TaskKillReason.COMPLETION_TIMEOUT",
+                kill_reason=str(TaskKillReason.COMPLETION_TIMEOUT),
             ),
         )
 
@@ -282,10 +282,10 @@ class ParseApiResponse(TestCase):
             dict(
                 command=fixture_api_result_command_dict,
                 task_ident="identifier",
-                task_finish_type="TaskFinishType.KILL",
+                task_finish_type=str(TaskFinishType.KILL),
                 result=None,
                 reports=[],
-                kill_reason="TaskKillReason.USER",
+                kill_reason=str(TaskKillReason.USER),
             ),
         )
 
@@ -307,7 +307,7 @@ class ParseApiResponse(TestCase):
             dict(
                 task_ident="identifier",
                 command=fixture_api_result_command_dict,
-                task_finish_type="TaskFinishType.UNHANDLED_EXCEPTION",
+                task_finish_type=str(TaskFinishType.UNHANDLED_EXCEPTION),
                 result=None,
                 reports=[],
                 kill_reason=None,
@@ -358,7 +358,7 @@ class ParseApiResponse(TestCase):
             dict(
                 task_ident="identifier",
                 command=fixture_api_result_command_dict,
-                task_finish_type="TaskFinishType.SUCCESS",
+                task_finish_type=str(TaskFinishType.SUCCESS),
                 result=None,
                 reports=[
                     {

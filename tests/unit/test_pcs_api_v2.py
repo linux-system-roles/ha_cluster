@@ -18,6 +18,7 @@ sys.modules["ansible.module_utils.ha_cluster_lsr"] = import_module(
 
 import pcs_api_v2
 from pcs.common.async_tasks.dto import CommandDto, CommandOptionsDto
+from pcs.common.async_tasks.types import TaskFinishType
 from pcs.common.interface.dto import to_dict
 
 from . import fixture
@@ -66,7 +67,7 @@ class Pcs(TestCase):
                     "params": self.cmd_params,
                     "options": to_dict(self.cmd_options),
                 },
-                task_finish_type="TaskFinishType.SUCCESS",
+                task_finish_type=str(TaskFinishType.SUCCESS),
                 result={"some": "result"},
                 reports=[],
                 kill_reason=None,
