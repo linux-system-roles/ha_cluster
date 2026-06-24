@@ -1,6 +1,14 @@
 Changelog
 =========
 
+[1.31.3] - 2026-06-24
+--------------------
+
+### Other Changes
+
+- test: fix using Enums in tests (#393)
+- test: remove unused files (#394)
+
 [1.31.2] - 2026-06-01
 --------------------
 
