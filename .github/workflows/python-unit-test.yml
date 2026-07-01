@@ -90,7 +90,7 @@ jobs:
           sudo apt install -y git
 
       - name: checkout PR
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install platform dependencies, python, tox, tox-lsr
         run: |
@@ -108,7 +108,7 @@ jobs:
           fi
 
       - name: Clone pcs
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: ClusterLabs/pcs
           ref: ${{ matrix.pcs_version }}
@@ -147,4 +147,4 @@ jobs:
           VIRTUALENV_SYSTEM_SITE_PACKAGES=true TOXENV="$toxenvs" lsr_ci_runtox
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
