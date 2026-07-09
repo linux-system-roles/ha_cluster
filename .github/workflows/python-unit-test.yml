@@ -63,6 +63,10 @@ jobs:
             pcs_version: v0.11.11
             pcs_dir_local: ''
             pcs_site_packages: site-packages
+          - os: ubuntu-22.04
+            pcs_version: v0.11.12
+            pcs_dir_local: ''
+            pcs_site_packages: site-packages
           - os: ubuntu-24.04
             # v0.12.0 contains a bug preventing it being build in CI
             # v0.12.0-lsr-ci fixes that bug while not adding any other changes
@@ -75,6 +79,10 @@ jobs:
             pcs_site_packages: dist-packages
           - os: ubuntu-24.04
             pcs_version: v0.12.2
+            pcs_dir_local: '/local'
+            pcs_site_packages: dist-packages
+          - os: ubuntu-24.04
+            pcs_version: v0.12.3
             pcs_dir_local: '/local'
             pcs_site_packages: dist-packages
           - os: ubuntu-24.04
