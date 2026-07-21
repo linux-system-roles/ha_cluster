@@ -30,6 +30,11 @@ adjust+:
     # appearing in the collection dir. They interfere with the linter, as they
     # don't follow the rules the linter enforces. Therefore, we remove them to
     # prevent false failures.
+    # Wrapper scripts introduced in TMT version 1.75 interfere with the linter:
+    #   script-{index}-inner-tmt-prepare-wrapper-*
+    #   script-{index}-outer-tmt-prepare-wrapper-*
+    # Reference:
+    #   https://github.com/teemtee/tmt/pull/4351
     # ansible-lint installs the current collection (and resolves its
     # dependencies) into a .ansible/collections/ directory inside the current
     # working directory. This creates a nested copy of the entire collection.
@@ -38,7 +43,7 @@ adjust+:
     test: |
       source "$PYENV_ROOT/bin/activate" &&
       cd "$COLLECTIONS_ROLES_DIR" &&
-      rm -rfv ./tmt-* &&
+      rm -rfv ./tmt-* ./script-*-tmt-prepare-* &&
       ansible-lint --version &&
       ansible-lint -v --skip-list 'yaml[line-length]' \
         --config-file .ansible-lint ;

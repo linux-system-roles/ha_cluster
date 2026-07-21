@@ -132,7 +132,6 @@ variables:
     - if: $COMPOSE_NAME == "Rhel8Next"
       variables:
         TF_COMPOSE: RHEL-8.10.0-Nightly
-        TMT_DEVELOPMENT: true
         TMT_DISTRO: rhel-8.10
         PCS_BRANCH: "pcs-0.10"
         PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
