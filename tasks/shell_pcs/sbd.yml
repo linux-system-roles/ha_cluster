@@ -9,43 +9,51 @@
           block:
             - name: Configure watchdog kernel module blocklist
               lineinfile:
-                path: "/etc/modprobe.d/{{ item }}.conf"
+                path: "/etc/modprobe.d/{{ blocklist }}.conf"
                 create: true
                 mode: "0644"
                 # wokeignore:rule=blacklist
-                regexp: "^(options|blacklist) {{ item }}"
+                regexp: "^(options|blacklist) {{ blocklist }}"
                 # wokeignore:rule=blacklist
-                line: "blacklist {{ item }}"
+                line: "blacklist {{ blocklist }}"
                 state: present
               loop: "{{
                 __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
                 }}"
+              loop_control:
+                loop_var: blocklist
 
             - name: Unload watchdog kernel modules from blocklist
               community.general.modprobe:
-                name: "{{ item }}"
+                name: "{{ blocklist }}"
                 state: absent
               loop: "{{
                 __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
                 }}"
+              loop_control:
+                loop_var: blocklist
 
         - name: Configure and load watchdog kernel module
           block:
             - name: Configure watchdog kernel modules
               lineinfile:
-                path: "/etc/modules-load.d/{{ item }}.conf"
+                path: "/etc/modules-load.d/{{ watchdog_module }}.conf"
                 create: true
                 mode: "0644"
-                regexp: "^{{ item }}"
-                line: "{{ item }}"
+                regexp: "^{{ watchdog_module }}"
+                line: "{{ watchdog_module }}"
                 state: present
               loop: "{{ __ha_cluster_local_node.sbd_watchdog_modules | d([]) }}"
+              loop_control:
+                loop_var: watchdog_module
 
             - name: Load watchdog kernel modules
               community.general.modprobe:
-                name: "{{ item }}"
+                name: "{{ watchdog_module }}"
                 state: present
               loop: "{{ __ha_cluster_local_node.sbd_watchdog_modules | d([]) }}"
+              loop_control:
+                loop_var: watchdog_module
 
     - name: Manage SBD devices
       # Ideally, the block as a whole should run one node at a time. This does
@@ -60,8 +68,10 @@
       block:
         - name: Probe SBD devices
           command:
-            cmd: sbd -d {{ item | quote }} dump
+            cmd: sbd -d {{ sbd_device | quote }} dump
           loop: "{{ __ha_cluster_local_node.sbd_devices | d([]) }}"
+          loop_control:
+            loop_var: sbd_device
           register: __ha_cluster_check_sbd_devices_result
           changed_when: false
           # return_code == 0 means the disk is initialized already
@@ -76,7 +86,7 @@
             # use --force to skip interactive confirmation
             cmd: >
               pcs --force -- stonith sbd device setup
-              device={{ item.item | quote }}
+              device={{ check_sbd_device_result.sbd_device | quote }}
               {% for option in ha_cluster_sbd_options | d([]) %}
                 {% if option.name == 'watchdog-timeout' %}
                   watchdog-timeout={{ option.value | quote }}
@@ -87,7 +97,9 @@
           # initialized already. Therefore this task always makes a change.
           changed_when: true
           loop: "{{ __ha_cluster_check_sbd_devices_result.results }}"
-          when: item.rc != 0
+          loop_control:
+            loop_var: check_sbd_device_result
+          when: check_sbd_device_result.rc != 0
 
     - name: Distribute SBD config
       template:

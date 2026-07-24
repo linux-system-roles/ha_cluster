@@ -9,10 +9,12 @@
 
 - name: Enable CentOS repositories
   command:
-    cmd: dnf config-manager --set-enabled {{ item.id | quote }}
+    cmd: dnf config-manager --set-enabled {{ repo.id | quote }}
   loop: "{{ __ha_cluster_repos }}"
+  loop_control:
+    loop_var: repo
   when:
-    - item.id not in __ha_cluster_repolist.stdout
-    - item.name != "ResilientStorage"
+    - repo.id not in __ha_cluster_repolist.stdout
+    - repo.name != "ResilientStorage"
       or ha_cluster_enable_repos_resilient_storage
-  changed_when: item.name not in __ha_cluster_repolist.stdout
+  changed_when: repo.name not in __ha_cluster_repolist.stdout

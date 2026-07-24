@@ -57,14 +57,16 @@
   block:
     - name: Fail if passwords are not specified
       fail:
-        msg: "{{ item }} must be specified"
+        msg: "{{ required_var }} must be specified"
       when:
-        - lookup("vars", item, default="") | string | length < 1
+        - lookup("vars", required_var, default="") | string | length < 1
         - ha_cluster_cluster_present | bool
         # passwords will not be set when the role runs at image-build time
         - __ha_cluster_is_booted | bool
       loop:
         - ha_cluster_hacluster_password
+      loop_control:
+        loop_var: required_var
       run_once: true
 
     - name: Fail if nodes do not have the same number of SBD devices specified
@@ -97,8 +99,12 @@
       fail:
         msg: Specify 'level' 1..9 for each fencing level
       when:
-        - not((item.level | d() | int) > 0 and (item.level | d() | int) < 10)
+        - >-
+          not((stonith_level_item.level | d() | int) > 0
+          and (stonith_level_item.level | d() | int) < 10)
       loop: "{{ ha_cluster_stonith_levels }}"
+      loop_control:
+        loop_var: stonith_level_item
       run_once: true
 
     - name: Fail if no target is specified for a fencing level
@@ -108,11 +114,13 @@
           for each fencing level
       when:
         - >
-          [item.target is defined,
-            item.target_pattern is defined,
-            item.target_attribute is defined]
+          [stonith_level_item.target is defined,
+            stonith_level_item.target_pattern is defined,
+            stonith_level_item.target_attribute is defined]
           | select | list | length != 1
       loop: "{{ ha_cluster_stonith_levels }}"
+      loop_control:
+        loop_var: stonith_level_item
       run_once: true
 
 - name: Extract qdevice settings

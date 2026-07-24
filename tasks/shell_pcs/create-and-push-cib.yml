@@ -33,13 +33,15 @@
 - name: Write CIB configuration
   copy:
     content: "{{ __ha_cluster_fetch_cib.stdout }}"
-    dest: "{{ item }}"
+    dest: "{{ cib_tempfile_item }}"
     owner: root
     group: root
     mode: "0600"
   loop:
     - "{{ __ha_cluster_tempfile_cib_xml.path }}"
     - "{{ __ha_cluster_tempfile_original_cib_xml.path }}"
+  loop_control:
+    loop_var: cib_tempfile_item
   check_mode: false
   changed_when: not ansible_check_mode
 
@@ -152,28 +154,31 @@
 
     - name: Configure cluster bundle resources
       include_tasks: pcs-cib-resource-bundle.yml
-      vars:
-        resource_bundle: "{{ item }}"
       loop: "{{ ha_cluster_resource_bundles }}"
+      loop_control:
+        loop_var: resource_bundle
 
     - name: Configure cluster resources
       include_tasks: pcs-cib-resource-primitive.yml
       vars:
-        resource: "{{ item }}"
-        resource_is_stonith: "{{ item.agent.startswith('stonith:') }}"
+        resource: "{{ resource_primitive }}"
+        resource_is_stonith: >-
+          {{ resource_primitive.agent.startswith('stonith:') }}
       loop: "{{ ha_cluster_resource_primitives }}"
+      loop_control:
+        loop_var: resource_primitive
 
     - name: Configure cluster resource groups
       include_tasks: pcs-cib-resource-group.yml
-      vars:
-        resource_group: "{{ item }}"
       loop: "{{ ha_cluster_resource_groups }}"
+      loop_control:
+        loop_var: resource_group
 
     - name: Configure cluster resource clones
       include_tasks: pcs-cib-resource-clone.yml
-      vars:
-        resource_clone: "{{ item }}"
       loop: "{{ ha_cluster_resource_clones }}"
+      loop_control:
+        loop_var: resource_clone
 
     ## Stonith levels
     - name: Configure stonith levels
@@ -301,11 +306,13 @@
 
 - name: Remove CIB tempfiles
   file:
-    path: "{{ item.path }}"
+    path: "{{ cib_cleanup_item.path }}"
     state: absent
   loop:
     - "{{ __ha_cluster_tempfile_cib_xml }}"
     - "{{ __ha_cluster_tempfile_original_cib_xml }}"
     - "{{ __ha_cluster_tempfile_cib_diff }}"
+  loop_control:
+    loop_var: cib_cleanup_item
   check_mode: false
   changed_when: not ansible_check_mode

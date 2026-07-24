@@ -4,8 +4,10 @@
   command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
-      -- property set {{ item.name | quote }}={{ item.value | quote }}
+      -- property set {{ attr.name | quote }}={{ attr.value | quote }}
   loop: "{{ properties_set.attrs }}"
+  loop_control:
+    loop_var: attr
   # We always need to create CIB to see whether it's the same as what is
   # already present in the cluster. However, we don't want to report it as a
   # change since the only thing which matters is pushing the resulting CIB to

@@ -80,5 +80,7 @@
       no_log: "{{ ha_cluster_secure_logging }}"
       # Following variables set the fact for all nodes
       delegate_facts: true
-      delegate_to: "{{ item }}"
-      with_items: "{{ ansible_play_hosts }}"
+      delegate_to: "{{ play_host }}"
+      loop: "{{ ansible_play_hosts }}"
+      loop_control:
+        loop_var: play_host

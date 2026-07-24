@@ -27,12 +27,14 @@
 
 - name: Stop cluster daemons to reload configuration
   service:
-    name: "{{ item }}"
+    name: "{{ cluster_service }}"
     state: stopped  # noqa no-handler
   loop:
     - pacemaker
     - corosync-qdevice
     - corosync
+  loop_control:
+    loop_var: cluster_service
   vars:
     __corosync_qdevice_service_status: "{{ ansible_facts.services.get('corosync-qdevice.service', {'status': 'not-found'})['status'] }}"
     # Ansible service_facts.py - BAD_STATES
@@ -47,7 +49,7 @@
         or (__ha_cluster_qdevice_certs_cli.changed | d(false))
         or (__ha_cluster_qdevice_certs_api.changed | d(false))
     - >
-        item != 'corosync-qdevice'
+        cluster_service != 'corosync-qdevice'
         or __corosync_qdevice_service_status not in __bad_states
 
 # We must always start daemons to get the cluster running on newly added nodes.
@@ -118,17 +120,19 @@
 
 - name: Purge removed nodes from pacemaker's cache
   command:
-    cmd: pcs -- cluster node clear {{ item | quote }}
+    cmd: pcs -- cluster node clear {{ node | quote }}
   run_once: true  # noqa: run_once[task]
   loop: "{{ __ha_cluster_list_pacemaker_nodes.stdout_lines }}"
+  loop_control:
+    loop_var: node
   # This cannot be run in the check mode as it requires cluster to be started.
   # Check mode does not start the cluster, it only shows the cluster would be
   # started.
   when:
     - not ansible_check_mode
-    - (item | length) > 0
-    - item not in __ha_cluster_all_node_names
+    - (node | length) > 0
+    - node not in __ha_cluster_all_node_names
   changed_when:
     - not ansible_check_mode
-    - (item | length) > 0
-    - item not in __ha_cluster_all_node_names
+    - (node | length) > 0
+    - node not in __ha_cluster_all_node_names
