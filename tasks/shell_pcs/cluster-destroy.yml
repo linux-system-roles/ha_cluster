@@ -7,7 +7,7 @@
 # run 'pcs cluster destroy'.
 
 - name: Remove cluster configuration
-  command:
+  ansible.builtin.command:
     cmd: pcs cluster destroy
     removes: "{{ config_file }}"
   loop:

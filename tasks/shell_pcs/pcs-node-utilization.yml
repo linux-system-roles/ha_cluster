@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure utilizations for node {{ node_options.node_name }}
-  command:
+  ansible.builtin.command:
     # Multiple sets of utilization per node are not supported by pcs (and
     # therefore the role) as of yet
     cmd: >

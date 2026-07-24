@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure cluster properties set
-  command:
+  ansible.builtin.command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- property set {{ attr.name | quote }}={{ attr.value | quote }}

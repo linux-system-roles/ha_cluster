@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: List active RHEL repositories
-  command:
+  ansible.builtin.command:
     cmd: dnf repolist
   register: __ha_cluster_repolist
   changed_when: false
   check_mode: false
 
 - name: Enable RHEL repositories
-  command: subscription-manager repos --enable {{ repo.id | quote }}
+  ansible.builtin.command: subscription-manager repos --enable {{ repo.id | quote }}
   loop: "{{ __ha_cluster_repos }}"
   loop_control:
     loop_var: repo

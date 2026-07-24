@@ -26,7 +26,7 @@
   no_log: "{{ ansible_verbosity < 2 }}"
 
 - name: Stop cluster daemons to reload configuration
-  service:
+  ansible.builtin.service:
     name: "{{ cluster_service }}"
     state: stopped  # noqa no-handler
   loop:

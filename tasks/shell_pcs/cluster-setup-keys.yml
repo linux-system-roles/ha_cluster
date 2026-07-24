@@ -10,7 +10,7 @@
     preshared_key_length: 256
 
 - name: Distribute corosync authkey
-  copy:
+  ansible.builtin.copy:
     content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
     dest: /etc/corosync/authkey
     owner: root
@@ -28,7 +28,7 @@
     preshared_key_length: 256
 
 - name: Distribute pacemaker authkey
-  copy:
+  ansible.builtin.copy:
     content: "{{ __ha_cluster_some_preshared_key | b64decode }}"
     dest: /etc/pacemaker/authkey
     owner: hacluster
@@ -37,7 +37,7 @@
   register: __ha_cluster_distribute_pacemaker_authkey
 
 - name: Remove qdevice certificates [CLI]
-  command:
+  ansible.builtin.command:
     cmd: pcs -- qdevice net-client destroy
   when:
     - not ansible_check_mode
@@ -56,7 +56,7 @@
       in __ha_cluster_pcsd_capabilities"
 
 - name: Obtain and distribute qdevice certificates [CLI]
-  script:
+  ansible.builtin.script:
     cmd: >
       files/qdevice-certs.sh
       {{ ansible_check_mode | ternary('check', 'check-and-setup') }}

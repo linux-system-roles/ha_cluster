@@ -1,7 +1,8 @@
 # SPDX-License-Identifier: MIT
 ---
+
 - name: Fail if 'cluster present' and 'qnetd present' are inconsistent
-  fail:
+  ansible.builtin.fail:
     msg: >
       Both 'ha_cluster_cluster_present' and 'ha_cluster_qnetd' must be either
       defined or set to null
@@ -11,11 +12,11 @@
     (ha_cluster_cluster_present is not none and ha_cluster_qnetd is none)
 
 - name: Discover cluster node names
-  set_fact:
+  ansible.builtin.set_fact:
     __ha_cluster_node_name: "{{ ha_cluster.node_name | d(inventory_hostname) }}"
 
 - name: Collect cluster node names
-  set_fact:
+  ansible.builtin.set_fact:
     __ha_cluster_all_node_names: "{{
         ansible_play_hosts
         | map('extract', hostvars, '__ha_cluster_node_name')
@@ -30,7 +31,7 @@
   block:
     - name: >
         Fail if ha_cluster_node_options contains unknown or duplicate nodes
-      fail:
+      ansible.builtin.fail:
         msg: >
           node_name fields in ha_cluster_node_options must be unique
           and they must match cluster nodes
@@ -43,7 +44,7 @@
           )
 
 - name: Extract node options
-  set_fact:
+  ansible.builtin.set_fact:
     __ha_cluster_local_node: >-
       {{
         (ha_cluster | d({})) | combine(
@@ -56,7 +57,7 @@
 - name: Check cluster configuration variables
   block:
     - name: Fail if passwords are not specified
-      fail:
+      ansible.builtin.fail:
         msg: "{{ required_var }} must be specified"
       when:
         - lookup("vars", required_var, default="") | string | length < 1
@@ -70,7 +71,7 @@
       run_once: true
 
     - name: Fail if nodes do not have the same number of SBD devices specified
-      fail:
+      ansible.builtin.fail:
         msg: All nodes must have the same number of SBD devices specified
       when:
         - ha_cluster_cluster_present
@@ -86,7 +87,7 @@
     # Running a qnetd on a cluster node doesn't make sense, fencing would make
     # the qnetd unavailable, even if temporarily.
     - name: Fail if configuring qnetd on a cluster node
-      fail:
+      ansible.builtin.fail:
         msg: >
           Qnetd cannot be configured on a cluster node -
           'ha_cluster_cluster_present' and 'ha_cluster_qnetd.present' cannot
@@ -96,7 +97,7 @@
         - ha_cluster_qnetd.present | d(false)
 
     - name: Fail if no valid level is specified for a fencing level
-      fail:
+      ansible.builtin.fail:
         msg: Specify 'level' 1..9 for each fencing level
       when:
         - >-
@@ -108,7 +109,7 @@
       run_once: true
 
     - name: Fail if no target is specified for a fencing level
-      fail:
+      ansible.builtin.fail:
         msg: >
           Specify exactly one of 'target', 'target_pattern', 'target_attribute'
           for each fencing level
@@ -124,7 +125,7 @@
       run_once: true
 
 - name: Extract qdevice settings
-  set_fact:
+  ansible.builtin.set_fact:
     __ha_cluster_qdevice_in_use: "{{ 'device' in ha_cluster_quorum }}"
     __ha_cluster_qdevice_model: "{{ ha_cluster_quorum.device.model | d('') }}"
     # This may set empty value, if it is not defined. Such value is not valid.
@@ -141,7 +142,7 @@
       }}"
 
 - name: Figure out if ATB needs to be enabled for SBD
-  set_fact:
+  ansible.builtin.set_fact:
     # SBD needs ATB enabled if all of these are true:
     # - sbd does not use devices (In check-and-prepare-role-variables.yml it
     #   is verified that all nodes have the same number of devices defined.
@@ -156,7 +157,7 @@
       }}"
 
 - name: Fail if SBD needs ATB enabled and the user configured ATB to be disabled
-  fail:
+  ansible.builtin.fail:
     msg: Cannot set auto_tie_breaker to disabled when SBD needs it to be enabled
   when:
     - __ha_cluster_sbd_needs_atb | bool
@@ -167,7 +168,7 @@
 - name: >-
     Fail if ha_cluster_pcsd_public_key_src and ha_cluster_pcsd_private_key_src
     are set along with ha_cluster_pcsd_certificates
-  fail:
+  ansible.builtin.fail:
     msg: >-
       Cannot set ha_cluster_pcsd_public_key_src and
       ha_cluster_pcsd_private_key_src along with ha_cluster_pcsd_certificates.
@@ -179,14 +180,14 @@
     - ha_cluster_pcsd_certificates | d([]) | length > 0
 
 - name: Fetch pcs capabilities
-  command:
+  ansible.builtin.command:
     cmd: pcs --version --full
   check_mode: false
   changed_when: false  # this is a read-only command
   register: __ha_cluster_pcs_version
 
 - name: Parse pcs capabilities
-  set_fact:
+  ansible.builtin.set_fact:
     __ha_cluster_pcs_capabilities: "{{
         __ha_cluster_pcs_version.stdout_lines[1].split()
       }}"
@@ -202,7 +203,7 @@
       }}"
 
 - name: Fetch pcsd capabilities
-  command:
+  ansible.builtin.command:
     cmd: pcsd --version --full
   check_mode: false
   changed_when: false  # this is a read-only command
@@ -210,7 +211,7 @@
   when: __ha_cluster_pcsd_capabilities_available
 
 - name: Parse pcsd capabilities
-  set_fact:
+  ansible.builtin.set_fact:
     __ha_cluster_pcsd_capabilities: "{{
         (__ha_cluster_pcsd_version.stdout_lines[1] | d('')).split() }}"
 
@@ -220,7 +221,7 @@
 # the support for old implementation of resource and operation defaults and
 # change or remove this check.
 - name: Fail if pcs is to old to configure resources and operations defaults
-  fail:
+  ansible.builtin.fail:
     msg: >
       Installed pcs doesn't support configuring resources and operations
       defaults. Please, upgrade pcs.

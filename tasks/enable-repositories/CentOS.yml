@@ -1,14 +1,14 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: List active CentOS repositories
-  command:
+  ansible.builtin.command:
     cmd: dnf repolist
   register: __ha_cluster_repolist
   changed_when: false
   check_mode: false
 
 - name: Enable CentOS repositories
-  command:
+  ansible.builtin.command:
     cmd: dnf config-manager --set-enabled {{ repo.id | quote }}
   loop: "{{ __ha_cluster_repos }}"
   loop_control:

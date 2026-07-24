@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure node attributes set for node {{ node_options.node_name }}
-  command:
+  ansible.builtin.command:
     # Multiple sets of attributes (with rules) per node are not supported by
     # pcs (and therefore the role) as of yet
     cmd: >

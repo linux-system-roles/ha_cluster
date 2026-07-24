@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure alert {{ alert.id }}
-  command:
+  ansible.builtin.command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       --
@@ -29,7 +29,7 @@
   changed_when: not ansible_check_mode
 
 - name: Configure recipients for alert {{ alert.id }}
-  command:
+  ansible.builtin.command:
     # Multiple sets of utilization per node are not supported by pcs (and
     # therefore the role) as of yet
     cmd: >
