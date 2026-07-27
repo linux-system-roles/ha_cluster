@@ -251,27 +251,32 @@
         - ha_cluster_cluster_properties[0].attrs | length > 0
 
     # Verify CIB to ensure that there are no errors before applying.
+    # Original 'crm_verify' does not handle deprecated attributes correctly
+    # and fails with unhandled return code 78. Original command is:
+    # crm_verify -V \
+    #   -x /var/lib/pacemaker/cib/shadow.{{ __ha_cluster_crm_shadow }}
     - name: Verify shadow CIB
       ansible.builtin.command:
-        cmd: >-
-          crm_verify -V -x
-          /var/lib/pacemaker/cib/shadow.{{ __ha_cluster_crm_shadow }}
+        cmd: "crm --cib {{ __ha_cluster_crm_shadow }} configure verify"
       register: __ha_cluster_crm_verify
       ignore_errors: true
       check_mode: false
       changed_when: false
 
     ## Fail execution if shadow CIB is not valid.
-    ## Example: No STONITH resources were defined while stonith-enabled is true
+    # Example: No STONITH resources were defined while stonith-enabled is true
     - name: Fail if shadow CIB is invalid
       ansible.builtin.fail:
         msg: |
           FAIL: Cluster configuration was invalid.
           Following errors have to be remediated before retrying.
+          Command: crm --cib {{ __ha_cluster_crm_shadow }} configure verify
           Stdout: {{ __ha_cluster_crm_verify.stdout | d('') }}
           Stderr: {{ __ha_cluster_crm_verify.stderr | d('') }}
       when:
         - __ha_cluster_crm_verify.rc != 0
+        # Warnings are ignored,
+        # because they do not prevent CIB from being applied.
         - '"error" in __ha_cluster_crm_verify.stderr | d("") | lower'
       check_mode: false
 
