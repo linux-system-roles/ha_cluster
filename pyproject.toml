@@ -1,3 +1,10 @@
+[project]
+name = "ha_cluster"
+version = "1"
+
+[tool.setuptools]
+py-modules = []
+
 [tool.black]
 line-length = 80
 extend-exclude = "library/sr_fingerprint.py"
