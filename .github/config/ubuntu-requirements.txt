@@ -28,6 +28,7 @@ ruby
 ruby-backports
 ruby-bundler
 ruby-childprocess
+ruby-curb
 ruby-daemons
 ruby-dev
 ruby-ethon
