@@ -9,29 +9,29 @@
           block:
             - name: Configure watchdog kernel module blocklist
               lineinfile:
-                path: "/etc/modprobe.d/{{ blocklist }}.conf"
+                path: "/etc/modprobe.d/{{ module }}.conf"
                 create: true
                 mode: "0644"
                 # wokeignore:rule=blacklist
-                regexp: "^(options|blacklist) {{ blocklist }}"
+                regexp: "^(options|blacklist) {{ module }}"
                 # wokeignore:rule=blacklist
-                line: "blacklist {{ blocklist }}"
+                line: "blacklist {{ module }}"
                 state: present
               loop: "{{
                 __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
                 }}"
               loop_control:
-                loop_var: blocklist
+                loop_var: module
 
             - name: Unload watchdog kernel modules from blocklist
               community.general.modprobe:
-                name: "{{ blocklist }}"
+                name: "{{ module }}"
                 state: absent
               loop: "{{
                 __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
                 }}"
               loop_control:
-                loop_var: blocklist
+                loop_var: module
 
         - name: Configure and load watchdog kernel module
           block:
