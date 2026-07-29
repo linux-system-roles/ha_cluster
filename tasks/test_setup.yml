@@ -61,12 +61,13 @@
 # also coroqnetd user for nss db ownership
 - name: >-
     Copy nss-altfiles ha_cluster users to /etc/passwd
-  ansible.builtin.shell: |
-    for username in hacluster coroqnetd; do
-      if ! grep -q "^$username" /etc/passwd && \
-        grep -q "^$username" /usr/lib/passwd; then
-          grep "^$username" /usr/lib/passwd >> /etc/passwd
-      fi
-    done
+  ansible.builtin.shell:
+    cmd: |
+      for username in hacluster coroqnetd; do
+        if ! grep -q "^$username" /etc/passwd && \
+          grep -q "^$username" /usr/lib/passwd; then
+            grep "^$username" /usr/lib/passwd >> /etc/passwd
+        fi
+      done
   when: __ha_cluster_is_ostree | d(false)
   changed_when: true

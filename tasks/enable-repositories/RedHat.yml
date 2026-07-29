@@ -8,7 +8,8 @@
   check_mode: false
 
 - name: Enable RHEL repositories
-  ansible.builtin.command: subscription-manager repos --enable {{ repo.id | quote }}
+  ansible.builtin.command:
+    cmd: subscription-manager repos --enable {{ repo.id | quote }}
   loop: "{{ __ha_cluster_repos }}"
   loop_control:
     loop_var: repo
