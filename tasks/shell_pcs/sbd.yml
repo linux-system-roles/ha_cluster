@@ -8,7 +8,7 @@
         - name: Configure and unload watchdog kernel modules from blocklist
           block:
             - name: Configure watchdog kernel module blocklist
-              lineinfile:
+              ansible.builtin.lineinfile:
                 path: "/etc/modprobe.d/{{ module }}.conf"
                 create: true
                 mode: "0644"
@@ -36,7 +36,7 @@
         - name: Configure and load watchdog kernel module
           block:
             - name: Configure watchdog kernel modules
-              lineinfile:
+              ansible.builtin.lineinfile:
                 path: "/etc/modules-load.d/{{ watchdog_module }}.conf"
                 create: true
                 mode: "0644"
@@ -67,7 +67,7 @@
       throttle: 1
       block:
         - name: Probe SBD devices
-          command:
+          ansible.builtin.command:
             cmd: sbd -d {{ sbd_device | quote }} dump
           loop: "{{ __ha_cluster_local_node.sbd_devices | d([]) }}"
           loop_control:
@@ -82,7 +82,7 @@
           check_mode: false
 
         - name: Initialize SBD devices
-          command:
+          ansible.builtin.command:
             # use --force to skip interactive confirmation
             cmd: >
               pcs --force -- stonith sbd device setup
@@ -102,7 +102,7 @@
           when: check_sbd_device_result.rc != 0
 
     - name: Distribute SBD config
-      template:
+      ansible.builtin.template:
         src: templates/sbd
         dest: /etc/sysconfig/sbd
         owner: root
@@ -126,7 +126,7 @@
         - __sbd_delay_start | first | int > 0
       block:
         - name: Ensure /etc/systemd/system/sbd.service.d directory exists
-          file:
+          ansible.builtin.file:
             path: /etc/systemd/system/sbd.service.d
             state: directory
             owner: root
@@ -134,7 +134,7 @@
             mode: "0755"
 
         - name: Override start timeout for SBD
-          template:
+          ansible.builtin.template:
             src: templates/override-timeout.conf
             dest: /etc/systemd/system/sbd.service.d/override-timeout.conf
             owner: root
@@ -150,11 +150,11 @@
             # yamllint enable rule:line-length
 
         - name: Reload systemd service files
-          systemd:
+          ansible.builtin.systemd:
             daemon_reload: true
 
 - name: Get services status - detect pacemaker
-  service_facts:
+  ansible.builtin.service_facts:
   no_log: "{{ ansible_verbosity < 2 }}"
 
 - name: Set stonith-watchdog-timeout cluster property
@@ -177,7 +177,7 @@
       #   issues are caused by setting it
       # - both properties are set to the same value for the new pacemaker
       #   preventing inconsistencies
-      command:
+      ansible.builtin.command:
         cmd: >
           pcs --force
           {{
@@ -192,7 +192,7 @@
 
     # In case cib.xml just got created by the task above, fix its permissions.
     - name: Correct cib.xml ownership
-      file:
+      ansible.builtin.file:
         path: /var/lib/pacemaker/cib/cib.xml
         state: file
         owner: hacluster
@@ -204,7 +204,7 @@
     # In case of modifying cib.xml file, delete its (now unmatching) signature
     # so that pacemaker accepts the new cib.xml content.
     - name: Clean cib.xml.sig
-      file:
+      ansible.builtin.file:
         path: /var/lib/pacemaker/cib/cib.xml.sig
         state: absent
       when:
