@@ -7,9 +7,11 @@
 # run 'pcs cluster destroy'.
 
 - name: Remove cluster configuration
-  command:
+  ansible.builtin.command:
     cmd: pcs cluster destroy
-    removes: "{{ item }}"
+    removes: "{{ config_file }}"
   loop:
     - /etc/corosync/corosync.conf
     - /var/lib/pacemaker/cib/cib.xml
+  loop_control:
+    loop_var: config_file

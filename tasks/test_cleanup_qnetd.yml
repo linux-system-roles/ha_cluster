@@ -7,14 +7,14 @@
 # collections.
 ---
 - name: Make sure qnetd is not installed
-  package:
+  ansible.builtin.package:
     name:
       - corosync-qnetd
     state: absent
   when: not __ha_cluster_is_ostree | d(false)
 
 - name: Make sure qnetd config files are not present
-  file:
+  ansible.builtin.file:
     path: /etc/corosync/qnetd
     state: absent
   when: not __ha_cluster_is_ostree | d(false)

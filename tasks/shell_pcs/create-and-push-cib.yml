@@ -8,7 +8,7 @@
 # Prepare CIB files
 
 - name: Create a tempfile for original CIB
-  tempfile:
+  ansible.builtin.tempfile:
     state: file
     suffix: _ha_cluster_original_cib_xml
   register: __ha_cluster_tempfile_original_cib_xml
@@ -16,7 +16,7 @@
   changed_when: not ansible_check_mode
 
 - name: Create a tempfile for new CIB
-  tempfile:
+  ansible.builtin.tempfile:
     state: file
     suffix: _ha_cluster_cib_xml
   register: __ha_cluster_tempfile_cib_xml
@@ -24,22 +24,24 @@
   changed_when: not ansible_check_mode
 
 - name: Fetch CIB configuration
-  command:
+  ansible.builtin.command:
     cmd: cibadmin --query
   register: __ha_cluster_fetch_cib
   check_mode: false
   changed_when: false  # this is a read-only command
 
 - name: Write CIB configuration
-  copy:
+  ansible.builtin.copy:
     content: "{{ __ha_cluster_fetch_cib.stdout }}"
-    dest: "{{ item }}"
+    dest: "{{ cib_tempfile_item }}"
     owner: root
     group: root
     mode: "0600"
   loop:
     - "{{ __ha_cluster_tempfile_cib_xml.path }}"
     - "{{ __ha_cluster_tempfile_original_cib_xml.path }}"
+  loop_control:
+    loop_var: cib_tempfile_item
   check_mode: false
   changed_when: not ansible_check_mode
 
@@ -49,7 +51,7 @@
 # cluster CIB and purge it instead, thus keeping all the automatically created
 # parts in place and report only actual configuration changes.
 - name: Purge new CIB configuration
-  command:
+  ansible.builtin.command:
     cmd: >
       cibadmin --force --delete-all --xpath
       '/cib/configuration/*[not(
@@ -88,7 +90,8 @@
   block:
     ## Cluster properties
     - name: Configure cluster properties
-      include_tasks: pcs-cluster-properties.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cluster-properties.yml
       # pcs-0.11 supports only one set of attributes, that's the reason for
       # 'ha_cluster_cluster_properties[0]' and 'when' instead of looping over
       # ha_cluster_cluster_properties
@@ -100,7 +103,8 @@
 
     ## Node attributes
     - name: Configure node attributes
-      include_tasks: pcs-node-attributes.yml
+      ansible.builtin.include_tasks:
+        file: pcs-node-attributes.yml
       loop: "{{ ha_cluster_node_options | selectattr('attributes', 'defined') |
         list }}"
       loop_control:
@@ -108,7 +112,8 @@
 
     ## Node utilization
     - name: Configure node utilization
-      include_tasks: pcs-node-utilization.yml
+      ansible.builtin.include_tasks:
+        file: pcs-node-utilization.yml
       loop: >-
         {{
           ha_cluster_node_options | selectattr('utilization', 'defined') | list
@@ -121,7 +126,8 @@
     # multiple sets of resources and resources operations defaults. Therefore,
     # we don't need any checks for pcs capabilities.
     - name: Configure resource defaults
-      include_tasks: pcs-rsc-op-defaults.yml
+      ansible.builtin.include_tasks:
+        file: pcs-rsc-op-defaults.yml
       vars:
         operations: false
       loop: "{{ ha_cluster_resource_defaults.meta_attrs | d([]) }}"
@@ -133,7 +139,8 @@
     # multiple sets of resources and resources operations defaults. Therefore,
     # we don't need any checks for pcs capabilities.
     - name: Configure resource operation defaults
-      include_tasks: pcs-rsc-op-defaults.yml
+      ansible.builtin.include_tasks:
+        file: pcs-rsc-op-defaults.yml
       vars:
         operations: true
       loop: "{{
@@ -144,40 +151,48 @@
 
     ## Resources
     - name: Extract primitive to bundle mapping
-      set_fact:
+      ansible.builtin.set_fact:
         __ha_cluster_primitive_bundle_map: "{{
             ha_cluster_resource_bundles | selectattr('resource_id', 'defined')
             | list | items2dict(key_name='resource_id', value_name='id')
           }}"
 
     - name: Configure cluster bundle resources
-      include_tasks: pcs-cib-resource-bundle.yml
-      vars:
-        resource_bundle: "{{ item }}"
+      ansible.builtin.include_tasks:
+        file: pcs-cib-resource-bundle.yml
       loop: "{{ ha_cluster_resource_bundles }}"
+      loop_control:
+        loop_var: resource_bundle
 
     - name: Configure cluster resources
-      include_tasks: pcs-cib-resource-primitive.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-resource-primitive.yml
       vars:
-        resource: "{{ item }}"
-        resource_is_stonith: "{{ item.agent.startswith('stonith:') }}"
+        resource: "{{ resource_primitive }}"
+        resource_is_stonith: >-
+          {{ resource_primitive.agent.startswith('stonith:') }}
       loop: "{{ ha_cluster_resource_primitives }}"
+      loop_control:
+        loop_var: resource_primitive
 
     - name: Configure cluster resource groups
-      include_tasks: pcs-cib-resource-group.yml
-      vars:
-        resource_group: "{{ item }}"
+      ansible.builtin.include_tasks:
+        file: pcs-cib-resource-group.yml
       loop: "{{ ha_cluster_resource_groups }}"
+      loop_control:
+        loop_var: resource_group
 
     - name: Configure cluster resource clones
-      include_tasks: pcs-cib-resource-clone.yml
-      vars:
-        resource_clone: "{{ item }}"
+      ansible.builtin.include_tasks:
+        file: pcs-cib-resource-clone.yml
       loop: "{{ ha_cluster_resource_clones }}"
+      loop_control:
+        loop_var: resource_clone
 
     ## Stonith levels
     - name: Configure stonith levels
-      include_tasks: pcs-cib-stonith-level.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-stonith-level.yml
       loop: "{{ ha_cluster_stonith_levels }}"
       loop_control:
         index_var: stonith_level_index
@@ -185,14 +200,16 @@
 
     ## Constraints
     - name: Configure resource location constraints
-      include_tasks: pcs-cib-constraint-location.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-constraint-location.yml
       loop: "{{ ha_cluster_constraints_location }}"
       loop_control:
         index_var: constraint_index
         loop_var: constraint
 
     - name: Configure resource colocation constraints
-      include_tasks: pcs-cib-constraint-colocation.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-constraint-colocation.yml
       when: constraint.resource_sets | d([]) | length == 0
       loop: "{{ ha_cluster_constraints_colocation }}"
       loop_control:
@@ -200,7 +217,8 @@
         loop_var: constraint
 
     - name: Configure resource set colocation constraints
-      include_tasks: pcs-cib-constraint-set.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-constraint-set.yml
       vars:
         constraint_type: colocation
       when: constraint.resource_sets | d([]) | length > 0
@@ -210,7 +228,8 @@
         loop_var: constraint
 
     - name: Configure resource order constraints
-      include_tasks: pcs-cib-constraint-order.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-constraint-order.yml
       when: constraint.resource_sets | d([]) | length == 0
       loop: "{{ ha_cluster_constraints_order }}"
       loop_control:
@@ -218,7 +237,8 @@
         loop_var: constraint
 
     - name: Configure resource set order constraints
-      include_tasks: pcs-cib-constraint-set.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-constraint-set.yml
       vars:
         constraint_type: order
       when: constraint.resource_sets | d([]) | length > 0
@@ -228,7 +248,8 @@
         loop_var: constraint
 
     - name: Configure resource ticket constraints
-      include_tasks: pcs-cib-constraint-ticket.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-constraint-ticket.yml
       when: constraint.resource_sets | d([]) | length == 0
       loop: "{{ ha_cluster_constraints_ticket }}"
       loop_control:
@@ -236,7 +257,8 @@
         loop_var: constraint
 
     - name: Configure resource set ticket constraints
-      include_tasks: pcs-cib-constraint-set.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-constraint-set.yml
       vars:
         constraint_type: ticket
       when: constraint.resource_sets | d([]) | length > 0
@@ -246,12 +268,14 @@
         loop_var: constraint
 
     - name: Configure acls
-      include_tasks: pcs-cib-acls.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-acls.yml
       vars:
         acls: "{{ ha_cluster_acls | d({}) }}"
 
     - name: Configure alerts
-      include_tasks: pcs-cib-alerts.yml
+      ansible.builtin.include_tasks:
+        file: pcs-cib-alerts.yml
       loop: "{{ ha_cluster_alerts | d([]) }}"
       loop_control:
         loop_var: alert
@@ -259,7 +283,7 @@
 # Push the new CIB into the cluster
 
 - name: Create a tempfile for CIB diff
-  tempfile:
+  ansible.builtin.tempfile:
     state: file
     suffix: _ha_cluster_cib_diff
   register: __ha_cluster_tempfile_cib_diff
@@ -267,7 +291,7 @@
   changed_when: not ansible_check_mode
 
 - name: Compare new and original CIB
-  command:
+  ansible.builtin.command:
     cmd: >
       crm_diff --no-version
       --original {{ __ha_cluster_tempfile_original_cib_xml.path }}
@@ -280,7 +304,7 @@
     - __ha_cluster_cib_diff.rc != 1  # success, CIBs are not the same
 
 - name: Write CIB diff to its tempfile
-  copy:
+  ansible.builtin.copy:
     content: "{{ __ha_cluster_cib_diff.stdout }}"
     dest: "{{ __ha_cluster_tempfile_cib_diff.path }}"
     owner: root
@@ -291,7 +315,7 @@
   when: __ha_cluster_cib_diff.rc == 1
 
 - name: Push CIB diff to the cluster if it has any changes
-  command:
+  ansible.builtin.command:
     cmd: >
       cibadmin --verbose --patch
       --xml-file {{ __ha_cluster_tempfile_cib_diff.path | quote }}
@@ -300,12 +324,14 @@
   when: __ha_cluster_cib_diff.rc == 1
 
 - name: Remove CIB tempfiles
-  file:
-    path: "{{ item.path }}"
+  ansible.builtin.file:
+    path: "{{ cib_cleanup_item.path }}"
     state: absent
   loop:
     - "{{ __ha_cluster_tempfile_cib_xml }}"
     - "{{ __ha_cluster_tempfile_original_cib_xml }}"
     - "{{ __ha_cluster_tempfile_cib_diff }}"
+  loop_control:
+    loop_var: cib_cleanup_item
   check_mode: false
   changed_when: not ansible_check_mode

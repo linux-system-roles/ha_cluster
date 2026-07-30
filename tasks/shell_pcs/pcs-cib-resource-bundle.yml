@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure resource bundle {{ resource_bundle.id }}
-  command:
+  ansible.builtin.command:
     # pcs supports only one set of attributes, that's the reason for
     # *_attrs[0] instead of looping over *_attrs
     cmd: >

@@ -1,17 +1,20 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: List active RHEL repositories
-  command:
+  ansible.builtin.command:
     cmd: dnf repolist
   register: __ha_cluster_repolist
   changed_when: false
   check_mode: false
 
 - name: Enable RHEL repositories
-  command: subscription-manager repos --enable {{ item.id | quote }}
+  ansible.builtin.command:
+    cmd: subscription-manager repos --enable {{ repo.id | quote }}
   loop: "{{ __ha_cluster_repos }}"
+  loop_control:
+    loop_var: repo
   when:
-    - item.id not in __ha_cluster_repolist.stdout
-    - item.name != "Resilient Storage"
+    - repo.id not in __ha_cluster_repolist.stdout
+    - repo.name != "Resilient Storage"
       or ha_cluster_enable_repos_resilient_storage
-  changed_when: item.name not in __ha_cluster_repolist.stdout
+  changed_when: repo.name not in __ha_cluster_repolist.stdout

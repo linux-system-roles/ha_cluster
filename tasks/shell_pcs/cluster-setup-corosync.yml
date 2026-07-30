@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Create a corosync.conf tempfile
-  tempfile:
+  ansible.builtin.tempfile:
     state: file
     suffix: _ha_cluster_corosync_conf
   register: __ha_cluster_tempfile_corosync_conf
@@ -14,7 +14,7 @@
   changed_when: not ansible_check_mode
 
 - name: Create a corosync.conf file content
-  command:
+  ansible.builtin.command:
     cmd: >
       pcs cluster setup
       --corosync_conf {{ __ha_cluster_tempfile_corosync_conf.path | quote }}
@@ -92,7 +92,7 @@
   changed_when: not ansible_check_mode
 
 - name: Add qdevice configuration to corosync.conf
-  command:
+  ansible.builtin.command:
     cmd: >
       pcs quorum device add
       --corosync_conf {{ __ha_cluster_tempfile_corosync_conf.path | quote }}
@@ -124,14 +124,14 @@
   changed_when: not ansible_check_mode
 
 - name: Fetch created corosync.conf file
-  slurp:
+  ansible.builtin.slurp:
     src: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
   register: __ha_cluster_data_corosync_conf
   run_once: true  # noqa: run_once[task]
   when: __ha_cluster_tempfile_corosync_conf.path is defined
 
 - name: Distribute corosync.conf file
-  copy:
+  ansible.builtin.copy:
     content: "{{ __ha_cluster_data_corosync_conf['content'] | b64decode }}"
     dest: /etc/corosync/corosync.conf
     owner: root
@@ -141,7 +141,7 @@
   when: __ha_cluster_data_corosync_conf is defined
 
 - name: Remove a corosync.conf tempfile
-  file:
+  ansible.builtin.file:
     path: "{{ __ha_cluster_tempfile_corosync_conf.path }}"
     state: absent
   when: __ha_cluster_tempfile_corosync_conf.path is defined

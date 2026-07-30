@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure resource primitive {{ resource.id }}
-  command:
+  ansible.builtin.command:
     # pcs supports only one set of attributes, that's the reason for
     # *_attrs[0] instead of looping over *_attrs
     cmd: >
@@ -59,7 +59,7 @@
   changed_when: not ansible_check_mode
 
 - name: Configure utilization for resource primitive {{ resource.id }}
-  command:
+  ansible.builtin.command:
     # Multiple sets of utilization per node are not supported by pcs (and
     # therefore the role) as of yet
     cmd: >

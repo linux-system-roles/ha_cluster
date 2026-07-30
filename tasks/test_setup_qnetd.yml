@@ -7,7 +7,7 @@
 # collections.
 ---
 - name: Install qnetd packages
-  package:
+  ansible.builtin.package:
     name:
       - corosync-qnetd
       - pcs
@@ -16,7 +16,7 @@
              ternary('ansible.posix.rhel_rpm_ostree', omit) }}"
 
 - name: Set up qnetd
-  command:
+  ansible.builtin.command:
     cmd: pcs --start -- qdevice setup model net
   register: __test_pcs_qnetd_setup
   changed_when: __test_pcs_qnetd_setup.rc == 0

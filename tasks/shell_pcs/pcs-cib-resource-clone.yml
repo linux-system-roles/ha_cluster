@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Check options for resource clone {{ resource_clone.resource_id }}
-  fail:
+  ansible.builtin.fail:
     msg: >
       Custom clone id '{{ resource_clone.id }}' is ignored
       for resource clone '{{ resource_clone.resource_id }}', please upgrade pcs
@@ -22,7 +22,7 @@
       )
 
 - name: Configure resource clone {{ resource_clone.resource_id }}
-  command:
+  ansible.builtin.command:
     # pcs supports only one set of attributes, that's the reason for
     # *_attrs[0] instead of looping over *_attrs
     cmd: >

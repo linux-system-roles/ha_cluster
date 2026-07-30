@@ -3,7 +3,7 @@
 - name: Configure colocation constraint {{
       constraint.id | d(constraint_index)
     }}
-  command:
+  ansible.builtin.command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- constraint colocation add

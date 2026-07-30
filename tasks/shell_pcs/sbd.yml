@@ -8,44 +8,52 @@
         - name: Configure and unload watchdog kernel modules from blocklist
           block:
             - name: Configure watchdog kernel module blocklist
-              lineinfile:
-                path: "/etc/modprobe.d/{{ item }}.conf"
+              ansible.builtin.lineinfile:
+                path: "/etc/modprobe.d/{{ module }}.conf"
                 create: true
                 mode: "0644"
                 # wokeignore:rule=blacklist
-                regexp: "^(options|blacklist) {{ item }}"
+                regexp: "^(options|blacklist) {{ module }}"
                 # wokeignore:rule=blacklist
-                line: "blacklist {{ item }}"
+                line: "blacklist {{ module }}"
                 state: present
               loop: "{{
                 __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
                 }}"
+              loop_control:
+                loop_var: module
 
             - name: Unload watchdog kernel modules from blocklist
               community.general.modprobe:
-                name: "{{ item }}"
+                name: "{{ module }}"
                 state: absent
               loop: "{{
                 __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
                 }}"
+              loop_control:
+                loop_var: module
 
         - name: Configure and load watchdog kernel module
           block:
             - name: Configure watchdog kernel modules
-              lineinfile:
-                path: "/etc/modules-load.d/{{ item }}.conf"
+              ansible.builtin.lineinfile:
+                path: "/etc/modules-load.d/{{ watchdog_module }}.conf"
                 create: true
                 mode: "0644"
-                regexp: "^{{ item }}"
-                line: "{{ item }}"
+                regexp: "^{{ watchdog_module }}"
+                line: "{{ watchdog_module }}"
                 state: present
               loop: "{{ __ha_cluster_local_node.sbd_watchdog_modules | d([]) }}"
+              loop_control:
+                loop_var: watchdog_module
 
             - name: Load watchdog kernel modules
               community.general.modprobe:
-                name: "{{ item }}"
+                name: "{{ watchdog_module }}"
                 state: present
               loop: "{{ __ha_cluster_local_node.sbd_watchdog_modules | d([]) }}"
+              loop_control:
+                loop_var: watchdog_module
 
     - name: Manage SBD devices
       # Ideally, the block as a whole should run one node at a time. This does
@@ -59,9 +67,11 @@
       throttle: 1
       block:
         - name: Probe SBD devices
-          command:
-            cmd: sbd -d {{ item | quote }} dump
+          ansible.builtin.command:
+            cmd: sbd -d {{ sbd_device | quote }} dump
           loop: "{{ __ha_cluster_local_node.sbd_devices | d([]) }}"
+          loop_control:
+            loop_var: sbd_device
           register: __ha_cluster_check_sbd_devices_result
           changed_when: false
           # return_code == 0 means the disk is initialized already
@@ -72,11 +82,11 @@
           check_mode: false
 
         - name: Initialize SBD devices
-          command:
+          ansible.builtin.command:
             # use --force to skip interactive confirmation
             cmd: >
               pcs --force -- stonith sbd device setup
-              device={{ item.item | quote }}
+              device={{ check_sbd_device_result.sbd_device | quote }}
               {% for option in ha_cluster_sbd_options | d([]) %}
                 {% if option.name == 'watchdog-timeout' %}
                   watchdog-timeout={{ option.value | quote }}
@@ -87,10 +97,12 @@
           # initialized already. Therefore this task always makes a change.
           changed_when: true
           loop: "{{ __ha_cluster_check_sbd_devices_result.results }}"
-          when: item.rc != 0
+          loop_control:
+            loop_var: check_sbd_device_result
+          when: check_sbd_device_result.rc != 0
 
     - name: Distribute SBD config
-      template:
+      ansible.builtin.template:
         src: templates/sbd
         dest: /etc/sysconfig/sbd
         owner: root
@@ -114,7 +126,7 @@
         - __sbd_delay_start | first | int > 0
       block:
         - name: Ensure /etc/systemd/system/sbd.service.d directory exists
-          file:
+          ansible.builtin.file:
             path: /etc/systemd/system/sbd.service.d
             state: directory
             owner: root
@@ -122,7 +134,7 @@
             mode: "0755"
 
         - name: Override start timeout for SBD
-          template:
+          ansible.builtin.template:
             src: templates/override-timeout.conf
             dest: /etc/systemd/system/sbd.service.d/override-timeout.conf
             owner: root
@@ -138,11 +150,11 @@
             # yamllint enable rule:line-length
 
         - name: Reload systemd service files
-          systemd:
+          ansible.builtin.systemd:
             daemon_reload: true
 
 - name: Get services status - detect pacemaker
-  service_facts:
+  ansible.builtin.service_facts:
   no_log: "{{ ansible_verbosity < 2 }}"
 
 - name: Set stonith-watchdog-timeout cluster property
@@ -165,7 +177,7 @@
       #   issues are caused by setting it
       # - both properties are set to the same value for the new pacemaker
       #   preventing inconsistencies
-      command:
+      ansible.builtin.command:
         cmd: >
           pcs --force
           {{
@@ -180,7 +192,7 @@
 
     # In case cib.xml just got created by the task above, fix its permissions.
     - name: Correct cib.xml ownership
-      file:
+      ansible.builtin.file:
         path: /var/lib/pacemaker/cib/cib.xml
         state: file
         owner: hacluster
@@ -192,7 +204,7 @@
     # In case of modifying cib.xml file, delete its (now unmatching) signature
     # so that pacemaker accepts the new cib.xml content.
     - name: Clean cib.xml.sig
-      file:
+      ansible.builtin.file:
         path: /var/lib/pacemaker/cib/cib.xml.sig
         state: absent
       when:

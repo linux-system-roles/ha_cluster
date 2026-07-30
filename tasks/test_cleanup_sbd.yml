@@ -7,11 +7,11 @@
 # collections.
 ---
 - name: Unmount SBD devices
-  command:
+  ansible.builtin.command:
     cmd: losetup -d {{ __test_sbd_mount.stdout }}
   changed_when: true
 
 - name: Delete backing files for SBD devices
-  file:
+  ansible.builtin.file:
     path: "{{ __test_sbd_tmpfile }}"
     state: absent

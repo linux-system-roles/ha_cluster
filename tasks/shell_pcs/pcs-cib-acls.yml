@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure ACL roles
-  command:
+  ansible.builtin.command:
     cmd: >-
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       --
@@ -26,7 +26,7 @@
   changed_when: not ansible_check_mode
 
 - name: Configure ACL users
-  command:
+  ansible.builtin.command:
     cmd: >-
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       --
@@ -42,7 +42,7 @@
   changed_when: not ansible_check_mode
 
 - name: Configure ACL groups
-  command:
+  ansible.builtin.command:
     cmd: >-
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       --

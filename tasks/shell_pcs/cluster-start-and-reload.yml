@@ -22,17 +22,19 @@
 # not installed. Therefore, we check for the status and if it is one of the bad_states, we
 # assume the service is not installed.
 - name: Get services status - detect corosync-qdevice
-  service_facts:
+  ansible.builtin.service_facts:
   no_log: "{{ ansible_verbosity < 2 }}"
 
 - name: Stop cluster daemons to reload configuration
-  service:
-    name: "{{ item }}"
+  ansible.builtin.service:
+    name: "{{ cluster_service }}"
     state: stopped  # noqa no-handler
   loop:
     - pacemaker
     - corosync-qdevice
     - corosync
+  loop_control:
+    loop_var: cluster_service
   vars:
     __corosync_qdevice_service_status: "{{ ansible_facts.services.get('corosync-qdevice.service', {'status': 'not-found'})['status'] }}"
     # Ansible service_facts.py - BAD_STATES
@@ -47,13 +49,13 @@
         or (__ha_cluster_qdevice_certs_cli.changed | d(false))
         or (__ha_cluster_qdevice_certs_api.changed | d(false))
     - >
-        item != 'corosync-qdevice'
+        cluster_service != 'corosync-qdevice'
         or __corosync_qdevice_service_status not in __bad_states
 
 # We must always start daemons to get the cluster running on newly added nodes.
 
 - name: Start corosync
-  service:
+  ansible.builtin.service:
     name: corosync
     state: started
 
@@ -62,26 +64,26 @@
 # nodes. If there was no change in corosync.conf, the reload is an empty
 # operation.
 - name: Reload corosync configuration
-  command:
+  ansible.builtin.command:
     cmd: corosync-cfgtool -R
   run_once: true  # noqa: run_once[task]
   when: not ansible_check_mode
   changed_when: false
 
 - name: Start corosync-qdevice
-  service:
+  ansible.builtin.service:
     name: corosync-qdevice
     state: started
   when: __ha_cluster_qdevice_in_use
 
 - name: Start pacemaker
-  service:
+  ansible.builtin.service:
     name: pacemaker
     state: started
 
 
 - name: Wait for the cluster to fully start and form membership
-  command:
+  ansible.builtin.command:
     cmd: pcs cluster start --all --wait
   run_once: true  # noqa: run_once[task]
   # There is no point in waiting in check mode as there is nothing to wait for,
@@ -95,7 +97,7 @@
 # Purge removed nodes from Pacemaker's caches
 
 - name: List pacemaker nodes
-  shell:
+  ansible.builtin.shell:
     cmd: >
       set -euo pipefail;
       crm_mon -X
@@ -117,18 +119,20 @@
   changed_when: false
 
 - name: Purge removed nodes from pacemaker's cache
-  command:
-    cmd: pcs -- cluster node clear {{ item | quote }}
+  ansible.builtin.command:
+    cmd: pcs -- cluster node clear {{ node | quote }}
   run_once: true  # noqa: run_once[task]
   loop: "{{ __ha_cluster_list_pacemaker_nodes.stdout_lines }}"
+  loop_control:
+    loop_var: node
   # This cannot be run in the check mode as it requires cluster to be started.
   # Check mode does not start the cluster, it only shows the cluster would be
   # started.
   when:
     - not ansible_check_mode
-    - (item | length) > 0
-    - item not in __ha_cluster_all_node_names
+    - (node | length) > 0
+    - node not in __ha_cluster_all_node_names
   changed_when:
     - not ansible_check_mode
-    - (item | length) > 0
-    - item not in __ha_cluster_all_node_names
+    - (node | length) > 0
+    - node not in __ha_cluster_all_node_names

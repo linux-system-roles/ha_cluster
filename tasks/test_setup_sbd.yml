@@ -7,24 +7,25 @@
 # collections.
 ---
 - name: Load softdog module for SBD to have at least one watchdog
-  command: modprobe softdog
+  ansible.builtin.command:
+    cmd: modprobe softdog
   changed_when: true
   # do not load if sbd tests are run (loads module instead)
   when: not (__test_disable_modprobe | d(false))
 
 - name: Create backing files for SBD devices
-  tempfile:
+  ansible.builtin.tempfile:
     state: file
     suffix: _ha_cluster_tests
   register: __test_sbd_tmpfile
 
 - name: Initialize backing files for SBD devices
-  command:
+  ansible.builtin.command:
     cmd: dd if=/dev/zero of={{ __test_sbd_tmpfile.path | quote }} bs=1M count=10
   changed_when: true
 
 - name: Mount SBD devices
-  command:
+  ansible.builtin.command:
     cmd: losetup --show --find {{ __test_sbd_tmpfile.path | quote }}
   register: __test_sbd_mount
   changed_when: true

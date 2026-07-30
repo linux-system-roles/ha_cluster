@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: MIT
 ---
 - name: Configure resource group {{ resource_group.id }}
-  command:
+  ansible.builtin.command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- resource group add {{ resource_group.id | quote }}
@@ -16,7 +16,7 @@
   changed_when: not ansible_check_mode
 
 - name: Configure meta attributes of resource group {{ resource_group.id }}
-  command:
+  ansible.builtin.command:
     cmd: >
       pcs -f {{ __ha_cluster_tempfile_cib_xml.path | quote }}
       -- resource meta {{ resource_group.id | quote }}

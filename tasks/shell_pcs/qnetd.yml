@@ -9,7 +9,7 @@
 
 - name: Remove qnetd configuration
   # This pcs command doesn't provide means to detect whether it did any changes
-  command:
+  ansible.builtin.command:
     cmd: pcs --force -- qdevice destroy net
   when:
     - not ansible_check_mode
@@ -26,7 +26,7 @@
     - __ha_cluster_is_booted | bool
   block:
     - name: Setup qnetd
-      command:
+      ansible.builtin.command:
         cmd: pcs --start -- qdevice setup model net
       when:
         - not ansible_check_mode
@@ -44,6 +44,6 @@
           )
 
     - name: Enable or disable qnetd service on boot
-      service:
+      ansible.builtin.service:
         name: corosync-qnetd
         enabled: "{{ ha_cluster_qnetd.start_on_boot | d(true) }}"
