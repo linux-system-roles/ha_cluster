@@ -27,11 +27,12 @@
               community.general.modprobe:
                 name: "{{ module }}"
                 state: absent
-              loop: "{{
-                __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([])
-                }}"
+              loop: "{{ __blocklist | difference(__test_skip_list) | list }}"
               loop_control:
                 loop_var: module
+              vars:
+                __blocklist: "{{ __ha_cluster_local_node.sbd_watchdog_modules_blocklist | d([]) }}"
+                __test_skip_list: "{{ (ha_cluster_test_skip_kernel_modules | d('')).split(' ') | list }}"
 
         - name: Configure and load watchdog kernel module
           block:

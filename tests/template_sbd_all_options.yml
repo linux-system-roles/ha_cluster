@@ -87,6 +87,7 @@
       assert:
         that:
           - "'iTCO_wdt' not in __test_sbd_watchdog_sbd_lsmod.stdout"
+      when: not "iTCO_wdt" in ha_cluster_test_skip_kernel_modules | d("")
 
     - name: Check lsmod output for SBD watchdog module
       assert:
