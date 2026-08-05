@@ -1,2 +1,5 @@
 ---
 __test_fence_virt_supported: "{{ ansible_facts['architecture'] == 'x86_64' }}"
+# this can be a list or a string - it is easier for tests to pass in a single string
+# than a list - the test code will convert it to a list if needed
+__ha_cluster_test_modules_blocklist: ["iTCO_wdt"]

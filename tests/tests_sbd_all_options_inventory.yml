@@ -31,11 +31,14 @@
             ha_cluster:
               sbd_watchdog_modules:
                 - softdog
-              sbd_watchdog_modules_blocklist:
-                - iTCO_wdt
+              sbd_watchdog_modules_blocklist: "{{ __ha_cluster_test_blocklist }}"
               sbd_watchdog: /dev/null
               sbd_devices:
                 - "{{ __test_sbd_mount.stdout }}"
+          vars:
+            __ha_cluster_test_blocklist: "{{ [__ha_cluster_test_modules_blocklist]
+              if __ha_cluster_test_modules_blocklist is string
+              else __ha_cluster_test_modules_blocklist }}"
 
         - name: Run the role and assert results
           include_tasks: template_sbd_all_options.yml

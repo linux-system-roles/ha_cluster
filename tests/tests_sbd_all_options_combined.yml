@@ -50,18 +50,22 @@
               {{
                 (__test_node_options | d([])) + [{
                   'node_name': hostvars[item]['inventory_hostname'],
-                  'sbd_watchdog_modules_blocklist': ['iTCO_wdt'],
+                  'sbd_watchdog_modules_blocklist': __ha_cluster_test_blocklist,
                   'sbd_watchdog': '/dev/null',
                   'sbd_devices': [__test_sbd_mount.stdout],
                 }]
               }}
           loop: "{{ ansible_play_hosts_all }}"
+          vars:
+            __ha_cluster_test_blocklist: "{{ [__ha_cluster_test_modules_blocklist]
+              if __ha_cluster_test_modules_blocklist is string
+              else __ha_cluster_test_modules_blocklist }}"
 
         # Expected values are:
         # sbd_watchdog_modules:
         #   - softdog  # defined in inventory only
-        # sbd_watchdog_modules_blocklist:
-        #   - iTCO_wdt  # defined in play only
+        # defined in play only
+        # sbd_watchdog_modules_blocklist: "{{ __ha_cluster_test_blocklist }}"
         # sbd_watchdog: /dev/null  # play overrides inventory
         # sbd_devices:
         #   - "{{ __test_sbd_mount.stdout }}"  # defined in both

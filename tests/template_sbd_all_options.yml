@@ -13,14 +13,19 @@
         value: reboot,flush
       - name: watchdog-timeout
         value: 10
+    __ha_cluster_test_blocklist: "{{ [__ha_cluster_test_modules_blocklist]
+      if __ha_cluster_test_modules_blocklist is string
+      else __ha_cluster_test_modules_blocklist }}"
   block:
     - name: Ensure modprobe files are not present
       file:
         state: absent
         path: "{{ item }}"
-      loop:
-        - /etc/modprobe.d/iTCO_wdt.conf
-        - /etc/modules-load.d/softdog.conf
+      loop: "{{
+          (__ha_cluster_test_blocklist |
+           map('regex_replace', '^(.*)$', '/etc/modprobe.d/\\1.conf') |
+           list) + ['/etc/modules-load.d/softdog.conf']
+        }}"
 
     - name: Run HA Cluster role
       include_tasks: tasks/run_role_with_clear_facts.yml
@@ -29,27 +34,19 @@
 
     - name: Slurp generated SBD watchdog blocklist file
       slurp:
-        src: /etc/modprobe.d/iTCO_wdt.conf
+        src: "/etc/modprobe.d/{{ item }}.conf"
       register: __test_sbd_watchdog_blocklist_file
-
-    - name: Decode SBD watchdog blocklist file
-      set_fact:
-        __test_sbd_watchdog_blocklist_file_lines: "{{
-            (__test_sbd_watchdog_blocklist_file.content |
-            b64decode).splitlines()
-          }}"
-
-    - name: Print SBD watchdog blocklist file lines
-      debug:
-        var: __test_sbd_watchdog_blocklist_file_lines
+      loop: "{{ __ha_cluster_test_blocklist }}"
 
     - name: Check SBD watchdog blocklist file
       assert:
         that:
-          - __blockstr in __test_sbd_watchdog_blocklist_file_lines
+          - __blockstr in
+            (item.content | b64decode).splitlines()
       vars:
         # wokeignore:rule=blacklist
-        __blockstr: blacklist iTCO_wdt
+        __blockstr: "blacklist {{ item.item }}"
+      loop: "{{ __test_sbd_watchdog_blocklist_file.results }}"
 
     - name: Slurp generated SBD watchdog modprobe file
       slurp:
@@ -83,15 +80,24 @@
       debug:
         var: __test_sbd_watchdog_sbd_lsmod
 
+    - name: Get loaded module names from lsmod
+      set_fact:
+        __test_sbd_lsmod_modules: "{{
+            __test_sbd_watchdog_sbd_lsmod.stdout_lines |
+            map('regex_replace', '^(\\S+).*', '\\1') |
+            list
+          }}"
+
     - name: Check lsmod output for absence of SBD watchdog module blocklist
       assert:
         that:
-          - "'iTCO_wdt' not in __test_sbd_watchdog_sbd_lsmod.stdout"
+          - item not in __test_sbd_lsmod_modules
+      loop: "{{ __ha_cluster_test_blocklist }}"
 
     - name: Check lsmod output for SBD watchdog module
       assert:
         that:
-          - "'softdog' in __test_sbd_watchdog_sbd_lsmod.stdout"
+          - "'softdog' in __test_sbd_lsmod_modules"
 
     - name: Slurp SBD config file
       slurp:
