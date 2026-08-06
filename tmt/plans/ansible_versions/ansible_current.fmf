@@ -14,6 +14,18 @@ adjust+:
   - when: distro == rhel-8
     environment+:
       ANSIBLE_PKG: ansible-core<2.17
+  - when: distro == rhel-8.4
+    environment+:
+      GALAXY_EXTRA_ARGS: "--no-cache"
+    because: |
+      On RHEL 8.4, the ansible current version ansible-core==2.11.12 contains a
+      bug that prevents installing collections from the Ansible Galaxy server.
+      Workaround:
+        Disable cache
+      References:
+        https://github.com/ansible/ansible/issues/77911#issuecomment-1149780261
+        https://github.com/ansible/ansible/issues/77911
+        https://github.com/ansible/ansible/pull/78325
 
 /tier0:
   summary: Run tier0 tests with ansible current
