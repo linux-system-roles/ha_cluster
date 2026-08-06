@@ -1,6 +1,34 @@
 Changelog
 =========
 
+[1.32.0] - 2026-08-06
+--------------------
+
+### New Features
+
+- feat: Write roles fingerprints to /var/log/sysroles.jsonl [citest_skip] (#412)
+
+### Bug Fixes
+
+- fix: crmsh - Replace crm_verify with crm configure verify (#403)
+
+### Other Changes
+
+- ci: use gha checkout v7, codecov v7 [citest_skip] (#396)
+- ci: Use our own pr_title_lint.py instead of NPM commitlint [citest_skip] (#397)
+- ci: update pcs test matrix (#398)
+- ci: address issues with script-*-tmt-prepare-* files [citest_skip] (#399)
+- ci: bump tox-lsr version to 3.20.0 to fix tox 4.58 api breakage [citest_skip] (#400)
+- ci: Add support for Fedora 44 and drop Fedora 42 - use ansible-core 2.21 [citest_skip] (#402)
+- ci: fix tox tests by correctly configuring pyproject.toml (#404)
+- refactor: Update role latest guidelines (#405)
+- ci: bump github/codeql-action from 4 to 4.37.3 (#406)
+- ci: bump actions/setup-python from 6 to 7 (#407)
+- ci: ensure dependabot updates do not invoke ci tests [citest_skip] (#408)
+- ci: [citest_skip] bump github/codeql-action from 4.37.3 to 4.37.4 (#409)
+- test: use __ha_cluster_test_modules_blocklist for testing with alternate modules (#411)
+- ci: fix RHEL 8 issues [citest_skip] (#413)
+
 [1.31.3] - 2026-06-24
 --------------------
 
