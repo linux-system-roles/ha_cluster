@@ -25,18 +25,6 @@ adjust+:
     environment+:
       PYTHON3_PACKAGE: python3
     because: python3.12 is not available
-  - when: distro == rhel-8.4
-    environment+:
-      GALAXY_EXTRA_ARGS: "--server=https://old-galaxy.ansible.com"
-    because: |
-      RHEL 8.4 with the newest compatible Ansible doesn't work with the new
-      ansible galaxy deployed on 2023-09-30. It works with the old one,
-      though, so we set it to connect to the old one using the --server
-      option.
-      references:
-      https://www.ansible.com/blog/new-ansible-galaxy
-      https://forum.ansible.com/t/new-ansible-galaxy/1155/20
-      https://github.com/ansible/awx/issues/14496#issuecomment-1743711473
 
 prepare+:
   - name: Install common packages
