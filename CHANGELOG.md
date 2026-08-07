@@ -1,6 +1,13 @@
 Changelog
 =========
 
+[1.32.1] - 2026-08-07
+--------------------
+
+### Other Changes
+
+- style: ignore linter issues in test_sr_fingerprint.py [citest_skip] (#415)
+
 [1.32.0] - 2026-08-06
 --------------------
 
