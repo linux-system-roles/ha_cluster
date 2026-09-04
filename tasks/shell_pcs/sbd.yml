@@ -85,7 +85,15 @@
           ansible.builtin.command:
             # use --force to skip interactive confirmation
             cmd: >
-              pcs --force -- stonith sbd device setup
+              pcs
+              {% if
+                'pcs.yes-to-confirm-commands' in __ha_cluster_pcs_capabilities
+              %}
+                --yes
+              {% else %}
+                --force
+              {% endif %}
+              -- stonith sbd device setup
               device={{ check_sbd_device_result.sbd_device | quote }}
               {% for option in ha_cluster_sbd_options | d([]) %}
                 {% if option.name == 'watchdog-timeout' %}
