@@ -22,6 +22,8 @@ on:  # yamllint disable-line rule:truthy
 permissions:
   contents: read
   pull-requests: read
+  # This is required for the ability to create/update the Pull request status
+  statuses: write
 jobs:
   python:
     if: |
@@ -130,29 +132,41 @@ jobs:
             pcs_site_packages: dist-packages
     runs-on: ${{ matrix.os }}
     steps:
+      - name: Get PR head SHA and context
+        if: github.event_name == 'issue_comment'
+        id: head_sha_context
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          CONTEXT: "${{ github.workflow }} / ${{ github.job }} (${{ matrix.os }}, ${{ matrix.pcs_version }}${{ matrix.pcs_dir_local && format(', {0}', matrix.pcs_dir_local) || '' }}, ${{ matrix.pcs_site_packages }}) (pull_request)"
+        run: |
+          set -euxo pipefail
+          head_sha=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.head.sha')
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          echo "context=$CONTEXT" >> "$GITHUB_OUTPUT"
+
+      - name: Set commit status as pending
+        if: github.event_name == 'issue_comment'
+        uses: myrotvorets/set-commit-status-action@c0f880c99d91381c6fdb97726f03feb8004409b4  # master
+        with:
+          sha: ${{ steps.head_sha_context.outputs.head_sha }}
+          status: pending
+          context: ${{ steps.head_sha_context.outputs.context }}
+          description: Test started
+          targetUrl: ""
+
       - name: Update git
         run: |
           set -euxo pipefail
           sudo apt update
           sudo apt install -y git
 
-      - name: Get PR head SHA
-        if: github.event_name == 'issue_comment'
-        id: head_sha
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          PR_NUMBER: ${{ github.event.issue.number }}
-        run: |
-          set -euxo pipefail
-          head_sha=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.head.sha')
-          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
-
       - name: checkout PR
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-          ref: ${{ steps.head_sha.outputs.head_sha || github.sha }}
+          ref: ${{ steps.head_sha_context.outputs.head_sha || github.sha }}
 
       - name: Install platform dependencies, python, tox, tox-lsr
         run: |
@@ -211,3 +225,13 @@ jobs:
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f  # v7
+
+      - name: Set final commit status
+        if: always() && github.event_name == 'issue_comment' && steps.head_sha_context.outputs.head_sha != ''
+        uses: myrotvorets/set-commit-status-action@c0f880c99d91381c6fdb97726f03feb8004409b4  # master
+        with:
+          sha: ${{ steps.head_sha_context.outputs.head_sha }}
+          status: ${{ job.status }}
+          context: ${{ steps.head_sha_context.outputs.context }}
+          description: Test finished
+          targetUrl: ""
