@@ -88,6 +88,7 @@ variables:
   parallel:
     matrix:
       - COMPOSE_NAME:
+          - RhelMajorNext
           - Rhel10Next
           - Rhel10CurrentRelease
           - Rhel9Next
@@ -95,36 +96,45 @@ variables:
           - Rhel8Next
           - Rhel8Oldest
   rules:
+    - if: $COMPOSE_NAME == "RhelMajorNext"
+      variables:
+        TF_COMPOSE: RHEL-10.4-Nightly
+        TMT_DEVELOPMENT: true
+        TMT_DISTRO: rhel-10.4
+        PCS_BRANCH: "pcs-1.x"
+        PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
+          artifacts/${PCS_BRANCH}/download?\
+          job=tf_tests%3A%20%5BRhel10Next%5D"
     - if: $COMPOSE_NAME == "Rhel10Next"
       variables:
-        TF_COMPOSE: RHEL-10.3-Nightly
+        TF_COMPOSE: RHEL-10.4-Nightly
         TMT_DEVELOPMENT: true
-        TMT_DISTRO: rhel-10.3
-        PCS_BRANCH: "main"
+        TMT_DISTRO: rhel-10.4
+        PCS_BRANCH: "pcs-0.12"
         PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
           artifacts/${PCS_BRANCH}/download?\
           job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
     - if: $COMPOSE_NAME == "Rhel10CurrentRelease"
       variables:
-        TF_COMPOSE: RHEL-10.2-Nightly
-        TMT_DISTRO: rhel-10.2
-        PCS_BRANCH: "main"
+        TF_COMPOSE: RHEL-10.3-Nightly
+        TMT_DISTRO: rhel-10.3
+        PCS_BRANCH: "pcs-0.12"
         PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
           artifacts/${PCS_BRANCH}/download?\
           job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
     - if: $COMPOSE_NAME == "Rhel9Next"
       variables:
-        TF_COMPOSE: RHEL-9.9.0-Nightly
+        TF_COMPOSE: RHEL-9.10.0-Nightly
         TMT_DEVELOPMENT: true
-        TMT_DISTRO: rhel-9.9
+        TMT_DISTRO: rhel-9.10
         PCS_BRANCH: "pcs-0.11"
         PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
           artifacts/${PCS_BRANCH}/download?\
           job=tf_tests%3A%20%5B${COMPOSE_NAME}%5D"
     - if: $COMPOSE_NAME == "Rhel9CurrentRelease"
       variables:
-        TF_COMPOSE: RHEL-9.8.0-Nightly
-        TMT_DISTRO: rhel-9.8
+        TF_COMPOSE: RHEL-9.9.0-Nightly
+        TMT_DISTRO: rhel-9.9
         PCS_BRANCH: "pcs-0.11"
         PCS_ARTIFACTS_URL: "${CI_API_V4_URL}/projects/pcs%2Fpcs/jobs/\
           artifacts/${PCS_BRANCH}/download?\
