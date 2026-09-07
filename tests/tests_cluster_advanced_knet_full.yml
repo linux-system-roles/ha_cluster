@@ -37,9 +37,9 @@
           value: zlib
       crypto:
         - name: cipher
-          value: none
+          value: aes192
         - name: hash
-          value: none
+          value: sha384
     ha_cluster_totem:
       options:
         - name: send_join
@@ -99,8 +99,8 @@
               - '    link_mode: active'
               - '    knet_compression_level: 5'
               - '    knet_compression_model: zlib'
-              - '    crypto_cipher: none'
-              - '    crypto_hash: none'
+              - '    crypto_cipher: aes192'
+              - '    crypto_hash: sha384'
               - '    interface {'
               - '        knet_link_priority: 5'
               - '        linknumber: 0'
