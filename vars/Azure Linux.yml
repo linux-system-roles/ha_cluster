@@ -1,0 +1,80 @@
+# SPDX-License-Identifier: MIT
+---
+
+# Variables for RedHat set in ansible_facts['os_family']
+
+__ha_cluster_repos: []
+
+__ha_cluster_role_essential_packages:
+  - pcs
+  # even if qnetd is not being configured, it is needed for removing qnetd
+  # configuration
+  - corosync-qnetd
+  - openssl
+
+__ha_cluster_fullstack_node_packages:
+  - corosync
+  - libknet1-plugins-all
+  - resource-agents
+  - pacemaker
+
+__ha_cluster_cloud_agents_packages: {}
+
+__ha_cluster_qdevice_node_packages:
+  - corosync-qdevice
+  # dependencies of a script to set up qdevice certificates
+  - bash
+  - coreutils
+  - curl
+  - grep
+  - nss-tools
+  - openssl
+  - sed
+
+__ha_cluster_sbd_packages:
+  - sbd
+
+__ha_cluster_services:
+  - corosync
+  - corosync-qdevice
+  - pacemaker
+
+# fence agent list for os_family
+__ha_cluster_fence_agent_packages_default: "{{
+    ['fence-agents-common']
+    +
+    (['fence-virt'] if ansible_facts['architecture'] == 'x86_64' else [])
+  }}"
+
+# List of repositories holding HA cluster packages.
+# id: repo ID used to enable the repo
+# name: user-friendly name of a repo used to check if the repo is enabled
+__ha_cluster_repos: {}
+
+# cloud agent packages are also mentioned in library/ha_cluster_info.py
+__ha_cluster_cloud_agents_packages:
+  x86_64:
+    - fence-agents-aliyun
+    - fence-agents-azure-arm
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+    - fence-agents-kubevirt
+    - fence-agents-openstack
+  aarch64:
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+    - fence-agents-kubevirt
+  ppc64le:
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+    - fence-agents-kubevirt
+    - fence-agents-openstack
+  s390x:
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+    - fence-agents-kubevirt
+  noarch:
+    - fence-agents-ibm-powervs
+    - fence-agents-ibm-vpc
+
+  
