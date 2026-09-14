@@ -14,6 +14,9 @@ galaxy_info:
       versions:
         - "8"
         - "9"
+    - name: Azure Linux
+      versions:
+        - "4"
   galaxy_tags:
     - containerbuild
     - corosync
