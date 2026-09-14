@@ -10,6 +10,7 @@ An Ansible role for managing High Availability Clustering.
   * RHEL 8.3+, Fedora 31+
   * SUSE Linux Enterprise Server 15 and 16 with HA extension
   * SUSE Linux Enterprise Server for SAP Applications 15 and 16
+  * Azure Linux 4
 * Systems running RHEL are expected to be registered and have High-Availability
   repositories accessible, and ResilientStorage repositories accessible if using
   `ha_cluster_enable_repos_resilient_storage`
