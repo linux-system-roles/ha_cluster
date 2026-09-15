@@ -45,7 +45,7 @@ __ha_cluster_fence_agent_packages_default: "{{
 # List of repositories holding HA cluster packages.
 # id: repo ID used to enable the repo
 # name: user-friendly name of a repo used to check if the repo is enabled
-__ha_cluster_repos: {}
+__ha_cluster_repos: []
 
 # cloud agent packages are also mentioned in library/ha_cluster_info.py
 __ha_cluster_cloud_agents_packages:
@@ -72,5 +72,3 @@ __ha_cluster_cloud_agents_packages:
   noarch:
     - fence-agents-ibm-powervs
     - fence-agents-ibm-vpc
-
-  
