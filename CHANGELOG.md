@@ -1,6 +1,26 @@
 Changelog
 =========
 
+[1.32.2] - 2026-09-17
+--------------------
+
+### Bug Fixes
+
+- fix: Fixes for the latest upstream pcs (#431)
+
+### Other Changes
+
+- ci: use commit hash for github action, add persist-credentials false [citest_skip] (#417)
+- ci: refactor build_docs so that pandoc runs in isolated read-only job [citest_skip] (#418)
+- ci: use exact match for systemroller instead of contains [citest_skip] (#419)
+- refactor: Relax ansible.posix and community.general version constraints (#420)
+- ci(build_docs): fix pandoc container syntax [citest_skip] (#421)
+- refactor: Relax collection constraints, gate vendored modules by python version, update ci versions [citest_skip] (#427)
+- ci: do not run ci tests by default, require citest comment or label [citest_skip] (#428)
+- ci: replace weekly_ci with periodic_ci, stagger schedules [citest_skip] (#429)
+- ci: update status when action triggered by issue comment (#430)
+- Create Azure Linux.yml (#433)
+
 [1.32.1] - 2026-08-07
 --------------------
 
