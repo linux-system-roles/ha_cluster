@@ -9,9 +9,9 @@
     __old_clone_roles: >-
       {{
         (
-          ansible_facts['distribution'] in ['RedHat', 'CentOS']
+          (ansible_facts.distribution | default('')) in ['RedHat', 'CentOS']
           and
-          ansible_facts['distribution_major_version'] == '8'
+          (ansible_facts.distribution_major_version | default('')) == '8'
         ) | bool
       }}
     # wokeignore:rule=master
