@@ -1,11 +1,20 @@
 # SPDX-License-Identifier: MIT
 ---
 
+- name: Validate role parameters
+  ansible.builtin.include_tasks:
+    file: assert_role_vars.yml
+
 # Gather initial facts and include platform/version specific variables.
 # These are package independent facts.
 - name: Set platform/version specific variables
   ansible.builtin.include_tasks:
     file: shell_common/include_vars.yml
+
+- name: Set OS-specific fence agent packages
+  ansible.builtin.set_fact:
+    ha_cluster_fence_agent_packages: "{{ __ha_cluster_fence_agent_packages_default }}"
+  when: ha_cluster_fence_agent_packages is none
 
 # Installs essential packages before package dependent facts.
 - name: Install essential packages

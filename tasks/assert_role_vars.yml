@@ -1,0 +1,365 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Assert ha_cluster_cluster_present is null or a boolean
+  ansible.builtin.assert:
+    that:
+      - >-
+        (ha_cluster_cluster_present is none)
+        or (ha_cluster_cluster_present is sameas true)
+        or (ha_cluster_cluster_present is sameas false)
+    fail_msg: >-
+      ha_cluster_cluster_present must be null or a boolean,
+      got {{ ha_cluster_cluster_present | type_debug }}
+  when: ha_cluster_cluster_present is defined
+
+- name: Assert ha_cluster_qnetd is null or a dictionary
+  ansible.builtin.assert:
+    that:
+      - >-
+        ha_cluster_qnetd is none
+        or ha_cluster_qnetd is mapping
+    fail_msg: >-
+      ha_cluster_qnetd must be null or a dictionary,
+      got {{ ha_cluster_qnetd | type_debug }}
+  when: ha_cluster_qnetd is defined
+
+- name: Assert ha_cluster_qnetd contains only valid keys
+  ansible.builtin.assert:
+    that:
+      - >-
+        ha_cluster_qnetd.keys() | list
+        | difference(__ha_cluster_qnetd_valid_keys)
+        | length == 0
+    fail_msg: >-
+      ha_cluster_qnetd contains invalid keys:
+      {{ ha_cluster_qnetd.keys() | list
+         | difference(__ha_cluster_qnetd_valid_keys) | join(', ') }}
+  vars:
+    __ha_cluster_qnetd_valid_keys:
+      - present
+      - start_on_boot
+      - regenerate_keys
+  when:
+    - ha_cluster_qnetd is defined
+    - ha_cluster_qnetd is mapping
+
+- name: Assert ha_cluster_qnetd boolean fields
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.value is sameas true
+        or item.value is sameas false
+    fail_msg: >-
+      ha_cluster_qnetd.{{ item.key }} must be a boolean,
+      got {{ item.value | type_debug }}
+  loop: "{{
+    (ha_cluster_qnetd if ha_cluster_qnetd is mapping else {})
+    | dict2items
+  }}"
+  loop_control:
+    label: "{{ item.key }}"
+  when:
+    - ha_cluster_qnetd is defined
+    - ha_cluster_qnetd is mapping
+    - item.value is defined
+
+- name: Assert ha_cluster_fence_agent_packages is null or a list of strings
+  ansible.builtin.assert:
+    that:
+      - >-
+        ha_cluster_fence_agent_packages is none
+        or (ha_cluster_fence_agent_packages is sequence
+            and ha_cluster_fence_agent_packages is not string
+            and ha_cluster_fence_agent_packages is not mapping
+            and ha_cluster_fence_agent_packages
+            | reject('string') | list | length == 0)
+    fail_msg: >-
+      ha_cluster_fence_agent_packages must be null or a list of strings,
+      got {{ ha_cluster_fence_agent_packages | type_debug }}
+  when: ha_cluster_fence_agent_packages is defined
+
+- name: Assert key source variables are null or a string
+  ansible.builtin.assert:
+    that:
+      - >-
+        lookup('vars', item) is none
+        or lookup('vars', item) is string
+    fail_msg: >-
+      {{ item }} must be null or a path string,
+      got {{ lookup('vars', item) | type_debug }}
+  loop:
+    - ha_cluster_corosync_key_src
+    - ha_cluster_pacemaker_key_src
+    - ha_cluster_fence_virt_key_src
+    - ha_cluster_pcsd_public_key_src
+    - ha_cluster_pcsd_private_key_src
+  when: lookup('vars', item) is defined
+
+- name: Assert ha_cluster_transport.links items are lists of dictionaries
+  ansible.builtin.assert:
+    that:
+      - item is sequence
+      - item is not string
+      - item is not mapping
+      - item | reject('mapping') | list | length == 0
+    fail_msg: >-
+      ha_cluster_transport.links[{{ idx }}] must be a list of
+      dictionaries, got {{ item | type_debug }}
+  loop: "{{ ha_cluster_transport.links | default([]) }}"
+  loop_control:
+    index_var: idx
+    label: "{{ idx }}"
+  when:
+    - ha_cluster_transport.links is defined
+    - ha_cluster_transport.links | length > 0
+
+- name: Assert ha_cluster_resource_bundles port_map items are lists of dictionaries
+  ansible.builtin.assert:
+    that:
+      - item is sequence
+      - item is not string
+      - item is not mapping
+      - item | reject('mapping') | list | length == 0
+    fail_msg: >-
+      ha_cluster_resource_bundles port_map entry must be a list of
+      dictionaries, got {{ item | type_debug }}
+  loop: "{{
+    ha_cluster_resource_bundles
+    | selectattr('port_map', 'defined')
+    | map(attribute='port_map')
+    | flatten(levels=1)
+  }}"
+  when: ha_cluster_resource_bundles | length > 0
+
+- name: Assert ha_cluster_resource_bundles storage_map items are lists of dictionaries
+  ansible.builtin.assert:
+    that:
+      - item is sequence
+      - item is not string
+      - item is not mapping
+      - item | reject('mapping') | list | length == 0
+    fail_msg: >-
+      ha_cluster_resource_bundles storage_map entry must be a list of
+      dictionaries, got {{ item | type_debug }}
+  loop: "{{
+    ha_cluster_resource_bundles
+    | selectattr('storage_map', 'defined')
+    | map(attribute='storage_map')
+    | flatten(levels=1)
+  }}"
+  when: ha_cluster_resource_bundles | length > 0
+
+- name: Assert name-value option values are string, integer, or boolean
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.value is string
+        or ((item.value | type_debug) in ['int', 'bool'])
+        or (item.value is sameas true)
+        or (item.value is sameas false)
+    fail_msg: >-
+      name-value option '{{ item.name | d('unnamed') }}' value must be a
+      string, integer, or boolean, got {{ item.value | type_debug }}
+  loop: "{{ __ha_cluster_nvpair_values }}"
+  loop_control:
+    label: "{{ item.name | d('unnamed') }}"
+  vars:
+    __ha_cluster_nvpair_values: "{{
+      (ha_cluster_transport.options | default([]))
+      + (ha_cluster_transport.compression | default([]))
+      + (ha_cluster_transport.crypto | default([]))
+      + (ha_cluster_transport.links | default([]) | flatten)
+      + (ha_cluster_totem.options | default([]))
+      + (ha_cluster_quorum.options | default([]))
+      + ((ha_cluster_quorum.device | default({})).model_options | default([]))
+      + ((ha_cluster_quorum.device | default({})).generic_options | default([]))
+      + ((ha_cluster_quorum.device | default({})).heuristics_options | default([]))
+      + ha_cluster_sbd_options
+      + (ha_cluster_cluster_properties
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_node_options
+         | selectattr('attributes', 'defined')
+         | map(attribute='attributes') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_node_options
+         | selectattr('utilization', 'defined')
+         | map(attribute='utilization') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + ((ha_cluster_resource_defaults.meta_attrs | default([]))
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + ((ha_cluster_resource_operation_defaults.meta_attrs | default([]))
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_resource_primitives
+         | selectattr('instance_attrs', 'defined')
+         | map(attribute='instance_attrs') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_resource_primitives
+         | selectattr('meta_attrs', 'defined')
+         | map(attribute='meta_attrs') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_resource_primitives
+         | selectattr('operations', 'defined')
+         | map(attribute='operations') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_resource_primitives
+         | selectattr('utilization', 'defined')
+         | map(attribute='utilization') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_resource_groups
+         | selectattr('meta_attrs', 'defined')
+         | map(attribute='meta_attrs') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_resource_clones
+         | selectattr('meta_attrs', 'defined')
+         | map(attribute='meta_attrs') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_resource_bundles
+         | selectattr('container', 'defined')
+         | map(attribute='container')
+         | selectattr('options', 'defined')
+         | map(attribute='options') | flatten)
+      + (ha_cluster_resource_bundles
+         | selectattr('network_options', 'defined')
+         | map(attribute='network_options') | flatten)
+      + (ha_cluster_resource_bundles
+         | selectattr('port_map', 'defined')
+         | map(attribute='port_map') | flatten | flatten)
+      + (ha_cluster_resource_bundles
+         | selectattr('storage_map', 'defined')
+         | map(attribute='storage_map') | flatten | flatten)
+      + (ha_cluster_resource_bundles
+         | selectattr('meta_attrs', 'defined')
+         | map(attribute='meta_attrs') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_alerts
+         | selectattr('instance_attrs', 'defined')
+         | map(attribute='instance_attrs') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_alerts
+         | selectattr('meta_attrs', 'defined')
+         | map(attribute='meta_attrs') | flatten
+         | selectattr('attrs', 'defined')
+         | map(attribute='attrs') | flatten)
+      + (ha_cluster_constraints_location
+         | selectattr('options', 'defined')
+         | map(attribute='options') | flatten)
+      + (ha_cluster_constraints_colocation
+         | selectattr('options', 'defined')
+         | map(attribute='options') | flatten)
+      + (ha_cluster_constraints_order
+         | selectattr('options', 'defined')
+         | map(attribute='options') | flatten)
+      + (ha_cluster_constraints_ticket
+         | selectattr('options', 'defined')
+         | map(attribute='options') | flatten)
+    }}"
+  when:
+    - __ha_cluster_nvpair_values | length > 0
+    - item.value is defined
+
+- name: Assert resource default scores are string or integer
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.score is string
+        or ((item.score | type_debug) == 'int')
+    fail_msg: >-
+      resource defaults score must be a string or integer,
+      got {{ item.score | type_debug }}
+  loop: "{{
+    (ha_cluster_resource_defaults.meta_attrs | default([]))
+    + (ha_cluster_resource_operation_defaults.meta_attrs | default([]))
+  }}"
+  loop_control:
+    label: "{{ item.id | d('unnamed') }}"
+  when: item.score is defined
+
+- name: Assert dns in ha_cluster_pcsd_certificates is a string or list of strings
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.dns is string
+        or (item.dns is sequence and item.dns is not mapping
+            and item.dns | reject('string') | list | length == 0)
+    fail_msg: >-
+      ha_cluster_pcsd_certificates[{{ idx }}].dns must be a string or
+      list of strings, got {{ item.dns | type_debug }}
+  loop: "{{ ha_cluster_pcsd_certificates }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.name | d('unnamed') }}"
+  when: item.dns is defined
+
+- name: Assert email in ha_cluster_pcsd_certificates is a string or list of strings
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.email is string
+        or (item.email is sequence and item.email is not mapping
+            and item.email | reject('string') | list | length == 0)
+    fail_msg: >-
+      ha_cluster_pcsd_certificates[{{ idx }}].email must be a string or
+      list of strings, got {{ item.email | type_debug }}
+  loop: "{{ ha_cluster_pcsd_certificates }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.name | d('unnamed') }}"
+  when: item.email is defined
+
+- name: Assert ip in ha_cluster_pcsd_certificates is a string or list of strings
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.ip is string
+        or (item.ip is sequence and item.ip is not mapping
+            and item.ip | reject('string') | list | length == 0)
+    fail_msg: >-
+      ha_cluster_pcsd_certificates[{{ idx }}].ip must be a string or
+      list of strings, got {{ item.ip | type_debug }}
+  loop: "{{ ha_cluster_pcsd_certificates }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.name | d('unnamed') }}"
+  when: item.ip is defined
+
+- name: Assert principal in ha_cluster_pcsd_certificates is a string or list of strings
+  ansible.builtin.assert:
+    that:
+      - >-
+        item.principal is string
+        or (item.principal is sequence and item.principal is not mapping
+            and item.principal | reject('string') | list | length == 0)
+    fail_msg: >-
+      ha_cluster_pcsd_certificates[{{ idx }}].principal must be a string
+      or list of strings, got {{ item.principal | type_debug }}
+  loop: "{{ ha_cluster_pcsd_certificates }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.name | d('unnamed') }}"
+  when: item.principal is defined
+
+- name: Assert mode in ha_cluster_pcsd_certificates is a string or integer
+  ansible.builtin.assert:
+    that:
+      - (item.mode | type_debug) in ['str', 'int', 'unicode']
+    fail_msg: >-
+      ha_cluster_pcsd_certificates[{{ idx }}].mode must be a string or
+      integer, got {{ item.mode | type_debug }}
+  loop: "{{ ha_cluster_pcsd_certificates }}"
+  loop_control:
+    index_var: idx
+    label: "{{ item.name | d('unnamed') }}"
+  when: item.mode is defined
