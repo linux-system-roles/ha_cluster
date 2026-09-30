@@ -15,9 +15,8 @@ ha_cluster_install_cloud_agents: false
 ha_cluster_extra_packages: []
 # SUSE Specific, list of additional zypper patterns to be installed
 ha_cluster_zypper_patterns: []
-# Default fence agent packages are defined in respective os_family var files
-ha_cluster_fence_agent_packages:
-  "{{ __ha_cluster_fence_agent_packages_default }}"
+# null uses the OS-specific default from vars/ (__ha_cluster_fence_agent_packages_default)
+ha_cluster_fence_agent_packages: null
 ha_cluster_use_latest_packages: false
 
 ha_cluster_hacluster_password: ""

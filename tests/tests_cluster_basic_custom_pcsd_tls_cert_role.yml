@@ -37,7 +37,7 @@
             __sr_public: true
             ha_cluster_pcsd_certificates:
               - name: "{{ __cert_name }}"
-                common_name: "{{ ansible_facts['hostname'] }}"
+                common_name: "{{ ansible_facts.hostname | default(inventory_hostname) }}"
                 ca: self-sign
 
         - name: Stat pcsd TLS certificate
