@@ -1,0 +1,883 @@
+# SPDX-License-Identifier: MIT
+---
+- name: Verify invalid parameters are rejected
+  hosts: all
+  tasks:
+    - name: Run invalid input tests
+      tags: tests::verify
+      block:
+        # ====================================================
+        # Section 1: Verify role works with valid no-op input
+        # ====================================================
+        # Default values configure a cluster and require
+        # ha_cluster_hacluster_password (see tests_default.yml).
+        # null for cluster_present and qnetd is documented and leaves
+        # configuration unchanged.
+
+        - name: Set up test environment
+          ansible.builtin.include_role:
+            name: linux-system-roles.ha_cluster
+            tasks_from: test_setup.yml
+
+        - name: Run role with valid no-op configuration
+          ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+          vars:
+            ha_cluster_cluster_present: null
+            ha_cluster_qnetd: null
+            ha_cluster_enable_repos: false
+
+        - name: Mark valid no-op configuration succeeded
+          ansible.builtin.set_fact:
+            __valid_defaults_succeeded: true
+
+        - name: Assert role completed with valid no-op configuration
+          ansible.builtin.assert:
+            that:
+              - __valid_defaults_succeeded | default(false)
+            fail_msg: >-
+              Role should succeed when ha_cluster_cluster_present and
+              ha_cluster_qnetd are null
+
+        # ====================================================
+        # Section 2: argument_specs validation (Ansible 2.11+)
+        # ====================================================
+        - name: Run argument specs validation tests
+          when: ansible_version.full is version("2.11", ">=")
+          block:
+            # --- Test: invalid bool type ---
+            - name: Argument specs reject non-boolean ha_cluster_enable_repos
+              block:
+                - name: Run role with non-boolean ha_cluster_enable_repos
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_enable_repos: not_a_bool
+              rescue:
+                - name: Mark invalid ha_cluster_enable_repos type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_enable_repos_type_failed: true
+                  when: >-
+                    'ha_cluster_enable_repos' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid ha_cluster_enable_repos type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_enable_repos_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_enable_repos
+                  values that are not booleans
+
+            - name: Argument specs reject non-boolean ha_cluster_sbd_enabled
+              block:
+                - name: Run role with non-boolean ha_cluster_sbd_enabled
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_sbd_enabled: not_a_bool
+              rescue:
+                - name: Mark invalid ha_cluster_sbd_enabled type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_sbd_enabled_type_failed: true
+                  when: >-
+                    'ha_cluster_sbd_enabled' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid ha_cluster_sbd_enabled type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_sbd_enabled_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_sbd_enabled
+                  values that are not booleans
+
+            - name: Argument specs reject non-boolean ha_cluster_secure_logging
+              block:
+                - name: Run role with non-boolean ha_cluster_secure_logging
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_secure_logging: not_a_bool
+              rescue:
+                - name: Mark invalid ha_cluster_secure_logging type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_secure_logging_type_failed: true
+                  when: >-
+                    'ha_cluster_secure_logging' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid ha_cluster_secure_logging type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_secure_logging_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_secure_logging
+                  values that are not booleans
+
+            # --- Test: invalid list type ---
+            - name: Argument specs reject non-list ha_cluster_extra_packages
+              block:
+                - name: Run role with non-list ha_cluster_extra_packages
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_extra_packages:
+                      invalid: true
+              rescue:
+                - name: Mark invalid ha_cluster_extra_packages type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_extra_packages_type_failed: true
+                  when: >-
+                    'ha_cluster_extra_packages' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid ha_cluster_extra_packages type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_extra_packages_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_extra_packages
+                  values that are not lists
+
+            - name: Argument specs reject non-list ha_cluster_resource_primitives
+              block:
+                - name: Run role with non-list ha_cluster_resource_primitives
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_resource_primitives: not_a_list
+              rescue:
+                - name: Mark invalid ha_cluster_resource_primitives type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_primitives_type_failed: true
+                  when: >-
+                    'ha_cluster_resource_primitives' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid ha_cluster_resource_primitives type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_primitives_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_resource_primitives
+                  values that are not lists
+
+            # --- Test: invalid dict type ---
+            - name: Argument specs reject non-dict ha_cluster_transport
+              block:
+                - name: Run role with non-dict ha_cluster_transport
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_transport: not_a_dict
+              rescue:
+                - name: Mark invalid ha_cluster_transport type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_transport_type_failed: true
+                  when: >-
+                    'ha_cluster_transport' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid ha_cluster_transport type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_transport_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_transport
+                  values that are not dictionaries
+
+            # --- Test: invalid choices ---
+            - name: Argument specs reject invalid ha_cluster_pacemaker_shell choice
+              block:
+                - name: Run role with invalid ha_cluster_pacemaker_shell value
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_pacemaker_shell: invalid_choice
+              rescue:
+                - name: Mark invalid ha_cluster_pacemaker_shell choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_pacemaker_shell_choice_failed: true
+                  when: >-
+                    'ha_cluster_pacemaker_shell' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid ha_cluster_pacemaker_shell choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_pacemaker_shell_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_pacemaker_shell
+                  value 'invalid_choice'
+
+            - name: Argument specs reject invalid transport type choice
+              block:
+                - name: Run role with invalid ha_cluster_transport.type
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_transport:
+                      type: invalid_choice
+              rescue:
+                - name: Mark invalid transport type choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_transport_type_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid transport type choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_transport_type_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_transport.type
+                  value 'invalid_choice'
+
+            - name: Argument specs reject invalid quorum device model choice
+              block:
+                - name: Run role with invalid ha_cluster_quorum.device.model
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_quorum:
+                      device:
+                        model: invalid_choice
+              rescue:
+                - name: Mark invalid quorum device model choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_quorum_model_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid quorum device model choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_quorum_model_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  ha_cluster_quorum.device.model value 'invalid_choice'
+
+            - name: Argument specs reject invalid SBD option name choice
+              block:
+                - name: Run role with invalid ha_cluster_sbd_options name
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_sbd_options:
+                      - name: invalid_choice
+                        value: 1
+              rescue:
+                - name: Mark invalid SBD option name choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_sbd_option_name_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid SBD option name choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_sbd_option_name_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_sbd_options
+                  name 'invalid_choice'
+
+            - name: Argument specs reject invalid pcs permission type choice
+              block:
+                - name: Run role with invalid pcs permission type
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_pcs_permission_list:
+                      - type: invalid_choice
+                        name: haclient
+                        allow_list:
+                          - read
+              rescue:
+                - name: Mark invalid pcs permission type choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_pcs_perm_type_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid pcs permission type choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_pcs_perm_type_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  ha_cluster_pcs_permission_list type 'invalid_choice'
+
+            - name: Argument specs reject invalid pcs permission allow_list choice
+              block:
+                - name: Run role with invalid pcs permission allow_list
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_pcs_permission_list:
+                      - type: group
+                        name: haclient
+                        allow_list:
+                          - invalid_choice
+              rescue:
+                - name: Mark invalid pcs permission allow_list choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_pcs_perm_allow_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid pcs permission allow_list choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_pcs_perm_allow_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  ha_cluster_pcs_permission_list allow_list value
+                  'invalid_choice'
+
+            - name: Argument specs reject invalid ACL permission kind choice
+              block:
+                - name: Run role with invalid ACL permission kind
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_acls:
+                      acl_roles:
+                        - id: role1
+                          permissions:
+                            - kind: invalid_choice
+                              xpath: //resources
+              rescue:
+                - name: Mark invalid ACL permission kind choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_acl_kind_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid ACL permission kind choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_acl_kind_choice_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject ACL permission kind
+                  'invalid_choice'
+
+            - name: Argument specs reject invalid resource role choice
+              block:
+                - name: Run role with invalid constraint resource role
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_constraints_colocation:
+                      - resource_follower:
+                          id: res1
+                          role: invalid_choice
+                        resource_leader:
+                          id: res2
+              rescue:
+                - name: Mark invalid resource role choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_resource_role_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid resource role choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_resource_role_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject constraint resource role
+                  'invalid_choice'
+
+            - name: Argument specs reject invalid order action choice
+              block:
+                - name: Run role with invalid order constraint action
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_constraints_order:
+                      - resource_first:
+                          id: res1
+                          action: invalid_choice
+                        resource_then:
+                          id: res2
+              rescue:
+                - name: Mark invalid order action choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_order_action_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid order action choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_order_action_choice_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject order constraint action
+                  'invalid_choice'
+
+            - name: Argument specs reject invalid key_usage choice
+              block:
+                - name: Run role with invalid pcsd certificate key_usage
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_pcsd_certificates:
+                      - name: pcsd_cert
+                        ca: self-sign
+                        key_usage:
+                          - invalid_choice
+              rescue:
+                - name: Mark invalid key_usage choice rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_key_usage_choice_failed: true
+                  when: >-
+                    'invalid_choice' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid key_usage choice was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_key_usage_choice_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  ha_cluster_pcsd_certificates key_usage value
+                  'invalid_choice'
+
+            # --- Test: required nested fields ---
+            - name: Argument specs reject missing resource primitive id
+              block:
+                - name: Run role without resource primitive id
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_resource_primitives:
+                      - agent: ocf:pacemaker:Dummy
+              rescue:
+                - name: Mark missing resource primitive id rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_missing_primitive_id_failed: true
+                  when: >-
+                    'missing required arguments' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert missing resource primitive id was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_missing_primitive_id_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  ha_cluster_resource_primitives entries missing the
+                  required id field
+
+            - name: Argument specs reject missing resource primitive agent
+              block:
+                - name: Run role without resource primitive agent
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_resource_primitives:
+                      - id: dummy
+              rescue:
+                - name: Mark missing resource primitive agent rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_missing_primitive_agent_failed: true
+                  when: >-
+                    'missing required arguments' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert missing resource primitive agent was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_missing_primitive_agent_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  ha_cluster_resource_primitives entries missing the
+                  required agent field
+
+            - name: Argument specs reject missing node_name
+              block:
+                - name: Run role without node_name in ha_cluster_node_options
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_node_options:
+                      - pcs_address: node1.example.com
+              rescue:
+                - name: Mark missing node_name rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_missing_node_name_failed: true
+                  when: >-
+                    'missing required arguments' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert missing node_name was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_missing_node_name_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject ha_cluster_node_options
+                  entries missing the required node_name field
+
+            - name: Argument specs reject missing ticket name
+              block:
+                - name: Run role without ticket name
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_constraints_ticket:
+                      - resource:
+                          id: res1
+              rescue:
+                - name: Mark missing ticket name rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_missing_ticket_failed: true
+                  when: >-
+                    'missing required arguments' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert missing ticket name was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_missing_ticket_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  ha_cluster_constraints_ticket entries missing the
+                  required ticket field
+
+            # --- Test: invalid nested types ---
+            - name: Argument specs reject non-integer stonith level
+              block:
+                - name: Run role with non-integer stonith level
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_stonith_levels:
+                      - level: not_an_int
+                        target: node1
+                        resource_ids:
+                          - fence1
+              rescue:
+                - name: Mark invalid stonith level type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_stonith_level_type_failed: true
+                  when: >-
+                    'level' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid stonith level type was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_stonith_level_type_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject stonith level values that
+                  are not integers
+
+            - name: Argument specs reject non-boolean copy_operations_from_agent
+              block:
+                - name: Run role with non-boolean copy_operations_from_agent
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_resource_primitives:
+                      - id: dummy
+                        agent: ocf:pacemaker:Dummy
+                        copy_operations_from_agent: not_a_bool
+              rescue:
+                - name: Mark invalid copy_operations_from_agent type rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_copy_ops_type_failed: true
+                  when: >-
+                    'copy_operations_from_agent' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert invalid copy_operations_from_agent type was rejected
+              ansible.builtin.assert:
+                that:
+                  - __invalid_input_copy_ops_type_failed | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  copy_operations_from_agent values that are not
+                  booleans
+
+        # ====================================================
+        # Section 3: assert_role_vars validation (all versions)
+        # ====================================================
+
+        - name: Assert rejects ha_cluster_cluster_present as a string
+          block:
+            - name: Run role with ha_cluster_cluster_present as a string
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: not_a_bool
+                ha_cluster_qnetd: null
+          rescue:
+            - name: Mark ha_cluster_cluster_present string rejected
+              ansible.builtin.set_fact:
+                __invalid_input_cluster_present_string_failed: true
+              when: >-
+                'ha_cluster_cluster_present must be null or a boolean' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert ha_cluster_cluster_present as string was rejected
+          ansible.builtin.assert:
+            that:
+              - >-
+                __invalid_input_cluster_present_string_failed
+                | default(false)
+            fail_msg: >-
+              assert_role_vars should reject ha_cluster_cluster_present
+              when given a string value
+
+        - name: Assert rejects ha_cluster_qnetd as a string
+          block:
+            - name: Run role with ha_cluster_qnetd as a string
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: not_a_dict
+          rescue:
+            - name: Mark ha_cluster_qnetd string rejected
+              ansible.builtin.set_fact:
+                __invalid_input_qnetd_string_failed: true
+              when: >-
+                'ha_cluster_qnetd must be null or a dictionary' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert ha_cluster_qnetd as string was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_qnetd_string_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject ha_cluster_qnetd when given
+              a string value
+
+        - name: Assert rejects ha_cluster_corosync_key_src as an integer
+          block:
+            - name: Run role with ha_cluster_corosync_key_src as an integer
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_corosync_key_src: 123
+          rescue:
+            - name: Mark ha_cluster_corosync_key_src integer rejected
+              ansible.builtin.set_fact:
+                __invalid_input_corosync_key_src_int_failed: true
+              when: >-
+                'ha_cluster_corosync_key_src must be null or a path' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert ha_cluster_corosync_key_src as integer was rejected
+          ansible.builtin.assert:
+            that:
+              - >-
+                __invalid_input_corosync_key_src_int_failed
+                | default(false)
+            fail_msg: >-
+              assert_role_vars should reject ha_cluster_corosync_key_src
+              when given an integer value
+
+        - name: Assert rejects ha_cluster_fence_agent_packages as a string
+          block:
+            - name: Run role with ha_cluster_fence_agent_packages as a string
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_fence_agent_packages: not_a_list
+          rescue:
+            - name: Mark ha_cluster_fence_agent_packages string rejected
+              ansible.builtin.set_fact:
+                __invalid_input_fence_pkgs_string_failed: true
+              when: >-
+                'ha_cluster_fence_agent_packages must be null or a list' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert ha_cluster_fence_agent_packages as string was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_fence_pkgs_string_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject
+              ha_cluster_fence_agent_packages when given a string value
+
+        - name: Assert rejects name-value option value as a list
+          block:
+            - name: Run role with cluster property value as a list
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_cluster_properties:
+                  - attrs:
+                      - name: stonith-enabled
+                        value:
+                          - not
+                          - valid
+          rescue:
+            - name: Mark name-value list value rejected
+              ansible.builtin.set_fact:
+                __invalid_input_nvpair_list_failed: true
+              when: >-
+                'must be a string, integer, or boolean' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert name-value option value as a list was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_nvpair_list_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject name-value option values
+              that are lists
+
+        - name: Assert rejects dns as an integer
+          block:
+            - name: Run role with pcsd certificate dns as an integer
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_pcsd_certificates:
+                  - name: pcsd_cert
+                    ca: self-sign
+                    dns: 123
+          rescue:
+            - name: Mark dns integer rejected
+              ansible.builtin.set_fact:
+                __invalid_input_pcsd_dns_int_failed: true
+              when: >-
+                'dns must be a string or list of strings' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert dns as integer was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_pcsd_dns_int_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject
+              ha_cluster_pcsd_certificates dns when given an integer
+
+        - name: Assert rejects mode as boolean
+          block:
+            - name: Run role with pcsd certificate mode as boolean
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_pcsd_certificates:
+                  - name: pcsd_cert
+                    ca: self-sign
+                    mode: true
+          rescue:
+            - name: Mark mode boolean rejected
+              ansible.builtin.set_fact:
+                __invalid_input_pcsd_mode_bool_failed: true
+              when: >-
+                'mode must be a string or integer' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert mode as boolean was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_pcsd_mode_bool_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject
+              ha_cluster_pcsd_certificates mode when given a boolean
+
+        - name: Assert rejects transport links as a string
+          block:
+            - name: Run role with transport links item as a string
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_transport:
+                  links:
+                    - not_a_list_of_dicts
+          rescue:
+            - name: Mark transport links string rejected
+              ansible.builtin.set_fact:
+                __invalid_input_transport_links_string_failed: true
+              when: >-
+                'must be a list of dictionaries' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert transport links as a string was rejected
+          ansible.builtin.assert:
+            that:
+              - >-
+                __invalid_input_transport_links_string_failed
+                | default(false)
+            fail_msg: >-
+              assert_role_vars should reject ha_cluster_transport.links
+              items that are not lists of dictionaries
+
+        - name: Assert rejects qnetd dict with invalid key
+          block:
+            - name: Run role with ha_cluster_qnetd invalid key
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd:
+                  present: false
+                  invalid_key: true
+          rescue:
+            - name: Mark qnetd invalid key rejected
+              ansible.builtin.set_fact:
+                __invalid_input_qnetd_bad_key_failed: true
+              when: >-
+                'contains invalid keys' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert qnetd dict with invalid key was rejected
+          ansible.builtin.assert:
+            that:
+              - __invalid_input_qnetd_bad_key_failed | default(false)
+            fail_msg: >-
+              assert_role_vars should reject ha_cluster_qnetd
+              dictionaries containing keys not in the valid set
+
+      always:
+        - name: Clear test facts
+          ansible.builtin.set_fact:
+            __valid_defaults_succeeded:
+            __invalid_input_enable_repos_type_failed:
+            __invalid_input_sbd_enabled_type_failed:
+            __invalid_input_secure_logging_type_failed:
+            __invalid_input_extra_packages_type_failed:
+            __invalid_input_primitives_type_failed:
+            __invalid_input_transport_type_failed:
+            __invalid_input_pacemaker_shell_choice_failed:
+            __invalid_input_transport_type_choice_failed:
+            __invalid_input_quorum_model_choice_failed:
+            __invalid_input_sbd_option_name_choice_failed:
+            __invalid_input_pcs_perm_type_choice_failed:
+            __invalid_input_pcs_perm_allow_choice_failed:
+            __invalid_input_acl_kind_choice_failed:
+            __invalid_input_resource_role_choice_failed:
+            __invalid_input_order_action_choice_failed:
+            __invalid_input_key_usage_choice_failed:
+            __invalid_input_missing_primitive_id_failed:
+            __invalid_input_missing_primitive_agent_failed:
+            __invalid_input_missing_node_name_failed:
+            __invalid_input_missing_ticket_failed:
+            __invalid_input_stonith_level_type_failed:
+            __invalid_input_copy_ops_type_failed:
+            __invalid_input_cluster_present_string_failed:
+            __invalid_input_qnetd_string_failed:
+            __invalid_input_corosync_key_src_int_failed:
+            __invalid_input_fence_pkgs_string_failed:
+            __invalid_input_nvpair_list_failed:
+            __invalid_input_pcsd_dns_int_failed:
+            __invalid_input_pcsd_mode_bool_failed:
+            __invalid_input_transport_links_string_failed:
+            __invalid_input_qnetd_bad_key_failed:
+          tags: tests::cleanup
