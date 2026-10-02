@@ -179,37 +179,47 @@ prepare+:
       # remove tmt-* files so they don't cause failures in various linters
       - rm -rfv "$COLLECTIONS_ROLES_DIR"/tmt-*
 
-  - name: Download 'woke' from GitHub
-    when: ci-dependencies is not defined or ci-dependencies == github
-    how: shell
-    script:
-      - |
-        curl "$CURL_FAIL_OPTION" --location --insecure \
-          --output woke_releases.json \
-          https://api.github.com/repos/get-woke/woke/releases/latest
-        WOKE_VERSION=$(jq -r '.tag_name' woke_releases.json | sed s/^v//)
-        echo $WOKE_VERSION
-        curl "$CURL_FAIL_OPTION" --location --insecure --remote-name \
-          https://github.com/get-woke/woke/releases/download/v$WOKE_VERSION/woke-$WOKE_VERSION-linux-amd64.tar.gz
-        mkdir -p /usr/local/bin /usr/local/lib/woke
-        tar --strip-components=1 -xvzf woke-$WOKE_VERSION-linux-amd64.tar.gz -C /usr/local/lib/woke
-        ln -sf /usr/local/lib/woke/woke /usr/local/bin/woke
-        rm -rf woke-$WOKE_VERSION-linux-amd64.tar.gz
+#  - name: Download 'woke' from GitHub
+#    when: ci-dependencies is not defined or ci-dependencies == github
+#    how: shell
+#    script:
+#      - |
+#        curl "$CURL_FAIL_OPTION" --location --insecure \
+#          --output woke_releases.json \
+#          https://api.github.com/repos/get-woke/woke/releases/latest
+#        WOKE_VERSION=$(jq -r '.tag_name' woke_releases.json | sed s/^v//)
+#        echo $WOKE_VERSION
+#        curl "$CURL_FAIL_OPTION" --location --insecure --remote-name \
+#          https://github.com/get-woke/woke/releases/download/v$WOKE_VERSION/woke-$WOKE_VERSION-linux-amd64.tar.gz
+#        mkdir -p /usr/local/bin /usr/local/lib/woke
+#        tar --strip-components=1 -xvzf woke-$WOKE_VERSION-linux-amd64.tar.gz -C /usr/local/lib/woke
+#        ln -sf /usr/local/lib/woke/woke /usr/local/bin/woke
+#        rm -rf woke-$WOKE_VERSION-linux-amd64.tar.gz
+#
+#  - name: Download 'woke' from a CI using job/private token
+#    when: ci-dependencies is defined and ci-dependencies == gitlab
+#    how: shell
+#    script:
+#      - >
+#        curl "$CURL_FAIL_OPTION" --location --insecure \
+#          --output woke.zip \
+#          --header "$ARTIFACTS_HEADER" \
+#          "$WOKE_ARTIFACTS_URL"
+#      - rm -rf /usr/local/lib/woke
+#      - mkdir -p /usr/local/bin /usr/local/lib
+#      - unzip woke.zip -d /usr/local/lib
+#      - ln -sf /usr/local/lib/woke/woke /usr/local/bin/woke
+#      - rm -rf woke.zip
 
-  - name: Download 'woke' from a CI using job/private token
-    when: ci-dependencies is defined and ci-dependencies == gitlab
+  - name: Download 'woke' from LSR fork GitHub
     how: shell
     script:
+      - mkdir -p /usr/local/bin
       - >
         curl "$CURL_FAIL_OPTION" --location --insecure \
-          --output woke.zip \
-          --header "$ARTIFACTS_HEADER" \
-          "$WOKE_ARTIFACTS_URL"
-      - rm -rf /usr/local/lib/woke
-      - mkdir -p /usr/local/bin /usr/local/lib
-      - unzip woke.zip -d /usr/local/lib
-      - ln -sf /usr/local/lib/woke/woke /usr/local/bin/woke
-      - rm -rf woke.zip
+          --output /usr/local/bin/woke \
+          https://github.com/linux-system-roles/lsr-woke-action/raw/refs/heads/main/woke
+      - chmod a+x /usr/local/bin/woke
 
   - name: Enable epel repository
     how: feature

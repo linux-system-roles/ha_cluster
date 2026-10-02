@@ -118,7 +118,7 @@ adjust+:
   summary: Run woke
   test: |
     woke --version &&
-    woke -c "$WOKE_CONFIG" --exit-1-on-failure --debug
+    woke -c "$WOKE_CONFIG" --count-only-error-for-failure --exit-1-on-failure --debug
 
 /yaml_lint:
   summary: Run yamllint
