@@ -1,0 +1,15 @@
+# SPDX-License-Identifier: MIT
+# Generated with Codex using model Sol medium 6.1.
+---
+# Arguments are supplied by the SBD tasks through __ha_cluster_modprobe_args.
+# community.general 12 requires Python >= 3.7; use the stable-11 copy below
+# that version, including hosts using Python 2.
+- name: Manage kernel module - Python 3.6 and earlier
+  modprobe_python_36: "{{ __ha_cluster_modprobe_args }}"  # noqa args[module]
+  when: ansible_facts['python_version'] is version('3.7', '<')
+
+# Use the bare name so Ansible 2.9 can parse the skipped task without an
+# installed community.general collection; newer Ansible resolves the FQCN.
+- name: Manage kernel module
+  modprobe: "{{ __ha_cluster_modprobe_args }}"  # noqa fqcn args[module]
+  when: ansible_facts['python_version'] is version('3.7', '>=')

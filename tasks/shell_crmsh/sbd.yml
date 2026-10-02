@@ -64,9 +64,12 @@
               loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
 
             - name: Unload watchdog kernel modules from blocklist
-              community.general.modprobe:
-                name: "{{ item }}"
-                state: absent
+              ansible.builtin.include_tasks:
+                file: "{{ role_path }}/tasks/shell_common/include_modprobe.yml"
+              vars:
+                __ha_cluster_modprobe_args:
+                  name: "{{ item }}"
+                  state: absent
               loop: "{{ ha_cluster.sbd_watchdog_modules_blocklist | d([]) }}"
 
         # Softdog is minimum that needs to be provided if /dev/watchdog is not present.
@@ -84,9 +87,12 @@
               loop: "{{ ha_cluster.sbd_watchdog_modules | d(['softdog']) }}"
 
             - name: Load watchdog kernel modules
-              community.general.modprobe:
-                name: "{{ item }}"
-                state: present
+              ansible.builtin.include_tasks:
+                file: "{{ role_path }}/tasks/shell_common/include_modprobe.yml"
+              vars:
+                __ha_cluster_modprobe_args:
+                  name: "{{ item }}"
+                  state: present
               loop: "{{ ha_cluster.sbd_watchdog_modules | d(['softdog']) }}"
 
 
