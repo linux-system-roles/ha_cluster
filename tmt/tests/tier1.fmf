@@ -45,6 +45,7 @@ test: tmt/tests/run_tier1_test.sh
   /default:
   /export_doesnt_destroy_cluster:
   /export_firewall_selinux:
+  /invalid_input:
   /node_options_check:
   /not_booted_cluster:
   /not_booted_qnetd:
