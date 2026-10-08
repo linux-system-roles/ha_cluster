@@ -1,0 +1,1189 @@
+# SPDX-License-Identifier: MIT
+---
+argument_specs:
+  main:
+    short_description: The ha_cluster role.
+    description: >
+      The ha_cluster role allows you to install, configure, and manage
+      Pacemaker high-availability clusters. It can configure Corosync
+      transport, totem, and quorum, SBD, cluster properties, resources,
+      constraints, fencing topology, ACLs, alerts, and optional qnetd
+      hosts. The role replaces cluster configuration on the specified
+      nodes; settings not present in the role variables are lost.
+    options:
+      ha_cluster_pacemaker_shell:
+        type: str
+        default: pcs
+        choices:
+          - pcs
+          - crmsh
+        description: >
+          Pacemaker management shell used by the role. `pcs` is used on
+          Fedora and RHEL. `crmsh` is used on SUSE.
+      ha_cluster_enable_repos:
+        type: bool
+        default: true
+        description: >
+          Whether to enable repositories that provide required HA packages
+          on RHEL and CentOS.
+      ha_cluster_enable_repos_resilient_storage:
+        type: bool
+        default: false
+        description: >
+          Whether to enable resilient storage repositories (for example
+          dlm or gfs2) on RHEL and CentOS. Takes effect only when
+          `ha_cluster_enable_repos` is `true`.
+      ha_cluster_cluster_present:
+        type: raw
+        default: true
+        description: >
+          Whether HA cluster configuration is applied. `true` configures
+          the cluster according to the other role variables. `false`
+          purges HA cluster configuration from the hosts. `null` leaves
+          existing cluster configuration unchanged.
+      ha_cluster_start_on_boot:
+        type: bool
+        default: true
+        description: >
+          Whether cluster services start automatically on boot.
+      ha_cluster_install_cloud_agents:
+        type: bool
+        default: false
+        description: >
+          Whether to install cloud resource and fence agent packages that
+          are not installed by default on RHEL.
+      ha_cluster_extra_packages:
+        type: list
+        elements: str
+        default: []
+        description: >
+          Additional packages to install beyond those installed
+          automatically by the role, for example custom resource agents.
+      ha_cluster_zypper_patterns:
+        type: list
+        elements: str
+        default: []
+        description: >
+          Additional zypper patterns to install on SUSE systems.
+      ha_cluster_fence_agent_packages:
+        type: raw
+        default: null
+        description: >
+          Fence agent packages to install. Accepts a list of package name
+          strings or `null` to use the OS-specific packages, typically
+          `fence-agents-all` and `fence-virt`.
+      ha_cluster_use_latest_packages:
+        type: bool
+        default: false
+        description: >
+          Whether packages are installed at the latest available version.
+          When `false`, existing packages are not updated.
+      ha_cluster_hacluster_password:
+        type: str
+        default: ""
+        description: >
+          Password of the `hacluster` user. This user has full access to
+          the cluster. Required when configuring a running cluster.
+          Optional when configuring a non-running container or VM image.
+      ha_cluster_regenerate_keys:
+        type: bool
+        default: false
+        description: >
+          Whether to regenerate pre-shared keys and TLS certificates.
+          Ignored for keys or certificates supplied via `*_key_src`
+          variables or `ha_cluster_pcsd_certificates`.
+      ha_cluster_corosync_key_src:
+        type: raw
+        default: null
+        description: >
+          Controller-side path to the Corosync authkey file. Accepts a
+          path string or `null`. When unset, an existing key is reused or
+          a new key is generated.
+      ha_cluster_pacemaker_key_src:
+        type: raw
+        default: null
+        description: >
+          Controller-side path to the Pacemaker authkey file. Accepts a
+          path string or `null`. When unset, an existing key is reused or
+          a new key is generated.
+      ha_cluster_fence_virt_key_src:
+        type: raw
+        default: null
+        description: >
+          Controller-side path to the fence-virt or fence-xvm pre-shared
+          key. Accepts a path string or `null`. When unset, an existing
+          key is reused or a new key is generated.
+      ha_cluster_pcsd_public_key_src:
+        type: raw
+        default: null
+        description: >
+          Controller-side path to the pcsd TLS certificate. Accepts a path
+          string or `null`. Must not be set together with
+          `ha_cluster_pcsd_certificates`.
+      ha_cluster_pcsd_private_key_src:
+        type: raw
+        default: null
+        description: >
+          Controller-side path to the pcsd TLS private key. Accepts a path
+          string or `null`. Must not be set together with
+          `ha_cluster_pcsd_certificates`.
+      ha_cluster_pcsd_certificates:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Certificate requests passed to the `certificate` role as
+          `certificate_requests` for pcsd TLS material. Must not be set
+          together with `ha_cluster_pcsd_public_key_src` or
+          `ha_cluster_pcsd_private_key_src`.
+        options:
+          name:
+            type: str
+            required: true
+            description: >
+              The name of the certificate. A full path can be used to
+              choose the directory where files will be stored.
+          ca:
+            type: str
+            required: true
+            description: >
+              The CA that will issue the certificate, for example
+              `self-sign` or `ipa`.
+          dns:
+            type: raw
+            description: >
+              A domain name or list of domain names to include in the
+              certificate Subject Alternative Name (SAN).
+          email:
+            type: raw
+            description: >
+              An email address or list of email addresses to include in
+              the certificate Subject Alternative Name (SAN).
+          ip:
+            type: raw
+            description: >
+              An IP address or list of IP addresses to include in the
+              certificate Subject Alternative Name (SAN).
+          auto_renew:
+            type: bool
+            description: >
+              Whether the certificate should be renewed automatically
+              before it expires.
+          owner:
+            type: str
+            description: >
+              The user name or user id for the certificate and key files.
+          group:
+            type: str
+            description: >
+              The group name or group id for the certificate and key
+              files.
+          mode:
+            type: raw
+            description: >
+              The file system permissions for the certificate and key
+              files. Accepts a string such as `0644` or an integer.
+          key_size:
+            type: int
+            description: >
+              The key size in bits.
+          common_name:
+            type: str
+            description: >
+              The Common Name requested for the certificate subject.
+          country:
+            type: str
+            description: >
+              The country code requested for the certificate subject.
+          state:
+            type: str
+            description: >
+              The state requested for the certificate subject.
+          locality:
+            type: str
+            description: >
+              The locality requested for the certificate subject.
+          organization:
+            type: str
+            description: >
+              The organization requested for the certificate subject.
+          organizational_unit:
+            type: str
+            description: >
+              The organizational unit requested for the certificate
+              subject.
+          contact_email:
+            type: str
+            description: >
+              The contact email requested for the certificate subject.
+          key_usage:
+            type: list
+            elements: str
+            choices:
+              - digitalSignature
+              - nonRepudiation
+              - keyEncipherment
+              - dataEncipherment
+              - keyAgreement
+              - keyCertSign
+              - cRLSign
+              - encipherOnly
+              - decipherOnly
+            description: >
+              The allowed Key Usage extensions for the certificate.
+          extended_key_usage:
+            type: list
+            elements: str
+            description: >
+              The Extended Key Usage attributes for the certificate.
+          run_before:
+            type: str
+            description: >
+              A command to run before saving the certificate.
+          run_after:
+            type: str
+            description: >
+              A command to run after saving the certificate.
+          principal:
+            type: raw
+            description: >
+              A Kerberos principal or list of Kerberos principals.
+          provider:
+            type: str
+            description: >
+              The underlying method used to request and manage the
+              certificate.
+          issuer:
+            type: str
+            description: >
+              The issuer certificate nickname or template name.
+      ha_cluster_cluster_name:
+        type: str
+        default: my-cluster
+        description: >
+          Name of the cluster.
+      ha_cluster_transport:
+        type: dict
+        default: {}
+        description: >
+          Corosync transport configuration including type, options, links,
+          compression, and crypto.
+        options:
+          type:
+            type: str
+            choices:
+              - knet
+              - udp
+              - udpu
+            description: >
+              Corosync transport type (`knet`, `udp`, or `udpu`).
+          options:
+            type: list
+            elements: dict
+            description: >
+              Name-value transport options. See `pcs cluster setup` and
+              corosync.conf(5).
+            options: &nvpair_options
+              name:
+                type: str
+                required: true
+                description: >
+                  Name of the option.
+              value:
+                type: raw
+                required: true
+                description: >
+                  Value of the option. Accepts a string, integer, or
+                  boolean.
+          links:
+            type: list
+            elements: raw
+            description: >
+              Corosync links. Each item is a list of name-value
+              dictionaries of options for one link. Only one link is
+              supported with `udp` and `udpu`.
+          compression:
+            type: list
+            elements: dict
+            description: >
+              Transport compression options. Available only for `knet`.
+            options: *nvpair_options
+          crypto:
+            type: list
+            elements: dict
+            description: >
+              Transport encryption options. Available only for `knet`,
+              where Corosync enables encryption. Encryption is always
+              disabled with `udp` and `udpu`.
+            options: *nvpair_options
+      ha_cluster_totem:
+        type: dict
+        default: {}
+        description: >
+          Corosync totem configuration as name-value options. See
+          `pcs cluster setup` and corosync.conf(5).
+        options:
+          options:
+            type: list
+            elements: dict
+            description: >
+              Name-value totem options.
+            options: *nvpair_options
+      ha_cluster_quorum:
+        type: dict
+        default: {}
+        description: >
+          Cluster quorum and optional quorum device configuration.
+        options:
+          options:
+            type: list
+            elements: dict
+            description: >
+              Name-value quorum options. Allowed names include
+              `auto_tie_breaker`, `last_man_standing`,
+              `last_man_standing_window`, and `wait_for_all`.
+            options: *nvpair_options
+          device:
+            type: dict
+            description: >
+              Quorum device configuration. When omitted, no quorum device
+              is used.
+            options:
+              model:
+                type: str
+                required: true
+                choices:
+                  - net
+                description: >
+                  Type of the quorum device. Currently only `net` is
+                  supported.
+              model_options:
+                type: list
+                elements: dict
+                description: >
+                  Name-value options for the specified quorum device
+                  model. For `net`, `host` and `algorithm` must be
+                  specified.
+                options: *nvpair_options
+              generic_options:
+                type: list
+                elements: dict
+                description: >
+                  Name-value quorum device options that are not model
+                  specific, such as `sync_timeout` and `timeout`.
+                options: *nvpair_options
+              heuristics_options:
+                type: list
+                elements: dict
+                description: >
+                  Name-value quorum device heuristics options.
+                options: *nvpair_options
+      ha_cluster_sbd_enabled:
+        type: bool
+        default: false
+        description: >
+          Whether SBD is enabled.
+      ha_cluster_sbd_options:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          SBD environment options as name-value pairs. Watchdog and
+          devices are configured per node via `ha_cluster_node_options`
+          or the inventory `ha_cluster` dictionary.
+        options:
+          name:
+            type: str
+            required: true
+            choices:
+              - delay-start
+              - startmode
+              - timeout-action
+              - watchdog-timeout
+            description: >
+              SBD option name. `delay-start` maps to `SBD_DELAY_START`,
+              `startmode` to `SBD_STARTMODE`, `timeout-action` to
+              `SBD_TIMEOUT_ACTION`, and `watchdog-timeout` to
+              `SBD_WATCHDOG_TIMEOUT`.
+          value:
+            type: raw
+            required: true
+            description: >
+              SBD option value. `delay-start` accepts `false`, an
+              integer, or a string such as `no`. `startmode` and
+              `timeout-action` are strings. `watchdog-timeout` is an
+              integer.
+      ha_cluster_pcs_permission_list:
+        type: list
+        elements: dict
+        default:
+          - type: group
+            name: haclient
+            allow_list:
+              - grant
+              - read
+              - write
+        description: >
+          pcsd permissions for managing the cluster.
+        options:
+          type:
+            type: str
+            required: true
+            choices:
+              - user
+              - group
+            description: >
+              Whether the permission applies to a `user` or a `group`.
+          name:
+            type: str
+            required: true
+            description: >
+              User or group name the permission applies to.
+          allow_list:
+            type: list
+            elements: str
+            required: true
+            choices:
+              - read
+              - write
+              - grant
+              - full
+            description: >
+              Allowed actions. `read` views cluster status and settings.
+              `write` modifies cluster settings except permissions and
+              ACLs. `grant` modifies permissions and ACLs. `full` allows
+              unrestricted access including adding and removing nodes.
+      ha_cluster_acls:
+        type: dict
+        default: {}
+        description: >
+          Pacemaker ACL roles, users, and groups. Cluster property
+          `enable-acl` must be enabled separately for ACLs to take
+          effect.
+        options:
+          acl_roles:
+            type: list
+            elements: dict
+            description: >
+              ACL roles and their permissions.
+            options:
+              id:
+                type: str
+                required: true
+                description: >
+                  ID of the ACL role.
+              description:
+                type: str
+                description: >
+                  Description of the ACL role.
+              permissions:
+                type: list
+                elements: dict
+                description: >
+                  Permissions granted by the role. Exactly one of `xpath`
+                  or `reference` must be specified for each permission.
+                options:
+                  kind:
+                    type: str
+                    required: true
+                    choices:
+                      - read
+                      - write
+                      - deny
+                    description: >
+                      Access being granted (`read`, `write`, or `deny`).
+                  xpath:
+                    type: str
+                    description: >
+                      XPath selecting a CIB XML element the permission
+                      applies to.
+                  reference:
+                    type: str
+                    description: >
+                      ID of a CIB XML element the permission applies to.
+          acl_users:
+            type: list
+            elements: dict
+            description: >
+              ACL users and the roles assigned to them.
+            options:
+              id:
+                type: str
+                required: true
+                description: >
+                  ID of the ACL user.
+              roles:
+                type: list
+                elements: str
+                description: >
+                  ACL role IDs assigned to the user.
+          acl_groups:
+            type: list
+            elements: dict
+            description: >
+              ACL groups and the roles assigned to them.
+            options:
+              id:
+                type: str
+                required: true
+                description: >
+                  ID of the ACL group.
+              roles:
+                type: list
+                elements: str
+                description: >
+                  ACL role IDs assigned to the group.
+      ha_cluster_alerts:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Pacemaker alerts and recipients. Alert agent programs must be
+          supplied and distributed by the user.
+        options:
+          id:
+            type: str
+            required: true
+            description: >
+              ID of the alert.
+          path:
+            type: path
+            required: true
+            description: >
+              Path to the alert agent executable.
+          description:
+            type: str
+            description: >
+              Description of the alert.
+          instance_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of the alert's instance attributes. Only the first set
+              is applied.
+            options: &attr_set_item_options
+              attrs:
+                type: list
+                elements: dict
+                description: >
+                  Name-value attributes in the set.
+                options: *nvpair_options
+          meta_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of the alert's meta attributes. Only the first set is
+              applied.
+            options: *attr_set_item_options
+          recipients:
+            type: list
+            elements: dict
+            description: >
+              Recipients for the alert.
+            options:
+              value:
+                type: str
+                required: true
+                description: >
+                  Value of the recipient.
+              id:
+                type: str
+                description: >
+                  ID of the recipient.
+              description:
+                type: str
+                description: >
+                  Description of the recipient.
+              instance_attrs:
+                type: list
+                elements: dict
+                description: >
+                  Sets of the recipient's instance attributes. Only the
+                  first set is applied.
+                options: *attr_set_item_options
+              meta_attrs:
+                type: list
+                elements: dict
+                description: >
+                  Sets of the recipient's meta attributes. Only the first
+                  set is applied.
+                options: *attr_set_item_options
+      ha_cluster_cluster_properties:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Sets of Pacemaker cluster-wide properties. Only the first set
+          is applied.
+        options: *attr_set_item_options
+      ha_cluster_node_options:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Per-node options including pcs and Corosync addresses, SBD
+          settings, node attributes, and utilization. Does not select
+          which hosts form the cluster.
+        options:
+          node_name:
+            type: str
+            required: true
+            description: >
+              Node name. Must match a name defined for a cluster node.
+          pcs_address:
+            type: str
+            description: >
+              Address used by pcs to communicate with the node. May be a
+              name, FQDN, or IP address, optionally including a port.
+          corosync_addresses:
+            type: list
+            elements: str
+            description: >
+              Addresses used by Corosync. All nodes must have the same
+              number of addresses, and order matters.
+          sbd_watchdog_modules:
+            type: list
+            elements: str
+            description: >
+              Watchdog kernel modules to load, creating `/dev/watchdog*`
+              devices.
+          sbd_watchdog_modules_blocklist:
+            type: list
+            elements: str
+            description: >
+              Watchdog kernel modules to unload and block.
+          sbd_watchdog:
+            type: path
+            description: >
+              Watchdog device used by SBD, for example `/dev/watchdog`.
+          sbd_devices:
+            type: list
+            elements: path
+            description: >
+              Devices used for exchanging SBD messages and for
+              monitoring. Use stable names such as `/dev/disk/by-id/`.
+          attributes:
+            type: list
+            elements: dict
+            description: >
+              Sets of Pacemaker node attributes. Only the first set is
+              applied.
+            options: *attr_set_item_options
+          utilization:
+            type: list
+            elements: dict
+            description: >
+              Sets of node utilization. Attribute values must be
+              integers. Only the first set is applied.
+            options: *attr_set_item_options
+      ha_cluster_resource_defaults:
+        type: dict
+        default: {}
+        description: >
+          Sets of resource meta-attribute defaults, optionally scoped by
+          rules.
+        options:
+          meta_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of resource meta-attribute defaults.
+            options: &defaults_set_options
+              id:
+                type: str
+                description: >
+                  ID of the defaults set. Autogenerated when omitted.
+              rule:
+                type: str
+                description: >
+                  pcs rule specifying when and for which resources the
+                  set applies.
+              score:
+                type: raw
+                description: >
+                  Weight of the defaults set. Accepts an integer or a
+                  string such as `INFINITY`.
+              attrs:
+                type: list
+                elements: dict
+                description: >
+                  Meta attributes applied to resources as defaults.
+                options: *nvpair_options
+      ha_cluster_resource_operation_defaults:
+        type: dict
+        default: {}
+        description: >
+          Sets of resource operation meta-attribute defaults, optionally
+          scoped by rules.
+        options:
+          meta_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of resource operation meta-attribute defaults.
+            options: *defaults_set_options
+      ha_cluster_resource_primitives:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Pacemaker resources and stonith devices configured by the role.
+        options:
+          id:
+            type: str
+            required: true
+            description: >
+              ID of the resource.
+          agent:
+            type: str
+            required: true
+            description: >
+              Resource or stonith agent name, for example
+              `ocf:pacemaker:Dummy` or `stonith:fence_xvm`. Stonith
+              agents must use the `stonith:` prefix.
+          instance_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of the resource's instance attributes. Only the first
+              set is applied.
+            options: *attr_set_item_options
+          meta_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of the resource's meta attributes. Only the first set
+              is applied.
+            options: *attr_set_item_options
+          copy_operations_from_agent:
+            type: bool
+            description: >
+              Whether default operation settings from the resource agent
+              are copied into the resource configuration.
+          operations:
+            type: list
+            elements: dict
+            description: >
+              Resource operations.
+            options:
+              action:
+                type: str
+                required: true
+                description: >
+                  Operation action as defined by Pacemaker and the
+                  resource or stonith agent.
+              attrs:
+                type: list
+                elements: dict
+                required: true
+                description: >
+                  Operation options. At least one option must be
+                  specified.
+                options: *nvpair_options
+          utilization:
+            type: list
+            elements: dict
+            description: >
+              Sets of the resource's utilization. Attribute values must
+              be integers. Only the first set is applied.
+            options: *attr_set_item_options
+      ha_cluster_resource_groups:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Resource groups. Member resources must be defined in
+          `ha_cluster_resource_primitives`.
+        options:
+          id:
+            type: str
+            required: true
+            description: >
+              ID of the group.
+          resource_ids:
+            type: list
+            elements: str
+            required: true
+            description: >
+              IDs of resources in the group. At least one resource must
+              be listed.
+          meta_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of the group's meta attributes. Only the first set is
+              applied.
+            options: *attr_set_item_options
+      ha_cluster_resource_clones:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Resource clones. The cloned resource must be defined in
+          `ha_cluster_resource_primitives` or
+          `ha_cluster_resource_groups`.
+        options:
+          resource_id:
+            type: str
+            required: true
+            description: >
+              ID of the resource or group to clone.
+          promotable:
+            type: bool
+            description: >
+              Whether to create a promotable clone.
+          id:
+            type: str
+            description: >
+              Custom clone ID. Autogenerated when omitted.
+          meta_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of the clone's meta attributes. Only the first set is
+              applied.
+            options: *attr_set_item_options
+      ha_cluster_resource_bundles:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Resource bundles. The optional inner resource must be defined
+          in `ha_cluster_resource_primitives`. The role does not install
+          container runtimes or distribute container images.
+        options:
+          id:
+            type: str
+            required: true
+            description: >
+              ID of the bundle.
+          resource_id:
+            type: str
+            description: >
+              ID of the primitive resource placed into the bundle.
+          container:
+            type: dict
+            description: >
+              Container technology used by the bundle.
+            options:
+              type:
+                type: str
+                required: true
+                description: >
+                  Container technology, such as `docker`, `podman`, or
+                  `rkt`.
+              options:
+                type: list
+                elements: dict
+                description: >
+                  Name-value container options. Some types require
+                  options such as `image`.
+                options: *nvpair_options
+          network_options:
+            type: list
+            elements: dict
+            description: >
+              Name-value network options. A resource in a bundle may
+              require options such as `control-port` or
+              `ip-range-start`.
+            options: *nvpair_options
+          port_map:
+            type: list
+            elements: raw
+            description: >
+              Port forwarding from the host network to the container.
+              Each item is a list of name-value dictionaries for one
+              forwarding.
+          storage_map:
+            type: list
+            elements: raw
+            description: >
+              Directory mappings from the host filesystem into the
+              container. Each item is a list of name-value dictionaries
+              for one mapping.
+          meta_attrs:
+            type: list
+            elements: dict
+            description: >
+              Sets of the bundle's meta attributes. Only the first set is
+              applied.
+            options: *attr_set_item_options
+      ha_cluster_stonith_levels:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Stonith levels, also known as fencing topology. Exactly one of
+          `target`, `target_pattern`, or `target_attribute` must be
+          specified. `level` must be between 1 and 9 inclusive.
+        options:
+          level:
+            type: int
+            description: >
+              Order in which to attempt the level. Levels are attempted
+              in ascending order until one succeeds. Must be between 1
+              and 9 inclusive.
+          target:
+            type: str
+            description: >
+              Name of a node this level applies to.
+          target_pattern:
+            type: str
+            description: >
+              POSIX regular expression matching names of nodes this level
+              applies to.
+          target_attribute:
+            type: str
+            description: >
+              Name of a node attribute that is set for nodes this level
+              applies to. Used together with `target_value`.
+          target_value:
+            type: str
+            description: >
+              Value of `target_attribute` for nodes this level applies
+              to.
+          resource_ids:
+            type: list
+            elements: str
+            required: true
+            description: >
+              Stonith resources that must all be tried for this level.
+      ha_cluster_constraints_location:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Resource location constraints. Each item specifies a resource
+          by `id` or `pattern` and either a `node` or a `rule`.
+        options:
+          resource:
+            type: dict
+            required: true
+            description: >
+              Resource the constraint applies to. Exactly one of `id` or
+              `pattern` must be specified.
+            options: &constraint_resource_options
+              id:
+                type: str
+                description: >
+                  Resource ID.
+              pattern:
+                type: str
+                description: >
+                  POSIX extended regular expression matched against
+                  resource IDs.
+              role:
+                type: str
+                choices:
+                  - Started
+                  - Unpromoted
+                  - Promoted
+                description: >
+                  Limit the constraint to the specified resource role
+                  (`Started`, `Unpromoted`, or `Promoted`).
+          node:
+            type: str
+            description: >
+              Name of a node the resource should prefer or avoid.
+          rule:
+            type: str
+            description: >
+              Constraint rule written using pcs syntax.
+          id:
+            type: str
+            description: >
+              ID of the constraint. Autogenerated when omitted.
+          options:
+            type: list
+            elements: dict
+            description: >
+              Name-value constraint options such as `score` and
+              `resource-discovery`.
+            options: *nvpair_options
+      ha_cluster_constraints_colocation:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Resource colocation constraints. Each item is either a simple
+          constraint (`resource_follower` and `resource_leader`) or a set
+          constraint (`resource_sets`).
+        options:
+          resource_follower:
+            type: dict
+            description: >
+              Resource located relative to `resource_leader`.
+            options: &resource_id_role_options
+              id:
+                type: str
+                required: true
+                description: >
+                  Resource ID.
+              role:
+                type: str
+                choices:
+                  - Started
+                  - Unpromoted
+                  - Promoted
+                description: >
+                  Limit the constraint to the specified resource role
+                  (`Started`, `Unpromoted`, or `Promoted`).
+          resource_leader:
+            type: dict
+            description: >
+              Resource whose location is decided first.
+            options: *resource_id_role_options
+          resource_sets:
+            type: list
+            elements: dict
+            description: >
+              Resource sets for a set colocation constraint.
+            options: &resource_set_options
+              resource_ids:
+                type: list
+                elements: str
+                required: true
+                description: >
+                  Resource IDs in the set.
+              options:
+                type: list
+                elements: dict
+                description: >
+                  Name-value options fine-tuning how resources in the set
+                  are treated.
+                options: *nvpair_options
+          id:
+            type: str
+            description: >
+              ID of the constraint. Autogenerated when omitted.
+          options:
+            type: list
+            elements: dict
+            description: >
+              Name-value constraint options such as `score`.
+            options: *nvpair_options
+      ha_cluster_constraints_order:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Resource order constraints. Each item is either a simple
+          constraint (`resource_first` and `resource_then`) or a set
+          constraint (`resource_sets`).
+        options:
+          resource_first:
+            type: dict
+            description: >
+              Resource that `resource_then` depends on.
+            options: &resource_id_action_options
+              id:
+                type: str
+                required: true
+                description: >
+                  Resource ID.
+              action:
+                type: str
+                choices:
+                  - start
+                  - stop
+                  - promote
+                  - demote
+                description: >
+                  Action that must complete (`start`, `stop`, `promote`,
+                  or `demote`).
+          resource_then:
+            type: dict
+            description: >
+              Dependent resource.
+            options: *resource_id_action_options
+          resource_sets:
+            type: list
+            elements: dict
+            description: >
+              Resource sets for a set order constraint.
+            options: *resource_set_options
+          id:
+            type: str
+            description: >
+              ID of the constraint. Autogenerated when omitted.
+          options:
+            type: list
+            elements: dict
+            description: >
+              Name-value constraint options.
+            options: *nvpair_options
+      ha_cluster_constraints_ticket:
+        type: list
+        elements: dict
+        default: []
+        description: >
+          Resource ticket constraints. Each item is either a simple
+          constraint (`resource`) or a set constraint (`resource_sets`).
+        options:
+          resource:
+            type: dict
+            description: >
+              Resource the ticket constraint applies to.
+            options: *resource_id_role_options
+          resource_sets:
+            type: list
+            elements: dict
+            description: >
+              Resource sets for a set ticket constraint.
+            options: *resource_set_options
+          ticket:
+            type: str
+            required: true
+            description: >
+              Name of the ticket the resource depends on.
+          id:
+            type: str
+            description: >
+              ID of the constraint. Autogenerated when omitted.
+          options:
+            type: list
+            elements: dict
+            description: >
+              Name-value constraint options such as `loss-policy`.
+            options: *nvpair_options
+      ha_cluster_manage_firewall:
+        type: bool
+        default: false
+        description: >
+          Whether to manage the high-availability firewall service and
+          the fence-virt port using the firewall role. Limited to adding
+          ports, not removing them.
+      ha_cluster_manage_selinux:
+        type: bool
+        default: false
+        description: >
+          Whether to associate high-availability ports with SELinux type
+          `cluster_port_t` using the selinux role. Limited to adding
+          policy, not removing it. Firewall configuration is a
+          prerequisite.
+      ha_cluster_qnetd:
+        type: raw
+        default:
+          present: false
+          regenerate_keys: false
+          start_on_boot: true
+        description: >
+          Qnetd host configuration. Accepts a dictionary or `null`.
+          `null` leaves qnetd configuration unchanged. When a dictionary
+          is provided, `present` configures or removes qnetd,
+          `start_on_boot` controls whether qnetd starts on boot, and
+          `regenerate_keys` regenerates the qnetd TLS certificate. Qnetd
+          cannot run on a cluster node.
+      ha_cluster_export_configuration:
+        type: bool
+        default: false
+        description: >
+          Whether to export existing cluster configuration into
+          role-compatible facts in `ha_cluster_facts`.
+      ha_cluster_secure_logging:
+        type: bool
+        default: true
+        description: >
+          Whether to suppress potentially sensitive task output by
+          setting `no_log` on tasks that handle credentials, secrets, and
+          other sensitive data.
