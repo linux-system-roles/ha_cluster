@@ -14,6 +14,7 @@ python3-cryptography
 python3-dacite
 python3-dateutil
 python3-dev
+python3-isodate
 python3-lxml
 python3-openssl
 python3-pkg-resources

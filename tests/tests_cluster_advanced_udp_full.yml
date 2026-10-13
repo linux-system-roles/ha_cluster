@@ -4,6 +4,7 @@
   hosts: all
   vars_files: vars/main.yml
   vars:
+    __required_capability: cluster.create.transport.udp-udpu
     __properties_capability: pcmk.properties.cluster.config.output-formats
     ha_cluster_export_configuration: true
     ha_cluster_cluster_name: test-cluster
@@ -34,26 +35,45 @@
           value: "1"
 
   tasks:
+    - name: Skip test in bootc mode
+      include_tasks: tasks/skip_if_bootc.yml
+
+    - name: Set up test environment
+      include_role:
+        name: linux-system-roles.ha_cluster
+        tasks_from: test_setup.yml
+
+    # Install pcs so we can read capabilities
+    - name: Install pcs
+      package:
+        name: pcs
+        state: present
+        use: >-
+          {{
+            (__ha_cluster_is_ostree | d(false))
+              | ternary('ansible.posix.rhel_rpm_ostree', omit)
+          }}
+
+    - name: Fetch cluster versions of cluster components
+      include_tasks: tasks/fetch_versions.yml
+
+    - name: Warn about skipped test
+      when:
+        - __required_capability not in __test_pcs_capabilities
+      debug:
+        msg: This test needs pcs with {{ __required_capability }} capability
+
     - name: Run test
       tags:
         - tests::booted
         - tests::verify
+      when:
+        - __required_capability in __test_pcs_capabilities
       block:
-        - name: Skip test in bootc mode
-          include_tasks: tasks/skip_if_bootc.yml
-
-        - name: Set up test environment
-          include_role:
-            name: linux-system-roles.ha_cluster
-            tasks_from: test_setup.yml
-
         - name: Run HA Cluster role
           include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             __sr_public: true
-
-        - name: Fetch cluster versions of cluster components
-          include_tasks: tasks/fetch_versions.yml
 
         - name: Check corosync
           include_tasks: tasks/assert_corosync_config.yml
