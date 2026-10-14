@@ -205,31 +205,6 @@
                   argument_specs should reject ha_cluster_pacemaker_shell
                   value 'invalid_choice'
 
-            - name: Argument specs reject invalid transport type choice
-              block:
-                - name: Run role with invalid ha_cluster_transport.type
-                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
-                  vars:
-                    ha_cluster_transport:
-                      type: invalid_choice
-              rescue:
-                - name: Mark invalid transport type choice rejected
-                  ansible.builtin.set_fact:
-                    __invalid_input_transport_type_choice_failed: true
-                  when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
-
-            - name: Assert invalid transport type choice was rejected
-              ansible.builtin.assert:
-                that:
-                  - >-
-                    __invalid_input_transport_type_choice_failed
-                    | default(false)
-                fail_msg: >-
-                  argument_specs should reject ha_cluster_transport.type
-                  value 'invalid_choice'
-
             - name: Argument specs reject invalid quorum device model choice
               block:
                 - name: Run role with invalid ha_cluster_quorum.device.model
@@ -424,33 +399,6 @@
                   argument_specs should reject order constraint action
                   'invalid_choice'
 
-            - name: Argument specs reject invalid key_usage choice
-              block:
-                - name: Run role with invalid pcsd certificate key_usage
-                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
-                  vars:
-                    ha_cluster_pcsd_certificates:
-                      - name: pcsd_cert
-                        ca: self-sign
-                        key_usage:
-                          - invalid_choice
-              rescue:
-                - name: Mark invalid key_usage choice rejected
-                  ansible.builtin.set_fact:
-                    __invalid_input_key_usage_choice_failed: true
-                  when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
-
-            - name: Assert invalid key_usage choice was rejected
-              ansible.builtin.assert:
-                that:
-                  - __invalid_input_key_usage_choice_failed | default(false)
-                fail_msg: >-
-                  argument_specs should reject
-                  ha_cluster_pcsd_certificates key_usage value
-                  'invalid_choice'
-
             # --- Test: required nested fields ---
             - name: Argument specs reject missing resource primitive id
               block:
@@ -553,6 +501,34 @@
                   required ticket field
 
             # --- Test: invalid nested types ---
+            - name: Argument specs reject missing stonith level
+              block:
+                - name: Run role without stonith level
+                  ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+                  vars:
+                    ha_cluster_stonith_levels:
+                      - target: node1
+                        resource_ids:
+                          - fence1
+              rescue:
+                - name: Mark missing stonith level rejected
+                  ansible.builtin.set_fact:
+                    __invalid_input_missing_stonith_level_failed: true
+                  when: >-
+                    'missing required arguments' in
+                    (ansible_failed_result.argument_errors | default([]) | to_json)
+
+            - name: Assert missing stonith level was rejected
+              ansible.builtin.assert:
+                that:
+                  - >-
+                    __invalid_input_missing_stonith_level_failed
+                    | default(false)
+                fail_msg: >-
+                  argument_specs should reject
+                  ha_cluster_stonith_levels entries missing the
+                  required level field
+
             - name: Argument specs reject non-integer stonith level
               block:
                 - name: Run role with non-integer stonith level
@@ -610,6 +586,33 @@
         # ====================================================
         # Section 3: assert_role_vars validation (all versions)
         # ====================================================
+
+        - name: Assert rejects invalid ha_cluster_transport.type
+          block:
+            - name: Run role with invalid ha_cluster_transport.type
+              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+              vars:
+                ha_cluster_cluster_present: null
+                ha_cluster_qnetd: null
+                ha_cluster_transport:
+                  type: invalid_choice
+          rescue:
+            - name: Mark invalid transport type choice rejected
+              ansible.builtin.set_fact:
+                __invalid_input_transport_type_choice_failed: true
+              when: >-
+                'ha_cluster_transport.type must be knet, udp, or udpu' in
+                (ansible_failed_result | default({}) | to_json)
+
+        - name: Assert invalid ha_cluster_transport.type was rejected
+          ansible.builtin.assert:
+            that:
+              - >-
+                __invalid_input_transport_type_choice_failed
+                | default(false)
+            fail_msg: >-
+              assert_role_vars should reject ha_cluster_transport.type
+              value 'invalid_choice'
 
         - name: Assert rejects ha_cluster_cluster_present as a string
           block:
@@ -738,60 +741,6 @@
               assert_role_vars should reject name-value option values
               that are lists
 
-        - name: Assert rejects dns as an integer
-          block:
-            - name: Run role with pcsd certificate dns as an integer
-              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
-              vars:
-                ha_cluster_cluster_present: null
-                ha_cluster_qnetd: null
-                ha_cluster_pcsd_certificates:
-                  - name: pcsd_cert
-                    ca: self-sign
-                    dns: 123
-          rescue:
-            - name: Mark dns integer rejected
-              ansible.builtin.set_fact:
-                __invalid_input_pcsd_dns_int_failed: true
-              when: >-
-                'dns must be a string or list of strings' in
-                (ansible_failed_result | default({}) | to_json)
-
-        - name: Assert dns as integer was rejected
-          ansible.builtin.assert:
-            that:
-              - __invalid_input_pcsd_dns_int_failed | default(false)
-            fail_msg: >-
-              assert_role_vars should reject
-              ha_cluster_pcsd_certificates dns when given an integer
-
-        - name: Assert rejects mode as boolean
-          block:
-            - name: Run role with pcsd certificate mode as boolean
-              ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
-              vars:
-                ha_cluster_cluster_present: null
-                ha_cluster_qnetd: null
-                ha_cluster_pcsd_certificates:
-                  - name: pcsd_cert
-                    ca: self-sign
-                    mode: true
-          rescue:
-            - name: Mark mode boolean rejected
-              ansible.builtin.set_fact:
-                __invalid_input_pcsd_mode_bool_failed: true
-              when: >-
-                'mode must be a string or integer' in
-                (ansible_failed_result | default({}) | to_json)
-
-        - name: Assert mode as boolean was rejected
-          ansible.builtin.assert:
-            that:
-              - __invalid_input_pcsd_mode_bool_failed | default(false)
-            fail_msg: >-
-              assert_role_vars should reject
-              ha_cluster_pcsd_certificates mode when given a boolean
-
         - name: Assert rejects transport links as a string
           block:
             - name: Run role with transport links item as a string
@@ -864,11 +813,11 @@
             __invalid_input_acl_kind_choice_failed:
             __invalid_input_resource_role_choice_failed:
             __invalid_input_order_action_choice_failed:
-            __invalid_input_key_usage_choice_failed:
             __invalid_input_missing_primitive_id_failed:
             __invalid_input_missing_primitive_agent_failed:
             __invalid_input_missing_node_name_failed:
             __invalid_input_missing_ticket_failed:
+            __invalid_input_missing_stonith_level_failed:
             __invalid_input_stonith_level_type_failed:
             __invalid_input_copy_ops_type_failed:
             __invalid_input_cluster_present_string_failed:
@@ -876,8 +825,6 @@
             __invalid_input_corosync_key_src_int_failed:
             __invalid_input_fence_pkgs_string_failed:
             __invalid_input_nvpair_list_failed:
-            __invalid_input_pcsd_dns_int_failed:
-            __invalid_input_pcsd_mode_bool_failed:
             __invalid_input_transport_links_string_failed:
             __invalid_input_qnetd_bad_key_failed:
           tags: tests::cleanup

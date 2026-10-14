@@ -85,6 +85,12 @@ argument_specs:
           Password of the `hacluster` user. This user has full access to
           the cluster. Required when configuring a running cluster.
           Optional when configuring a non-running container or VM image.
+      ha_cluster_hacluster_qdevice_password:
+        type: str
+        description: >
+          Password of the `hacluster` user on the qdevice host. Needed
+          only when a qdevice of type `net` is used and that password
+          differs from `ha_cluster_hacluster_password`.
       ha_cluster_regenerate_keys:
         type: bool
         default: false
@@ -129,134 +135,14 @@ argument_specs:
           `ha_cluster_pcsd_certificates`.
       ha_cluster_pcsd_certificates:
         type: list
-        elements: dict
+        elements: raw
         default: []
         description: >
-          Certificate requests passed to the `certificate` role as
-          `certificate_requests` for pcsd TLS material. Must not be set
+          Certificate requests passed through to the `certificate` role
+          as `certificate_requests` for pcsd TLS material. Nested fields
+          are validated by that role, not by this spec. Must not be set
           together with `ha_cluster_pcsd_public_key_src` or
           `ha_cluster_pcsd_private_key_src`.
-        options:
-          name:
-            type: str
-            required: true
-            description: >
-              The name of the certificate. A full path can be used to
-              choose the directory where files will be stored.
-          ca:
-            type: str
-            required: true
-            description: >
-              The CA that will issue the certificate, for example
-              `self-sign` or `ipa`.
-          dns:
-            type: raw
-            description: >
-              A domain name or list of domain names to include in the
-              certificate Subject Alternative Name (SAN).
-          email:
-            type: raw
-            description: >
-              An email address or list of email addresses to include in
-              the certificate Subject Alternative Name (SAN).
-          ip:
-            type: raw
-            description: >
-              An IP address or list of IP addresses to include in the
-              certificate Subject Alternative Name (SAN).
-          auto_renew:
-            type: bool
-            description: >
-              Whether the certificate should be renewed automatically
-              before it expires.
-          owner:
-            type: str
-            description: >
-              The user name or user id for the certificate and key files.
-          group:
-            type: str
-            description: >
-              The group name or group id for the certificate and key
-              files.
-          mode:
-            type: raw
-            description: >
-              The file system permissions for the certificate and key
-              files. Accepts a string such as `0644` or an integer.
-          key_size:
-            type: int
-            description: >
-              The key size in bits.
-          common_name:
-            type: str
-            description: >
-              The Common Name requested for the certificate subject.
-          country:
-            type: str
-            description: >
-              The country code requested for the certificate subject.
-          state:
-            type: str
-            description: >
-              The state requested for the certificate subject.
-          locality:
-            type: str
-            description: >
-              The locality requested for the certificate subject.
-          organization:
-            type: str
-            description: >
-              The organization requested for the certificate subject.
-          organizational_unit:
-            type: str
-            description: >
-              The organizational unit requested for the certificate
-              subject.
-          contact_email:
-            type: str
-            description: >
-              The contact email requested for the certificate subject.
-          key_usage:
-            type: list
-            elements: str
-            choices:
-              - digitalSignature
-              - nonRepudiation
-              - keyEncipherment
-              - dataEncipherment
-              - keyAgreement
-              - keyCertSign
-              - cRLSign
-              - encipherOnly
-              - decipherOnly
-            description: >
-              The allowed Key Usage extensions for the certificate.
-          extended_key_usage:
-            type: list
-            elements: str
-            description: >
-              The Extended Key Usage attributes for the certificate.
-          run_before:
-            type: str
-            description: >
-              A command to run before saving the certificate.
-          run_after:
-            type: str
-            description: >
-              A command to run after saving the certificate.
-          principal:
-            type: raw
-            description: >
-              A Kerberos principal or list of Kerberos principals.
-          provider:
-            type: str
-            description: >
-              The underlying method used to request and manage the
-              certificate.
-          issuer:
-            type: str
-            description: >
-              The issuer certificate nickname or template name.
       ha_cluster_cluster_name:
         type: str
         default: my-cluster
@@ -271,10 +157,6 @@ argument_specs:
         options:
           type:
             type: str
-            choices:
-              - knet
-              - udp
-              - udpu
             description: >
               Corosync transport type (`knet`, `udp`, or `udpu`).
           options:
@@ -919,6 +801,7 @@ argument_specs:
         options:
           level:
             type: int
+            required: true
             description: >
               Order in which to attempt the level. Levels are attempted
               in ascending order until one succeeds. Must be between 1
@@ -962,7 +845,7 @@ argument_specs:
             description: >
               Resource the constraint applies to. Exactly one of `id` or
               `pattern` must be specified.
-            options: &constraint_resource_options
+            options:
               id:
                 type: str
                 description: >

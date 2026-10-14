@@ -63,6 +63,18 @@
     - ha_cluster_qnetd is mapping
     - item.value is defined
 
+- name: Assert ha_cluster_transport.type is a valid Corosync transport
+  ansible.builtin.assert:
+    that:
+      - ha_cluster_transport.type in ['knet', 'udp', 'udpu']
+    fail_msg: >-
+      ha_cluster_transport.type must be knet, udp, or udpu,
+      got {{ ha_cluster_transport.type }}
+  when:
+    - ha_cluster_transport is defined
+    - ha_cluster_transport is mapping
+    - ha_cluster_transport.type is defined
+
 - name: Assert ha_cluster_fence_agent_packages is null or a list of strings
   ansible.builtin.assert:
     that:
@@ -287,79 +299,3 @@
     label: "{{ item.id | d('unnamed') }}"
   when: item.score is defined
 
-- name: Assert dns in ha_cluster_pcsd_certificates is a string or list of strings
-  ansible.builtin.assert:
-    that:
-      - >-
-        item.dns is string
-        or (item.dns is sequence and item.dns is not mapping
-            and item.dns | reject('string') | list | length == 0)
-    fail_msg: >-
-      ha_cluster_pcsd_certificates[{{ idx }}].dns must be a string or
-      list of strings, got {{ item.dns | type_debug }}
-  loop: "{{ ha_cluster_pcsd_certificates }}"
-  loop_control:
-    index_var: idx
-    label: "{{ item.name | d('unnamed') }}"
-  when: item.dns is defined
-
-- name: Assert email in ha_cluster_pcsd_certificates is a string or list of strings
-  ansible.builtin.assert:
-    that:
-      - >-
-        item.email is string
-        or (item.email is sequence and item.email is not mapping
-            and item.email | reject('string') | list | length == 0)
-    fail_msg: >-
-      ha_cluster_pcsd_certificates[{{ idx }}].email must be a string or
-      list of strings, got {{ item.email | type_debug }}
-  loop: "{{ ha_cluster_pcsd_certificates }}"
-  loop_control:
-    index_var: idx
-    label: "{{ item.name | d('unnamed') }}"
-  when: item.email is defined
-
-- name: Assert ip in ha_cluster_pcsd_certificates is a string or list of strings
-  ansible.builtin.assert:
-    that:
-      - >-
-        item.ip is string
-        or (item.ip is sequence and item.ip is not mapping
-            and item.ip | reject('string') | list | length == 0)
-    fail_msg: >-
-      ha_cluster_pcsd_certificates[{{ idx }}].ip must be a string or
-      list of strings, got {{ item.ip | type_debug }}
-  loop: "{{ ha_cluster_pcsd_certificates }}"
-  loop_control:
-    index_var: idx
-    label: "{{ item.name | d('unnamed') }}"
-  when: item.ip is defined
-
-- name: Assert principal in ha_cluster_pcsd_certificates is a string or list of strings
-  ansible.builtin.assert:
-    that:
-      - >-
-        item.principal is string
-        or (item.principal is sequence and item.principal is not mapping
-            and item.principal | reject('string') | list | length == 0)
-    fail_msg: >-
-      ha_cluster_pcsd_certificates[{{ idx }}].principal must be a string
-      or list of strings, got {{ item.principal | type_debug }}
-  loop: "{{ ha_cluster_pcsd_certificates }}"
-  loop_control:
-    index_var: idx
-    label: "{{ item.name | d('unnamed') }}"
-  when: item.principal is defined
-
-- name: Assert mode in ha_cluster_pcsd_certificates is a string or integer
-  ansible.builtin.assert:
-    that:
-      - (item.mode | type_debug) in ['str', 'int', 'unicode']
-    fail_msg: >-
-      ha_cluster_pcsd_certificates[{{ idx }}].mode must be a string or
-      integer, got {{ item.mode | type_debug }}
-  loop: "{{ ha_cluster_pcsd_certificates }}"
-  loop_control:
-    index_var: idx
-    label: "{{ item.name | d('unnamed') }}"
-  when: item.mode is defined
