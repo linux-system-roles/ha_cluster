@@ -298,4 +298,3 @@
   loop_control:
     label: "{{ item.id | d('unnamed') }}"
   when: item.score is defined
-
