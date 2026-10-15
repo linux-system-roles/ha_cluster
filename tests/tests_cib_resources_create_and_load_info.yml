@@ -6,20 +6,12 @@
   vars_files: vars/main.yml
   vars:
     __required_capability: pcmk.resource.config.output-formats
-    __old_clone_roles: >-
-      {{
-        (
-          ansible_facts['distribution'] in ['RedHat', 'CentOS']
-          and
-          ansible_facts['distribution_major_version'] == '8'
-        ) | bool
-      }}
     # wokeignore:rule=master
     __mstr: Master
     # wokeignore:rule=slave
     __slv: Slave
-    __promoted: "{{__old_clone_roles | ternary(__mstr, 'Promoted') }}"
-    __unpromoted: "{{__old_clone_roles | ternary(__slv, 'Unpromoted') }}"
+    __promoted: "{{ __old_clone_roles | ternary(__mstr, 'Promoted') }}"
+    __unpromoted: "{{ __old_clone_roles | ternary(__slv, 'Unpromoted') }}"
     ha_cluster_cluster_name: test-cluster
     ha_cluster_export_configuration: true
     # Make cluster not try starting any resources. Due to missing resource
@@ -388,6 +380,13 @@
         - tests::booted
         - tests::verify
       block:
+        - name: Determine whether old clone role names are used
+          set_fact:
+            __old_clone_roles: "{{
+              (ansible_facts['distribution'] in ['RedHat', 'CentOS']
+               and
+               ansible_facts['distribution_major_version'] == '8') | bool }}"
+
         - name: Skip test in bootc mode
           include_tasks: tasks/skip_if_bootc.yml
 

@@ -31,13 +31,17 @@
             name: linux-system-roles.ha_cluster
             tasks_from: test_setup.yml
 
+        - name: Set certificate common name
+          set_fact:
+            __cert_common_name: "{{ ansible_facts['hostname'] }}"
+
         - name: Run HA Cluster role
           include_tasks: tasks/run_role_with_clear_facts.yml
           vars:
             __sr_public: true
             ha_cluster_pcsd_certificates:
               - name: "{{ __cert_name }}"
-                common_name: "{{ ansible_facts['hostname'] }}"
+                common_name: "{{ __cert_common_name }}"
                 ca: self-sign
 
         - name: Stat pcsd TLS certificate

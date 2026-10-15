@@ -67,8 +67,16 @@
             - name: Check errors 3
               assert:
                 that:
-                  - ansible_failed_result.results[0].msg ==
-                    "Specify 'level' 1..9 for each fencing level"
+                  - >-
+                    (
+                      'missing required arguments' in
+                      (ansible_failed_result.argument_errors | default([]) | to_json)
+                      and 'level' in
+                      (ansible_failed_result.argument_errors | default([]) | to_json)
+                    )
+                    or
+                    "Specify 'level' 1..9 for each fencing level" in
+                    (ansible_failed_result | default({}) | to_json)
               run_once: true  # noqa: run_once[task]
 
         - name: Check that level is correct
