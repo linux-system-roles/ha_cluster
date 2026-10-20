@@ -43,7 +43,7 @@ workflows:
     '.github/workflows/python-unit-test.yml':
         - 'actions/checkout@v7.0.1'
         - 'codecov/codecov-action@v7.1.1'
-        - 'myrotvorets/set-commit-status-action@master'
+        - 'linux-system-roles/.github@main'
     '.github/workflows/qemu-kvm-integration-tests.yml':
         - 'actions/checkout@v7.0.1'
         - 'actions/upload-artifact@v7.0.2'
@@ -111,11 +111,6 @@ dependencies:
         commit: 'sha1-816f2a5bf5cb01d001c3f6b5fab101de24bfc9d0'
         owner_id: 28014670
         repo_id: 320092621
-    'myrotvorets/set-commit-status-action@master':
-        ref: 'master'
-        commit: 'sha1-fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6'
-        owner_id: 65825217
-        repo_id: 356751531
     'sclorg/testing-farm-as-github-action@v4.3.1':
         ref: 'v4.3.1'
         commit: 'sha1-230555baceb860aa468d216f1822974836b965d1'
