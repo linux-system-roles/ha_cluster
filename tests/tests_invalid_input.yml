@@ -2,6 +2,13 @@
 ---
 - name: Verify invalid parameters are rejected
   hosts: all
+  vars:
+    __invalid_input_failure_messages: >-
+      {{ ([ansible_failed_result.msg | default(''),
+           ansible_failed_result.msg.msg | default('')]
+          + (ansible_failed_result.results | default([])
+             | map(attribute='msg') | map('default', '') | list))
+         | join(' ') }}
   tasks:
     - name: Run invalid input tests
       tags: tests::verify
@@ -56,8 +63,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_enable_repos_type_failed: true
                   when: >-
-                    'ha_cluster_enable_repos' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    "argument 'ha_cluster_enable_repos' is of type" in __invalid_input_failure_messages and
+                    'we were unable to convert to bool' in __invalid_input_failure_messages
 
             - name: Assert invalid ha_cluster_enable_repos type was rejected
               ansible.builtin.assert:
@@ -78,8 +85,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_sbd_enabled_type_failed: true
                   when: >-
-                    'ha_cluster_sbd_enabled' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    "argument 'ha_cluster_sbd_enabled' is of type" in __invalid_input_failure_messages and
+                    'we were unable to convert to bool' in __invalid_input_failure_messages
 
             - name: Assert invalid ha_cluster_sbd_enabled type was rejected
               ansible.builtin.assert:
@@ -100,8 +107,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_secure_logging_type_failed: true
                   when: >-
-                    'ha_cluster_secure_logging' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    "argument 'ha_cluster_secure_logging' is of type" in __invalid_input_failure_messages and
+                    'we were unable to convert to bool' in __invalid_input_failure_messages
 
             - name: Assert invalid ha_cluster_secure_logging type was rejected
               ansible.builtin.assert:
@@ -124,8 +131,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_extra_packages_type_failed: true
                   when: >-
-                    'ha_cluster_extra_packages' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    "argument 'ha_cluster_extra_packages' is of type" in __invalid_input_failure_messages and
+                    'we were unable to convert to list' in __invalid_input_failure_messages
 
             - name: Assert invalid ha_cluster_extra_packages type was rejected
               ansible.builtin.assert:
@@ -146,8 +153,9 @@
                   ansible.builtin.set_fact:
                     __invalid_input_primitives_type_failed: true
                   when: >-
-                    'ha_cluster_resource_primitives' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    "Elements value for option 'ha_cluster_resource_primitives' is of type"
+                    in __invalid_input_failure_messages and
+                    'we were unable to convert to dict' in __invalid_input_failure_messages
 
             - name: Assert invalid ha_cluster_resource_primitives type was rejected
               ansible.builtin.assert:
@@ -169,8 +177,9 @@
                   ansible.builtin.set_fact:
                     __invalid_input_transport_type_failed: true
                   when: >-
-                    'ha_cluster_transport' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    "argument 'ha_cluster_transport' is of type" in __invalid_input_failure_messages and
+                    "value of 'ha_cluster_transport' must be of type dict or list of dicts"
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid ha_cluster_transport type was rejected
               ansible.builtin.assert:
@@ -192,8 +201,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_pacemaker_shell_choice_failed: true
                   when: >-
-                    'ha_cluster_pacemaker_shell' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'value of ha_cluster_pacemaker_shell must be one of: pcs, crmsh, got: invalid_choice'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid ha_cluster_pacemaker_shell choice was rejected
               ansible.builtin.assert:
@@ -218,8 +227,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_quorum_model_choice_failed: true
                   when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'value of model must be one of: net, got: invalid_choice found in ha_cluster_quorum -> device'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid quorum device model choice was rejected
               ansible.builtin.assert:
@@ -244,8 +253,9 @@
                   ansible.builtin.set_fact:
                     __invalid_input_sbd_option_name_choice_failed: true
                   when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'value of name must be one of: delay-start, startmode, timeout-action, watchdog-timeout'
+                    in __invalid_input_failure_messages and
+                    'got: invalid_choice found in ha_cluster_sbd_options' in __invalid_input_failure_messages
 
             - name: Assert invalid SBD option name choice was rejected
               ansible.builtin.assert:
@@ -272,8 +282,10 @@
                   ansible.builtin.set_fact:
                     __invalid_input_pcs_perm_type_choice_failed: true
                   when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'value of type must be one of: user, group' in
+                    __invalid_input_failure_messages and
+                    'got: invalid_choice found in ha_cluster_pcs_permission_list'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid pcs permission type choice was rejected
               ansible.builtin.assert:
@@ -300,8 +312,10 @@
                   ansible.builtin.set_fact:
                     __invalid_input_pcs_perm_allow_choice_failed: true
                   when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'value of allow_list must be one or more of: read, write, grant, full'
+                    in __invalid_input_failure_messages and
+                    'Got no match for: invalid_choice found in ha_cluster_pcs_permission_list'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid pcs permission allow_list choice was rejected
               ansible.builtin.assert:
@@ -330,8 +344,9 @@
                   ansible.builtin.set_fact:
                     __invalid_input_acl_kind_choice_failed: true
                   when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'value of kind must be one of: read, write, deny' in __invalid_input_failure_messages and
+                    'got: invalid_choice found in ha_cluster_acls -> acl_roles -> permissions'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid ACL permission kind choice was rejected
               ansible.builtin.assert:
@@ -357,8 +372,10 @@
                   ansible.builtin.set_fact:
                     __invalid_input_resource_role_choice_failed: true
                   when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'value of role must be one of: Started, Unpromoted, Promoted'
+                    in __invalid_input_failure_messages and
+                    'got: invalid_choice found in ha_cluster_constraints_colocation -> resource_follower'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid resource role choice was rejected
               ansible.builtin.assert:
@@ -386,8 +403,10 @@
                   ansible.builtin.set_fact:
                     __invalid_input_order_action_choice_failed: true
                   when: >-
-                    'invalid_choice' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'value of action must be one of: start, stop, promote, demote'
+                    in __invalid_input_failure_messages and
+                    'got: invalid_choice found in ha_cluster_constraints_order -> resource_first'
+                    in __invalid_input_failure_messages
 
             - name: Assert invalid order action choice was rejected
               ansible.builtin.assert:
@@ -412,8 +431,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_missing_primitive_id_failed: true
                   when: >-
-                    'missing required arguments' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'missing required arguments: id found in ha_cluster_resource_primitives'
+                    in __invalid_input_failure_messages
 
             - name: Assert missing resource primitive id was rejected
               ansible.builtin.assert:
@@ -438,8 +457,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_missing_primitive_agent_failed: true
                   when: >-
-                    'missing required arguments' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'missing required arguments: agent found in ha_cluster_resource_primitives'
+                    in __invalid_input_failure_messages
 
             - name: Assert missing resource primitive agent was rejected
               ansible.builtin.assert:
@@ -464,8 +483,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_missing_node_name_failed: true
                   when: >-
-                    'missing required arguments' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'missing required arguments: node_name found in ha_cluster_node_options'
+                    in __invalid_input_failure_messages
 
             - name: Assert missing node_name was rejected
               ansible.builtin.assert:
@@ -488,8 +507,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_missing_ticket_failed: true
                   when: >-
-                    'missing required arguments' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'missing required arguments: ticket found in ha_cluster_constraints_ticket'
+                    in __invalid_input_failure_messages
 
             - name: Assert missing ticket name was rejected
               ansible.builtin.assert:
@@ -515,8 +534,8 @@
                   ansible.builtin.set_fact:
                     __invalid_input_missing_stonith_level_failed: true
                   when: >-
-                    'missing required arguments' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    'missing required arguments: level found in ha_cluster_stonith_levels'
+                    in __invalid_input_failure_messages
 
             - name: Assert missing stonith level was rejected
               ansible.builtin.assert:
@@ -544,8 +563,9 @@
                   ansible.builtin.set_fact:
                     __invalid_input_stonith_level_type_failed: true
                   when: >-
-                    'level' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    "argument 'level' is of type" in __invalid_input_failure_messages and
+                    "found in 'ha_cluster_stonith_levels'" in __invalid_input_failure_messages and
+                    'we were unable to convert to int' in __invalid_input_failure_messages
 
             - name: Assert invalid stonith level type was rejected
               ansible.builtin.assert:
@@ -571,8 +591,9 @@
                   ansible.builtin.set_fact:
                     __invalid_input_copy_ops_type_failed: true
                   when: >-
-                    'copy_operations_from_agent' in
-                    (ansible_failed_result.argument_errors | default([]) | to_json)
+                    "argument 'copy_operations_from_agent' is of type" in __invalid_input_failure_messages and
+                    "found in 'ha_cluster_resource_primitives'" in __invalid_input_failure_messages and
+                    'we were unable to convert to bool' in __invalid_input_failure_messages
 
             - name: Assert invalid copy_operations_from_agent type was rejected
               ansible.builtin.assert:
@@ -601,8 +622,8 @@
               ansible.builtin.set_fact:
                 __invalid_input_transport_type_choice_failed: true
               when: >-
-                'ha_cluster_transport.type must be knet, udp, or udpu' in
-                (ansible_failed_result | default({}) | to_json)
+                'ha_cluster_transport.type must be knet, udp, or udpu, got invalid_choice'
+                in __invalid_input_failure_messages
 
         - name: Assert invalid ha_cluster_transport.type was rejected
           ansible.builtin.assert:
@@ -626,8 +647,9 @@
               ansible.builtin.set_fact:
                 __invalid_input_cluster_present_string_failed: true
               when: >-
-                'ha_cluster_cluster_present must be null or a boolean' in
-                (ansible_failed_result | default({}) | to_json)
+                'ha_cluster_cluster_present must be null or a boolean, got' in __invalid_input_failure_messages and
+                ('got str' in __invalid_input_failure_messages or
+                 'got AnsibleUnicode' in __invalid_input_failure_messages)
 
         - name: Assert ha_cluster_cluster_present as string was rejected
           ansible.builtin.assert:
@@ -651,8 +673,9 @@
               ansible.builtin.set_fact:
                 __invalid_input_qnetd_string_failed: true
               when: >-
-                'ha_cluster_qnetd must be null or a dictionary' in
-                (ansible_failed_result | default({}) | to_json)
+                'ha_cluster_qnetd must be null or a dictionary, got' in __invalid_input_failure_messages and
+                ('got str' in __invalid_input_failure_messages or
+                 'got AnsibleUnicode' in __invalid_input_failure_messages)
 
         - name: Assert ha_cluster_qnetd as string was rejected
           ansible.builtin.assert:
@@ -675,8 +698,7 @@
               ansible.builtin.set_fact:
                 __invalid_input_corosync_key_src_int_failed: true
               when: >-
-                'ha_cluster_corosync_key_src must be null or a path' in
-                (ansible_failed_result | default({}) | to_json)
+                'ha_cluster_corosync_key_src must be null or a path string, got int' in __invalid_input_failure_messages
 
         - name: Assert ha_cluster_corosync_key_src as integer was rejected
           ansible.builtin.assert:
@@ -701,8 +723,10 @@
               ansible.builtin.set_fact:
                 __invalid_input_fence_pkgs_string_failed: true
               when: >-
-                'ha_cluster_fence_agent_packages must be null or a list' in
-                (ansible_failed_result | default({}) | to_json)
+                'ha_cluster_fence_agent_packages must be null or a list of strings, got'
+                in __invalid_input_failure_messages and
+                ('got str' in __invalid_input_failure_messages or
+                 'got AnsibleUnicode' in __invalid_input_failure_messages)
 
         - name: Assert ha_cluster_fence_agent_packages as string was rejected
           ansible.builtin.assert:
@@ -730,8 +754,8 @@
               ansible.builtin.set_fact:
                 __invalid_input_nvpair_list_failed: true
               when: >-
-                'must be a string, integer, or boolean' in
-                (ansible_failed_result | default({}) | to_json)
+                "name-value option 'stonith-enabled' value must be a string, integer, or boolean, got list"
+                in __invalid_input_failure_messages
 
         - name: Assert name-value option value as a list was rejected
           ansible.builtin.assert:
@@ -756,8 +780,8 @@
               ansible.builtin.set_fact:
                 __invalid_input_transport_links_string_failed: true
               when: >-
-                'must be a list of dictionaries' in
-                (ansible_failed_result | default({}) | to_json)
+                'ha_cluster_transport.links[0] must be a list of dictionaries, got str'
+                in __invalid_input_failure_messages
 
         - name: Assert transport links as a string was rejected
           ansible.builtin.assert:
@@ -783,8 +807,7 @@
               ansible.builtin.set_fact:
                 __invalid_input_qnetd_bad_key_failed: true
               when: >-
-                'contains invalid keys' in
-                (ansible_failed_result | default({}) | to_json)
+                'ha_cluster_qnetd contains invalid keys: invalid_key' in __invalid_input_failure_messages
 
         - name: Assert qnetd dict with invalid key was rejected
           ansible.builtin.assert:
