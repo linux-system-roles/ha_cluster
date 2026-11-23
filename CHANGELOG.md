@@ -1,6 +1,43 @@
 Changelog
 =========
 
+[1.33.0] - 2026-11-23
+--------------------
+
+### New Features
+
+- feat: Argument spec implementation for ha cluster role (#439)
+
+### Bug Fixes
+
+- fix: Support modprobe on Python 3.6 and earlier (#442)
+
+### Other Changes
+
+- ci: no CI test by default - implement slash commands for CI tests [citest_skip] (#435)
+- ci: ansible-test-milestone is now version 2.23 - update sanity ignore files (#436)
+- ci: allow lsr org members to run ci tests (#437)
+- ci: update test composes for GitLab CI (#438)
+- ci: Run Dependabot monthly and group changes in a single PR (#440)
+- ci: fix gitlab CI woke action (#441)
+- ci: bump tox-lsr version 3.21.0, myrotvorets/set-commit-status-action, support leap-16.0 (#444)
+- test: fix tests for the latest pcs (#445)
+- test: check invalid inputs for correct error message (#446)
+- ci: use shared actions and lock workflow dependencies (#447)
+- ci: use shared actions and lock workflow dependencies (#448)
+- ci: use shared actions and lock workflow dependencies (#449)
+- ci: Use order 10 for centos vault task so that it runs first (#450)
+- docs: add AI policy; update setup-python, codeql actions (#451)
+- ci: retry centos vault repo failures using new package_retry yum/dnf plugin (#452)
+- docs: tag markdown plain text blocks correctly (#453)
+- ci: Use a fixed 5 minute backoff for CentOS vault repos (#454)
+- ci: support Fedora 45, Ansible 2.22; drop Fedora 43 (#455)
+- ci: use ubuntu 24.04 for test envs that use py39 (#456)
+- ci: use ubuntu 26.04 with podman 5.x and disable apparmor restriction (#457)
+- docs: add AGENTS.md with shared developer conventions from .github (#458)
+- docs: remove extra blank lines from .coderabbit.yaml (#459)
+- ci: update tox-lsr for support for tests/module_utils (#460)
+
 [1.32.2] - 2026-09-17
 --------------------
 
